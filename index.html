@@ -1393,6 +1393,7 @@
       margin-bottom: 20px;
     }
     .settings-mode #settings-back { display: none; }
+    .settings-mode .team-builder-banner { display: none !important; }
     #settings-back button {
       background: #ECEDF1;
       border: none;
@@ -3828,59 +3829,79 @@ function renderSchedule() {
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // Group by month
-  const groups = {};
+  // Split into upcoming and past, sorted appropriately
+  const upcoming = [];
+  const past = [];
   _scheduleGames.forEach(game => {
-    const key = game.dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(game);
+    const gameDate = new Date(game.date + 'T00:00:00');
+    if (gameDate >= now) upcoming.push(game);
+    else past.push(game);
   });
 
-  let html = '<div class="schedule-list">';
-  for (const [month, games] of Object.entries(groups)) {
-    html += `<div class="schedule-date-group">`;
-    html += `<div class="schedule-date-label">${month}</div>`;
-    html += `<div class="schedule-table">`;
-    games.forEach(game => {
-      const gameDate = new Date(game.date + 'T00:00:00');
-      const isPast = gameDate < now;
-      const idx = _scheduleGames.indexOf(game);
-      const dayStr = game.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-      const timeStr = game.time && game.time !== '00:00' ? formatTime(game.time) : '';
-      const meta = [dayStr, timeStr, game.location].filter(Boolean).join(' · ');
+  // Upcoming: soonest first (ascending)
+  upcoming.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // Past: most recent first (descending)
+  past.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-      // Check if there's a saved lineup matching this game
-      const matchedLineup = _scheduleLineups.find(l =>
-        l.opponent === game.opponent && l.gameDate === game.date
-      );
+  function renderGameCard(game, isPast) {
+    const idx = _scheduleGames.indexOf(game);
+    const dayStr = game.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const timeStr = game.time && game.time !== '00:00' ? formatTime(game.time) : '';
+    const meta = [dayStr, timeStr, game.location].filter(Boolean).join(' · ');
 
-      let actionHtml;
-      if (matchedLineup) {
-        actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
-      } else if (!isPast) {
-        actionHtml = `<div class="schedule-item-action">Create Lineup<span class="schedule-chevron">›</span></div>`;
-      } else {
-        actionHtml = `<div class="schedule-item-action"><span class="schedule-chevron">›</span></div>`;
-      }
+    const matchedLineup = _scheduleLineups.find(l =>
+      l.opponent === game.opponent && l.gameDate === game.date
+    );
 
-      const onclick = matchedLineup
-        ? `viewScheduleLineup('${matchedLineup.id}')`
-        : `createLineupFromSchedule(${idx})`;
+    let actionHtml;
+    if (matchedLineup) {
+      actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
+    } else if (!isPast) {
+      actionHtml = `<div class="schedule-item-action">Create Lineup<span class="schedule-chevron">›</span></div>`;
+    } else {
+      actionHtml = `<div class="schedule-item-action"><span class="schedule-chevron">›</span></div>`;
+    }
 
-      html += `
-        <div class="schedule-item ${isPast ? 'schedule-past' : ''}" onclick="${onclick}">
-          <div class="schedule-item-info">
-            <div class="schedule-item-title">
-              <span class="schedule-item-badge ${game.isHome ? 'home' : 'away'}">${game.isHome ? 'HOME' : 'AWAY'}</span>
-              vs ${escHtml(game.opponent)}
-            </div>
-            <div class="schedule-item-meta">${escHtml(meta)}</div>
+    const onclick = matchedLineup
+      ? `viewScheduleLineup('${matchedLineup.id}')`
+      : `createLineupFromSchedule(${idx})`;
+
+    return `
+      <div class="schedule-item ${isPast ? 'schedule-past' : ''}" onclick="${onclick}">
+        <div class="schedule-item-info">
+          <div class="schedule-item-title">
+            <span class="schedule-item-badge ${game.isHome ? 'home' : 'away'}">${game.isHome ? 'HOME' : 'AWAY'}</span>
+            vs ${escHtml(game.opponent)}
           </div>
-          ${actionHtml}
-        </div>`;
-    });
-    html += `</div></div>`;
+          <div class="schedule-item-meta">${escHtml(meta)}</div>
+        </div>
+        ${actionHtml}
+      </div>`;
   }
+
+  function renderSection(label, games, isPast) {
+    if (games.length === 0) return '';
+    // Group by month within the section
+    const groups = {};
+    games.forEach(game => {
+      const key = game.dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(game);
+    });
+    let html = `<div class="schedule-section-label" style="font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:24px 0 12px;">${label}</div>`;
+    for (const [month, monthGames] of Object.entries(groups)) {
+      html += `<div class="schedule-date-group">`;
+      html += `<div class="schedule-date-label">${month}</div>`;
+      html += `<div class="schedule-table">`;
+      monthGames.forEach(game => { html += renderGameCard(game, isPast); });
+      html += `</div></div>`;
+    }
+    return html;
+  }
+
+  let html = '<div class="schedule-list">';
+  html += renderSection('Upcoming Games', upcoming, false);
+  html += renderSection('Past Games', past, true);
   html += '</div>';
   container.innerHTML = html;
 }
