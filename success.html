@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Pro – Lineup Card</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="/assets/icon.png" type="image/png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --green-light: #dcfce7;
+      --text: #111827;
+      --text-secondary: #4b5563;
+      --muted: #6b7280;
+      --bg: #ffffff;
+      --bg-soft: #f9fafb;
+    }
+    body {
+      font-family: -apple-system, "system-ui", "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+    .success-card {
+      text-align: center;
+      max-width: 480px;
+    }
+    .success-icon {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: var(--green-light);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+    }
+    .success-card h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+    .success-card p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 32px;
+      background: var(--green);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-decoration: none;
+    }
+    .btn-cta:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .success-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="success-card">
+    <div class="success-icon" aria-hidden="true">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <h1>You're all set!</h1>
+    <p>Your Pro subscription is active. You now have access to unlimited teams, the advanced lineup algorithm, strategy slider, game history, sharing, and priority support.</p>
+    <a href="/index.html" class="btn-cta">Start Building Lineups</a>
+    <p class="success-note">Your 7-day free trial has started. You won't be charged until it ends.</p>
+  </div>
+</body>
+</html>

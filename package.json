@@ -1,0 +1,9 @@
+{
+  "name": "lineup-card-site",
+  "private": true,
+  "description": "Lineup Card – Youth Baseball & Softball Lineup Builder",
+  "dependencies": {
+    "stripe": "^14.0.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

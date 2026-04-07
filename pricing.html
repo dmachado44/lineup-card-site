@@ -806,7 +806,7 @@
             Priority support
           </li>
         </ul>
-        <a href="/index.html" class="btn-cta btn-cta-green btn-cta-full">Start Free Trial</a>
+        <button onclick="startCheckout()" class="btn-cta btn-cta-green btn-cta-full" id="btn-start-trial">Start Free Trial</button>
         <p class="pricing-note">7-day free trial. Cancel anytime.</p>
       </div>
 
@@ -993,7 +993,7 @@
       <h2>Ready to build your lineup?</h2>
       <p>Try Pro free for 7 days, or get started instantly with your Lineup DJ account.</p>
       <div class="cta-buttons">
-        <a href="/index.html" class="btn-cta btn-cta-green btn-cta-lg">Start Free Trial</a>
+        <button onclick="startCheckout()" class="btn-cta btn-cta-green btn-cta-lg">Start Free Trial</button>
         <a href="/index.html" class="btn-cta btn-outline btn-cta-lg">Log In with Lineup DJ</a>
       </div>
       <p class="cta-note">7-day free trial. Cancel anytime.</p>
@@ -1108,6 +1108,85 @@
           }
         });
       });
+    })();
+  </script>
+
+  <!-- ── Firebase SDK (for auth state on pricing page) ── -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script>
+    // ── Firebase config (same as main app) ──
+    var FIREBASE_CONFIG = {
+      apiKey:            'AIzaSyA4yVZNO-Tn8rQQbmjB9zdK24jCNIilNvE',
+      authDomain:        'lineup-dj-b7080.firebaseapp.com',
+      projectId:         'lineup-dj-b7080',
+      storageBucket:     'lineup-dj-b7080.firebasestorage.app',
+      messagingSenderId: '639812808286',
+      appId:             '1:639812808286:web:c1fa2c5f9076e166ad0ecf',
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    var _pricingAuth = firebase.auth();
+
+    // Track which billing period is selected
+    var _selectedPlan = 'monthly';
+    var _origSetBilling = setBilling;
+    setBilling = function(period) {
+      _selectedPlan = period;
+      _origSetBilling(period);
+    };
+
+    // ── Start Stripe Checkout ──
+    async function startCheckout() {
+      var user = _pricingAuth.currentUser;
+
+      // If not signed in, redirect to the main app to sign in first
+      if (!user) {
+        // Store intent so we can redirect back after sign-in
+        sessionStorage.setItem('checkoutPlan', _selectedPlan);
+        window.location.href = '/index.html?redirect=pricing';
+        return;
+      }
+
+      var btn = document.getElementById('btn-start-trial');
+      var origText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Loading…';
+
+      try {
+        var res = await fetch('/.netlify/functions/create-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            plan: _selectedPlan,
+            firebaseUid: user.uid,
+            email: user.email,
+          }),
+        });
+
+        var data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to create checkout session');
+        }
+
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } catch (err) {
+        console.error('Checkout error:', err);
+        alert('Something went wrong starting checkout. Please try again.');
+        btn.disabled = false;
+        btn.textContent = origText;
+      }
+    }
+
+    // ── Check for cancelled checkout return ──
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('cancelled') === 'true') {
+        // Clean up URL
+        history.replaceState(null, '', '/pricing.html');
+      }
     })();
   </script>
 
