@@ -139,11 +139,30 @@
       display: inline-block;
       flex-shrink: 0;
     }
+    .inline-icon-sm {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      vertical-align: -2px;
+    }
     .inline-icon-lg {
       width: 24px;
       height: 24px;
       border-radius: 6px;
       vertical-align: -4px;
+    }
+
+    /* Visually hidden but accessible to screen readers */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
     }
 
     /* ── HEADER ── */
@@ -341,7 +360,7 @@
       font-size: 18px;
       line-height: 1.7;
       color: var(--text-secondary);
-      max-width: 540px;
+      max-width: 560px;
       margin: 0 auto 36px;
     }
     .hero-actions {
@@ -413,10 +432,11 @@
       font-size: 24px;
       margin-bottom: 20px;
     }
-    .feature-icon.green  { background: var(--green-light); }
-    .feature-icon.blue   { background: var(--blue-light); }
-    .feature-icon.orange  { background: var(--orange-light); }
-    .feature-icon.purple  { background: var(--purple-light); }
+    .feature-icon.green  { background: var(--green-light); color: var(--green-dark); }
+    .feature-icon.blue   { background: var(--blue-light); color: #1d4ed8; }
+    .feature-icon.orange  { background: var(--orange-light); color: #b45309; }
+    .feature-icon.purple  { background: var(--purple-light); color: #6d28d9; }
+    .feature-card-icon { border-radius: 7px; }
 
     .feature-card h3 {
       font-size: 18px;
@@ -665,6 +685,7 @@
       <nav class="header-nav" aria-label="Main navigation">
         <a href="#features" class="header-nav-link">Features</a>
         <a href="#how-it-works" class="header-nav-link">How It Works</a>
+        <a href="/pricing.html" class="header-nav-link">Pricing</a>
         <a href="https://lineupdj.app" target="_blank" rel="noopener" class="header-nav-link">
           <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="20" height="20" />
           Lineup DJ
@@ -678,9 +699,10 @@
 
     <!-- Mobile nav drawer -->
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-      <a href="#features" class="mobile-nav-link">Features</a>
-      <a href="#how-it-works" class="mobile-nav-link">How It Works</a>
-      <a href="https://lineupdj.app" target="_blank" rel="noopener" class="mobile-nav-link">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="/pricing.html">Pricing</a>
+      <a href="https://lineupdj.app" target="_blank" rel="noopener">
         <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="20" height="20" />
         Lineup DJ
       </a>
@@ -717,33 +739,33 @@
       <div class="features-grid">
 
         <div class="feature-card reveal-up">
+          <div class="feature-icon orange" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M4 7l8-4 8 4"/><path d="M4 7l-1 6h6L8 7"/><path d="M20 7l-1 6h-6l1-6"/></svg></div>
+          <h3>Balanced Position Lineups</h3>
+          <p>Our auto-assign algorithm distributes fielding positions fairly based on each player's preferences and priorities. Every kid gets a fair shot at every spot.</p>
+          <span class="feature-tag orange">Fair Play</span>
+        </div>
+
+        <div class="feature-card reveal-up" style="--delay:100ms">
+          <div class="feature-icon purple" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <h3>Optimize for Winning Strategies</h3>
+          <p>Balance fairness with competitive play. Set player priorities for infield or outfield, adjust your strategy slider, and let the algorithm find the best lineup.</p>
+          <span class="feature-tag purple">Strategy</span>
+        </div>
+
+        <div class="feature-card reveal-up" style="--delay:200ms">
           <div class="feature-icon green" aria-hidden="true">📅</div>
           <h3>Import Schedule from GameChanger</h3>
           <p>Connect your GameChanger calendar and pull in your full season schedule. Opponents, dates, times, and locations are all synced so you never have to type them in.</p>
           <span class="feature-tag green">Auto-Sync</span>
         </div>
 
-        <div class="feature-card reveal-up" style="--delay:100ms">
+        <div class="feature-card reveal-up" style="--delay:300ms">
           <div class="feature-icon blue" aria-hidden="true">
-            <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" width="28" height="28" style="border-radius:7px;" />
+            <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" width="28" height="28" class="feature-card-icon" />
           </div>
           <h3>Import Lineup from Lineup DJ</h3>
           <p>Already use Lineup DJ for walkout songs? Your full team roster, player positions, and preferences carry over instantly. No duplicate setup.</p>
           <span class="feature-tag blue">Connected</span>
-        </div>
-
-        <div class="feature-card reveal-up" style="--delay:200ms">
-          <div class="feature-icon orange" aria-hidden="true">&#9878;</div>
-          <h3>Balanced Position Lineups</h3>
-          <p>Our auto-assign algorithm distributes fielding positions fairly based on each player's preferences and priorities. Every kid gets a fair shot at every spot.</p>
-          <span class="feature-tag orange">Fair Play</span>
-        </div>
-
-        <div class="feature-card reveal-up" style="--delay:300ms">
-          <div class="feature-icon purple" aria-hidden="true">&#9733;</div>
-          <h3>Optimize for Winning Strategies</h3>
-          <p>Balance fairness with competitive play. Set player priorities for infield or outfield, adjust your strategy slider, and let the algorithm find the best lineup.</p>
-          <span class="feature-tag purple">Strategy</span>
         </div>
 
       </div>
@@ -830,7 +852,7 @@
       </div>
       <div class="footer-links">
         <a href="https://lineupdj.app" target="_blank" rel="noopener">
-          <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="16" height="16" style="border-radius:4px;" />
+          <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon inline-icon-sm" width="16" height="16" />
           Lineup DJ
         </a>
         <a href="https://lineupdj.app/blog" target="_blank" rel="noopener">Blog</a>
