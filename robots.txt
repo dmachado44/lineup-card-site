@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://lineupcard.app/sitemap.xml
