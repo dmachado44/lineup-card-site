@@ -250,23 +250,25 @@
     .auth-provider-btn {
       display: flex; align-items: center; gap: 12px;
       width: 100%;
-      padding: 13px 18px;
+      padding: 14px 18px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius-sm);
       background: var(--white);
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
+      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s;
       font-family: inherit;
     }
-    .auth-provider-btn:hover { border-color: #aaa; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .auth-provider-btn:hover { border-color: #bbb; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .auth-provider-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
     .auth-provider-btn:active { transform: scale(0.98); }
+    .auth-provider-btn.is-loading { opacity: 0.6; pointer-events: none; }
     .auth-provider-btn svg, .auth-provider-btn img { width: 20px; height: 20px; flex-shrink: 0; }
     .auth-divider {
       display: flex; align-items: center; gap: 12px;
       margin: 20px 0;
-      font-size: 14px; color: var(--muted);
+      font-size: 13px; color: var(--gray); text-transform: lowercase;
     }
     .auth-divider::before, .auth-divider::after {
       content: ''; flex: 1; height: 1px; background: var(--border);
@@ -283,9 +285,10 @@
     }
     .auth-close:hover { color: var(--black); }
     .auth-card { position: relative; }
-    .auth-error { font-size: 15px; color: #c0392b; margin-top: 10px; min-height: 18px; }
-    .auth-switch { font-size: 15px; color: var(--muted); text-align: center; margin-top: 14px; }
-    .auth-switch a { color: var(--black); cursor: pointer; text-decoration: underline; }
+    .auth-error { font-size: 14px; color: var(--red); margin-top: 12px; min-height: 18px; line-height: 1.4; }
+    .auth-switch { font-size: 14px; color: var(--muted); text-align: center; margin-top: 14px; line-height: 1.6; }
+    .auth-switch a { color: var(--black); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.15s; }
+    .auth-switch a:hover { opacity: 0.7; }
 
     /* ── AUTH VIEW (full-screen) ── */
     #view-auth {
@@ -301,12 +304,20 @@
       padding: 20px;
     }
     .auth-page-card {
-      background: white;
-      border-radius: var(--radius);
+      background: var(--white);
+      border-radius: 18px;
       padding: 48px 40px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+      animation: authCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes authCardIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .auth-page-card { animation: none; }
     }
     .auth-page-logo {
       display: flex;
@@ -324,20 +335,21 @@
     }
     .auth-page-logo .logo-name {
       font-weight: 700;
-      font-size: 18px;
+      font-size: 19px;
+      letter-spacing: -0.3px;
     }
     .beta-tag {
       display: inline-block;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       background: var(--accent);
-      color: #fff;
-      padding: 2px 7px;
+      color: var(--black);
+      padding: 3px 8px;
       border-radius: 20px;
       vertical-align: middle;
       position: relative;
-      top: -3px;
+      top: -2px;
     }
     .auth-page-title {
       font-size: 26px;
@@ -461,7 +473,8 @@
       background-position: right 14px center;
       cursor: pointer;
     }
-    input[type=text]::placeholder, input[type=url]::placeholder { color: var(--gray-3); }
+    input[type=text]::placeholder, input[type=url]::placeholder,
+    input[type=email]::placeholder, input[type=password]::placeholder { color: var(--gray-3); }
     input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-light);
@@ -1735,7 +1748,7 @@
       <div class="logo-name">Lineup Card <span class="beta-tag">BETA</span></div>
     </a>
     <h2 class="auth-page-title">Welcome</h2>
-    <p class="auth-page-sub">Sign in with your Lineup DJ account. A paid subscription in the iOS app is required to access this tool.</p>
+    <p class="auth-page-sub">Sign in with your Lineup DJ account to get started. An active subscription in the app is required.</p>
 
     <div class="auth-providers">
       <button class="auth-provider-btn" onclick="signInWithGoogle()">
@@ -2414,17 +2427,23 @@ function initFirebase() {
 async function signInWithGoogle() {
   const fb = initFirebase();
   if (!fb) return;
+  const btn = event && event.currentTarget;
+  if (btn) btn.classList.add('is-loading');
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
     await fb.auth.signInWithPopup(provider);
   } catch(e) {
     showAuthError(friendlyAuthError(e));
+  } finally {
+    if (btn) btn.classList.remove('is-loading');
   }
 }
 
 async function signInWithApple() {
   const fb = initFirebase();
   if (!fb) return;
+  const btn = event && event.currentTarget;
+  if (btn) btn.classList.add('is-loading');
   try {
     const provider = new firebase.auth.OAuthProvider('apple.com');
     provider.addScope('email');
@@ -2445,6 +2464,8 @@ async function signInWithApple() {
   } catch(e) {
     console.error('Apple sign-in error:', e.code, e.message);
     showAuthError(friendlyAuthError(e));
+  } finally {
+    if (btn) btn.classList.remove('is-loading');
   }
 }
 
@@ -2454,10 +2475,14 @@ async function signInWithEmail() {
   const email    = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   if (!email || !password) { showAuthError('Please enter your email and password.'); return; }
+  const btn = document.getElementById('auth-email-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Signing in…'; }
   try {
     await fb.auth.signInWithEmailAndPassword(email, password);
   } catch(e) {
     showAuthError(friendlyAuthError(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Sign In'; }
   }
 }
 
