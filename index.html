@@ -1251,10 +1251,10 @@
     /* ── SETTINGS MODE (flat all-in-one edit view) ── */
     .settings-mode .wizard-bar { display: none; }
 
-    /* Show steps 1–3 simultaneously */
+    /* Show steps 1–2 simultaneously, hide step 3 (roster) */
     .settings-mode #step-1,
-    .settings-mode #step-2,
-    .settings-mode #step-3 { display: flex !important; flex-direction: column; gap: 20px; }
+    .settings-mode #step-2 { display: flex !important; flex-direction: column; gap: 20px; }
+    .settings-mode #step-3 { display: none !important; }
 
     /* Reorder step-1 cards: Import first, Team Info second */
     .settings-mode #step-1 .card:nth-child(1) { order: 2; }
@@ -1263,16 +1263,172 @@
     /* Hide all per-step navigation footers */
     .settings-mode .step-footer { display: none !important; }
 
-    /* 2-col grid for steps 2 and 3 */
+    /* Step 2 layout: Field Positions full-width, then Game Rules + Pitching side by side */
     #steps-2-3-wrap { display: contents; } /* invisible in wizard mode */
     .settings-mode #steps-2-3-wrap {
-      display: grid !important;
+      display: block !important;
+    }
+    .settings-mode #step-2 {
+      gap: 0;
+    }
+    .settings-mode #step-2 .card:first-child {
+      margin-bottom: 24px;
+    }
+    .settings-mode .rules-row {
+      display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0 24px;
+      gap: 24px;
       align-items: start;
     }
-    .settings-mode #step-2,
-    .settings-mode #step-3 { gap: 16px; }
+
+    /* Settings header with sticky save */
+    .settings-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+      margin-bottom: 8px;
+      position: sticky;
+      top: 64px;
+      z-index: 40;
+      background: var(--bg);
+    }
+    .settings-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: -40px;
+      right: -40px;
+      height: 1px;
+      background: var(--border);
+    }
+    .settings-header .team-logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .settings-header .team-letter-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .settings-header-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .settings-header-name {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .settings-header-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .settings-save-btn {
+      padding: 10px 24px;
+      border-radius: var(--radius-pill);
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      white-space: nowrap;
+      background: var(--black);
+      color: var(--white);
+      flex-shrink: 0;
+    }
+    .settings-save-btn:hover { background: #2C2C2E; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .settings-save-btn:active { transform: scale(0.97); }
+    .settings-save-btn.inactive {
+      background: var(--gray-4);
+      color: var(--gray);
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* ── PLAYER MANAGEMENT VIEW ── */
+    #view-players { display: none; }
+    #view-players.active { display: block; }
+    .players-page { max-width: 720px; margin: 0 auto; padding: 32px 40px; }
+    .players-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .players-header-info { flex: 1; }
+    .players-header-info h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+    }
+    .players-header-info .dashboard-sub { margin-bottom: 0; }
+    .player-mgmt-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: box-shadow 0.15s;
+    }
+    .player-mgmt-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .player-mgmt-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gray-5);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .player-mgmt-info { flex: 1; min-width: 0; }
+    .player-mgmt-name {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .player-mgmt-positions {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .player-mgmt-positions .pos-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--accent);
+      color: var(--black);
+      font-weight: 600;
+    }
+    .player-mgmt-count {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 500;
+    }
 
     /* Back button always lives in the content area, not the topbar */
     #view-builder .topbar-back { display: none; }
@@ -1319,7 +1475,7 @@
       .teams-grid {
         grid-template-columns: 1fr;
       }
-      .settings-mode #steps-2-3-wrap {
+      .settings-mode .rules-row {
         grid-template-columns: 1fr !important;
       }
       .dashboard-header {
@@ -1334,6 +1490,15 @@
       .auth-switch a {
         display: inline-block;
         padding: 4px 0;
+      }
+      .players-page {
+        padding: 32px 16px;
+      }
+      .settings-header {
+        padding: 12px 0;
+      }
+      .settings-header-name {
+        font-size: 16px;
       }
     }
 
@@ -1958,6 +2123,34 @@
   </div>
 </div>
 
+<!-- ══════════════ VIEW: PLAYER MANAGEMENT ══════════════ -->
+<div id="view-players">
+  <div class="topbar">
+    <a class="topbar-logo" href="https://lineupcard.app">
+      Lineup Card
+    </a>
+    <div class="topbar-spacer"></div>
+    <div id="topbar-auth-players"></div>
+  </div>
+
+  <div class="players-page">
+    <div class="players-header">
+      <div class="players-header-info">
+        <h1 id="players-team-name">Players</h1>
+        <p class="dashboard-sub" id="players-team-sub">Manage your roster</p>
+      </div>
+      <button class="btn btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
+    </div>
+
+    <div id="players-list-container"></div>
+
+    <div class="add-player-row" id="add-player-row-mgmt" style="margin-top:20px;">
+      <input type="text" id="new-player-name-mgmt" placeholder="Add a player..." onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
+      <button class="btn btn-primary btn-sm" onclick="addPlayerFromMgmt()">+ Add Player</button>
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════ VIEW 3: BUILDER ══════════════ -->
 <div id="view-builder">
   <div class="topbar">
@@ -1979,6 +2172,16 @@
 
     <div id="settings-back">
       <button onclick="backToDashboard()">← Back to Dashboard</button>
+    </div>
+
+    <!-- Sticky settings header with team logo + save button -->
+    <div class="settings-header" id="settings-header" style="display:none;">
+      <div id="settings-header-logo"></div>
+      <div class="settings-header-info">
+        <div class="settings-header-name" id="settings-header-name"></div>
+        <div class="settings-header-label">Team / League Settings</div>
+      </div>
+      <button class="settings-save-btn inactive" id="settings-save-btn" onclick="saveAndExit()">Save Changes</button>
     </div>
 
     <div id="team-builder-banner" class="team-builder-banner" style="display:none;"></div>
@@ -2080,6 +2283,9 @@
         <div class="pos-hint mt-md">Teal = active · Tap to toggle on/off</div>
       </div>
 
+      <!-- Game Rules + Pitching Rules (side by side in settings mode) -->
+      <div class="rules-row">
+
       <!-- Game Rules -->
       <div class="card">
         <div class="section-label">Game Rules</div>
@@ -2102,7 +2308,7 @@
             <div class="rule-sub">Every player on the roster is included in the batting order</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="rule-all-bat" onchange="saveRules()" />
+            <input type="checkbox" id="rule-all-bat" onchange="markSettingsDirty(); saveRules()" />
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -2113,7 +2319,7 @@
             <div class="rule-sub">Allow a player to play the same position in consecutive innings</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="rule-back-to-back" onchange="saveRules()" />
+            <input type="checkbox" id="rule-back-to-back" onchange="markSettingsDirty(); saveRules()" />
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -2123,7 +2329,7 @@
             <div class="rule-title">Max Innings at Same Position</div>
             <div class="rule-sub">Limit how many total innings a player can play any one position</div>
           </div>
-          <select id="rule-max-same-pos" class="rule-select" onchange="saveRules()">
+          <select id="rule-max-same-pos" class="rule-select" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
             <option value="2">2 innings</option>
@@ -2137,7 +2343,7 @@
             <div class="rule-sub">Gender-specific rules apply (noted in export)</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="rule-coed" onchange="saveRules()" />
+            <input type="checkbox" id="rule-coed" onchange="markSettingsDirty(); saveRules()" />
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -2153,7 +2359,7 @@
             <div class="rule-sub">Once a pitcher is removed they can return to the mound later</div>
           </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="rule-pitcher-return" onchange="saveRules()" />
+            <input type="checkbox" id="rule-pitcher-return" onchange="markSettingsDirty(); saveRules()" />
             <span class="toggle-track"></span>
           </label>
         </div>
@@ -2163,7 +2369,7 @@
             <div class="rule-title">Max Innings Pitched Per Player</div>
             <div class="rule-sub">Limit how many innings any one player can pitch per game</div>
           </div>
-          <select id="rule-max-pitch" class="rule-select" onchange="saveRules()">
+          <select id="rule-max-pitch" class="rule-select" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
             <option value="2">2 innings</option>
@@ -2173,6 +2379,8 @@
           </select>
         </div>
       </div>
+
+      </div><!-- /.rules-row -->
 
       <div class="step-footer">
         <button class="btn btn-back" onclick="goToStep1()">← Back to Team Setup</button>
@@ -2250,11 +2458,8 @@
 
     </div><!-- /#steps-2-3-wrap -->
 
-    <!-- Settings mode save footer -->
-    <div id="settings-footer">
-      <div class="text-muted">Position preferences and lineup settings are saved here. Player names and roster are managed in the Lineup DJ app.</div>
-      <button class="btn btn-primary btn-lg" onclick="saveAndExit()">Save Changes ✓</button>
-    </div>
+    <!-- Settings mode save footer (hidden, replaced by sticky header) -->
+    <div id="settings-footer" style="display:none !important;"></div>
 
     <!-- ══════════════ STEP 4: EDIT LINEUP ══════════════ -->
     <div id="step-4" class="step-panel" style="display:none;">
@@ -2744,7 +2949,10 @@ function renderDashboard() {
           <div class="btn-row">
             <button class="btn btn-ghost" onclick="openPastLineups('${team.id}')">Past Lineups</button>
             ${team.gameChangerCalendarUrl ? `<button class="btn btn-ghost" onclick="openSchedule('${team.id}')">Schedule</button>` : ''}
-            <button class="btn btn-ghost" onclick="enterBuilder('${team.id}', 'settings', 1)">Team Settings</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="openPlayerManagement('${team.id}')">Players</button>
+            <button class="btn btn-ghost" onclick="enterBuilder('${team.id}', 'settings', 1)">Team / League Settings</button>
           </div>
         </div>
       </div>
@@ -2888,6 +3096,7 @@ function showView(view) {
   document.getElementById('view-paywall').classList.remove('active');
   document.getElementById('view-lineups').classList.remove('active');
   document.getElementById('view-schedule').classList.remove('active');
+  document.getElementById('view-players').classList.remove('active');
 
   if (view === 'auth') document.getElementById('view-auth').classList.add('active');
   if (view === 'dashboard') document.getElementById('view-dashboard').classList.add('active');
@@ -2895,6 +3104,7 @@ function showView(view) {
   if (view === 'paywall') document.getElementById('view-paywall').classList.add('active');
   if (view === 'lineups') document.getElementById('view-lineups').classList.add('active');
   if (view === 'schedule') document.getElementById('view-schedule').classList.add('active');
+  if (view === 'players') document.getElementById('view-players').classList.add('active');
 }
 
 async function enterBuilder(teamId, mode, startStep) {
@@ -2908,10 +3118,12 @@ async function enterBuilder(teamId, mode, startStep) {
       // If another team was selected while loading, bail — that enterBuilder call will finish instead
       if (_activeTeamId !== teamId) return;
     }
-    // Show steps 1–3 all at once; hide 4 and 5
+    // Show steps 1–2 (team info + rules); hide 3–5 (roster is separate now)
     [1,2,3,4,5].forEach(i => {
-      document.getElementById(`step-${i}`).style.display = (i <= 3) ? '' : 'none';
+      document.getElementById(`step-${i}`).style.display = (i <= 2) ? '' : 'none';
     });
+    renderSettingsHeader();
+    resetSettingsDirty();
     renderWizardBar();
     updateStepFooters();
     window.scrollTo(0, 0);
@@ -3172,7 +3384,10 @@ async function saveTeamToFirestore() {
 
 async function saveAndExit() {
   const ok = await saveTeamToFirestore();
-  if (ok) backToDashboard();
+  if (ok) {
+    resetSettingsDirty();
+    backToDashboard();
+  }
 }
 
 async function saveAndSetLineup() {
@@ -3746,9 +3961,131 @@ function viewScheduleLineup(lineupId) {
   viewLineupDetail(lineupId);
 }
 
+// ═══════════════════════════════════════════════════
+// SETTINGS DIRTY-STATE TRACKING
+// ═══════════════════════════════════════════════════
+let _settingsDirty = false;
+
+function markSettingsDirty() {
+  _settingsDirty = true;
+  const btn = document.getElementById('settings-save-btn');
+  if (btn) btn.classList.remove('inactive');
+}
+
+function resetSettingsDirty() {
+  _settingsDirty = false;
+  const btn = document.getElementById('settings-save-btn');
+  if (btn) btn.classList.add('inactive');
+}
+
+function renderSettingsHeader() {
+  const header = document.getElementById('settings-header');
+  const nameEl = document.getElementById('settings-header-name');
+  const logoEl = document.getElementById('settings-header-logo');
+  if (!header) return;
+
+  // Only show in settings mode
+  const builderEl = document.getElementById('view-builder');
+  if (builderEl && builderEl.classList.contains('settings-mode')) {
+    header.style.display = '';
+    nameEl.textContent = state.teamName || 'Unnamed Team';
+
+    // Get team data for logo
+    const team = _userTeams.find(t => t.id === _activeTeamId);
+    if (team && team.logoURL) {
+      logoEl.innerHTML = `<img class="team-logo-mark" src="${team.logoURL}" alt="" />`;
+    } else {
+      const initials = (state.teamName || 'UT').substring(0, 2).toUpperCase();
+      const color = (team && team.primaryColor) || 'var(--text)';
+      const bg = (team && team.primaryColor) ? team.primaryColor + '22' : 'var(--gray-5)';
+      logoEl.innerHTML = `<div class="team-letter-avatar" style="background:${bg};color:${color};">${initials}</div>`;
+    }
+  } else {
+    header.style.display = 'none';
+  }
+}
+
+// Also hook form inputs in step-1 to mark dirty
+document.addEventListener('DOMContentLoaded', () => {
+  const settingsInputs = ['team-name','team-sport','team-season','team-year','team-level','team-age-group','team-notes','team-calendar-url'];
+  settingsInputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', markSettingsDirty);
+  });
+});
+
+// ═══════════════════════════════════════════════════
+// PLAYER MANAGEMENT
+// ═══════════════════════════════════════════════════
+async function openPlayerManagement(teamId) {
+  if (teamId) {
+    await selectTeam(teamId, false);
+  }
+
+  const team = _userTeams.find(t => t.id === _activeTeamId);
+  const teamName = team ? team.name : 'Team';
+
+  document.getElementById('players-team-name').textContent = teamName + ' — Players';
+  document.getElementById('players-team-sub').textContent = `${state.players.length} player${state.players.length !== 1 ? 's' : ''} on the roster`;
+
+  // Copy auth bar
+  const authEl = document.getElementById('topbar-auth');
+  const playersAuthEl = document.getElementById('topbar-auth-players');
+  if (authEl && playersAuthEl) playersAuthEl.innerHTML = authEl.innerHTML;
+
+  renderPlayerManagementList();
+  showView('players');
+  window.scrollTo(0, 0);
+}
+
+function renderPlayerManagementList() {
+  const container = document.getElementById('players-list-container');
+  if (!container) return;
+
+  if (state.players.length === 0) {
+    container.innerHTML = `<div class="team-card-empty"><div class="empty-icon">⚾</div><div class="team-card-empty-text">No players yet. Add your first player below.</div></div>`;
+    return;
+  }
+
+  const posLabels = { P:'P', C:'C', '1B':'1B', '2B':'2B', '3B':'3B', SS:'SS', LF:'LF', RF:'RF', CF:'CF', RCF:'RCF', LCF:'LCF', U1:'U1', U2:'U2', U3:'U3' };
+
+  container.innerHTML = state.players.map((p, i) => {
+    const initials = (p.name || '??').substring(0, 2).toUpperCase();
+    const prefBadges = (p.preferredPositions || []).map(pos =>
+      `<span class="pos-badge">${posLabels[pos] || pos}</span>`
+    ).join('');
+    return `
+      <div class="player-mgmt-card">
+        <div class="player-mgmt-avatar">${initials}</div>
+        <div class="player-mgmt-info">
+          <div class="player-mgmt-name">${escHtml(p.name)}</div>
+          ${prefBadges ? `<div class="player-mgmt-positions">${prefBadges}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Update count
+  document.getElementById('players-team-sub').textContent = `${state.players.length} player${state.players.length !== 1 ? 's' : ''} on the roster`;
+}
+
+function addPlayerFromMgmt() {
+  const input = document.getElementById('new-player-name-mgmt');
+  const name = input.value.trim();
+  if (!name) return;
+  state.players.push({ name, preferredPositions: [], gender: '' });
+  input.value = '';
+  renderPlayerManagementList();
+  // Also save to Firestore
+  saveTeamToFirestore();
+}
+
 function backToDashboard() {
   document.documentElement.style.removeProperty('--accent');
   document.documentElement.style.removeProperty('--accent-light');
+  // Hide settings header
+  const header = document.getElementById('settings-header');
+  if (header) header.style.display = 'none';
   showView('dashboard');
   renderDashboard();
 }
@@ -3948,6 +4285,7 @@ function togglePos(pos) {
   const idx = active.indexOf(pos);
   if (idx === -1) active.push(pos);
   else if (active.length > 1) active.splice(idx, 1);
+  markSettingsDirty();
   renderPosGrid();
   renderPlayerList();  // keep roster pills in sync
   save();
@@ -4001,6 +4339,7 @@ function changeInnings(delta) {
     while (row.positions.length < state.innings) row.positions.push('');
     row.positions = row.positions.slice(0, state.innings);
   });
+  markSettingsDirty();
   save();
 }
 
