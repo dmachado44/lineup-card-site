@@ -17,12 +17,12 @@
   <title>Lineup Card – Youth Baseball & Softball Lineup Builder</title>
   <meta name="description" content="Free baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and connect with the Lineup DJ iOS app. Built for coaches and parents." />
   <meta name="keywords" content="youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation tool, coach pitch lineup, youth sports lineup card, baseball lineup auto assign positions" />
-  <link rel="canonical" href="https://lineupdj.app/lineup-builder" />
+  <link rel="canonical" href="https://lineupcard.app" />
 
   <!-- ── Open Graph ── -->
   <meta property="og:title" content="Youth Baseball & Softball Lineup Builder – Lineup DJ" />
   <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Lineup DJ account." />
-  <meta property="og:url" content="https://lineupdj.app/lineup-builder" />
+  <meta property="og:url" content="https://lineupcard.app" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://lineupdj.app/lineup-builder/assets/og-lineup-builder.png" />
   <meta property="og:site_name" content="Lineup DJ" />
@@ -64,7 +64,7 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── LINEUP DJ DESIGN TOKENS ── */
+    /* ── LINEUP CARD DESIGN TOKENS ── */
     :root {
       /* Brand colors from lineupdj.app */
       --teal:        #96E56E;
@@ -246,7 +246,7 @@
     .auth-logo-name { font-weight: 700; font-size: 17px; }
     .auth-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
-    .auth-providers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .auth-providers { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     .auth-provider-btn {
       display: flex; align-items: center; gap: 12px;
       width: 100%;
@@ -318,6 +318,14 @@
     }
     @media (prefers-reduced-motion: reduce) {
       .auth-page-card { animation: none; }
+      .auth-fade-in { animation: none !important; }
+    }
+    .auth-fade-in {
+      animation: authFadeIn 0.25s ease-out both;
+    }
+    @keyframes authFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
     .auth-page-logo {
       display: flex;
@@ -356,13 +364,14 @@
       font-weight: 700;
       text-align: center;
       margin-bottom: 8px;
+      letter-spacing: -0.4px;
     }
     .auth-page-sub {
       font-size: 15px;
       color: var(--muted);
       text-align: center;
-      margin-bottom: 28px;
-      line-height: 1.5;
+      margin-bottom: 32px;
+      line-height: 1.55;
     }
 
     /* ── STEP WIZARD ── */
@@ -498,6 +507,7 @@
       letter-spacing: -0.1px;
     }
     .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-light), 0 0 0 1px var(--accent); }
 
     /* Primary = black pill (matches lineupdj.app) */
     .btn-primary {
@@ -505,6 +515,7 @@
       color: var(--white);
     }
     .btn-primary:hover { background: #2C2C2E; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .btn-primary:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
 
     /* Teal accent */
     .btn-teal {
@@ -1316,6 +1327,10 @@
       .auth-page-card {
         padding: 40px 24px;
       }
+      .auth-switch a {
+        display: inline-block;
+        padding: 4px 0;
+      }
     }
 
     /* ── UTILITY CLASSES ── */
@@ -1791,8 +1806,8 @@
     <p class="auth-page-sub">Enter the email and password you use with your Lineup DJ account.</p>
 
     <div class="auth-email-fields" style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px;">
-      <input type="email" id="auth-email" placeholder="Email address" />
-      <input type="password" id="auth-password" placeholder="Password" onkeydown="if(event.key==='Enter') signInWithEmail()" />
+      <input type="email" id="auth-email" placeholder="Email address" autocomplete="email" aria-label="Email address" />
+      <input type="password" id="auth-password" placeholder="Password" autocomplete="current-password" aria-label="Password" onkeydown="if(event.key==='Enter') signInWithEmail()" />
     </div>
 
     <button class="btn btn-primary btn-lg" id="auth-email-btn" onclick="signInWithEmail()" style="width:100%;justify-content:center;">Sign In</button>
@@ -2569,7 +2584,11 @@ document.addEventListener('click', (e) => {
 
 function showEmailPanel() {
   document.getElementById('auth-panel-providers').style.display = 'none';
-  document.getElementById('auth-panel-email').style.display = '';
+  const emailPanel = document.getElementById('auth-panel-email');
+  emailPanel.style.display = '';
+  emailPanel.classList.remove('auth-fade-in');
+  void emailPanel.offsetWidth; // trigger reflow
+  emailPanel.classList.add('auth-fade-in');
   document.getElementById('auth-error').textContent = '';
   _authMode = 'signin';
   const emailBtn = document.getElementById('auth-email-btn');
@@ -2583,7 +2602,11 @@ function showEmailPanel() {
 
 function showProvidersPanel() {
   document.getElementById('auth-panel-email').style.display = 'none';
-  document.getElementById('auth-panel-providers').style.display = '';
+  const provPanel = document.getElementById('auth-panel-providers');
+  provPanel.style.display = '';
+  provPanel.classList.remove('auth-fade-in');
+  void provPanel.offsetWidth;
+  provPanel.classList.add('auth-fade-in');
   document.getElementById('auth-error').textContent = '';
   _authMode = 'signin';
 }
@@ -3028,7 +3051,7 @@ function enterLineupMode() {
 
 async function saveTeamToFirestore() {
   if (!ALLOW_TEAM_CREATION) {
-    console.log('Team creation/editing is disabled (ALLOW_TEAM_CREATION = false)');
+    // Team creation/editing is disabled (ALLOW_TEAM_CREATION = false)
     return true; // Return true so flows that depend on this don't break
   }
   const fb = initFirebase();
@@ -4170,7 +4193,7 @@ async function saveLineupToFirestore() {
   try {
     await fb.db.collection('teams').doc(_activeTeamId)
       .collection('lineups').add(lineupData);
-    console.log('Lineup saved to Firestore');
+    // Lineup saved successfully
   } catch(e) {
     console.error('Failed to save lineup:', e);
   }
