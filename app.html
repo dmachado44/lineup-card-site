@@ -1252,6 +1252,115 @@
       display: block;
     }
 
+    /* ── UPGRADE CARD ── */
+    .upgrade-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+      padding: 40px 36px 32px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    .upgrade-icon {
+      margin-bottom: 16px;
+    }
+    .upgrade-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+    .upgrade-sub {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    .upgrade-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 4px;
+      width: fit-content;
+      margin: 0 auto 24px;
+    }
+    .upgrade-toggle-btn {
+      padding: 9px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      background: transparent;
+      color: var(--muted);
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    }
+    .upgrade-toggle-btn.active {
+      background: #fff;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+    .upgrade-save {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 2px 7px;
+      border-radius: 99px;
+      background: #22c55e;
+      color: #fff;
+      margin-left: 6px;
+      vertical-align: 1px;
+    }
+    .upgrade-price {
+      margin-bottom: 24px;
+    }
+    .upgrade-amount {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+    }
+    .upgrade-period {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+    .upgrade-cta {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      background: #22c55e;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .upgrade-cta:hover { background: #16a34a; transform: translateY(-1px); }
+    .upgrade-cta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .upgrade-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+    .upgrade-footer {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
     /* ── SETTINGS MODE (flat all-in-one edit view) ── */
     .settings-mode .wizard-bar { display: none; }
 
@@ -1993,18 +2102,32 @@
     <div id="topbar-auth-paywall"></div>
   </div>
   <div style="padding:20px 20px 0;">
-    <button class="btn btn-back" onclick="showView('dashboard'); loadUserTeams(_auth.currentUser);">← Back to Dashboard</button>
+    <button class="btn btn-back" onclick="backToDashboard()">← Back</button>
   </div>
   <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
-    <div class="auth-page-card" style="text-align:center;">
-      <h2 class="auth-page-title" id="paywall-title">Subscription Required</h2>
-      <p class="auth-page-sub" id="paywall-message">Subscribe to Pro to start building lineups for your team.</p>
-      <div class="auth-providers">
-        <a class="auth-provider-btn" href="/pricing.html" style="justify-content:center;font-weight:600;text-decoration:none;background:#22c55e;color:#fff;border-color:#22c55e;">
-          Start Free Trial →
-        </a>
+    <div class="upgrade-card">
+      <div class="upgrade-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </div>
-      <div class="text-muted" style="margin:16px 0 8px;font-size:14px;">Already a Lineup DJ subscriber? Make sure you're signed in with the same account you use in the app. <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</a></div>
+      <h2 class="upgrade-title" id="paywall-title">Unlock Lineup Builder</h2>
+      <p class="upgrade-sub" id="paywall-message">Generate balanced lineups, auto-assign positions, and manage game day. Try it free for 7 days.</p>
+
+      <div class="upgrade-toggle">
+        <button class="upgrade-toggle-btn active" id="pw-btn-monthly" onclick="setPaywallPlan('monthly')">Monthly</button>
+        <button class="upgrade-toggle-btn" id="pw-btn-yearly" onclick="setPaywallPlan('yearly')">Yearly <span class="upgrade-save">Save 25%</span></button>
+      </div>
+
+      <div class="upgrade-price">
+        <span class="upgrade-amount" id="pw-price">$2</span>
+        <span class="upgrade-period" id="pw-period">/mo</span>
+      </div>
+
+      <button class="upgrade-cta" id="pw-checkout-btn" onclick="paywallCheckout()">Start 7-Day Free Trial</button>
+      <p class="upgrade-note">Cancel anytime. No charge for 7 days.</p>
+
+      <div class="upgrade-footer">
+        Already a Lineup DJ subscriber? <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign in with that account</a>
+      </div>
     </div>
   </div>
 </div>
@@ -2757,12 +2880,70 @@ async function checkSubscription(user) {
   }
 }
 
+let _paywallPlan = 'monthly';
+
 function showLineupPaywall() {
-  const titleEl = document.getElementById('paywall-title');
-  const msgEl   = document.getElementById('paywall-message');
-  titleEl.textContent = 'Pro Required to Build Lineups';
-  msgEl.textContent   = "You've set up your team and roster — nice! Subscribe to Pro to generate lineups, assign positions, and manage game day.";
+  _paywallPlan = 'monthly';
+  document.getElementById('pw-btn-monthly').classList.add('active');
+  document.getElementById('pw-btn-yearly').classList.remove('active');
+  document.getElementById('pw-price').textContent = '$2';
+  document.getElementById('pw-period').textContent = '/mo';
+  document.getElementById('pw-checkout-btn').disabled = false;
+  document.getElementById('pw-checkout-btn').textContent = 'Start 7-Day Free Trial';
   showView('paywall');
+}
+
+function setPaywallPlan(plan) {
+  _paywallPlan = plan;
+  const btnM = document.getElementById('pw-btn-monthly');
+  const btnY = document.getElementById('pw-btn-yearly');
+  const price = document.getElementById('pw-price');
+  const period = document.getElementById('pw-period');
+
+  if (plan === 'yearly') {
+    btnM.classList.remove('active');
+    btnY.classList.add('active');
+    price.textContent = '$18';
+    period.textContent = '/yr';
+  } else {
+    btnM.classList.add('active');
+    btnY.classList.remove('active');
+    price.textContent = '$2';
+    period.textContent = '/mo';
+  }
+}
+
+async function paywallCheckout() {
+  const fb = initFirebase();
+  if (!fb) return;
+  const user = fb.auth.currentUser;
+  if (!user) return;
+
+  const btn = document.getElementById('pw-checkout-btn');
+  btn.disabled = true;
+  btn.textContent = 'Loading…';
+
+  try {
+    const res = await fetch('/.netlify/functions/create-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan: _paywallPlan,
+        firebaseUid: user.uid,
+        email: user.email,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create checkout session');
+
+    window.location.href = data.url;
+  } catch (err) {
+    console.error('Checkout error:', err);
+    alert('Something went wrong: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Start 7-Day Free Trial';
+  }
 }
 
 async function signOut() {
