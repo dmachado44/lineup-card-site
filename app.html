@@ -1990,27 +1990,21 @@
       Lineup Card
     </a>
     <div class="topbar-spacer"></div>
+    <div id="topbar-auth-paywall"></div>
   </div>
-  <div id="view-auth" style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 64px);padding:20px;">
+  <div style="padding:20px 20px 0;">
+    <button class="btn btn-back" onclick="showView('dashboard'); loadUserTeams(_auth.currentUser);">← Back to Dashboard</button>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
     <div class="auth-page-card" style="text-align:center;">
-      <a class="auth-page-logo" href="https://lineupcard.app">
-        <div class="logo-name">Lineup Card <span class="beta-tag">BETA</span></div>
-      </a>
       <h2 class="auth-page-title" id="paywall-title">Subscription Required</h2>
-      <p class="auth-page-sub" id="paywall-message">Your account doesn't have an active subscription. Choose an option below to get started.</p>
+      <p class="auth-page-sub" id="paywall-message">Subscribe to Pro to start building lineups for your team.</p>
       <div class="auth-providers">
         <a class="auth-provider-btn" href="/pricing.html" style="justify-content:center;font-weight:600;text-decoration:none;background:#22c55e;color:#fff;border-color:#22c55e;">
           Start Free Trial →
         </a>
-        <a class="auth-provider-btn" href="https://apps.apple.com/us/app/lineup-dj-walkout-songs/id6743953226" target="_blank" style="justify-content:center;font-weight:600;text-decoration:none;">
-          Or subscribe via the iOS App →
-        </a>
       </div>
-      <div class="text-muted" style="margin:16px 0 8px;font-size:15px;">Already a Lineup DJ subscriber? Make sure you're signed in with the same account you use in the app.</div>
-      <div class="auth-switch" style="display:flex;flex-direction:column;gap:8px;align-items:center;">
-        <a onclick="showView('dashboard'); loadUserTeams(_auth.currentUser);" style="cursor:pointer;text-decoration:underline;">← Back to Dashboard</a>
-        <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;color:var(--muted,#6b7280);">Sign out and try a different account</a>
-      </div>
+      <div class="text-muted" style="margin:16px 0 8px;font-size:14px;">Already a Lineup DJ subscriber? Make sure you're signed in with the same account you use in the app. <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign out</a></div>
     </div>
   </div>
 </div>
