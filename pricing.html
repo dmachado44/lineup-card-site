@@ -1535,7 +1535,7 @@
         window.location.href = data.url;
       } catch (err) {
         console.error('Checkout error:', err);
-        alert('Something went wrong starting checkout. Please try again.');
+        alert('Checkout error: ' + err.message);
         btn.disabled = false;
         btn.textContent = origText;
       }
