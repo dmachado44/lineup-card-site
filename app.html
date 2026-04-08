@@ -2949,6 +2949,7 @@ async function paywallCheckout() {
 async function signOut() {
   const fb = initFirebase();
   if (fb) await fb.auth.signOut();
+  window.location.href = '/';
 }
 
 function toggleAvatarMenu(btn) {
