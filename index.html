@@ -1329,12 +1329,9 @@
 
         closeAuthModal();
 
-        // If user just signed up, send them straight to the builder
-        if (_justSignedUp) {
-          _justSignedUp = false;
-          window.location.href = '/app.html';
-          return;
-        }
+        // Any logged-in user on the marketing page goes straight to the app
+        window.location.href = '/app.html';
+        return;
       } else {
         navAuth.style.display = '';
         navUser.style.display = 'none';
