@@ -649,6 +649,74 @@
       font-weight: 600;
     }
 
+    /* ── Batting skills (Power / Contact / Speed) ── */
+    .skills-row { align-items: center; }
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+      flex: 1;
+    }
+    .skill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .skill-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 54px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .skill-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      flex: 1;
+      height: 4px;
+      border-radius: 2px;
+      background: #E8E8ED;
+      outline: none;
+      cursor: pointer;
+      min-width: 0;
+    }
+    .skill-slider:focus { outline: none; }
+    .skill-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .skill-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .skill-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--white);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      cursor: pointer;
+    }
+    .skill-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--black);
+      min-width: 20px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    @media (max-width: 820px) {
+      .skills-grid { grid-template-columns: 1fr; gap: 10px; }
+    }
+
     .add-player-row {
       display: flex;
       gap: 10px;
@@ -1529,7 +1597,7 @@
     /* ── PLAYER MANAGEMENT VIEW ── */
     #view-players { display: none; }
     #view-players.active { display: block; }
-    .players-page { max-width: 860px; margin: 0 auto; padding: 32px 40px; }
+    .players-page { max-width: 1440px; margin: 0 auto; padding: 32px 40px; }
     .players-header {
       display: flex;
       align-items: center;
@@ -2284,7 +2352,7 @@
 
     <div class="card">
       <div class="card-title">Roster</div>
-      <div class="card-sub">Tap position badges to set which positions each player can play. Set a priority to weight infield or outfield preference in auto-assign.</div>
+      <div class="card-sub">Tap position badges to set which positions each player can play. Set a priority to weight infield or outfield preference in auto-assign. Rate Power, Contact, and Speed (1–10) to smarten up batting order suggestions — or leave them at the default 5 if you'd rather not rank your kids.</div>
 
       <div class="tip">
         <span class="tip-icon">💡</span>
@@ -3324,6 +3392,7 @@ async function selectTeam(teamId, closeDropdown = true) {
         name:    d.name   || 'Unknown',
         prefPos: d.prefPos || [],
         fieldPriority: d.fieldPriority || 'both',
+        battingSkills: d.battingSkills || { power: 5, contact: 5, speed: 5 },
         gender:  d.gender || ''
       };
     });
@@ -3645,6 +3714,15 @@ async function saveTeamToFirestore() {
         }
         if (player.fieldPriority && player.fieldPriority !== 'both') {
           playerData.fieldPriority = player.fieldPriority;
+        }
+        // Only persist battingSkills if the coach has actually rated something
+        // (i.e. at least one skill isn't the neutral default of 5). This keeps
+        // Firestore docs clean for teams that never use the feature.
+        if (player.battingSkills) {
+          const s = player.battingSkills;
+          if (s.power !== 5 || s.contact !== 5 || s.speed !== 5) {
+            playerData.battingSkills = { power: s.power, contact: s.contact, speed: s.speed };
+          }
         }
         batch.set(ref, playerData, { merge: true }); // merge preserves all iOS fields
       });
@@ -4364,6 +4442,7 @@ function renderPlayerManagementList() {
     row.dataset.playerId = player.id;
 
     const prio = player.fieldPriority || 'both';
+    const skills = player.battingSkills || { power: 5, contact: 5, speed: 5 };
     row.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;width:100%;">
         <input type="text" value="${escHtml(player.name)}" placeholder="Player name"
@@ -4388,6 +4467,20 @@ function renderPlayerManagementList() {
           <span class="priority-pill ${prio === 'both' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','both'); renderPlayerManagementList()">Both</span>
         </div>
       </div>
+      <div class="priority-row skills-row">
+        <span class="priority-label">Batting:</span>
+        <div class="skills-grid">
+          ${['power', 'contact', 'speed'].map(s => `
+            <div class="skill">
+              <span class="skill-name">${s.charAt(0).toUpperCase() + s.slice(1)}</span>
+              <input type="range" class="skill-slider" min="1" max="10" step="1" value="${skills[s]}"
+                oninput="this.parentElement.querySelector('.skill-value').textContent = this.value"
+                onchange="setPlayerSkill('${player.id}','${s}', this.value)" />
+              <span class="skill-value">${skills[s]}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
     `;
     container.appendChild(row);
   });
@@ -4409,7 +4502,7 @@ function addPlayerFromMgmt() {
   const name = input.value.trim();
   if (!name) return;
   const id = 'p_' + Date.now();
-  state.players.push({ id, name, prefPos: [], fieldPriority: 'both' });
+  state.players.push({ id, name, prefPos: [], fieldPriority: 'both', battingSkills: { power: 5, contact: 5, speed: 5 } });
   state.attendance[id] = true;
   input.value = '';
   renderPlayerManagementList();
@@ -4695,7 +4788,7 @@ function addPlayer() {
   const name = input.value.trim();
   if (!name) return;
   const id = 'p_' + Date.now();
-  state.players.push({ id, name, prefPos: [], fieldPriority: 'both' });
+  state.players.push({ id, name, prefPos: [], fieldPriority: 'both', battingSkills: { power: 5, contact: 5, speed: 5 } });
   state.attendance[id] = true;
   input.value = '';
   renderPlayerList();
@@ -4728,6 +4821,18 @@ function setFieldPriority(playerId, priority) {
   if (!player) return;
   player.fieldPriority = priority;
   renderPlayerList();
+  save();
+}
+
+// Rate a player's batting skill (Power / Contact / Speed) on a 1–10 scale.
+// Defaults are 5 for all three, so players who aren't explicitly rated do not
+// skew any batting-order logic built on top of these values.
+function setPlayerSkill(playerId, skill, value) {
+  const player = state.players.find(p => p.id === playerId);
+  if (!player) return;
+  if (!player.battingSkills) player.battingSkills = { power: 5, contact: 5, speed: 5 };
+  const v = Math.max(1, Math.min(10, parseInt(value, 10) || 5));
+  player.battingSkills[skill] = v;
   save();
 }
 
