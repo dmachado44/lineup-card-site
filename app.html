@@ -5590,10 +5590,192 @@ function checkConflicts() {
   }
 }
 
+// ═══════════════════════════════════════════════════
+// BATTING ORDER GENERATOR
+//
+// The strategy slider (1–5) controls how aggressively batting skills
+// (Power, Contact, Speed) shape the lineup order.
+//
+//   1 → Pure random (fairness, skills irrelevant)
+//   2 → Light skill weighting, lots of randomness
+//   3 → Moderate optimization
+//   4 → Strong skill-based order + basic repairs
+//   5 → Full competitive: MLB-style slot affinity + protect-the-power-
+//         hitter + no back-to-back strikeout risk, zero randomness
+//
+// When all players have default skills (5/5/5) the algorithm produces
+// a random order at every strategy level — ratings only kick in once
+// a coach has actually differentiated their players.
+// ═══════════════════════════════════════════════════
+
+// Slot weight vectors for a 9-person lineup, interpolated for any n.
+// Each vector expresses how much Power / Contact / Speed matter for
+// that batting position. Weights sum to 1.0.
+const BATTING_SLOT_WEIGHTS = [
+  { power: 0.10, contact: 0.55, speed: 0.35 }, // 1: leadoff — on-base + wheels
+  { power: 0.20, contact: 0.50, speed: 0.30 }, // 2: contact, moves runners
+  { power: 0.40, contact: 0.45, speed: 0.15 }, // 3: best all-around hitter
+  { power: 0.70, contact: 0.20, speed: 0.10 }, // 4: cleanup — pure power
+  { power: 0.60, contact: 0.30, speed: 0.10 }, // 5: second power bat
+  { power: 0.35, contact: 0.40, speed: 0.25 }, // 6: solid bat
+  { power: 0.25, contact: 0.45, speed: 0.30 }, // 7: contact
+  { power: 0.20, contact: 0.50, speed: 0.30 }, // 8: contact
+  { power: 0.15, contact: 0.50, speed: 0.35 }, // 9: secondary leadoff
+];
+
+// Interpolate the 9-slot weight table to a lineup of n players.
+function battingSlotWeightsForN(n) {
+  return Array.from({ length: n }, (_, i) => {
+    const t = n <= 1 ? 0 : (i / (n - 1)) * 8;
+    const lo = Math.min(Math.floor(t), 8);
+    const hi = Math.min(lo + 1, 8);
+    const frac = t - lo;
+    const a = BATTING_SLOT_WEIGHTS[lo];
+    const b = BATTING_SLOT_WEIGHTS[hi];
+    return {
+      power:   a.power   + (b.power   - a.power)   * frac,
+      contact: a.contact + (b.contact - a.contact) * frac,
+      speed:   a.speed   + (b.speed   - a.speed)   * frac,
+    };
+  });
+}
+
+// Greedy slot assignment. Most impactful slots (cleanup, leadoff, all-around)
+// are filled first so they always get the best-fit player.
+function battingPriorityOrder(n) {
+  // cleanup ≈ slot 3 in a 9-person lineup, scaled to n
+  const cleanup    = Math.min(Math.round(n * 3 / 9), n - 1);
+  const allAround  = Math.max(0, cleanup - 1);
+  const power2     = Math.min(n - 1, cleanup + 1);
+  const leadoff    = 0;
+  const seen = new Set();
+  const order = [];
+  for (const idx of [cleanup, allAround, power2, leadoff, 1]) {
+    if (idx >= 0 && idx < n && !seen.has(idx)) { order.push(idx); seen.add(idx); }
+  }
+  for (let i = 0; i < n; i++) {
+    if (!seen.has(i)) { order.push(i); seen.add(i); }
+  }
+  return order;
+}
+
+// Repair pass 1 — protect the power hitter.
+// The player immediately before the cleanup hitter should have speed so
+// they're in scoring position when the big bat comes up. If they don't,
+// swap in the fastest available player from elsewhere in the order.
+function battingRepairProtectPower(assigned) {
+  let cleanupIdx = 0, maxPower = -1;
+  assigned.forEach((p, i) => {
+    const pw = (p.battingSkills || {}).power || 5;
+    if (pw > maxPower) { maxPower = pw; cleanupIdx = i; }
+  });
+  const protectIdx = cleanupIdx - 1;
+  if (protectIdx < 0) return;
+  const protectSpeed = (assigned[protectIdx].battingSkills || {}).speed || 5;
+  if (protectSpeed >= 5) return; // already fast enough
+  let fastestIdx = -1, fastestSpeed = protectSpeed;
+  assigned.forEach((p, i) => {
+    if (i === cleanupIdx || i === protectIdx) return;
+    const spd = (p.battingSkills || {}).speed || 5;
+    if (spd > fastestSpeed) { fastestSpeed = spd; fastestIdx = i; }
+  });
+  if (fastestIdx !== -1) {
+    [assigned[protectIdx], assigned[fastestIdx]] = [assigned[fastestIdx], assigned[protectIdx]];
+  }
+}
+
+// Repair pass 2 — break up back-to-back strikeout risk.
+// Two adjacent low-contact hitters in sequence kill rallies. If we find
+// a pair both below the contact threshold, we first try to pull the next
+// high-contact player forward to split them. If there's nobody available
+// further down (e.g. the pair is already at the bottom), we fall back to
+// swapping the nearest high-contact player from above into the gap.
+function battingRepairNoBackToBackK(assigned) {
+  const K = 4; // contact below this = meaningful K risk on a 1–10 scale
+  for (let i = 0; i < assigned.length - 1; i++) {
+    const ca = (assigned[i].battingSkills     || {}).contact || 5;
+    const cb = (assigned[i + 1].battingSkills || {}).contact || 5;
+    if (ca >= K || cb >= K) continue;
+
+    // Option A: pull a decent-contact hitter forward from later in the order
+    let fixed = false;
+    for (let j = i + 2; j < assigned.length; j++) {
+      if (((assigned[j].battingSkills || {}).contact || 5) >= K) {
+        const mover = assigned.splice(j, 1)[0];
+        assigned.splice(i + 1, 0, mover);
+        fixed = true;
+        break;
+      }
+    }
+
+    // Option B: if nobody is available ahead, swap the low-K player at i
+    // with the nearest decent-contact player placed above it. This slides
+    // the stronger hitter one slot lower to split the pair.
+    if (!fixed) {
+      for (let j = i - 1; j >= 0; j--) {
+        if (((assigned[j].battingSkills || {}).contact || 5) >= K) {
+          [assigned[i], assigned[j]] = [assigned[j], assigned[i]];
+          break;
+        }
+      }
+    }
+  }
+}
+
 function shuffleBatting() {
   const attending = state.players.filter(p => state.attendance[p.id]);
-  const shuffled = attending.sort(() => Math.random() - 0.5);
-  state.lineup = shuffled.map(p => state.lineup.find(r => r.playerId === p.id) || { playerId: p.id, positions: Array(state.innings).fill('') });
+  if (attending.length === 0) return;
+
+  const strategy = state.strategyLevel || 3;
+  const competitiveBias = (strategy - 1) / 4; // 0.0 (fairness) → 1.0 (full competitive)
+
+  let order;
+
+  if (strategy === 1) {
+    // Pure random — skills have no influence at all
+    order = [...attending].sort(() => Math.random() - 0.5);
+  } else {
+    const n = attending.length;
+    const slots = battingSlotWeightsForN(n);
+    const priorityOrder = battingPriorityOrder(n);
+
+    // Pre-shuffle so players with identical skill ratings get randomly
+    // distributed rather than preserving roster-load order.
+    const pool = [...attending].sort(() => Math.random() - 0.5);
+
+    const assigned = new Array(n).fill(null);
+    const usedIds  = new Set();
+
+    for (const slotIdx of priorityOrder) {
+      const w = slots[slotIdx];
+      let bestPlayer = null, bestScore = -Infinity;
+      for (const player of pool) {
+        if (usedIds.has(player.id)) continue;
+        const s = player.battingSkills || { power: 5, contact: 5, speed: 5 };
+        const skillScore = w.power * s.power + w.contact * s.contact + w.speed * s.speed;
+        // Jitter shrinks to 0 at strategy 5. Max jitter (5) is half the
+        // skill scale so skills still dominate at strategy 3.
+        const jitter = Math.random() * 5 * (1 - competitiveBias);
+        const score  = skillScore + jitter;
+        if (score > bestScore) { bestScore = score; bestPlayer = player; }
+      }
+      assigned[slotIdx] = bestPlayer;
+      usedIds.add(bestPlayer.id);
+    }
+
+    // Apply competitive repair passes at strategy 4–5
+    if (competitiveBias >= 0.75) {
+      battingRepairProtectPower(assigned);
+      battingRepairNoBackToBackK(assigned);
+    }
+
+    order = assigned;
+  }
+
+  state.lineup = order.map(player =>
+    state.lineup.find(r => r.playerId === player.id) ||
+    { playerId: player.id, positions: Array(state.innings).fill('') }
+  );
   renderLineupGrid();
   renderPlayingTimeSummary();
   save();
@@ -5609,11 +5791,11 @@ function updateStrategyLabel(val) {
   if (!desc) return;
 
   const labels = {
-    1: 'Everyone gets equal time — pure fairness',
-    2: 'Mostly balanced with slight preference weighting',
-    3: 'Equal playing time with preference weighting',
-    4: 'Stronger fielders get key positions more often',
-    5: 'Best fielders locked into their top positions'
+    1: 'Pure fairness — random fielding rotations and batting order',
+    2: 'Light optimization — slight skill weighting for fielding and batting',
+    3: 'Balanced — skill preferences guide fielding and batting order',
+    4: 'Competitive — top fielders at key spots, batting order reflects Power/Contact/Speed',
+    5: 'Full competitive — MLB-style batting order with protect-the-power-hitter and no back-to-back strikeout risk'
   };
   desc.textContent = labels[val] || labels[3];
 
