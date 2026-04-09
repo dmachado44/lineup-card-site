@@ -955,7 +955,53 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 24px;
+    }
+
+    /* ── Split: Attendance + Game Positions ── */
+    .att-pos-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .att-pos-section { min-width: 0; }
+    .att-pos-section .card-title { font-size: 16px; margin-bottom: 2px; }
+    .att-pos-section .att-count { margin-bottom: 12px; }
+    .att-pos-section .attendance-grid { margin-bottom: 0; }
+
+    .game-pos-grid {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .game-pos-pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 500;
+      border: 1.5px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .game-pos-pill.on {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    .game-pos-pill.off {
+      background: var(--white);
+      border-color: var(--border);
+      color: var(--muted);
+    }
+    .game-pos-pill.off:hover { border-color: var(--gray); }
+    .game-pos-count { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+
+    @media (max-width: 700px) {
+      .att-pos-row {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
     }
 
     /* ── SUMMARY ── */
@@ -2565,9 +2611,18 @@
     <div id="step-4" class="step-panel" style="display:none;">
 
       <div class="card">
-        <div class="card-title">Attendance</div>
-        <div class="att-count" id="att-count">Select players attending today</div>
-        <div class="attendance-grid" id="attendance-grid"></div>
+        <div class="att-pos-row">
+          <div class="att-pos-section">
+            <div class="card-title">Attendance</div>
+            <div class="att-count" id="att-count">Select players attending today</div>
+            <div class="attendance-grid" id="attendance-grid"></div>
+          </div>
+          <div class="att-pos-section">
+            <div class="card-title">Positions for This Game</div>
+            <div class="game-pos-count" id="game-pos-count">9 positions active</div>
+            <div class="game-pos-grid" id="game-pos-grid"></div>
+          </div>
+        </div>
       </div>
 
       <div class="card strategy-card">
@@ -3376,6 +3431,7 @@ function resetForNewTeam() {
   state.gameNotes = '';
   state.players = [];
   state.attendance = {};
+  state.gamePositions = [];
   state.lineup = [];
 
   // Sync all form fields to blank
@@ -4459,6 +4515,7 @@ const PRESETS = {
 const state = {
   teamName: '', teamSport: 'Baseball', teamLevel: '', teamAgeGroup: '', teamSeason: 'Spring', teamYear: new Date().getFullYear(), teamNotes: '',
   teamCalendarUrl: '',
+  gamePositions: [],  // per-game override of activePositions
   strategyLevel: 3,
   gameName: '', opponent: '', gameDate: '', gameTime: '', gameLocation: '', gameNotes: '',
   innings: 6,
@@ -4492,6 +4549,7 @@ function init() {
       // Clear it so stale players from a previous team never appear.
       state.players    = [];
       state.attendance = {};
+      state.gamePositions = [];
       state.lineup     = [];
 
       if (document.getElementById('team-name')) document.getElementById('team-name').value = state.teamName || '';
@@ -4540,7 +4598,11 @@ function save() {
 // LEAGUE RULES
 // ═══════════════════════════════════════════════════
 function getActiveFieldPositions() {
-  return state.leagueRules.activePositions.filter(p => p !== 'Bench');
+  // Use per-game positions if available, otherwise fall back to league rules
+  const positions = (state.gamePositions && state.gamePositions.length > 0)
+    ? state.gamePositions
+    : state.leagueRules.activePositions;
+  return positions.filter(p => p !== 'Bench');
 }
 
 function renderPosGrid() {
@@ -4765,8 +4827,14 @@ function goToStep4() {
     if (state.attendance[p.id] === undefined) state.attendance[p.id] = true;
   });
 
+  // Initialize game positions from league rules if not set
+  if (!state.gamePositions || state.gamePositions.length === 0) {
+    state.gamePositions = [...state.leagueRules.activePositions];
+  }
+
   setStep(4);
   renderAttendance();
+  renderGamePositions();
   renderLineupGrid();
   renderPlayingTimeSummary();
 
@@ -4856,6 +4924,33 @@ function renderAttendance() {
       ${escHtml(p.name)}
     </div>
   `).join('');
+}
+
+// ── Game Positions (per-game override) ──
+function renderGamePositions() {
+  const grid = document.getElementById('game-pos-grid');
+  const countEl = document.getElementById('game-pos-count');
+  if (!grid || !countEl) return;
+  const active = state.gamePositions || [];
+  const pool = state.leagueRules.activePositions;  // only show positions from league rules
+  countEl.textContent = `${active.length} of ${pool.length} positions active`;
+  grid.innerHTML = pool.map(pos => `
+    <div class="game-pos-pill ${active.includes(pos) ? 'on' : 'off'}"
+         onclick="toggleGamePosition('${pos}')">
+      ${pos}
+    </div>
+  `).join('');
+}
+
+function toggleGamePosition(pos) {
+  const idx = state.gamePositions.indexOf(pos);
+  if (idx === -1) {
+    state.gamePositions.push(pos);
+  } else if (state.gamePositions.length > 1) {
+    state.gamePositions.splice(idx, 1);
+  }
+  renderGamePositions();
+  shuffleFielding();
 }
 
 // ═══════════════════════════════════════════════════
