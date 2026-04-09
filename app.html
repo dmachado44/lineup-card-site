@@ -950,7 +950,7 @@
     .att-pill.in { background: var(--accent); border-color: var(--accent); font-weight: 600; color: #fff; }
     .att-pill.out { background: var(--white); border-color: var(--border); color: var(--muted); }
 
-    .att-count { font-size: 14px; color: var(--muted); margin-bottom: 16px; }
+    .att-count { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
     .attendance-grid {
       display: flex;
       gap: 10px;
@@ -961,12 +961,9 @@
     .att-pos-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 32px;
+      gap: 24px;
     }
-    .att-pos-section { min-width: 0; }
-    .att-pos-section .card-title { font-size: 16px; margin-bottom: 2px; }
-    .att-pos-section .att-count { margin-bottom: 12px; }
-    .att-pos-section .attendance-grid { margin-bottom: 0; }
+    .att-pos-row > .card { margin-bottom: 0; }
 
     .game-pos-grid {
       display: flex;
@@ -995,13 +992,14 @@
       color: var(--muted);
     }
     .game-pos-pill.off:hover { border-color: var(--gray); }
-    .game-pos-count { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    .game-pos-count { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
 
     @media (max-width: 700px) {
       .att-pos-row {
         grid-template-columns: 1fr;
-        gap: 24px;
+        gap: 0;
       }
+      .att-pos-row > .card { margin-bottom: 24px; }
     }
 
     /* ── SUMMARY ── */
@@ -1231,8 +1229,8 @@
     .schedule-empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 15px; }
 
     /* ── STRATEGY SLIDER ── */
-    .strategy-card { padding: 20px 24px; }
-    .strategy-row { display: flex; align-items: center; gap: 14px; }
+    /* strategy uses standard .card padding */
+    .strategy-row { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
     .strategy-icon { font-size: 20px; flex-shrink: 0; color: var(--muted); display: flex; align-items: center; }
     .strategy-slider-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; }
     .strategy-slider {
@@ -1259,7 +1257,7 @@
     .strategy-labels { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
     .strategy-label-left { color: var(--muted); }
     .strategy-label-right { color: var(--accent); }
-    .strategy-desc { font-size: 13px; color: var(--muted); text-align: center; margin-top: 2px; min-height: 18px; }
+    .strategy-desc { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; min-height: 18px; }
 
     /* Calendar URL field in Team Settings */
     .calendar-url-row { display: flex; gap: 10px; align-items: stretch; }
@@ -2610,23 +2608,21 @@
     <!-- ══════════════ STEP 4: EDIT LINEUP ══════════════ -->
     <div id="step-4" class="step-panel" style="display:none;">
 
-      <div class="card">
-        <div class="att-pos-row">
-          <div class="att-pos-section">
-            <div class="card-title">Attendance</div>
-            <div class="att-count" id="att-count">Select players attending today</div>
-            <div class="attendance-grid" id="attendance-grid"></div>
-          </div>
-          <div class="att-pos-section">
-            <div class="card-title">Positions for This Game</div>
-            <div class="game-pos-count" id="game-pos-count">9 positions active</div>
-            <div class="game-pos-grid" id="game-pos-grid"></div>
-          </div>
+      <div class="att-pos-row">
+        <div class="card">
+          <div class="card-title">Attendance</div>
+          <div class="att-count" id="att-count">Select players attending today</div>
+          <div class="attendance-grid" id="attendance-grid"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Positions for This Game</div>
+          <div class="game-pos-count" id="game-pos-count">9 positions active</div>
+          <div class="game-pos-grid" id="game-pos-grid"></div>
         </div>
       </div>
 
-      <div class="card strategy-card">
-        <div class="card-title mb-0" style="margin-bottom:4px;">Lineup Strategy</div>
+      <div class="card">
+        <div class="card-title">Lineup Strategy</div>
         <div class="strategy-row">
           <div class="strategy-icon" title="Balanced">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M2 12h4l2-4 2 4h4l2-4 2 4h4"/><circle cx="12" cy="3" r="1"/></svg>
