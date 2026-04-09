@@ -15,13 +15,13 @@
 
   <!-- ── SEO ── -->
   <title>Pricing – Lineup Card</title>
-  <meta name="description" content="Lineup Card pricing. Free for Lineup DJ subscribers. Pro plan starts at $2/mo or $18/yr. Build balanced lineups, auto-assign positions, and manage your team." />
+  <meta name="description" content="Lineup Card pricing. Free for Lineup DJ subscribers. Pro plan starts at $2.99/mo or $12.99/yr. Build balanced lineups, auto-assign positions, and manage your team." />
   <link rel="canonical" href="https://lineupcard.app/pricing" />
   <link rel="icon" href="/assets/icon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/assets/icon.png" />
 
   <meta property="og:title" content="Pricing – Lineup Card" />
-  <meta property="og:description" content="Free for Lineup DJ subscribers. Pro starts at $2/mo." />
+  <meta property="og:description" content="Free for Lineup DJ subscribers. Pro starts at $2.99/mo." />
   <meta property="og:url" content="https://lineupcard.app/pricing" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://lineupcard.app/assets/icon.png" />
@@ -912,10 +912,10 @@
         <div class="pricing-name">Pro</div>
         <p class="pricing-sub">Everything you need on game day</p>
         <div class="pricing-price">
-          <span class="pricing-amount" id="pro-price">$2</span>
+          <span class="pricing-amount" id="pro-price">$2.99</span>
           <span class="pricing-period" id="pro-period">/mo</span>
         </div>
-        <p class="pricing-annual-note" id="pro-note">Billed monthly. Switch to yearly and save 25%.</p>
+        <p class="pricing-annual-note" id="pro-note">Billed monthly. Switch to yearly and save 64%.</p>
         <hr class="pricing-divider" />
         <ul class="pricing-features">
           <li class="pricing-feature">
@@ -1227,17 +1227,17 @@
         btnYearly.setAttribute('aria-checked', 'true');
         btnMonthly.classList.remove('active');
         btnMonthly.setAttribute('aria-checked', 'false');
-        price.textContent = '$18';
+        price.textContent = '$12.99';
         periodEl.textContent = '/yr';
-        note.textContent = 'That\'s just $1.50/mo. Billed annually.';
+        note.textContent = 'That\'s just $1.08/mo. Billed annually.';
       } else {
         btnMonthly.classList.add('active');
         btnMonthly.setAttribute('aria-checked', 'true');
         btnYearly.classList.remove('active');
         btnYearly.setAttribute('aria-checked', 'false');
-        price.textContent = '$2';
+        price.textContent = '$2.99';
         periodEl.textContent = '/mo';
-        note.textContent = 'Billed monthly. Switch to yearly and save 25%.';
+        note.textContent = 'Billed monthly. Switch to yearly and save 64%.';
       }
     }
 

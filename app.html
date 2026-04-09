@@ -2343,11 +2343,11 @@
 
       <div class="upgrade-toggle">
         <button class="upgrade-toggle-btn active" id="pw-btn-monthly" onclick="setPaywallPlan('monthly')">Monthly</button>
-        <button class="upgrade-toggle-btn" id="pw-btn-yearly" onclick="setPaywallPlan('yearly')">Yearly <span class="upgrade-save">Save 25%</span></button>
+        <button class="upgrade-toggle-btn" id="pw-btn-yearly" onclick="setPaywallPlan('yearly')">Yearly <span class="upgrade-save">Save 64%</span></button>
       </div>
 
       <div class="upgrade-price">
-        <span class="upgrade-amount" id="pw-price">$2</span>
+        <span class="upgrade-amount" id="pw-price">$2.99</span>
         <span class="upgrade-period" id="pw-period">/mo</span>
       </div>
 
@@ -3127,7 +3127,7 @@ function showLineupPaywall() {
   _paywallPlan = 'monthly';
   document.getElementById('pw-btn-monthly').classList.add('active');
   document.getElementById('pw-btn-yearly').classList.remove('active');
-  document.getElementById('pw-price').textContent = '$2';
+  document.getElementById('pw-price').textContent = '$2.99';
   document.getElementById('pw-period').textContent = '/mo';
   document.getElementById('pw-checkout-btn').disabled = false;
   document.getElementById('pw-checkout-btn').textContent = 'Start 7-Day Free Trial';
@@ -3144,12 +3144,12 @@ function setPaywallPlan(plan) {
   if (plan === 'yearly') {
     btnM.classList.remove('active');
     btnY.classList.add('active');
-    price.textContent = '$18';
+    price.textContent = '$12.99';
     period.textContent = '/yr';
   } else {
     btnM.classList.add('active');
     btnY.classList.remove('active');
-    price.textContent = '$2';
+    price.textContent = '$2.99';
     period.textContent = '/mo';
   }
 }
