@@ -5151,6 +5151,15 @@ function playerStrengthScore(player) {
   return infieldPrefs.length + (prefs.length > 0 ? 1 : 0);
 }
 
+// ═══════════════════════════════════════════════════
+// FIELDING GENERATOR
+//
+// Rules are HARD constraints (maxSamePosition, no back-to-back).
+// We generate multiple candidate lineups, repair any violations via swaps,
+// score each, and pick the best. This guarantees we never surface a lineup
+// that breaks a league rule unless no valid lineup mathematically exists.
+// ═══════════════════════════════════════════════════
+
 function shuffleFielding() {
   const attending = state.players.filter(p => state.attendance[p.id]);
   if (attending.length === 0) return;
@@ -5159,119 +5168,280 @@ function shuffleFielding() {
   const numInnings = state.innings;
   const strategy = state.strategyLevel || 3; // 1–5 scale
   const competitiveBias = (strategy - 1) / 4; // 0.0 to 1.0
+  const maxSame = state.leagueRules.maxSamePosition || 0;
+  const noBackToBack = state.leagueRules.allowBackToBack === false;
 
-  // Clear all positions so we start fresh
+  // Try multiple candidates; pick the one with fewest violations, then best balance.
+  const ATTEMPTS = 25;
+  let best = null;
+  let bestScore = Infinity;
+
+  for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+    const candidate = buildFieldingAttempt(
+      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack
+    );
+    repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack);
+    const score = scoreFieldingCandidate(candidate, attending, maxSame, noBackToBack);
+
+    if (score < bestScore) {
+      bestScore = score;
+      best = candidate;
+      if (bestScore === 0) break; // perfect — stop early
+    }
+  }
+
+  // Apply the best candidate to state
   attending.forEach(player => {
     const row = state.lineup.find(r => r.playerId === player.id);
-    if (row) row.positions = Array(numInnings).fill('');
+    if (row) row.positions = [...best[player.id]];
   });
-
-  // Process one inning at a time
-  for (let inning = 0; inning < numInnings; inning++) {
-
-    // Count how many field innings each player has been assigned so far
-    const fieldCount = {};
-    attending.forEach(p => {
-      const row = state.lineup.find(r => r.playerId === p.id);
-      fieldCount[p.id] = row
-        ? row.positions.slice(0, inning).filter(pos => pos && pos !== 'Bench').length
-        : 0;
-    });
-
-    // Shuffle first (to randomize ties), then sort by priority.
-    // In balanced mode: fairness-first (fewest innings get priority).
-    // In competitive mode: stronger players get priority for field time.
-    const maxField = Math.max(...Object.values(fieldCount), 1);
-    const prioritized = [...attending]
-      .sort(() => Math.random() - 0.5)
-      .sort((a, b) => {
-        // Fairness score: lower field count = higher priority (0 to 1, inverted)
-        const fairA = 1 - (fieldCount[a.id] / maxField);
-        const fairB = 1 - (fieldCount[b.id] / maxField);
-
-        // Strength score: more infield prefs = higher priority (normalized)
-        const maxStr = Math.max(...attending.map(p => playerStrengthScore(p)), 1);
-        const strA = playerStrengthScore(a) / maxStr;
-        const strB = playerStrengthScore(b) / maxStr;
-
-        // Blend: at 0% competitive, pure fairness. At 100%, pure strength.
-        const scoreA = (1 - competitiveBias) * fairA + competitiveBias * strA;
-        const scoreB = (1 - competitiveBias) * fairB + competitiveBias * strB;
-
-        return scoreB - scoreA; // Higher score = earlier pick
-      });
-
-    const numCanPlay = Math.min(attending.length, fieldPos.length);
-    const takenPositions = new Set();
-
-    prioritized.forEach((player, idx) => {
-      const row = state.lineup.find(r => r.playerId === player.id);
-      if (!row) return;
-
-      if (idx < numCanPlay) {
-        // This player fields this inning — find the best available position
-        const available = fieldPos.filter(p => !takenPositions.has(p));
-
-        if (available.length === 0) {
-          row.positions[inning] = 'Bench';
-          return;
-        }
-
-        // Positions this player has already played earlier in this game
-        const playedSoFar = new Set(
-          row.positions.slice(0, inning).filter(p => p && p !== 'Bench')
-        );
-
-        // Prefer positions not yet played (variety first — less so in competitive mode)
-        const fresh = available.filter(p => !playedSoFar.has(p));
-
-        // Apply maxSamePosition hard rule if set
-        const maxSame = state.leagueRules.maxSamePosition || 0;
-        const hardFiltered = maxSame === 0
-          ? available
-          : available.filter(p => {
-              const timesPlayed = row.positions.slice(0, inning).filter(pos => pos === p).length;
-              return timesPlayed < maxSame;
-            });
-
-        // Build pool: fresh positions first → fall back to rule-filtered → last resort any available
-        // In competitive mode, prefer sticking to strong positions even if repeated
-        const basePool = (competitiveBias > 0.7)
-          ? (hardFiltered.length > 0 ? hardFiltered : available)
-          : (fresh.length > 0 ? fresh : (hardFiltered.length > 0 ? hardFiltered : available));
-
-        // Apply field priority — narrow to infield/outfield zone if set
-        // In competitive mode, zone preference is enforced more strictly
-        const prio = player.fieldPriority || 'both';
-        let zonePool = basePool;
-        if (prio === 'infield') {
-          const zoneFiltered = basePool.filter(p => INFIELD_POSITIONS.includes(p));
-          if (zoneFiltered.length > 0) zonePool = zoneFiltered;
-        } else if (prio === 'outfield') {
-          const zoneFiltered = basePool.filter(p => OUTFIELD_POSITIONS.includes(p));
-          if (zoneFiltered.length > 0) zonePool = zoneFiltered;
-        }
-
-        // Within that zone pool, prefer the player's preferred positions
-        // In competitive mode, preferred positions win almost always
-        const preferred = zonePool.filter(p => player.prefPos && player.prefPos.includes(p));
-        const pool = (preferred.length > 0 && (competitiveBias > 0.3 || Math.random() < 0.6))
-          ? preferred : (preferred.length > 0 && Math.random() < 0.3 ? preferred : zonePool);
-
-        const chosen = pool[Math.floor(Math.random() * pool.length)];
-        row.positions[inning] = chosen;
-        takenPositions.add(chosen);
-      } else {
-        // More players than positions — this player benches this inning
-        row.positions[inning] = 'Bench';
-      }
-    });
-  }
 
   renderLineupGrid();
   renderPlayingTimeSummary();
   checkConflicts();
   save();
+}
+
+// Generate ONE candidate fielding plan. Returns { playerId: [positions per inning] }.
+// Rules are enforced strictly per-inning. If a player has no legal position this
+// inning (e.g., higher-priority players claimed all the valid spots), we defer
+// them to a second pass and let the repair step untangle it.
+function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack) {
+  const result = {};
+  attending.forEach(p => { result[p.id] = Array(numInnings).fill(''); });
+
+  const maxStrGlobal = Math.max(...attending.map(p => playerStrengthScore(p)), 1);
+
+  for (let inning = 0; inning < numInnings; inning++) {
+    // Count how many field innings each player has been assigned so far
+    const fieldCount = {};
+    attending.forEach(p => {
+      fieldCount[p.id] = result[p.id].slice(0, inning)
+        .filter(pos => pos && pos !== 'Bench').length;
+    });
+
+    const maxField = Math.max(...Object.values(fieldCount), 1);
+
+    // Shuffle first (randomize ties), then sort by blended fairness/strength score
+    const prioritized = [...attending]
+      .sort(() => Math.random() - 0.5)
+      .sort((a, b) => {
+        const fairA = 1 - (fieldCount[a.id] / maxField);
+        const fairB = 1 - (fieldCount[b.id] / maxField);
+        const strA = playerStrengthScore(a) / maxStrGlobal;
+        const strB = playerStrengthScore(b) / maxStrGlobal;
+        const scoreA = (1 - competitiveBias) * fairA + competitiveBias * strA;
+        const scoreB = (1 - competitiveBias) * fairB + competitiveBias * strB;
+        return scoreB - scoreA;
+      });
+
+    const numCanPlay = Math.min(attending.length, fieldPos.length);
+    const takenPositions = new Set();
+    const deferred = [];
+
+    // First pass: give each prioritized player their best LEGAL position.
+    // If no legal position exists this inning, defer them (don't force an illegal pick).
+    prioritized.forEach((player, idx) => {
+      if (idx >= numCanPlay) {
+        result[player.id][inning] = 'Bench';
+        return;
+      }
+
+      const available = fieldPos.filter(p => !takenPositions.has(p));
+      if (available.length === 0) {
+        result[player.id][inning] = 'Bench';
+        return;
+      }
+
+      // HARD constraints: maxSamePosition + back-to-back
+      const playerInnings = result[player.id];
+      const legal = available.filter(pos =>
+        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack)
+      );
+
+      if (legal.length === 0) {
+        // No legal position — defer. Repair pass will sort it out.
+        deferred.push(player);
+        return;
+      }
+
+      // Soft preferences (over the legal pool only) ---
+      const playedSoFar = new Set(
+        playerInnings.slice(0, inning).filter(p => p && p !== 'Bench')
+      );
+      const fresh = legal.filter(p => !playedSoFar.has(p));
+      const freshOrLegal = (fresh.length > 0) ? fresh : legal;
+
+      // Field priority zone (infield/outfield)
+      const prio = player.fieldPriority || 'both';
+      let zonePool = freshOrLegal;
+      if (prio === 'infield') {
+        const zoneFiltered = freshOrLegal.filter(p => INFIELD_POSITIONS.includes(p));
+        if (zoneFiltered.length > 0) zonePool = zoneFiltered;
+      } else if (prio === 'outfield') {
+        const zoneFiltered = freshOrLegal.filter(p => OUTFIELD_POSITIONS.includes(p));
+        if (zoneFiltered.length > 0) zonePool = zoneFiltered;
+      }
+
+      // Preferred positions within that zone
+      const preferred = zonePool.filter(p => player.prefPos && player.prefPos.includes(p));
+      const pool = (preferred.length > 0 && (competitiveBias > 0.3 || Math.random() < 0.6))
+        ? preferred
+        : (preferred.length > 0 && Math.random() < 0.3 ? preferred : zonePool);
+
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      result[player.id][inning] = chosen;
+      takenPositions.add(chosen);
+    });
+
+    // Second pass: place deferred players in whatever remains, preferring legal.
+    // Any residual illegal placement is caught and corrected by repairFieldingViolations.
+    deferred.forEach(player => {
+      const remaining = fieldPos.filter(p => !takenPositions.has(p));
+      if (remaining.length === 0) {
+        result[player.id][inning] = 'Bench';
+        return;
+      }
+      const playerInnings = result[player.id];
+      const stillLegal = remaining.filter(pos =>
+        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack)
+      );
+      const pool = stillLegal.length > 0 ? stillLegal : remaining;
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      result[player.id][inning] = chosen;
+      takenPositions.add(chosen);
+    });
+  }
+
+  return result;
+}
+
+// Can `pos` be assigned to this player at `inning` without breaking any hard rule?
+// Only looks at already-set innings (the current slot is assumed empty).
+function isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack) {
+  if (maxSame > 0) {
+    let count = 0;
+    for (let i = 0; i < playerInnings.length; i++) {
+      if (i !== inning && playerInnings[i] === pos) count++;
+    }
+    if (count >= maxSame) return false;
+  }
+  if (noBackToBack) {
+    if (inning > 0 && playerInnings[inning - 1] === pos) return false;
+    if (inning < playerInnings.length - 1 && playerInnings[inning + 1] === pos) return false;
+  }
+  return true;
+}
+
+// Count hard-rule violations in a single player's positions row.
+function rowViolationCount(positions, maxSame, noBackToBack) {
+  let violations = 0;
+  if (maxSame > 0) {
+    const counts = {};
+    positions.forEach(p => {
+      if (p && p !== 'Bench') counts[p] = (counts[p] || 0) + 1;
+    });
+    Object.values(counts).forEach(c => {
+      if (c > maxSame) violations += (c - maxSame);
+    });
+  }
+  if (noBackToBack) {
+    for (let i = 1; i < positions.length; i++) {
+      if (positions[i] && positions[i] !== 'Bench' && positions[i] === positions[i - 1]) {
+        violations++;
+      }
+    }
+  }
+  return violations;
+}
+
+// Try to fix any rule violations by swapping same-inning assignments between
+// two players. Only applies swaps that strictly reduce total violations.
+function repairFieldingViolations(result, attending, numInnings, maxSame, noBackToBack) {
+  // Multiple passes — each swap can unlock new fixable cases downstream.
+  for (let pass = 0; pass < 10; pass++) {
+    let changed = false;
+
+    for (let inning = 0; inning < numInnings; inning++) {
+      for (let i = 0; i < attending.length; i++) {
+        const playerA = attending[i];
+        const posA = result[playerA.id][inning];
+        if (!posA || posA === 'Bench') continue;
+
+        const aViolationBefore = rowViolationCount(result[playerA.id], maxSame, noBackToBack);
+        if (aViolationBefore === 0) continue;
+
+        // Try: swap A's inning-slot with another fielding player B
+        let applied = false;
+        for (let j = 0; j < attending.length; j++) {
+          if (i === j) continue;
+          const playerB = attending[j];
+          const posB = result[playerB.id][inning];
+          if (!posB || posB === 'Bench') continue;
+
+          const newA = [...result[playerA.id]]; newA[inning] = posB;
+          const newB = [...result[playerB.id]]; newB[inning] = posA;
+
+          const oldTotal = aViolationBefore
+            + rowViolationCount(result[playerB.id], maxSame, noBackToBack);
+          const newTotal = rowViolationCount(newA, maxSame, noBackToBack)
+            + rowViolationCount(newB, maxSame, noBackToBack);
+
+          if (newTotal < oldTotal) {
+            result[playerA.id] = newA;
+            result[playerB.id] = newB;
+            changed = true;
+            applied = true;
+            break;
+          }
+        }
+        if (applied) continue;
+
+        // Try: swap A's position with a benched player (B takes over, A sits)
+        for (let j = 0; j < attending.length; j++) {
+          if (i === j) continue;
+          const playerB = attending[j];
+          if (result[playerB.id][inning] !== 'Bench') continue;
+
+          const newA = [...result[playerA.id]]; newA[inning] = 'Bench';
+          const newB = [...result[playerB.id]]; newB[inning] = posA;
+
+          const oldTotal = aViolationBefore
+            + rowViolationCount(result[playerB.id], maxSame, noBackToBack);
+          const newTotal = rowViolationCount(newA, maxSame, noBackToBack)
+            + rowViolationCount(newB, maxSame, noBackToBack);
+
+          if (newTotal < oldTotal) {
+            result[playerA.id] = newA;
+            result[playerB.id] = newB;
+            changed = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!changed) break;
+  }
+}
+
+// Lower is better. Violations dominate; imbalance is the tiebreaker.
+function scoreFieldingCandidate(result, attending, maxSame, noBackToBack) {
+  let violations = 0;
+  attending.forEach(p => {
+    violations += rowViolationCount(result[p.id], maxSame, noBackToBack);
+  });
+
+  // Imbalance = spread of bench time across players (fairness tiebreaker)
+  const benchCounts = attending.map(p =>
+    result[p.id].filter(pos => pos === 'Bench').length
+  );
+  const avg = benchCounts.length > 0
+    ? benchCounts.reduce((a, b) => a + b, 0) / benchCounts.length
+    : 0;
+  const imbalance = benchCounts.reduce((s, c) => s + Math.abs(c - avg), 0);
+
+  return violations * 10000 + imbalance;
 }
 
 function clearFielding() {
