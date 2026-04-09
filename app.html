@@ -2810,7 +2810,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M2 12h4l2-4 2 4h4l2-4 2 4h4"/><circle cx="12" cy="3" r="1"/></svg>
           </div>
           <div class="strategy-slider-wrap">
-            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); shuffleFielding();" />
+            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); shuffleFielding(); shuffleBatting();" />
             <div class="strategy-labels">
               <span class="strategy-label-left">Balanced</span>
               <span class="strategy-label-right">Competitive</span>
@@ -2830,8 +2830,8 @@
             <div class="text-muted-sm">Drag rows to reorder batting order · Use dropdowns to assign positions per inning</div>
           </div>
           <div class="toolbar-spacer"></div>
-          <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Randomly shuffle batting order">
-            Shuffle Batting
+          <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
+            Generate Batting Order
           </button>
           <button class="btn btn-teal btn-sm" onclick="shuffleFielding()" title="Re-randomize position assignments across all innings">
             Rearrange Positions
