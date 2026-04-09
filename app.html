@@ -666,7 +666,15 @@
     .roster-save-status.error  { color: #C62828; }
 
     /* ── Batting skills (Power / Contact / Speed) ── */
-    .skills-row { align-items: center; }
+    /* Ported from 21st.dev "slider-with-labels-and-tooltip" (OriginUI) —
+       8px rounded track, white thumb with 2px accent border, dark tooltip
+       bubble above the thumb while dragging or focused. */
+    .skills-row {
+      align-items: center;
+      /* Breathing room above the sliders so the tooltip bubble has space
+         to render without clipping against the "Prioritize" row above. */
+      padding-top: 22px;
+    }
     .skills-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -687,40 +695,118 @@
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
+    .slider-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      /* --fill-ratio: 0..1, set inline and updated on input. Drives both
+         the fill gradient and the tooltip position. */
+    }
     .skill-slider {
       -webkit-appearance: none;
       appearance: none;
-      flex: 1;
-      height: 4px;
-      border-radius: 2px;
-      background: #E8E8ED;
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
       outline: none;
       cursor: pointer;
       min-width: 0;
+      background: linear-gradient(
+        to right,
+        var(--accent) 0%,
+        var(--accent) calc(var(--fill-ratio, 0.44) * 100%),
+        #E4E4E9 calc(var(--fill-ratio, 0.44) * 100%),
+        #E4E4E9 100%
+      );
     }
     .skill-slider:focus { outline: none; }
+
+    /* WebKit / Blink */
     .skill-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: var(--accent);
-      border: 2px solid var(--white);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      background: #ffffff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: box-shadow 0.15s ease, transform 0.1s ease;
     }
-    .skill-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .skill-slider:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+    .skill-slider:active::-webkit-slider-thumb {
+      transform: scale(1.05);
+    }
+
+    /* Firefox */
+    .skill-slider::-moz-range-track {
+      height: 8px;
+      border-radius: 999px;
+      background: #E4E4E9;
+    }
+    .skill-slider::-moz-range-progress {
+      height: 8px;
+      border-radius: 999px 0 0 999px;
+      background: var(--accent);
+    }
     .skill-slider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
-      background: var(--accent);
-      border: 2px solid var(--white);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      background: #ffffff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
       cursor: pointer;
+      transition: box-shadow 0.15s ease, transform 0.1s ease;
     }
+    .skill-slider:focus-visible::-moz-range-thumb {
+      box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 28%, transparent);
+    }
+
+    /* Tooltip bubble that floats above the thumb while dragging or focused.
+       Uses --fill-ratio to compensate for the 20px thumb width so it
+       stays centered on the thumb at both ends of the track. */
+    .slider-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: calc(var(--fill-ratio, 0.44) * (100% - 20px) + 10px);
+      transform: translateX(-50%);
+      margin-bottom: 10px;
+      background: #1F2937;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .slider-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top-color: #1F2937;
+    }
+    .slider-wrap.dragging .slider-tooltip,
+    .slider-wrap:has(.skill-slider:focus-visible) .slider-tooltip {
+      opacity: 1;
+    }
+
     .skill-value {
       font-size: 13px;
       font-weight: 700;
@@ -731,6 +817,7 @@
     }
     @media (max-width: 820px) {
       .skills-grid { grid-template-columns: 1fr; gap: 10px; }
+      .skills-row { padding-top: 26px; }
     }
 
     .add-player-row {
@@ -4535,6 +4622,17 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') flushOnHide();
   });
+
+  // Global pointerup cleanup for the batting-skill slider tooltip.
+  // If a user presses down on the thumb and releases outside it (a
+  // common gesture on touch), onpointerup won't fire on the input,
+  // so the `.dragging` class would get stuck. This catches all of
+  // those cases at the document level.
+  document.addEventListener('pointerup', () => {
+    document.querySelectorAll('.slider-wrap.dragging').forEach(w => {
+      w.classList.remove('dragging');
+    });
+  });
 });
 
 // ═══════════════════════════════════════════════════
@@ -4600,15 +4698,24 @@ function renderPlayerManagementList() {
       <div class="priority-row skills-row">
         <span class="priority-label">Batting:</span>
         <div class="skills-grid">
-          ${['power', 'contact', 'speed'].map(s => `
+          ${['power', 'contact', 'speed'].map(s => {
+            const val = skills[s];
+            const ratio = ((val - 1) / 9).toFixed(4);
+            return `
             <div class="skill">
               <span class="skill-name">${s.charAt(0).toUpperCase() + s.slice(1)}</span>
-              <input type="range" class="skill-slider" min="1" max="10" step="1" value="${skills[s]}"
-                oninput="this.parentElement.querySelector('.skill-value').textContent = this.value"
-                onchange="setPlayerSkill('${player.id}','${s}', this.value)" />
-              <span class="skill-value">${skills[s]}</span>
+              <div class="slider-wrap" style="--fill-ratio:${ratio}">
+                <div class="slider-tooltip">${val}</div>
+                <input type="range" class="skill-slider" min="1" max="10" step="1" value="${val}"
+                  oninput="handleSkillSliderInput(this)"
+                  onpointerdown="this.parentElement.classList.add('dragging')"
+                  onpointercancel="this.parentElement.classList.remove('dragging')"
+                  onchange="setPlayerSkill('${player.id}','${s}', this.value)" />
+              </div>
+              <span class="skill-value">${val}</span>
             </div>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -4981,6 +5088,26 @@ function setPlayerSkill(playerId, skill, value) {
   player.battingSkills[skill] = v;
   save();
   scheduleRosterSave();
+}
+
+// Live handler for the batting-skill slider: updates the fill gradient,
+// the floating tooltip bubble, and the static value readout on every
+// input event. setPlayerSkill() is the authoritative write on `change`.
+function handleSkillSliderInput(el) {
+  const v = parseInt(el.value, 10);
+  if (Number.isNaN(v)) return;
+  const ratio = Math.max(0, Math.min(1, (v - 1) / 9));
+  const wrap = el.parentElement;
+  if (wrap) {
+    wrap.style.setProperty('--fill-ratio', ratio.toFixed(4));
+    const tip = wrap.querySelector('.slider-tooltip');
+    if (tip) tip.textContent = v;
+    const skillEl = wrap.parentElement;
+    if (skillEl) {
+      const valueEl = skillEl.querySelector('.skill-value');
+      if (valueEl) valueEl.textContent = v;
+    }
+  }
 }
 
 function updatePlayerName(id, name) {
