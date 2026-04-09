@@ -649,6 +649,22 @@
       font-weight: 600;
     }
 
+    /* ── Roster auto-save status indicator ── */
+    .roster-save-status {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      min-height: 16px;
+    }
+    .roster-save-status.visible { opacity: 1; }
+    .roster-save-status.saving { color: var(--muted); }
+    .roster-save-status.saved  { color: #2E7D32; }
+    .roster-save-status.error  { color: #C62828; }
+
     /* ── Batting skills (Power / Contact / Speed) ── */
     .skills-row { align-items: center; }
     .skills-grid {
@@ -2346,6 +2362,7 @@
       <div class="players-header-info">
         <h1 id="players-team-name">Players</h1>
         <p class="dashboard-sub" id="players-team-sub">Manage your roster</p>
+        <span id="roster-save-status" class="roster-save-status" aria-live="polite"></span>
       </div>
       <button class="btn btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
     </div>
@@ -3310,6 +3327,10 @@ async function selectTeam(teamId, closeDropdown = true) {
   const fb = initFirebase();
   if (!fb) return;
   _activeTeamId = teamId;
+  // Clear any pending deletes from a previous team — deletes must never
+  // leak across teams, or we'd ask Firestore to remove doc ids in the
+  // wrong collection.
+  if (typeof _pendingPlayerDeletes !== 'undefined') _pendingPlayerDeletes.clear();
 
   try {
     const [teamDoc, playerSnap] = await Promise.all([
@@ -3611,6 +3632,99 @@ function updateStepFooters() {
 function enterLineupMode() {
   _appMode = 'lineup';
   setStep(3);
+}
+
+// ────────────────────────────────────────────────────────────────
+// iOS SAFETY NOTE (please read before touching Firestore writes):
+// ────────────────────────────────────────────────────────────────
+// Lineup Card shares its Firestore data model with the Lineup Card iOS
+// app. The iOS app owns a number of player-level fields the web client
+// knows nothing about (walkoutSong, voiceIntro, jerseyNumber, etc.) and
+// team-level fields we also don't fully round-trip (leagueRules, innings).
+//
+// RULES for anything in the /teams or /teams/{id}/players path:
+//   1. ALWAYS use { merge: true } — never an overwriting set().
+//   2. Only write the exact fields this client is authoritative for.
+//      Never echo back unknown fields, and never write default values
+//      for fields we don't actively manage in the web state.
+//   3. Never delete a player doc unless the coach explicitly removed
+//      that player in THIS session. Never diff-delete by listing the
+//      server and removing anything "not in our state" — the iOS app
+//      may have added a player we haven't seen yet.
+//   4. Always confirm `ownerId === currentUser.uid` before any write,
+//      so we can't clobber a team belonging to another coach.
+// ────────────────────────────────────────────────────────────────
+
+// Tracks player doc IDs the user explicitly removed on the Players page
+// since the last successful save. Only IDs in this set are allowed to
+// be deleted from Firestore. We never diff the server to discover deletes
+// because that would race with iOS-side player additions.
+const _pendingPlayerDeletes = new Set();
+
+// Write ONLY the players subcollection — used by the Players page auto-save.
+// Critically, this does NOT touch the team document, so it can't accidentally
+// clobber team-level fields like leagueRules or innings that selectTeam()
+// doesn't fully load into state.
+async function saveRosterOnlyToFirestore() {
+  if (!ALLOW_TEAM_CREATION) return true;
+  const fb = initFirebase();
+  if (!fb || !fb.auth.currentUser) return false;
+  if (!_activeTeamId) return false;
+
+  try {
+    const teamRef = fb.db.collection('teams').doc(_activeTeamId);
+    // Ownership check (rule #4) — never write to a team we don't own
+    // (e.g. a borrowed iOS team doc viewed via a shared link).
+    const teamDoc = await teamRef.get();
+    const uid = fb.auth.currentUser.uid;
+    if (!teamDoc.exists || teamDoc.data().ownerId !== uid) {
+      console.warn('saveRosterOnlyToFirestore: not owner of', _activeTeamId, '— skipping');
+      return false;
+    }
+
+    const batch = fb.db.batch();
+
+    // Upsert every current player. Rule #1 + #2: merge-safe writes, and
+    // only the fields this client manages. iOS-only fields (walkoutSong,
+    // voiceIntro, jerseyNumber, …) are untouched.
+    state.players.forEach(player => {
+      const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
+      const ref = teamRef.collection('players').doc(docId);
+      const playerData = {
+        name:   player.name,
+        gender: player.gender || ''
+      };
+      if (player.prefPos && player.prefPos.length > 0) {
+        playerData.prefPos = player.prefPos;
+      }
+      if (player.fieldPriority && player.fieldPriority !== 'both') {
+        playerData.fieldPriority = player.fieldPriority;
+      }
+      if (player.battingSkills) {
+        const s = player.battingSkills;
+        if (s.power !== 5 || s.contact !== 5 || s.speed !== 5) {
+          playerData.battingSkills = { power: s.power, contact: s.contact, speed: s.speed };
+        }
+      }
+      batch.set(ref, playerData, { merge: true });
+    });
+
+    // Rule #3: only delete players the coach explicitly removed in this
+    // session. A snapshot of the set is captured BEFORE the commit so we
+    // can clear it atomically on success without dropping removals that
+    // came in while the batch was in flight.
+    const toDelete = Array.from(_pendingPlayerDeletes);
+    toDelete.forEach(docId => {
+      batch.delete(teamRef.collection('players').doc(docId));
+    });
+
+    await batch.commit();
+    toDelete.forEach(id => _pendingPlayerDeletes.delete(id));
+    return true;
+  } catch (e) {
+    console.error('saveRosterOnlyToFirestore error:', e);
+    return false;
+  }
 }
 
 async function saveTeamToFirestore() {
@@ -4405,6 +4519,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', markSettingsDirty);
   });
+
+  // Safety net: if the user hides the tab or closes the page while the
+  // roster auto-save debounce is still pending, flush it immediately so
+  // edits don't get lost. pagehide fires on tab close; visibilitychange
+  // fires when the user switches away.
+  const flushOnHide = () => {
+    if (_rosterSaveTimer && isPlayersViewActive()) {
+      clearTimeout(_rosterSaveTimer);
+      _rosterSaveTimer = null;
+      runRosterSave();
+    }
+  };
+  window.addEventListener('pagehide', flushOnHide);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushOnHide();
+  });
 });
 
 // ═══════════════════════════════════════════════════
@@ -4508,10 +4638,18 @@ function addPlayerFromMgmt() {
   renderPlayerManagementList();
   renderPlayerList(); // keep main roster in sync
   save();
+  scheduleRosterSave();
   input.focus();
 }
 
-function backToDashboard() {
+async function backToDashboard() {
+  // If we're leaving the Players view, flush any pending auto-save so edits
+  // to names, positions, priorities or batting skills are committed to
+  // Firestore before we navigate away (otherwise the next selectTeam() fetch
+  // would silently overwrite the in-memory state with stale data).
+  if (isPlayersViewActive()) {
+    try { await flushRosterSave(); } catch (e) { console.error('flushRosterSave failed:', e); }
+  }
   document.documentElement.style.removeProperty('--accent');
   document.documentElement.style.removeProperty('--accent-light');
   // Hide settings header
@@ -4801,9 +4939,15 @@ function removePlayer(id) {
   state.players = state.players.filter(p => p.id !== id);
   delete state.attendance[id];
   state.lineup = state.lineup.filter(r => r.playerId !== id);
+  // Remember the Firestore doc id so auto-save can delete it. Only players
+  // that were loaded from Firestore (imp_*) or created in this session
+  // under a p_* id get tracked; never touch anything else.
+  const docId = id.replace(/^(imp_|p_)/, '') || id;
+  _pendingPlayerDeletes.add(docId);
   renderPlayerList();
   updateStep2Status();
   save();
+  scheduleRosterSave();
 }
 
 function togglePrefPos(playerId, pos) {
@@ -4814,6 +4958,7 @@ function togglePrefPos(playerId, pos) {
   else player.prefPos.splice(idx, 1);
   renderPlayerList();
   save();
+  scheduleRosterSave();
 }
 
 function setFieldPriority(playerId, priority) {
@@ -4822,6 +4967,7 @@ function setFieldPriority(playerId, priority) {
   player.fieldPriority = priority;
   renderPlayerList();
   save();
+  scheduleRosterSave();
 }
 
 // Rate a player's batting skill (Power / Contact / Speed) on a 1–10 scale.
@@ -4834,12 +4980,121 @@ function setPlayerSkill(playerId, skill, value) {
   const v = Math.max(1, Math.min(10, parseInt(value, 10) || 5));
   player.battingSkills[skill] = v;
   save();
+  scheduleRosterSave();
 }
 
 function updatePlayerName(id, name) {
   const p = state.players.find(p => p.id === id);
   if (p) p.name = name;
   save();
+  scheduleRosterSave();
+}
+
+// ───────────────────────────────────────────────────────────
+// ROSTER AUTO-SAVE
+// ───────────────────────────────────────────────────────────
+// The Players page edits (names, positions, priorities, batting skills)
+// need to persist to Firestore, not just localStorage — otherwise the next
+// selectTeam() fetch overwrites the in-memory state and the coach loses
+// their edits. Debounce writes so we don't hit Firestore on every slider tick.
+let _rosterSaveTimer = null;
+let _rosterSaveInFlight = null;     // Promise currently writing
+let _rosterSaveDirty = false;       // changes arrived while a write was in flight
+let _rosterSaveHideTimer = null;
+const ROSTER_SAVE_DEBOUNCE_MS = 800;
+
+function isPlayersViewActive() {
+  const el = document.getElementById('view-players');
+  return !!(el && el.classList.contains('active'));
+}
+
+function setRosterSaveStatus(state /* 'saving' | 'saved' | 'error' | 'idle' */) {
+  const el = document.getElementById('roster-save-status');
+  if (!el) return;
+  if (_rosterSaveHideTimer) { clearTimeout(_rosterSaveHideTimer); _rosterSaveHideTimer = null; }
+  el.classList.remove('saving', 'saved', 'error', 'visible');
+  if (state === 'saving') {
+    el.textContent = 'Saving…';
+    el.classList.add('saving', 'visible');
+  } else if (state === 'saved') {
+    el.textContent = 'Saved ✓';
+    el.classList.add('saved', 'visible');
+    _rosterSaveHideTimer = setTimeout(() => {
+      el.classList.remove('visible');
+    }, 1800);
+  } else if (state === 'error') {
+    el.textContent = 'Save failed — retrying…';
+    el.classList.add('error', 'visible');
+  } else {
+    el.textContent = '';
+  }
+}
+
+function scheduleRosterSave() {
+  // Only auto-save when the user is actually on the Players management view.
+  // The same edit handlers are used from the builder wizard (step 2), which
+  // has its own explicit "Save Team" flow we don't want to interfere with.
+  if (!isPlayersViewActive()) return;
+  if (!ALLOW_TEAM_CREATION) return;
+  if (!_activeTeamId) return;
+  if (_rosterSaveTimer) clearTimeout(_rosterSaveTimer);
+  setRosterSaveStatus('saving');
+  _rosterSaveTimer = setTimeout(runRosterSave, ROSTER_SAVE_DEBOUNCE_MS);
+}
+
+async function runRosterSave() {
+  _rosterSaveTimer = null;
+  // If a write is already in progress, mark dirty and let the in-flight one
+  // trigger another pass when it finishes.
+  if (_rosterSaveInFlight) {
+    _rosterSaveDirty = true;
+    return _rosterSaveInFlight;
+  }
+  _rosterSaveDirty = false;
+  _rosterSaveInFlight = (async () => {
+    try {
+      const ok = await saveRosterOnlyToFirestore();
+      if (!ok) {
+        setRosterSaveStatus('error');
+        // Retry once after a short delay
+        setTimeout(() => { if (!_rosterSaveInFlight) scheduleRosterSave(); }, 1500);
+        return false;
+      }
+      setRosterSaveStatus('saved');
+      return true;
+    } catch (e) {
+      console.error('runRosterSave error:', e);
+      setRosterSaveStatus('error');
+      return false;
+    } finally {
+      _rosterSaveInFlight = null;
+      // If more edits came in while we were saving, flush them now.
+      if (_rosterSaveDirty) {
+        _rosterSaveDirty = false;
+        scheduleRosterSave();
+      }
+    }
+  })();
+  return _rosterSaveInFlight;
+}
+
+// Called before navigating away from the Players view. Flushes any pending
+// debounced save immediately and waits for it (and any in-flight save) to
+// finish before resolving, so nothing is lost on back-to-dashboard.
+async function flushRosterSave() {
+  if (_rosterSaveTimer) {
+    clearTimeout(_rosterSaveTimer);
+    _rosterSaveTimer = null;
+    await runRosterSave();
+  }
+  if (_rosterSaveInFlight) {
+    try { await _rosterSaveInFlight; } catch (e) { /* already logged */ }
+  }
+  // Handle the edge case where the in-flight save picked up a dirty flag
+  // and kicked off another pass while we were awaiting.
+  if (_rosterSaveTimer || _rosterSaveInFlight) {
+    return flushRosterSave();
+  }
 }
 
 function renderPlayerList() {
