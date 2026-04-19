@@ -1103,8 +1103,8 @@
     .pos-select.filled { background-color: var(--white); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
 
-    /* ── LINEUP TABLE: MOBILE ── */
-    @media (max-width: 700px) {
+    /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
+    @media (pointer: coarse) {
       .lineup-table th, .lineup-table td {
         padding: 8px 4px;
       }
@@ -1133,8 +1133,8 @@
         background-color: var(--bg-secondary);
       }
       .pos-select.filled {
-        background-color: var(--accent);
-        color: #fff;
+        background-color: var(--white);
+        color: var(--text);
       }
       .pos-select.bench {
         background-color: var(--bench-bg);
