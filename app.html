@@ -1102,6 +1102,9 @@
     .pos-select:hover { background-color: var(--gray-5); }
     .pos-select.filled { background-color: var(--white); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
+    .pos-select optgroup { font-weight: 600; font-size: 12px; color: var(--muted); }
+    .pos-select optgroup[label="Taken"] { color: #C7C7CC; }
+    .pos-select option { font-weight: 400; color: var(--text); }
 
     /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
     @media (pointer: coarse) {
@@ -5528,14 +5531,49 @@ function renderLineupGrid() {
     for (let i = 0; i < state.innings; i++) {
       const val = lineupRow.positions[i] || '';
       const cls = val === 'Bench' ? 'bench' : val ? 'filled' : '';
+
+      // Find positions taken by OTHER players in this inning
+      const takenInInning = new Set();
+      activeLineup.forEach(otherRow => {
+        if (otherRow.playerId === player.id) return;
+        const otherPos = otherRow.positions[i];
+        if (otherPos && otherPos !== 'Bench') takenInInning.add(otherPos);
+      });
+
+      const allPositions = getActiveFieldPositions();
+      const openPositions = allPositions.filter(p => !takenInInning.has(p));
+      const takenPositions = allPositions.filter(p => takenInInning.has(p));
+
+      let options = `<option value="">—</option>`;
+      if (openPositions.length > 0 && openPositions.length < allPositions.length) {
+        // Only show grouping when some positions are taken (i.e. there's a meaningful distinction)
+        options += `<optgroup label="Open Positions">`;
+        options += openPositions.map(pos =>
+          `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
+        ).join('');
+        options += `</optgroup>`;
+        if (takenPositions.length > 0) {
+          options += `<optgroup label="Taken">`;
+          options += takenPositions.map(pos =>
+            `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
+          ).join('');
+          options += `</optgroup>`;
+        }
+        options += `<optgroup label="─────────"></optgroup>`;
+        options += `<option value="Bench" ${val==='Bench'?'selected':''}>Bench</option>`;
+      } else {
+        // All open or all taken — flat list, no groups needed
+        options += allPositions.map(pos =>
+          `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
+        ).join('');
+        options += `<option value="Bench" ${val==='Bench'?'selected':''}>Bench</option>`;
+      }
+
       cells += `
         <td>
           <select class="pos-select ${cls}" data-player="${player.id}" data-inning="${i}"
                   onchange="onPosChange('${player.id}',${i},this.value)">
-            <option value="">—</option>
-            ${[...getActiveFieldPositions(), 'Bench'].map(pos =>
-              `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
-            ).join('')}
+            ${options}
           </select>
         </td>`;
     }
