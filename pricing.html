@@ -844,8 +844,8 @@
       <nav class="header-nav" aria-label="Main navigation">
         <a href="/#features" class="header-nav-link">Features</a>
         <a href="/#how-it-works" class="header-nav-link">How It Works</a>
-        <a href="/pricing.html" class="header-nav-link active">Pricing</a>
-        <a href="/app.html" class="header-nav-link">Open Builder</a>
+        <a href="/pricing" class="header-nav-link active">Pricing</a>
+        <a href="/app" class="header-nav-link">Open Builder</a>
         <div class="nav-auth" id="nav-auth">
           <button class="btn-nav-signin" onclick="openAuthModal('signin')">Sign In</button>
           <button class="btn-nav-signup" onclick="openAuthModal('signup')">Sign Up</button>
@@ -860,7 +860,7 @@
               <div class="nav-dropdown-name" id="nav-dropdown-name"></div>
               <div class="nav-dropdown-email" id="nav-dropdown-email"></div>
             </div>
-            <a href="/app.html" class="nav-dropdown-item">Open Builder</a>
+            <a href="/app" class="nav-dropdown-item">Open Builder</a>
             <button class="nav-dropdown-item danger" onclick="doSignOut()">Sign Out</button>
           </div>
         </div>
@@ -872,8 +872,8 @@
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
       <a href="/#features">Features</a>
       <a href="/#how-it-works">How It Works</a>
-      <a href="/pricing.html">Pricing</a>
-      <a href="/app.html">Open Builder</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/app">Open Builder</a>
       <div id="mobile-auth" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
         <button class="btn-cta" onclick="openAuthModal('signin')" style="width:100%;justify-content:center;">Sign In</button>
         <button class="btn-cta btn-cta-green" onclick="openAuthModal('signup')" style="width:100%;justify-content:center;">Sign Up Free</button>
@@ -968,7 +968,7 @@
         <strong>Already a Lineup DJ subscriber?</strong>
         <span>Sign in with your Lineup DJ account to get free access to Pro.</span>
       </div>
-      <a href="/app.html" class="btn-cta btn-outline">Sign In</a>
+      <a href="/app" class="btn-cta btn-outline">Sign In</a>
     </div>
   </section>
 
@@ -1098,7 +1098,7 @@
       <p>Start your 7-day free trial today. Lineup DJ subscribers get free access.</p>
       <div class="cta-buttons">
         <button onclick="startCheckout()" class="btn-cta btn-cta-green btn-cta-lg">Start Free Trial</button>
-        <a href="/app.html" class="btn-cta btn-outline btn-cta-lg">
+        <a href="/app" class="btn-cta btn-outline btn-cta-lg">
           <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="20" height="20" />
           I Have Lineup DJ
         </a>
@@ -1545,7 +1545,7 @@
     (function() {
       var params = new URLSearchParams(window.location.search);
       if (params.get('cancelled') === 'true') {
-        history.replaceState(null, '', '/pricing.html');
+        history.replaceState(null, '', '/pricing');
       }
     })();
   </script>

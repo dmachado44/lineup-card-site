@@ -969,8 +969,8 @@
       <nav class="header-nav" aria-label="Main navigation">
         <a href="#features" class="header-nav-link">Features</a>
         <a href="#how-it-works" class="header-nav-link">How It Works</a>
-        <a href="/pricing.html" class="header-nav-link">Pricing</a>
-        <a href="/app.html" class="header-nav-link">Open Builder</a>
+        <a href="/pricing" class="header-nav-link">Pricing</a>
+        <a href="/app" class="header-nav-link">Open Builder</a>
         <div class="nav-auth" id="nav-auth">
           <button class="btn-nav-signin" onclick="openAuthModal('signin')">Sign In</button>
           <button class="btn-nav-signup" onclick="openAuthModal('signup')">Sign Up</button>
@@ -985,7 +985,7 @@
               <div class="nav-dropdown-name" id="nav-dropdown-name"></div>
               <div class="nav-dropdown-email" id="nav-dropdown-email"></div>
             </div>
-            <a href="/app.html" class="nav-dropdown-item">Open Builder</a>
+            <a href="/app" class="nav-dropdown-item">Open Builder</a>
             <button class="nav-dropdown-item danger" onclick="doSignOut()">Sign Out</button>
           </div>
         </div>
@@ -999,8 +999,8 @@
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
       <a href="#features">Features</a>
       <a href="#how-it-works">How It Works</a>
-      <a href="/pricing.html">Pricing</a>
-      <a href="/app.html">Open Builder</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/app">Open Builder</a>
       <div id="mobile-auth" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
         <button class="btn-cta" onclick="openAuthModal('signin')" style="width:100%;justify-content:center;">Sign In</button>
         <button class="btn-cta btn-cta-green" onclick="openAuthModal('signup')" style="width:100%;justify-content:center;">Sign Up Free</button>
@@ -1023,7 +1023,7 @@
       <h1>Build Fair Lineups for<br><span class="accent">Every Player</span></h1>
       <p class="hero-sub">The free lineup builder for youth baseball and softball. Auto-assign fielding positions, balance playing time, and get your lineup card ready in minutes.</p>
       <div class="hero-actions">
-        <a href="/app.html" class="btn-cta btn-cta-green btn-cta-lg">Start Building Lineups</a>
+        <a href="/app" class="btn-cta btn-cta-green btn-cta-lg">Start Building Lineups</a>
         <a href="#features" class="btn-cta btn-outline btn-cta-lg">See Features</a>
       </div>
       <p class="hero-note">Free for Lineup DJ subscribers. No download required.</p>
@@ -1138,7 +1138,7 @@
     <div class="container">
       <h2>Build Your First Lineup</h2>
       <p>Free for Lineup DJ subscribers. Set up your team, build a balanced lineup, and be ready for game day in minutes.</p>
-      <a href="/app.html" class="btn-cta btn-cta-green btn-cta-lg">Start Building Lineups</a>
+      <a href="/app" class="btn-cta btn-cta-green btn-cta-lg">Start Building Lineups</a>
     </div>
   </section>
 
@@ -1330,7 +1330,7 @@
         closeAuthModal();
 
         // Any logged-in user on the marketing page goes straight to the app
-        window.location.href = '/app.html';
+        window.location.href = '/app';
         return;
       } else {
         navAuth.style.display = '';
