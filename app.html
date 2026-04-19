@@ -1102,6 +1102,12 @@
     .pos-select:hover { background-color: var(--gray-5); }
     .pos-select.filled { background-color: var(--white); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
+    .pos-select.conflict {
+      background-color: #FEF2F2;
+      outline: 2px solid #EF4444;
+      outline-offset: -1px;
+      border-radius: 6px;
+    }
     .pos-select optgroup { font-weight: 600; font-size: 12px; color: var(--muted); }
     .pos-select optgroup[label="Taken"] { color: #C7C7CC; }
     .pos-select option { font-weight: 400; color: var(--text); }
@@ -5608,6 +5614,9 @@ function renderLineupGrid() {
       save();
     }
   });
+
+  // Highlight any existing conflicts after render
+  checkConflicts();
 }
 
 function onPosChange(playerId, inningIdx, value) {
@@ -5626,19 +5635,31 @@ function checkConflicts() {
   const conflicts = [];
   const attending = state.players.filter(p => state.attendance[p.id]);
 
+  // Clear all previous conflict highlights
+  document.querySelectorAll('.pos-select.conflict').forEach(el => el.classList.remove('conflict'));
+
   // Check 1: two players at the same position in the same inning (the real conflict)
   for (let inning = 0; inning < state.innings; inning++) {
-    const posUsed = {};
+    // First pass: collect all players at each position
+    const posPlayers = {};
     attending.forEach(player => {
       const row = state.lineup.find(r => r.playerId === player.id);
       if (!row) return;
       const pos = row.positions[inning];
       if (pos && pos !== 'Bench') {
-        if (posUsed[pos]) {
-          conflicts.push(`${pos} is assigned to multiple players in inning ${inning + 1}`);
-        } else {
-          posUsed[pos] = player.name;
-        }
+        if (!posPlayers[pos]) posPlayers[pos] = [];
+        posPlayers[pos].push(player.id);
+      }
+    });
+    // Second pass: flag duplicates
+    Object.entries(posPlayers).forEach(([pos, playerIds]) => {
+      if (playerIds.length > 1) {
+        conflicts.push(`${pos} is assigned to multiple players in inning ${inning + 1}`);
+        // Highlight each conflicting select
+        playerIds.forEach(pid => {
+          const sel = document.querySelector(`.pos-select[data-player="${pid}"][data-inning="${inning}"]`);
+          if (sel) sel.classList.add('conflict');
+        });
       }
     });
   }
