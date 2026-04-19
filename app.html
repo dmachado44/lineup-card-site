@@ -1103,6 +1103,45 @@
     .pos-select.filled { background-color: var(--white); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
 
+    /* ── LINEUP TABLE: MOBILE ── */
+    @media (max-width: 700px) {
+      .lineup-table th, .lineup-table td {
+        padding: 8px 4px;
+      }
+      .lineup-table td:first-child,
+      .lineup-table th:first-child {
+        min-width: 120px;
+        width: auto;
+        padding-left: 8px;
+        padding-right: 6px;
+      }
+      .player-cell .drag-grip { font-size: 12px; }
+      .bat-order {
+        width: 24px; height: 24px; font-size: 11px; border-radius: 6px;
+      }
+      .player-name { font-size: 13px; }
+      .fp-bar { display: none; }
+      .pos-select {
+        padding: 6px 4px;
+        font-size: 12px;
+        font-weight: 600;
+        height: 34px;
+        width: 100%;
+        text-align: center;
+        background-image: none;
+        border-radius: 6px;
+        background-color: var(--bg-secondary);
+      }
+      .pos-select.filled {
+        background-color: var(--accent);
+        color: #fff;
+      }
+      .pos-select.bench {
+        background-color: var(--bench-bg);
+        color: var(--text);
+      }
+    }
+
     .att-pill {
       display: inline-flex;
       align-items: center;
