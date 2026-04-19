@@ -1105,13 +1105,16 @@
 
     /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
     @media (pointer: coarse) {
+      .lineup-table { width: auto; min-width: 100%; }
       .lineup-table th, .lineup-table td {
         padding: 8px 4px;
+        width: 44px;
+        min-width: 44px;
       }
       .lineup-table td:first-child,
       .lineup-table th:first-child {
         min-width: 120px;
-        width: auto;
+        width: 120px;
         padding-left: 8px;
         padding-right: 6px;
       }
