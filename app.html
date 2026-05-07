@@ -1119,16 +1119,18 @@
       user-select: none;
     }
     .lineup-table th.inning-th:active { cursor: grabbing; }
-    .lineup-table th.inning-th.sortable-ghost { background: #F5F6F9; opacity: 0.6; }
+    .lineup-table th.inning-th.sortable-ghost { background: #F5F6F9; opacity: 0.5; }
     .lineup-table th.inning-th.sortable-chosen { background: var(--white); }
     .lineup-table th.inning-th.sortable-drag { background: var(--white); opacity: 1; }
+    /* The fallback element Sortable creates for forceFallback — hide it; we draw our own column ghost */
+    .inning-fallback { opacity: 0 !important; }
     .inning-trigger {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
+      gap: 6px;
       padding: 6px 10px;
-      min-width: 36px;
+      min-width: 44px;
       background: transparent;
       border: 1px solid transparent;
       border-radius: 6px;
@@ -1143,14 +1145,82 @@
       background: var(--white);
       border-color: var(--border);
     }
-    .inning-caret {
-      font-size: 9px;
-      color: var(--muted);
-      opacity: 0.45;
-      transition: opacity 0.1s;
+    .inning-grip {
+      display: inline-flex;
+      align-items: center;
+      font-size: 14px;
       line-height: 1;
+      color: var(--gray);
+      opacity: 0;
+      transition: opacity 0.12s;
+      pointer-events: none;
     }
-    .inning-trigger:hover .inning-caret { opacity: 1; }
+    .inning-trigger:hover .inning-grip,
+    .lineup-table th.inning-th:hover .inning-grip { opacity: 0.85; }
+    .inning-caret {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.7;
+      transition: opacity 0.1s, color 0.1s;
+      line-height: 1;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+    }
+    .inning-trigger:hover .inning-caret {
+      opacity: 1;
+      color: var(--text);
+    }
+
+    /* Column-drag visuals: dim the source column + show a floating column snapshot */
+    .lineup-table th.inning-th.col-drag-source { opacity: 0.35; }
+    .lineup-table td.col-drag-source-cell { opacity: 0.35; }
+
+    .column-drag-ghost {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: none;
+      background: var(--white);
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.22);
+      padding: 4px;
+      min-width: 72px;
+      font-size: 13px;
+      font-weight: 600;
+      transform: rotate(1.5deg);
+      opacity: 0.96;
+      overflow: hidden;
+    }
+    .column-drag-ghost .col-ghost-cell {
+      padding: 7px 10px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .column-drag-ghost .col-ghost-cell:last-child { border-bottom: none; }
+    .column-drag-ghost .col-ghost-header {
+      background: var(--bg-secondary);
+      font-size: 14px;
+      border-radius: 6px;
+      margin-bottom: 2px;
+      border-bottom: none;
+    }
+    .column-drag-ghost .col-ghost-cell.bench {
+      background: var(--bench-bg);
+      color: var(--muted);
+    }
+    .column-drag-ghost .col-ghost-cell.empty { color: var(--muted); }
+
+    @media (pointer: coarse) {
+      .column-drag-ghost { font-size: 12px; min-width: 60px; }
+      .column-drag-ghost .col-ghost-cell { padding: 5px 8px; }
+    }
 
     .inning-menu {
       position: fixed;
@@ -1195,8 +1265,15 @@
 
     @media (pointer: coarse) {
       .lineup-table th.inning-th { padding: 4px 2px; }
-      .inning-trigger { padding: 4px 4px; min-width: 0; gap: 2px; }
-      .inning-caret { display: none; }
+      .inning-trigger { padding: 4px 4px; min-width: 0; gap: 4px; }
+      .inning-grip { display: none; } /* hover-only on touch — hide */
+      .inning-caret {
+        opacity: 1;
+        background: transparent;
+        font-size: 10px;
+        width: 10px;
+        height: 10px;
+      }
     }
 
     /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
@@ -5598,13 +5675,15 @@ function renderLineupGrid() {
   });
 
   let hRow = `<tr id="lineup-thead-row"><th class="player-th">Player</th>`;
+  const caretSvg = `<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   for (let i = 1; i <= state.innings; i++) {
-    hRow += `<th class="inning-th" data-inning="${i - 1}">` +
+    hRow += `<th class="inning-th" data-inning="${i - 1}" title="Drag to reorder · Click for options">` +
             `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
               `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
               `aria-label="Inning ${i} actions">` +
+              `<span class="inning-grip" aria-hidden="true">⠿</span>` +
               `<span class="inning-num">${i}</span>` +
-              `<span class="inning-caret" aria-hidden="true">▾</span>` +
+              `<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
             `</button>` +
             `</th>`;
   }
@@ -5622,6 +5701,12 @@ function renderLineupGrid() {
         handle: '.inning-th',
         filter: '.player-th',
         preventOnFilter: false,
+        forceFallback: true,
+        fallbackClass: 'inning-fallback',
+        fallbackOnBody: true,
+        delay: 200,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
         ghostClass: 'sortable-ghost',
         chosenClass: 'sortable-chosen',
         dragClass: 'sortable-drag',
@@ -5629,8 +5714,19 @@ function renderLineupGrid() {
           // Don't allow dropping onto the Player column
           return !evt.related.classList.contains('player-th');
         },
-        onStart() { closeInningMenu(); },
+        onStart(evt) {
+          closeInningMenu();
+          const fromIdx = parseInt(evt.item.dataset.inning, 10);
+          if (!isNaN(fromIdx)) {
+            startColumnDragGhost(fromIdx, evt.originalEvent);
+            highlightSourceColumn(fromIdx, true);
+          }
+        },
         onEnd(evt) {
+          endColumnDragGhost();
+          // Clear all source highlights — re-render will rebuild headers anyway
+          document.querySelectorAll('.col-drag-source').forEach(el => el.classList.remove('col-drag-source'));
+          document.querySelectorAll('.col-drag-source-cell').forEach(el => el.classList.remove('col-drag-source-cell'));
           // Subtract 1 because the first th is the Player column
           const oldIdx = evt.oldIndex - 1;
           const newIdx = evt.newIndex - 1;
@@ -5812,6 +5908,88 @@ function clearInningPositions(idx) {
   renderLineupGrid();
   renderPlayingTimeSummary();
   save();
+}
+
+// ═══════════════════════════════════════════════════
+// COLUMN DRAG GHOST — render the whole column as it's dragged
+// ═══════════════════════════════════════════════════
+let _columnDragGhost = null;
+let _columnDragMoveHandler = null;
+
+function startColumnDragGhost(inningIdx, originalEvent) {
+  endColumnDragGhost();
+
+  const ghost = document.createElement('div');
+  ghost.className = 'column-drag-ghost';
+
+  const header = document.createElement('div');
+  header.className = 'col-ghost-cell col-ghost-header';
+  header.textContent = inningIdx + 1;
+  ghost.appendChild(header);
+
+  const activeLineup = state.lineup.filter(r => {
+    const p = state.players.find(p => p.id === r.playerId);
+    return p && state.attendance[p.id];
+  });
+
+  activeLineup.forEach(row => {
+    const cell = document.createElement('div');
+    cell.className = 'col-ghost-cell';
+    const val = row.positions[inningIdx] || '';
+    if (!val) {
+      cell.textContent = '—';
+      cell.classList.add('empty');
+    } else if (val === 'Bench') {
+      cell.textContent = 'Bench';
+      cell.classList.add('bench');
+    } else {
+      cell.textContent = val;
+    }
+    ghost.appendChild(cell);
+  });
+
+  document.body.appendChild(ghost);
+  _columnDragGhost = ghost;
+
+  const move = (ev) => {
+    const x = ev.clientX !== undefined ? ev.clientX
+            : (ev.touches && ev.touches[0] ? ev.touches[0].clientX : null);
+    const y = ev.clientY !== undefined ? ev.clientY
+            : (ev.touches && ev.touches[0] ? ev.touches[0].clientY : null);
+    if (x === null || y === null) return;
+    ghost.style.left = (x - ghost.offsetWidth / 2) + 'px';
+    ghost.style.top = (y - 18) + 'px';
+  };
+
+  // Initial position from the event that started the drag
+  if (originalEvent) move(originalEvent);
+
+  document.addEventListener('mousemove', move);
+  document.addEventListener('touchmove', move, { passive: true });
+  _columnDragMoveHandler = move;
+}
+
+function endColumnDragGhost() {
+  if (_columnDragGhost) {
+    _columnDragGhost.remove();
+    _columnDragGhost = null;
+  }
+  if (_columnDragMoveHandler) {
+    document.removeEventListener('mousemove', _columnDragMoveHandler);
+    document.removeEventListener('touchmove', _columnDragMoveHandler);
+    _columnDragMoveHandler = null;
+  }
+}
+
+function highlightSourceColumn(inningIdx, on) {
+  const headerTh = document.querySelector(`.lineup-table th.inning-th[data-inning="${inningIdx}"]`);
+  if (headerTh) headerTh.classList.toggle('col-drag-source', on);
+  const tbody = document.getElementById('lineup-tbody');
+  if (!tbody) return;
+  tbody.querySelectorAll(`.pos-select[data-inning="${inningIdx}"]`).forEach(sel => {
+    const td = sel.closest('td');
+    if (td) td.classList.toggle('col-drag-source-cell', on);
+  });
 }
 
 // ═══════════════════════════════════════════════════
