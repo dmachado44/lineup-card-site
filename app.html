@@ -1607,6 +1607,27 @@
     .schedule-item-action { font-size: 13px; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
     .schedule-item:not(.schedule-past) .schedule-item-action { color: var(--green); font-weight: 600; }
     .schedule-item-action .lineup-linked { color: var(--green); font-weight: 600; }
+    /* Draft-in-progress badge — orange, distinct from the green "Lineup saved" badge */
+    .schedule-item-action .lineup-draft {
+      color: #B86E00;
+      font-weight: 600;
+      background: #FFF3E0;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-size: 12px;
+    }
+    .schedule-item:not(.schedule-past) .schedule-item-action:has(.lineup-draft) { color: #B86E00; }
+    /* Draft saved/saving status indicator inside the lineup builder */
+    .draft-status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-right: 12px;
+      transition: opacity 0.2s;
+      min-width: 110px;
+      text-align: right;
+    }
+    .draft-status.draft-status-saved { color: var(--green); }
+    .draft-status.draft-status-saving { color: var(--muted); font-style: italic; }
     .schedule-chevron { font-size: 16px; color: var(--gray-3); transition: color 0.15s; }
     .schedule-item:hover .schedule-chevron { color: var(--muted); }
     .schedule-past .schedule-item-info { opacity: 0.55; transition: opacity 0.2s ease-out; }
@@ -2610,6 +2631,7 @@
           </div>
           <div class="flex-row gap-sm flex-wrap">
             <button class="btn btn-ghost btn-sm" onclick="printLineupDetail()">🖨 Print</button>
+            <button class="btn btn-primary btn-sm" onclick="editCurrentLineupDetail()">✏️ Edit Lineup</button>
           </div>
         </div>
         <div class="lineup-wrap mb-lg">
@@ -2991,6 +3013,8 @@
         <div style="flex:1;"></div>
         <div class="flex-row gap-md">
           <div class="text-muted" id="step2-status"></div>
+          <div class="draft-status" id="draft-saved-status-step3"></div>
+          <button id="step3-save-draft" class="btn btn-outline" style="display:none" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
           <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
           <button id="step3-continue" class="btn btn-primary btn-lg" onclick="goToStep4()">Continue to Edit Lineup →</button>
         </div>
@@ -3075,6 +3099,9 @@
 
       <div class="step-footer">
         <button id="step4-back" class="btn btn-back" onclick="goToStep3()">← Back to Setup</button>
+        <div style="flex:1;"></div>
+        <div class="draft-status" id="draft-saved-status"></div>
+        <button id="step4-save-draft" class="btn btn-outline" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
         <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
       </div>
     </div>
@@ -3806,6 +3833,10 @@ async function enterBuilder(teamId, mode, startStep) {
     } else {
       resetForNewTeam();
     }
+    // Each new builder session starts without an "editing existing lineup"
+    // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
+    // back if the user is genuinely editing an existing lineup.
+    if (mode === 'lineup') state.editingLineupDocId = null;
     setStep(startStep);
   }
 
@@ -3831,6 +3862,7 @@ function resetForNewTeam() {
   state.attendance = {};
   state.gamePositions = [];
   state.lineup = [];
+  state.editingLineupDocId = null;
 
   // Sync all form fields to blank
   const textFields = ['team-name','team-level','team-age-group','team-notes',
@@ -3893,8 +3925,10 @@ function updateStepFooters() {
   const step1cont     = document.getElementById('step1-continue');
   const step3back     = document.getElementById('step3-back');
   const step3saveExit = document.getElementById('step3-save-exit');
+  const step3saveDraft = document.getElementById('step3-save-draft');
   const step3cont     = document.getElementById('step3-continue');
   const step4back     = document.getElementById('step4-back');
+  const step4saveDraft = document.getElementById('step4-save-draft');
   const gameInfoSection = document.getElementById('step3-game-info');
   const rosterSection   = document.getElementById('step3-roster');
 
@@ -3902,8 +3936,10 @@ function updateStepFooters() {
   if (step1cont)     { step1cont.textContent = 'Continue to League Rules →'; step1cont.onclick = goToStep2; step1cont.style.display = ''; }
   if (step3back)     { step3back.style.display = ''; step3back.textContent = '← Back to League Rules'; step3back.onclick = goToStep2; }
   if (step3saveExit) { step3saveExit.style.display = 'none'; }
+  if (step3saveDraft){ step3saveDraft.style.display = 'none'; }
   if (step3cont)     { step3cont.textContent = 'Continue to Edit Lineup →'; step3cont.onclick = goToStep4; }
   if (step4back)     { step4back.style.display = ''; step4back.textContent = '← Back to Setup'; step4back.onclick = goToStep3; }
+  if (step4saveDraft){ step4saveDraft.style.display = 'none'; }
 
   if (_appMode === 'setup') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
@@ -3921,6 +3957,9 @@ function updateStepFooters() {
     if (step3back) step3back.style.display = 'none';
     if (step3cont) { step3cont.textContent = 'Continue to Edit Lineup →'; step3cont.onclick = goToStep4; }
     if (step4back) { step4back.style.display = ''; step4back.textContent = '← Back to Game Info'; step4back.onclick = goToStep3; }
+    // Save Draft & Exit only makes sense while a lineup is in progress.
+    if (step3saveDraft) step3saveDraft.style.display = '';
+    if (step4saveDraft) step4saveDraft.style.display = '';
   } else if (_appMode === 'roster') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
@@ -4304,6 +4343,37 @@ function viewLineupDetail(lineupId) {
   }).join('');
 }
 
+// Edit the currently-shown saved lineup. Loads it into the builder so the
+// user can adjust attendance/positions/order; re-saving merges into the same
+// Firestore doc (no duplicates) thanks to state.editingLineupDocId.
+function editCurrentLineupDetail() {
+  const lineup = _pastLineups.find(l => l.id === _viewingLineupId);
+  if (!lineup) return;
+  // Drive through the builder for whichever team owns this lineup.
+  // _lineupsTeamId is set whether we got here via the Lineups view or
+  // via viewScheduleLineup (which reuses that view).
+  const teamId = _lineupsTeamId || _scheduleTeamId || _activeTeamId;
+  if (!teamId) return;
+  enterBuilder(teamId, 'lineup', 3).then(() => {
+    // Prefer a draft if the user already has one going for this game
+    const all = readAllDrafts();
+    const key = getDraftKey(teamId, lineup.gameDate, lineup.opponent);
+    if (key && all[key]) {
+      applyDraftToState(all[key]);
+      try { _draftLastSavedAt = new Date(all[key].updatedAt).getTime(); } catch(e) {}
+      updateDraftSavedIndicator();
+    } else {
+      loadSavedLineupIntoBuilder(lineup);
+    }
+    save();
+    // Jump straight to the edit grid since they're editing an existing lineup
+    if (typeof goToStep4 === 'function') {
+      // Defer so any selectTeam-triggered renders settle first
+      setTimeout(() => goToStep4(), 0);
+    }
+  });
+}
+
 function printLineupDetail() {
   // Populate print sheet from past lineup detail view
   const lineup = _pastLineups.find(l => l.id === _viewingLineupId);
@@ -4658,18 +4728,31 @@ function renderSchedule() {
       l.opponent === game.opponent && l.gameDate === game.date
     );
 
+    // Drafts beat saved lineups: if the user has unsaved work for this
+    // game, take them straight back to it.
+    const draftHit = findDraftForScheduleGame(_scheduleTeamId, game);
+
     let actionHtml;
-    if (matchedLineup) {
+    let onclick;
+    if (draftHit) {
+      const ago = relativeTimeShort(draftHit.draft.updatedAt);
+      const label = matchedLineup
+        ? 'Draft (editing) · ' + ago
+        : 'Draft in progress · ' + ago;
+      actionHtml = `<div class="schedule-item-action">` +
+        `<span class="lineup-draft" title="Resume your draft">${label}</span>` +
+        `<span class="schedule-chevron">›</span></div>`;
+      onclick = `createLineupFromSchedule(${idx})`;
+    } else if (matchedLineup) {
       actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
+      onclick = `viewScheduleLineup('${matchedLineup.id}')`;
     } else if (!isPast) {
       actionHtml = `<div class="schedule-item-action">Create Lineup<span class="schedule-chevron">›</span></div>`;
+      onclick = `createLineupFromSchedule(${idx})`;
     } else {
       actionHtml = `<div class="schedule-item-action"><span class="schedule-chevron">›</span></div>`;
+      onclick = `createLineupFromSchedule(${idx})`;
     }
-
-    const onclick = matchedLineup
-      ? `viewScheduleLineup('${matchedLineup.id}')`
-      : `createLineupFromSchedule(${idx})`;
 
     return `
       <div class="schedule-item ${isPast ? 'schedule-past' : ''}" role="button" tabindex="0" aria-label="${game.isHome ? 'Home' : 'Away'} game vs ${escHtml(game.opponent)}, ${dayStr}" onclick="${onclick}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclick}}">
@@ -4711,7 +4794,11 @@ function renderSchedule() {
   container.innerHTML = html;
 }
 
-// Auto-fill game details from a schedule game and jump into lineup builder
+// Auto-fill game details from a schedule game and jump into lineup builder.
+// Three flavors based on what already exists for this game:
+//   1) A draft in localStorage  → resume the draft (lineup, attendance, etc.)
+//   2) A saved Firestore lineup → load it for editing (merge on next save)
+//   3) Neither                  → auto-fill game info, fresh build
 async function createLineupFromSchedule(gameIndex) {
   const game = _scheduleGames[gameIndex];
   if (!game) return;
@@ -4719,7 +4806,26 @@ async function createLineupFromSchedule(gameIndex) {
   // Enter builder in lineup mode for the current schedule team
   await enterBuilder(_scheduleTeamId, 'lineup', 3);
 
-  // Auto-fill game fields
+  // 1) Resume an in-progress draft for this exact game, if one exists
+  const draftHit = findDraftForScheduleGame(_scheduleTeamId, game);
+  if (draftHit) {
+    applyDraftToState(draftHit.draft);
+    try { _draftLastSavedAt = new Date(draftHit.draft.updatedAt).getTime(); } catch(e) {}
+    updateDraftSavedIndicator();
+    save(); // persists the loaded state into lineupDJ_state too
+    return;
+  }
+
+  // 2) Load an existing saved lineup for editing
+  const savedLineup = (Array.isArray(_scheduleLineups) ? _scheduleLineups : [])
+    .find(l => l.opponent === game.opponent && l.gameDate === game.date);
+  if (savedLineup) {
+    loadSavedLineupIntoBuilder(savedLineup);
+    save();
+    return;
+  }
+
+  // 3) Fresh build — auto-fill from schedule
   const gameName = (game.isHome ? 'vs ' : '@ ') + game.opponent;
   document.getElementById('game-name').value = gameName;
   document.getElementById('opponent').value = game.opponent;
@@ -4733,7 +4839,35 @@ async function createLineupFromSchedule(gameIndex) {
   state.gameDate = game.date;
   state.gameTime = game.time;
   state.gameLocation = game.location || '';
+  state.editingLineupDocId = null;
   save();
+}
+
+// Hydrate the builder from a saved Firestore lineup so the user can edit
+// and re-save into the same doc.
+function loadSavedLineupIntoBuilder(lineup) {
+  if (!lineup) return;
+  state.gameName     = lineup.gameName || '';
+  state.opponent     = lineup.opponent || '';
+  state.gameDate     = lineup.gameDate || '';
+  state.gameTime     = lineup.gameTime || '';
+  state.gameLocation = lineup.gameLocation || '';
+  state.gameNotes    = lineup.gameNotes || '';
+  state.innings      = lineup.innings || 6;
+  state.editingLineupDocId = lineup.id;
+  // Reconstruct lineup rows from the saved players array (already sorted by batOrder)
+  const sortedPlayers = (lineup.players || []).slice().sort(
+    (a, b) => (a.batOrder || 0) - (b.batOrder || 0)
+  );
+  state.lineup = sortedPlayers.map(p => ({
+    playerId:  p.playerId,
+    positions: Array.isArray(p.positions) ? p.positions.slice() : []
+  }));
+  // Mark all listed players as attending — anyone not in the saved lineup
+  // wasn't there for that game.
+  state.attendance = {};
+  sortedPlayers.forEach(p => { state.attendance[p.playerId] = true; });
+  syncBuilderFormFromState();
 }
 
 // View a saved lineup from the schedule (reuses the Past Lineups detail view)
@@ -5090,6 +5224,9 @@ const state = {
   players: [],
   attendance: {},
   lineup: [],
+  // Set when editing an existing Firestore lineup so re-saves update
+  // the same doc (merge:true) instead of creating a duplicate.
+  editingLineupDocId: null,
 };
 
 function init() {
@@ -5110,6 +5247,8 @@ function init() {
       state.attendance = {};
       state.gamePositions = [];
       state.lineup     = [];
+      // editingLineupDocId is per-builder-session; never persist across reloads
+      state.editingLineupDocId = null;
 
       if (document.getElementById('team-name')) document.getElementById('team-name').value = state.teamName || '';
       if (document.getElementById('team-year')) document.getElementById('team-year').value = state.teamYear || new Date().getFullYear();
@@ -5151,6 +5290,275 @@ function save() {
   state.gameLocation = document.getElementById('game-location').value.trim();
   state.gameNotes = document.getElementById('game-notes').value.trim();
   try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch(e) {}
+  // Auto-save the lineup as a draft when the user is actively building one
+  markLineupDirty();
+}
+
+// ═══════════════════════════════════════════════════
+// LINEUP DRAFTS — local-only working state per game.
+// Drafts live entirely in localStorage and never touch Firestore.
+// They survive tab close and let the user resume mid-build, and
+// power the "Draft in progress" badge on the Schedule view.
+// ═══════════════════════════════════════════════════
+const DRAFTS_STORAGE_KEY = 'lineupDJ_drafts_v1';
+
+function getDraftKey(teamId, gameDate, opponent) {
+  if (!teamId) return null;
+  const gd = gameDate || '';
+  const op = (opponent || '').toLowerCase().trim();
+  // Need at least a date OR an opponent to scope a draft
+  if (!gd && !op) return null;
+  return `${teamId}::${gd}::${op}`;
+}
+
+function getCurrentDraftKey() {
+  return getDraftKey(_activeTeamId, state.gameDate, state.opponent);
+}
+
+function readAllDrafts() {
+  try { return JSON.parse(localStorage.getItem(DRAFTS_STORAGE_KEY) || '{}'); }
+  catch(e) { return {}; }
+}
+
+function writeAllDrafts(map) {
+  try { localStorage.setItem(DRAFTS_STORAGE_KEY, JSON.stringify(map)); } catch(e) {}
+}
+
+function buildDraftRecord() {
+  return {
+    teamId: _activeTeamId,
+    gameName: state.gameName || '',
+    opponent: state.opponent || '',
+    gameDate: state.gameDate || '',
+    gameTime: state.gameTime || '',
+    gameLocation: state.gameLocation || '',
+    gameNotes: state.gameNotes || '',
+    innings: state.innings || 6,
+    strategyLevel: state.strategyLevel || 3,
+    gamePositions: Array.isArray(state.gamePositions) ? state.gamePositions.slice() : [],
+    attendance: Object.assign({}, state.attendance || {}),
+    lineup: Array.isArray(state.lineup)
+      ? state.lineup.map(r => ({
+          playerId: r.playerId,
+          positions: Array.isArray(r.positions) ? r.positions.slice() : []
+        }))
+      : [],
+    editingLineupDocId: state.editingLineupDocId || null,
+    updatedAt: new Date().toISOString()
+  };
+}
+
+let _draftSaveTimer = null;
+let _draftLastSavedAt = null;
+let _draftIndicatorTimer = null;
+
+// Heuristic: only worth saving a draft if there's something interesting
+// in the lineup (some attendance, an assigned position, or game info typed).
+function draftHasContent() {
+  if ((state.gameName || '').trim()) return true;
+  if ((state.opponent || '').trim()) return true;
+  if ((state.gameLocation || '').trim()) return true;
+  if (state.attendance && Object.values(state.attendance).some(v => v)) return true;
+  if (Array.isArray(state.lineup) && state.lineup.some(r =>
+    Array.isArray(r.positions) && r.positions.some(p => p && p !== '')
+  )) return true;
+  return false;
+}
+
+function flushDraftSave() {
+  const key = getCurrentDraftKey();
+  if (!key) return false;
+  if (!draftHasContent()) return false;
+  const all = readAllDrafts();
+  all[key] = buildDraftRecord();
+  writeAllDrafts(all);
+  _draftLastSavedAt = Date.now();
+  updateDraftSavedIndicator();
+  return true;
+}
+
+function markLineupDirty() {
+  if (_appMode !== 'lineup') return;
+  if (_currentStep < 3) return;
+  if (_draftSaveTimer) clearTimeout(_draftSaveTimer);
+  _draftSaveTimer = setTimeout(() => {
+    _draftSaveTimer = null;
+    flushDraftSave();
+  }, 600);
+  // Show "Saving…" hint immediately
+  updateDraftSavedIndicator(true);
+}
+
+function clearDraftForCurrent() {
+  // Cancel any pending debounced save so it can't re-create the draft we
+  // just deleted (e.g. immediately after Save & Export commits to Firestore).
+  if (_draftSaveTimer) { clearTimeout(_draftSaveTimer); _draftSaveTimer = null; }
+  const key = getCurrentDraftKey();
+  if (!key) return;
+  const all = readAllDrafts();
+  if (all[key]) {
+    delete all[key];
+    writeAllDrafts(all);
+  }
+  _draftLastSavedAt = null;
+  updateDraftSavedIndicator();
+}
+
+function loadDraftByKey(key) {
+  if (!key) return null;
+  const all = readAllDrafts();
+  return all[key] || null;
+}
+
+function findDraftForScheduleGame(teamId, game) {
+  if (!teamId || !game) return null;
+  const key = getDraftKey(teamId, game.date, game.opponent);
+  if (!key) return null;
+  const all = readAllDrafts();
+  return all[key] ? { key, draft: all[key] } : null;
+}
+
+function applyDraftToState(d) {
+  if (!d) return;
+  state.gameName = d.gameName || '';
+  state.opponent = d.opponent || '';
+  state.gameDate = d.gameDate || '';
+  state.gameTime = d.gameTime || '';
+  state.gameLocation = d.gameLocation || '';
+  state.gameNotes = d.gameNotes || '';
+  state.innings = d.innings || 6;
+  state.strategyLevel = d.strategyLevel || 3;
+  state.gamePositions = Array.isArray(d.gamePositions) ? d.gamePositions.slice() : [];
+  state.attendance = Object.assign({}, d.attendance || {});
+  state.lineup = Array.isArray(d.lineup)
+    ? d.lineup.map(r => ({
+        playerId: r.playerId,
+        positions: Array.isArray(r.positions) ? r.positions.slice() : []
+      }))
+    : [];
+  state.editingLineupDocId = d.editingLineupDocId || null;
+  syncBuilderFormFromState();
+}
+
+function syncBuilderFormFromState() {
+  const set = (id, v) => { const el = document.getElementById(id); if (el != null) el.value = v; };
+  set('game-name', state.gameName || '');
+  set('opponent', state.opponent || '');
+  set('game-date', state.gameDate || '');
+  set('game-time', state.gameTime || '');
+  set('game-location', state.gameLocation || '');
+  set('game-notes', state.gameNotes || '');
+  const ic = document.getElementById('inning-count');
+  if (ic) ic.textContent = state.innings || 6;
+  const ss = document.getElementById('strategy-slider');
+  if (ss) {
+    ss.value = state.strategyLevel || 3;
+    if (typeof updateStrategyLabel === 'function') updateStrategyLabel(ss.value);
+  }
+}
+
+function relativeTimeShort(ts) {
+  if (!ts) return '';
+  const d = (typeof ts === 'string') ? new Date(ts).getTime() : ts;
+  const diff = Math.max(0, Date.now() - d);
+  const s = Math.floor(diff / 1000);
+  if (s < 5)   return 'just now';
+  if (s < 60)  return s + 's ago';
+  const m = Math.floor(s / 60);
+  if (m < 60)  return m + 'm ago';
+  const h = Math.floor(m / 60);
+  if (h < 24)  return h + 'h ago';
+  const dy = Math.floor(h / 24);
+  return dy + 'd ago';
+}
+
+function updateDraftSavedIndicator(saving) {
+  // There are two slots — one in step 3 footer, one in step 4 footer —
+  // and only the visible one matters, but updating both is cheap.
+  const els = [
+    document.getElementById('draft-saved-status'),
+    document.getElementById('draft-saved-status-step3')
+  ].filter(Boolean);
+  if (!els.length) return;
+  const inLineup = (_appMode === 'lineup' && _currentStep >= 3);
+  els.forEach(el => {
+    if (!inLineup) {
+      el.textContent = '';
+      el.classList.remove('draft-status-saving','draft-status-saved');
+      return;
+    }
+    if (saving) {
+      el.textContent = 'Saving draft…';
+      el.classList.remove('draft-status-saved');
+      el.classList.add('draft-status-saving');
+      return;
+    }
+    if (_draftLastSavedAt) {
+      el.textContent = 'Draft saved ' + relativeTimeShort(_draftLastSavedAt);
+      el.classList.remove('draft-status-saving');
+      el.classList.add('draft-status-saved');
+    } else {
+      el.textContent = '';
+      el.classList.remove('draft-status-saving','draft-status-saved');
+    }
+  });
+}
+
+// Refresh the "Xs ago" text every 15s so it stays accurate without spamming.
+setInterval(() => updateDraftSavedIndicator(), 15000);
+
+// Flush any pending draft on tab close so we don't lose the last edit
+window.addEventListener('beforeunload', () => {
+  if (_draftSaveTimer) {
+    clearTimeout(_draftSaveTimer);
+    _draftSaveTimer = null;
+    flushDraftSave();
+  }
+});
+
+// Wire up game-info inputs (step 3) so typing triggers auto-save.
+// Bound once on load — `save()` reads each input's current value.
+document.addEventListener('DOMContentLoaded', () => {
+  ['game-name','opponent','game-date','game-time','game-location','game-notes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = () => { if (_appMode === 'lineup' && _currentStep >= 3) save(); };
+    el.addEventListener('input', handler);
+    el.addEventListener('change', handler);
+  });
+});
+
+function saveDraftAndExit() {
+  // Synchronous flush, then leave the builder.
+  if (_draftSaveTimer) { clearTimeout(_draftSaveTimer); _draftSaveTimer = null; }
+  // Read current form fields into state before flushing
+  if (document.getElementById('game-name')) {
+    state.gameName     = document.getElementById('game-name').value.trim();
+    state.opponent     = document.getElementById('opponent').value.trim();
+    state.gameDate     = document.getElementById('game-date').value;
+    state.gameTime     = document.getElementById('game-time').value;
+    state.gameLocation = document.getElementById('game-location').value.trim();
+    state.gameNotes    = document.getElementById('game-notes').value.trim();
+  }
+  flushDraftSave();
+  // Prefer returning to schedule if we came from there, else dashboard
+  if (_scheduleTeamId && _scheduleTeamId === _activeTeamId) {
+    showView('schedule');
+    // Re-render so the new draft badge shows immediately
+    if (typeof renderSchedule === 'function') renderSchedule();
+  } else {
+    backToDashboard();
+  }
+}
+
+function discardCurrentDraft() {
+  if (!confirm('Discard this draft? Any unsaved lineup changes will be lost.')) return;
+  clearDraftForCurrent();
+  // Wipe the in-memory lineup so we don't immediately re-create the draft
+  state.lineup = [];
+  state.attendance = {};
+  state.editingLineupDocId = null;
+  goToStep1();
 }
 
 // ═══════════════════════════════════════════════════
@@ -5492,6 +5900,12 @@ function updateStep2Status() {
 // STEP NAVIGATION
 // ═══════════════════════════════════════════════════
 function goToStep1() {
+  // "🏠 New Lineup" lands here from the export view. We want the next save
+  // to create a new lineup doc, not merge into the one we just printed.
+  // (The previous draft is already cleared when Save & Export succeeded.)
+  if (_appMode === 'lineup') {
+    state.editingLineupDocId = null;
+  }
   setStep(1);
 }
 
@@ -5571,6 +5985,9 @@ async function saveLineupToFirestore() {
 
   if (activeLineup.length === 0) return;
 
+  // Build the doc with only fields the web is authoritative for.
+  // Don't echo unknown iOS fields. Always write with merge:true so we never
+  // clobber data the iOS app may have set on the same doc.
   const lineupData = {
     gameName:     state.gameName || '',
     opponent:     state.opponent || '',
@@ -5588,14 +6005,44 @@ async function saveLineupToFirestore() {
         positions: row.positions || []
       };
     }),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    createdBy: fb.auth.currentUser ? fb.auth.currentUser.uid : ''
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: fb.auth.currentUser ? fb.auth.currentUser.uid : ''
   };
 
   try {
-    await fb.db.collection('teams').doc(_activeTeamId)
-      .collection('lineups').add(lineupData);
-    // Lineup saved successfully
+    const lineupsCol = fb.db.collection('teams').doc(_activeTeamId).collection('lineups');
+    if (state.editingLineupDocId) {
+      // Editing an existing lineup — merge into the same doc.
+      await lineupsCol.doc(state.editingLineupDocId).set(lineupData, { merge: true });
+    } else {
+      // First save for this lineup — create a new doc and remember its id
+      // so subsequent saves (e.g. after "Back to Edit") update the same one.
+      const newRef = lineupsCol.doc();
+      lineupData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      lineupData.createdBy = fb.auth.currentUser ? fb.auth.currentUser.uid : '';
+      await newRef.set(lineupData, { merge: true });
+      state.editingLineupDocId = newRef.id;
+    }
+    // The lineup is now committed — drop the working draft for this game.
+    clearDraftForCurrent();
+    // Refresh the in-memory schedule lineup cache so the badge updates
+    // immediately if the user navigates back to Schedule.
+    if (Array.isArray(_scheduleLineups) && _scheduleTeamId === _activeTeamId) {
+      const idx = _scheduleLineups.findIndex(l => l.id === state.editingLineupDocId);
+      const cached = {
+        id: state.editingLineupDocId,
+        gameName: lineupData.gameName,
+        opponent: lineupData.opponent,
+        gameDate: lineupData.gameDate,
+        gameTime: lineupData.gameTime,
+        gameLocation: lineupData.gameLocation,
+        gameNotes: lineupData.gameNotes,
+        innings: lineupData.innings,
+        players: lineupData.players
+      };
+      if (idx === -1) _scheduleLineups.push(cached);
+      else _scheduleLineups[idx] = cached;
+    }
   } catch(e) {
     console.error('Failed to save lineup:', e);
   }
@@ -5608,6 +6055,7 @@ function setStep(n) {
   });
   renderWizardBar();
   updateStepFooters();
+  updateDraftSavedIndicator();
   window.scrollTo(0, 0);
 }
 
