@@ -5995,12 +5995,17 @@ function renderLineupImageToCanvas(preset) {
   const playerLookup = {};
   (state.players || []).forEach(p => { playerLookup[p.id] = p; });
 
+  // Mobile output condenses names to "Firstname L." to keep the player
+  // column narrow. Web keeps full names since horizontal space isn't tight.
+  const isMobile = preset === 'mobile';
+  const formatName = (n) => isMobile ? shortenPlayerName(n) : n;
+
   // Build the rows we'll actually render: only attending players, in batting order
   const rows = (state.lineup || [])
     .filter(r => playerLookup[r.playerId] && state.attendance[r.playerId])
     .map((r, idx) => ({
       batOrder: idx + 1,
-      name: playerLookup[r.playerId].name || '?',
+      name: formatName(playerLookup[r.playerId].name || '?'),
       positions: Array.isArray(r.positions) ? r.positions.slice(0, innings) : []
     }));
   rows.forEach(r => {
@@ -6008,28 +6013,27 @@ function renderLineupImageToCanvas(preset) {
   });
 
   // Layout constants per preset
-  const isMobile = preset === 'mobile';
-  const PAD          = isMobile ? 22 : 36;
-  const W_TARGET     = isMobile ? 720 : 1200;
-  const TITLE_SIZE   = isMobile ? 22 : 28;
+  const PAD          = isMobile ? 20 : 36;
+  const W_TARGET     = isMobile ? 580 : 1200;
+  const TITLE_SIZE   = isMobile ? 21 : 28;
   const SUB_SIZE     = isMobile ? 13 : 15;
   const HEADER_BOT   = isMobile ? 14 : 18;       // gap between subtitle and table
   const HEADER_H     = TITLE_SIZE + (isMobile ? 12 : 16) + SUB_SIZE + HEADER_BOT;
-  const ROW_H        = isMobile ? 44 : 52;
-  const HDR_ROW_H    = isMobile ? 38 : 44;
-  const PLAYER_COL_W = isMobile ? 200 : 280;
+  const ROW_H        = isMobile ? 42 : 52;
+  const HDR_ROW_H    = isMobile ? 36 : 44;
+  const PLAYER_COL_W = isMobile ? 148 : 280;
   const NAME_FONT    = isMobile ? 14 : 17;
   const POS_FONT     = isMobile ? 14 : 17;
   const HDR_FONT     = isMobile ? 12 : 14;
   const FOOTER_FONT  = isMobile ? 11 : 13;
-  const FOOTER_H     = isMobile ? 28 : 36;
+  const FOOTER_H     = isMobile ? 26 : 36;
   const RADIUS       = 14; // table corner radius
 
   const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
   // Compute inning column width: at least a sane minimum, otherwise stretch
   // to fill the available width.
-  const minInningW = isMobile ? 52 : 70;
+  const minInningW = isMobile ? 48 : 70;
   let inningColW = Math.floor((W_TARGET - PAD * 2 - PLAYER_COL_W) / innings);
   if (inningColW < minInningW) inningColW = minInningW;
 
@@ -6192,6 +6196,26 @@ function roundRectPath(ctx, x, y, w, h, r) {
   ctx.arcTo(x, y + h, x, y, rr);
   ctx.arcTo(x, y, x + w, y, rr);
   ctx.closePath();
+}
+
+// Helper: condense a full player name to "Firstname L." for mobile output.
+// Single-word names ("Bo", "Junior") pass through unchanged. Suffixes like
+// "Jr." or "III" are dropped before picking the last-name initial.
+function shortenPlayerName(name) {
+  if (!name) return '';
+  let parts = String(name).trim().split(/\s+/);
+  if (parts.length <= 1) return parts[0] || '';
+  // Strip trailing suffix tokens (Jr., Sr., II, III, IV) so the initial
+  // we use is from the actual surname, not the suffix.
+  const suffixRe = /^(jr\.?|sr\.?|ii|iii|iv|v)$/i;
+  while (parts.length > 1 && suffixRe.test(parts[parts.length - 1])) {
+    parts.pop();
+  }
+  if (parts.length <= 1) return parts[0];
+  const first = parts[0];
+  const last = parts[parts.length - 1];
+  const initial = (last.charAt(0) || '').toUpperCase();
+  return initial ? first + ' ' + initial + '.' : first;
 }
 
 // Helper: trim text with an ellipsis to fit a given pixel width.
