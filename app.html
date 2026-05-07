@@ -3473,24 +3473,24 @@
           <div class="field-inning-tabs" id="field-inning-tabs" role="tablist" aria-label="Inning"></div>
           <div class="field-stage" id="field-stage">
             <svg class="field-bg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-              <!-- Soft outfield grass fill -->
-              <path d="M 80 770 Q 80 320 500 120 Q 920 320 920 770 Z" fill="#f5fbf6" stroke="none"/>
-              <!-- Outfield arc (back of fence) -->
-              <path d="M 80 770 Q 80 320 500 120 Q 920 320 920 770" fill="none" stroke="#9aa0a6" stroke-width="3"/>
-              <!-- Foul lines from home plate -->
-              <line x1="500" y1="700" x2="80"  y2="770" stroke="#9aa0a6" stroke-width="2"/>
-              <line x1="500" y1="700" x2="920" y2="770" stroke="#9aa0a6" stroke-width="2"/>
-              <!-- Infield diamond (rotated square) -->
-              <polygon points="500,700 720,500 500,300 280,500" fill="#fff" stroke="#9aa0a6" stroke-width="2"/>
-              <!-- Infield grass cutout (curved arcs around bases) -->
-              <path d="M 410 590 Q 500 540 590 590"  fill="none" stroke="#9aa0a6" stroke-width="1.5"/>
-              <path d="M 590 410 Q 540 500 590 590"  fill="none" stroke="#9aa0a6" stroke-width="1.5"/>
-              <path d="M 410 410 Q 460 500 410 590"  fill="none" stroke="#9aa0a6" stroke-width="1.5"/>
-              <path d="M 410 410 Q 500 360 590 410"  fill="none" stroke="#9aa0a6" stroke-width="1.5"/>
+              <!--
+                Outfield grass: a 90° pie slice anchored at home plate (500, 720).
+                The two foul-line endpoints sit on a circle of radius 600 at ±45°,
+                landing at (76, 296) and (924, 296). The arc connects them via the top.
+              -->
+              <path d="M 500 720 L 76 296 A 600 600 0 0 1 924 296 Z"
+                    fill="#f0f7ed" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>
+              <!-- Infield: a clean diamond, no curved-grass overlays -->
+              <polygon points="500,720 700,520 500,320 300,520"
+                       fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
+              <!-- Base bags at the three corners (home plate is drawn separately below) -->
+              <rect x="690" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
+              <rect x="490" y="310" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
+              <rect x="290" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
               <!-- Pitcher's mound -->
-              <circle cx="500" cy="500" r="30" fill="#fff" stroke="#9aa0a6" stroke-width="2"/>
+              <circle cx="500" cy="520" r="28" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
               <!-- Home plate -->
-              <polygon points="488,705 512,705 512,720 500,732 488,720" fill="#9aa0a6"/>
+              <polygon points="488,712 512,712 512,728 500,738 488,728" fill="#9aa0a6"/>
             </svg>
             <div class="field-positions" id="field-positions"></div>
           </div>
@@ -6480,20 +6480,23 @@ let _lineupViewMode = 'list';   // 'list' | 'field'
 let _fieldInning    = 0;        // zero-indexed inning shown in field view
 
 // Position coordinates on the SVG (viewBox 0 0 1000 800).
-// Tuned so each label sits roughly where you'd expect a fielder to stand.
+// Geometry reminder for the new diamond:
+//   home plate (500,720)   1B (700,520)   2B base (500,320)   3B (300,520)   mound (500,520)
+//   outfield arc: radius 600 from home, foul lines land at (76,296) and (924,296)
+// Each percentage is relative to the field-stage container (1000 wide × 800 tall).
 const FIELD_POS_COORDS = {
-  'P':   { x: 50, y: 62.5 },   // mound
-  'C':   { x: 50, y: 88   },   // home plate
-  '1B':  { x: 73, y: 62.5 },
-  '2B':  { x: 60, y: 50   },
-  '3B':  { x: 27, y: 62.5 },
-  'SS':  { x: 40, y: 50   },
-  'LF':  { x: 22, y: 28   },
-  'CF':  { x: 50, y: 18   },
-  'RF':  { x: 78, y: 28   },
-  'LCF': { x: 33, y: 22   },
-  'RCF': { x: 67, y: 22   }
-  // UTL1/2/3 are rendered in a row below the diamond, not on it.
+  'P':   { x: 50, y: 65 },   // pitcher's mound
+  'C':   { x: 50, y: 90 },   // catcher, behind home plate
+  '1B':  { x: 70, y: 65 },   // first base
+  '2B':  { x: 59, y: 55 },   // 2B fielder — between 1B bag and 2B base, pulled outfield
+  '3B':  { x: 30, y: 65 },   // third base
+  'SS':  { x: 41, y: 55 },   // shortstop — between 2B base and 3B
+  'LF':  { x: 18, y: 30 },   // deep left
+  'CF':  { x: 50, y: 20 },   // deep center
+  'RF':  { x: 82, y: 30 },   // deep right
+  'LCF': { x: 33, y: 22 },   // left-center (10-player softball)
+  'RCF': { x: 67, y: 22 }    // right-center
+  // UTL1/2/3 render in a row below the diamond, not on it.
 };
 
 function setLineupViewMode(mode) {
