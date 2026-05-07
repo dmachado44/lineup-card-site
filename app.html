@@ -1098,6 +1098,25 @@
     .field-pos-bubble:active { transform: translate(-50%, -50%) scale(0.97); }
     .field-pos-bubble.empty { background: rgba(255,255,255,0.85); border-style: dashed; }
     .field-pos-bubble.conflict { border-color: #f59e0b; background: #fff7ed; }
+    .field-pos-bubble[draggable="true"] { cursor: grab; }
+    .field-pos-bubble[draggable="true"]:active { cursor: grabbing; }
+    .field-pos-bubble.dragging {
+      opacity: 0.4;
+      cursor: grabbing;
+    }
+    .field-pos-bubble.drop-target {
+      border-color: var(--green, #22a06b) !important;
+      background: #e7f7ef !important;
+      transform: translate(-50%, -50%) scale(1.06);
+    }
+    .field-bench-chip[draggable="true"] { cursor: grab; }
+    .field-bench-chip[draggable="true"]:active { cursor: grabbing; }
+    .field-bench-chip.dragging { opacity: 0.4; }
+    .field-bench.drop-target {
+      outline: 2px dashed var(--green, #22a06b);
+      outline-offset: -2px;
+      background: rgba(34,160,107,0.06);
+    }
     .field-pos-bubble .field-pos-label {
       font-size: 10px;
       font-weight: 700;
@@ -6968,12 +6987,22 @@ function renderFieldPositions() {
     const conflict = assignees.length > 1;
     const empty = !player;
     const name = player ? player.name : '— empty —';
+    // Bubbles with a player are draggable; empty bubbles can still be drop
+    // targets so you can move someone onto them.
+    const dragAttrs = player
+      ? ' draggable="true" ondragstart="onFieldDragStart(event,\'pos\',\'' + pos + '\')"'
+      : ' draggable="false"';
     html += '<button type="button" class="field-pos-bubble' +
             (empty ? ' empty' : '') +
             (conflict ? ' conflict' : '') +
             '" style="left:' + coord.x + '%;top:' + coord.y + '%;"' +
+            dragAttrs +
+            ' ondragover="onFieldDragOver(event)"' +
+            ' ondragleave="onFieldDragLeave(event)"' +
+            ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
+            ' ondragend="onFieldDragEnd(event)"' +
             ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
-            ' title="Tap to change ' + pos + ' for inning ' + (inningIdx + 1) + '">' +
+            ' title="Drag to swap or tap to change ' + pos + ' for inning ' + (inningIdx + 1) + '">' +
             '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
             '<div class="field-pos-name">' + escHtml(name) + '</div>' +
             '</button>';
@@ -6997,10 +7026,18 @@ function renderFieldPositions() {
       const conflict = assignees.length > 1;
       const empty = !player;
       const name = player ? player.name : '— empty —';
+      const dragAttrs = player
+        ? ' draggable="true" ondragstart="onFieldDragStart(event,\'pos\',\'' + pos + '\')"'
+        : ' draggable="false"';
       utlHtml += '<button type="button" class="field-pos-bubble' +
                  (empty ? ' empty' : '') +
                  (conflict ? ' conflict' : '') +
                  '" style="position:relative;left:auto;top:auto;transform:none;"' +
+                 dragAttrs +
+                 ' ondragover="onFieldDragOver(event)"' +
+                 ' ondragleave="onFieldDragLeave(event)"' +
+                 ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
+                 ' ondragend="onFieldDragEnd(event)"' +
                  ' onclick="openFieldPosPicker(\'' + pos + '\', this)">' +
                  '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
                  '<div class="field-pos-name">' + escHtml(name) + '</div>' +
@@ -7035,13 +7072,22 @@ function renderFieldBench() {
   if (labelEl) labelEl.textContent = 'Bench · Inning ' + (inningIdx + 1) +
     (benched.length ? ' (' + benched.length + ')' : '');
 
+  // Make the bench area itself a drop zone so you can drag a player off the field
+  wrap.setAttribute('ondragover', 'onFieldDragOver(event)');
+  wrap.setAttribute('ondragleave', 'onFieldDragLeave(event)');
+  wrap.setAttribute('ondrop', 'onFieldDrop(event,\'bench-area\',\'\')');
+
   if (!benched.length) {
     wrap.innerHTML = '<div class="field-bench-empty">All attending players are on the field this inning.</div>';
     return;
   }
   wrap.innerHTML = benched.map(r => {
     const p = playerLookup[r.playerId];
-    return '<button type="button" class="field-bench-chip" onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)">' +
+    return '<button type="button" class="field-bench-chip"' +
+           ' draggable="true"' +
+           ' ondragstart="onFieldDragStart(event,\'bench\',\'' + r.playerId + '\')"' +
+           ' ondragend="onFieldDragEnd(event)"' +
+           ' onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)">' +
            escHtml(p.name) + '</button>';
   }).join('');
 }
@@ -7266,6 +7312,113 @@ function assignPositionToPlayer(playerId, pos) {
   }
   onPosChange(playerId, inningIdx, pos);
   renderFieldView();
+}
+
+// ── Drag and drop ────────────────────────────────────────────────
+// Source/dest descriptors look like { kind: 'pos'|'bench', target: <string> }
+//   - kind 'pos':         target is a position string (e.g. 'P', '1B')
+//   - kind 'bench':       target is a playerId (only used as a SOURCE)
+//   - kind 'bench-area':  destination only — the whole bench drop zone
+let _fieldDragSource = null;
+
+function onFieldDragStart(e, kind, target) {
+  _fieldDragSource = { kind, target };
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move';
+    // Some browsers need data set to actually fire drop events.
+    try { e.dataTransfer.setData('text/plain', kind + ':' + target); } catch(_) {}
+  }
+  e.currentTarget.classList.add('dragging');
+}
+
+function onFieldDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  // Defensive: clear any drop-target highlight that wasn't cleared by dragleave
+  document.querySelectorAll('.field-pos-bubble.drop-target, .field-bench.drop-target')
+    .forEach(el => el.classList.remove('drop-target'));
+  _fieldDragSource = null;
+}
+
+function onFieldDragOver(e) {
+  if (!_fieldDragSource) return;
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  if (e.currentTarget.classList) e.currentTarget.classList.add('drop-target');
+}
+
+function onFieldDragLeave(e) {
+  if (e.currentTarget.classList) e.currentTarget.classList.remove('drop-target');
+}
+
+function onFieldDrop(e, destKind, destTarget) {
+  e.preventDefault();
+  if (e.currentTarget.classList) e.currentTarget.classList.remove('drop-target');
+  if (!_fieldDragSource) return;
+  performFieldSwap(_fieldDragSource, { kind: destKind, target: destTarget });
+  _fieldDragSource = null;
+}
+
+function performFieldSwap(src, dst) {
+  const inningIdx = Math.min(_fieldInning, (state.innings || 6) - 1);
+
+  // Resolve who's being moved and what slot we're moving them into.
+  // src.kind 'pos':   the player currently at src.target moves
+  // src.kind 'bench': src.target is the playerId being moved off the bench
+  let srcPlayerId = null;
+  let srcPosition = null;  // empty if source is bench
+  if (src.kind === 'pos') {
+    const row = (state.lineup || []).find(r =>
+      state.attendance[r.playerId] && (r.positions || [])[inningIdx] === src.target
+    );
+    if (!row) return;             // nothing to drag
+    srcPlayerId = row.playerId;
+    srcPosition = src.target;
+  } else if (src.kind === 'bench') {
+    srcPlayerId = src.target;
+    srcPosition = 'Bench';
+  } else {
+    return;
+  }
+
+  // Resolve destination: a specific position, or the bench (no specific slot)
+  let dstPosition;
+  let dstPlayerId = null;
+  if (dst.kind === 'pos') {
+    dstPosition = dst.target;
+    const row = (state.lineup || []).find(r =>
+      state.attendance[r.playerId] && (r.positions || [])[inningIdx] === dstPosition
+    );
+    if (row) dstPlayerId = row.playerId;
+  } else if (dst.kind === 'bench-area') {
+    dstPosition = 'Bench';
+  } else {
+    return;
+  }
+
+  // No-op if dropped onto self
+  if (src.kind === dst.kind && src.target === dst.target) return;
+  if (srcPlayerId === dstPlayerId) return;
+
+  // Apply the move
+  setPlayerPositionAt(srcPlayerId, inningIdx, dstPosition);
+  // If a player was at the destination, swap them into the source slot
+  // (so a position-to-position drag is a true swap, not a one-way move).
+  if (dstPlayerId && srcPlayerId !== dstPlayerId) {
+    setPlayerPositionAt(dstPlayerId, inningIdx, srcPosition);
+  }
+  // checkConflicts + renderLineupGrid + draft auto-save all run via save()
+  save();
+  renderLineupGrid();
+  if (typeof renderPlayingTimeSummary === 'function') renderPlayingTimeSummary();
+  if (typeof checkConflicts === 'function') checkConflicts();
+}
+
+function setPlayerPositionAt(playerId, inningIdx, value) {
+  const row = (state.lineup || []).find(r => r.playerId === playerId);
+  if (!row) return;
+  if (!Array.isArray(row.positions)) row.positions = [];
+  while (row.positions.length <= inningIdx) row.positions.push('');
+  row.positions[inningIdx] = value;
 }
 
 // Helper: condense a full player name to "Firstname L." for mobile output.
