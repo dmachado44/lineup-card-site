@@ -1345,6 +1345,45 @@
     .import-item-meta { font-size: 12px; color: var(--muted); }
     .import-item-arrow { font-size: 18px; color: var(--gray-3); }
 
+    /* Image-export option cards */
+    .image-export-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .image-export-option {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px 16px;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color 0.12s, background 0.12s, transform 0.08s;
+    }
+    .image-export-option:hover {
+      border-color: var(--green);
+      background: var(--bg-secondary);
+    }
+    .image-export-option:active { transform: scale(0.98); }
+    .image-export-option:disabled {
+      opacity: 0.55;
+      cursor: progress;
+    }
+    .image-export-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+    .image-export-label { font-weight: 600; font-size: 16px; margin-bottom: 4px; color: var(--text); }
+    .image-export-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .image-export-status {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--muted);
+      min-height: 18px;
+      text-align: center;
+    }
+    @media (max-width: 480px) {
+      .image-export-options { grid-template-columns: 1fr; }
+    }
+
     /* Toast that confirms an import landed */
     .import-toast {
       position: fixed;
@@ -3176,6 +3215,9 @@
           <button class="btn btn-ghost btn-sm" onclick="openImportPreviousModal()" title="Use a past lineup as a starting point">
             📥 Import from Previous
           </button>
+          <button class="btn btn-ghost btn-sm" onclick="openImageExportModal()" title="Save the lineup as an image to share with a coach">
+            🖼 Save as Image
+          </button>
           <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
             Generate Batting Order
           </button>
@@ -3254,6 +3296,32 @@
         <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same — only the batting order, attendance, and fielding positions are imported.</div>
         <div class="modal-body" id="import-prev-list">
           <div class="modal-empty">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ MODAL: SAVE AS IMAGE ══════════════ -->
+    <div id="image-export-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="image-export-title">
+      <div class="modal" onclick="event.stopPropagation();">
+        <div class="modal-header">
+          <div class="modal-title" id="image-export-title">Save Lineup as Image</div>
+          <button class="modal-close" type="button" onclick="closeImageExportModal()" aria-label="Close">×</button>
+        </div>
+        <div class="modal-sub">Pick a size. The image is read-only — no edit chevrons, no buttons. Just the batting order and fielding positions, ready to share.</div>
+        <div class="modal-body">
+          <div class="image-export-options">
+            <button class="image-export-option" type="button" onclick="exportLineupAsImage('mobile')">
+              <div class="image-export-icon">📱</div>
+              <div class="image-export-label">Mobile</div>
+              <div class="image-export-desc">Smaller file, sized for texting and viewing on a phone (720&nbsp;px wide).</div>
+            </button>
+            <button class="image-export-option" type="button" onclick="exportLineupAsImage('web')">
+              <div class="image-export-icon">💻</div>
+              <div class="image-export-label">Web</div>
+              <div class="image-export-desc">Crisper output for sharing in Slack, email, or full-screen viewing (1200&nbsp;px wide).</div>
+            </button>
+          </div>
+          <div id="image-export-status" class="image-export-status"></div>
         </div>
       </div>
     </div>
@@ -5836,6 +5904,309 @@ function showImportToast(msg) {
   toast.classList.add('visible');
   if (toast._t) clearTimeout(toast._t);
   toast._t = setTimeout(() => toast.classList.remove('visible'), 2800);
+}
+
+// ═══════════════════════════════════════════════════
+// SAVE LINEUP AS IMAGE
+// Renders the current lineup to a Canvas (no chevrons, no edit affordances)
+// and offers it as a download. Tries both PNG and JPEG and serves whichever
+// is smaller — clean tables tend to compress well as PNG, busy ones as JPEG.
+// Two presets: Mobile (720 wide, smaller file) and Web (1200 wide, crisper).
+// ═══════════════════════════════════════════════════
+function openImageExportModal() {
+  const modal = document.getElementById('image-export-modal');
+  if (!modal) return;
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  modal.onclick = (e) => { if (e.target === modal) closeImageExportModal(); };
+  document.addEventListener('keydown', _imageModalKeyHandler);
+  const status = document.getElementById('image-export-status');
+  if (status) status.textContent = '';
+  // Re-enable buttons in case a previous open left them disabled
+  modal.querySelectorAll('.image-export-option').forEach(b => b.disabled = false);
+}
+
+function _imageModalKeyHandler(e) {
+  if (e.key === 'Escape') closeImageExportModal();
+}
+
+function closeImageExportModal() {
+  const modal = document.getElementById('image-export-modal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _imageModalKeyHandler);
+}
+
+async function exportLineupAsImage(preset) {
+  const status = document.getElementById('image-export-status');
+  const buttons = document.querySelectorAll('#image-export-modal .image-export-option');
+  buttons.forEach(b => b.disabled = true);
+  if (status) status.textContent = 'Rendering image…';
+
+  try {
+    const canvas = renderLineupImageToCanvas(preset === 'mobile' ? 'mobile' : 'web');
+
+    // Try both formats; serve whichever is smaller. JPEG quality 0.92
+    // gives a near-lossless look for our type of content.
+    const png  = canvas.toDataURL('image/png');
+    const jpeg = canvas.toDataURL('image/jpeg', 0.92);
+    const useJpeg = jpeg.length < png.length;
+    const dataUrl = useJpeg ? jpeg : png;
+    const ext     = useJpeg ? 'jpg' : 'png';
+
+    // Friendly filename: lineup_vs_eagles_2026-05-08_mobile.png
+    const slug = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    const parts = ['lineup'];
+    if (state.opponent) parts.push('vs_' + slug(state.opponent));
+    if (state.gameDate) parts.push(state.gameDate);
+    parts.push(preset);
+    const filename = parts.filter(Boolean).join('_').replace(/_+/g, '_') + '.' + ext;
+
+    // Trigger the browser download
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // Approximate the byte size for a friendly status line
+    const approxBytes = Math.round(dataUrl.length * 3 / 4);
+    const sizeStr = approxBytes < 1024
+      ? approxBytes + ' B'
+      : approxBytes < 1024 * 1024
+        ? Math.round(approxBytes / 1024) + ' KB'
+        : (approxBytes / (1024 * 1024)).toFixed(1) + ' MB';
+
+    if (status) status.textContent = 'Saved ' + filename + ' (' + sizeStr + ')';
+    showImportToast('Saved ' + filename);
+    setTimeout(closeImageExportModal, 900);
+  } catch (e) {
+    console.error('Image export failed:', e);
+    if (status) status.textContent = 'Sorry — failed to render image. Please try again.';
+    buttons.forEach(b => b.disabled = false);
+  }
+}
+
+// Build the canvas containing the rendered lineup. Pure 2D drawing — no
+// external libraries — so the output is consistent across browsers.
+function renderLineupImageToCanvas(preset) {
+  const innings = Math.max(1, state.innings || 6);
+  const playerLookup = {};
+  (state.players || []).forEach(p => { playerLookup[p.id] = p; });
+
+  // Build the rows we'll actually render: only attending players, in batting order
+  const rows = (state.lineup || [])
+    .filter(r => playerLookup[r.playerId] && state.attendance[r.playerId])
+    .map((r, idx) => ({
+      batOrder: idx + 1,
+      name: playerLookup[r.playerId].name || '?',
+      positions: Array.isArray(r.positions) ? r.positions.slice(0, innings) : []
+    }));
+  rows.forEach(r => {
+    while (r.positions.length < innings) r.positions.push('');
+  });
+
+  // Layout constants per preset
+  const isMobile = preset === 'mobile';
+  const PAD          = isMobile ? 22 : 36;
+  const W_TARGET     = isMobile ? 720 : 1200;
+  const TITLE_SIZE   = isMobile ? 22 : 28;
+  const SUB_SIZE     = isMobile ? 13 : 15;
+  const HEADER_BOT   = isMobile ? 14 : 18;       // gap between subtitle and table
+  const HEADER_H     = TITLE_SIZE + (isMobile ? 12 : 16) + SUB_SIZE + HEADER_BOT;
+  const ROW_H        = isMobile ? 44 : 52;
+  const HDR_ROW_H    = isMobile ? 38 : 44;
+  const PLAYER_COL_W = isMobile ? 200 : 280;
+  const NAME_FONT    = isMobile ? 14 : 17;
+  const POS_FONT     = isMobile ? 14 : 17;
+  const HDR_FONT     = isMobile ? 12 : 14;
+  const FOOTER_FONT  = isMobile ? 11 : 13;
+  const FOOTER_H     = isMobile ? 28 : 36;
+  const RADIUS       = 14; // table corner radius
+
+  const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+  // Compute inning column width: at least a sane minimum, otherwise stretch
+  // to fill the available width.
+  const minInningW = isMobile ? 52 : 70;
+  let inningColW = Math.floor((W_TARGET - PAD * 2 - PLAYER_COL_W) / innings);
+  if (inningColW < minInningW) inningColW = minInningW;
+
+  const tableW = PLAYER_COL_W + inningColW * innings;
+  const W = Math.max(W_TARGET, tableW + PAD * 2);
+
+  const tableTop = PAD + HEADER_H;
+  const tableBottom = tableTop + HDR_ROW_H + ROW_H * rows.length;
+  const H = tableBottom + FOOTER_H + PAD;
+
+  // High-DPI canvas
+  const dpr = 2;
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(W * dpr);
+  canvas.height = Math.round(H * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.textBaseline = 'middle';
+  ctx.imageSmoothingEnabled = true;
+  if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+
+  // 1. Background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // 2. Header — title + subtitle
+  ctx.fillStyle = '#1c2128';
+  ctx.font = '700 ' + TITLE_SIZE + 'px ' + fontStack;
+  ctx.textAlign = 'left';
+  const title = state.gameName || (state.opponent ? 'vs ' + state.opponent : 'Game Lineup');
+  ctx.fillText(title, PAD, PAD + TITLE_SIZE / 2);
+
+  ctx.fillStyle = '#6b7280';
+  ctx.font = SUB_SIZE + 'px ' + fontStack;
+  const titleLower = title.toLowerCase();
+  const subParts = [];
+  if (state.opponent && !titleLower.includes(state.opponent.toLowerCase())) {
+    subParts.push('vs ' + state.opponent);
+  }
+  if (state.gameDate) subParts.push(formatDate(state.gameDate));
+  if (state.gameTime) subParts.push(formatTime(state.gameTime));
+  if (state.gameLocation) subParts.push(state.gameLocation);
+  const subY = PAD + TITLE_SIZE + (isMobile ? 12 : 16) + SUB_SIZE / 2;
+  if (subParts.length) ctx.fillText(subParts.join('  ·  '), PAD, subY);
+
+  // 3. Table — clipped rounded rect for the whole thing so the header bar
+  //    inherits the rounded corners cleanly.
+  const tableX = PAD;
+  const tableY = tableTop;
+  ctx.save();
+  roundRectPath(ctx, tableX, tableY, tableW, HDR_ROW_H + ROW_H * rows.length, RADIUS);
+  ctx.clip();
+
+  // Header bar background
+  ctx.fillStyle = '#1f2937';
+  ctx.fillRect(tableX, tableY, tableW, HDR_ROW_H);
+
+  // Header text
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '600 ' + HDR_FONT + 'px ' + fontStack;
+  ctx.textAlign = 'left';
+  ctx.fillText('Player', tableX + 16, tableY + HDR_ROW_H / 2);
+  ctx.textAlign = 'center';
+  for (let i = 0; i < innings; i++) {
+    const cx = tableX + PLAYER_COL_W + inningColW * i + inningColW / 2;
+    ctx.fillText(String(i + 1), cx, tableY + HDR_ROW_H / 2);
+  }
+
+  // Body rows
+  for (let r = 0; r < rows.length; r++) {
+    const rowY = tableY + HDR_ROW_H + ROW_H * r;
+    // Zebra stripes
+    if (r % 2 === 1) {
+      ctx.fillStyle = '#f9fafb';
+      ctx.fillRect(tableX, rowY, tableW, ROW_H);
+    }
+    // Row separator
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fillRect(tableX, rowY + ROW_H - 1, tableW, 1);
+
+    // Bat-order circle
+    const circleR = isMobile ? 12 : 14;
+    const cx = tableX + 16 + circleR;
+    const cy = rowY + ROW_H / 2;
+    ctx.fillStyle = '#22a06b';
+    ctx.beginPath();
+    ctx.arc(cx, cy, circleR, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 ' + (isMobile ? 12 : 14) + 'px ' + fontStack;
+    ctx.textAlign = 'center';
+    ctx.fillText(String(rows[r].batOrder), cx, cy + 0.5);
+
+    // Player name (truncate if too long)
+    ctx.fillStyle = '#1c2128';
+    ctx.font = '500 ' + NAME_FONT + 'px ' + fontStack;
+    ctx.textAlign = 'left';
+    const nameX = cx + circleR + 10;
+    const nameMaxW = PLAYER_COL_W - (nameX - tableX) - 12;
+    ctx.fillText(truncateToWidth(ctx, rows[r].name, nameMaxW), nameX, cy);
+
+    // Positions per inning
+    for (let i = 0; i < innings; i++) {
+      const colX = tableX + PLAYER_COL_W + inningColW * i;
+      const pos = rows[r].positions[i] || '';
+      const isBench = pos === 'Bench';
+      const display = isBench ? 'OFF' : pos;
+      if (display) {
+        ctx.fillStyle = isBench ? '#9ca3af' : '#1c2128';
+        ctx.font = (isBench ? 'italic 500 ' : '600 ') + POS_FONT + 'px ' + fontStack;
+      } else {
+        ctx.fillStyle = '#d1d5db';
+        ctx.font = POS_FONT + 'px ' + fontStack;
+      }
+      ctx.textAlign = 'center';
+      ctx.fillText(display || '—', colX + inningColW / 2, cy);
+    }
+
+    // Vertical separators between inning columns
+    ctx.fillStyle = '#eef0f3';
+    for (let i = 0; i <= innings; i++) {
+      const colX = tableX + PLAYER_COL_W + inningColW * i;
+      ctx.fillRect(colX, rowY, 1, ROW_H);
+    }
+  }
+
+  ctx.restore();
+
+  // Outer table border
+  ctx.strokeStyle = '#e5e7eb';
+  ctx.lineWidth = 1;
+  roundRectPath(ctx, tableX + 0.5, tableY + 0.5, tableW - 1, HDR_ROW_H + ROW_H * rows.length - 1, RADIUS);
+  ctx.stroke();
+
+  // 4. Footer
+  ctx.fillStyle = '#9ca3af';
+  ctx.font = FOOTER_FONT + 'px ' + fontStack;
+  ctx.textAlign = 'right';
+  const footerY = H - PAD / 2 - FOOTER_FONT / 2;
+  ctx.fillText('lineupcard.app', W - PAD, footerY);
+  ctx.textAlign = 'left';
+  ctx.fillText(rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' · ' + innings + ' innings', PAD, footerY);
+
+  return canvas;
+}
+
+// Helper: rounded-rectangle path. Compatible with old browsers that lack
+// CanvasRenderingContext2D.roundRect.
+function roundRectPath(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === 'function') {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
+// Helper: trim text with an ellipsis to fit a given pixel width.
+function truncateToWidth(ctx, text, maxW) {
+  if (!text) return '';
+  if (ctx.measureText(text).width <= maxW) return text;
+  const ellipsis = '…';
+  let lo = 0, hi = text.length;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    const candidate = text.slice(0, mid) + ellipsis;
+    if (ctx.measureText(candidate).width <= maxW) lo = mid;
+    else hi = mid - 1;
+  }
+  return text.slice(0, lo) + ellipsis;
 }
 
 // ═══════════════════════════════════════════════════
