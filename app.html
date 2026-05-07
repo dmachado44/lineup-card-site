@@ -1274,17 +1274,9 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-      .print-allinnings-header {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 16px;
-        margin-bottom: 8px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid #999;
-      }
-      .print-allinnings-title { font-size: 18px; font-weight: 700; }
-      .print-allinnings-meta  { font-size: 12px; color: #555; }
+      /* Header markup is shared with the list-view print sheet — the
+         .print-top / .print-info / .print-logo styles already live in the
+         main @media print block farther down. */
       .print-allinnings-body {
         display: grid;
         grid-template-columns: 200px 1fr;
@@ -6871,15 +6863,12 @@ function populatePrintAllInnings() {
   const sheet = document.getElementById('print-allinnings-sheet');
   if (!sheet) return;
 
-  // Header: game title + meta
-  const title = state.gameName || (state.opponent ? 'vs ' + state.opponent : 'Game Lineup');
-  const metaParts = [];
-  if (state.opponent && !title.toLowerCase().includes(state.opponent.toLowerCase())) {
-    metaParts.push('vs ' + state.opponent);
-  }
-  if (state.gameDate) metaParts.push(formatDate(state.gameDate));
-  if (state.gameTime) metaParts.push(formatTime(state.gameTime));
-  if (state.gameLocation) metaParts.push(state.gameLocation);
+  // Header values — same fields the list-view print sheet shows so both
+  // printouts match: Game / Opponent / Date / Field, plus the logo.
+  const gameName     = state.gameName || '';
+  const opponent     = state.opponent || '';
+  const gameDate     = state.gameDate ? formatDate(state.gameDate) : '';
+  const gameLocation = state.gameLocation || '';
 
   // Batting list — attending players in batting order
   const playerLookup = {};
@@ -6906,10 +6895,30 @@ function populatePrintAllInnings() {
       '</div>';
   }
 
+  // Same .print-top / .print-info / .print-logo structure used by the
+  // list-view print sheet — see #print-sheet's markup. Keeps both printouts
+  // visually consistent.
+  const fieldRow = (label, value) =>
+    '<div style="flex:1;display:flex;gap:6px;align-items:baseline;">' +
+      '<span class="print-info-label">' + label + ':</span>' +
+      '<span class="print-info-value">' + escHtml(value) + '</span>' +
+    '</div>';
+
   sheet.innerHTML =
-    '<div class="print-allinnings-header">' +
-      '<div class="print-allinnings-title">' + escHtml(title) + '</div>' +
-      '<div class="print-allinnings-meta">' + escHtml(metaParts.join(' · ')) + '</div>' +
+    '<div class="print-top">' +
+      '<div class="print-info">' +
+        '<div class="print-info-row">' +
+          fieldRow('Game', gameName) +
+          fieldRow('Opponent', opponent) +
+        '</div>' +
+        '<div class="print-info-row">' +
+          fieldRow('Date', gameDate) +
+          fieldRow('Field', gameLocation) +
+        '</div>' +
+      '</div>' +
+      '<div class="print-logo">' +
+        '<img src="assets/icon.png" alt="Lineup Card" />' +
+      '</div>' +
     '</div>' +
     '<div class="print-allinnings-body">' +
       '<div class="print-batting-list">' +
