@@ -1263,6 +1263,110 @@
       margin: 4px 6px;
     }
 
+    /* ── Generic modal (Import from Previous) ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal {
+      background: var(--white);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 560px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.28);
+      overflow: hidden;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 18px 20px 4px;
+    }
+    .modal-title { font-weight: 600; font-size: 18px; flex: 1; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 22px;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .modal-close:hover { background: var(--bg-secondary); color: var(--text); }
+    .modal-sub {
+      padding: 4px 20px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .modal-body { overflow-y: auto; padding: 4px 20px 20px; }
+    .modal-empty {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .import-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: var(--white);
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .import-item:hover {
+      border-color: var(--green);
+      background: var(--bg-secondary);
+    }
+    .import-item-info { flex: 1; min-width: 0; }
+    .import-item-title {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .import-item-meta { font-size: 12px; color: var(--muted); }
+    .import-item-arrow { font-size: 18px; color: var(--gray-3); }
+
+    /* Toast that confirms an import landed */
+    .import-toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text, #1c2128);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 24px;
+      font-size: 14px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s, transform 0.18s;
+      z-index: 400;
+    }
+    .import-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     @media (pointer: coarse) {
       .lineup-table th.inning-th { padding: 4px 2px; }
       .inning-trigger { padding: 4px 4px; min-width: 0; gap: 4px; }
@@ -3069,6 +3173,9 @@
             <div class="text-muted-sm">Drag rows or innings to reorder · Tap an inning header to copy or clear</div>
           </div>
           <div class="toolbar-spacer"></div>
+          <button class="btn btn-ghost btn-sm" onclick="openImportPreviousModal()" title="Use a past lineup as a starting point">
+            📥 Import from Previous
+          </button>
           <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
             Generate Batting Order
           </button>
@@ -3134,6 +3241,20 @@
       <div class="step-footer">
         <button class="btn btn-back" onclick="goToStep4()">← Back to Edit</button>
         <button class="btn btn-outline" onclick="goToStep1()">🏠 New Lineup</button>
+      </div>
+    </div>
+
+    <!-- ══════════════ MODAL: IMPORT FROM PREVIOUS ══════════════ -->
+    <div id="import-prev-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="import-prev-title">
+      <div class="modal" onclick="event.stopPropagation();">
+        <div class="modal-header">
+          <div class="modal-title" id="import-prev-title">Import Lineup from Previous Game</div>
+          <button class="modal-close" type="button" onclick="closeImportPreviousModal()" aria-label="Close">×</button>
+        </div>
+        <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same — only the batting order, attendance, and fielding positions are imported.</div>
+        <div class="modal-body" id="import-prev-list">
+          <div class="modal-empty">Loading…</div>
+        </div>
       </div>
     </div>
 
@@ -5559,6 +5680,162 @@ function discardCurrentDraft() {
   state.attendance = {};
   state.editingLineupDocId = null;
   goToStep1();
+}
+
+// ═══════════════════════════════════════════════════
+// IMPORT LINEUP FROM A PREVIOUS GAME
+// Lets the user pick any past saved lineup for this team and use it as
+// the starting point for the current game's lineup. Game info (date,
+// opponent, location) stays as-is — only batting order, attendance, and
+// fielding positions are copied across.
+// ═══════════════════════════════════════════════════
+let _importPreviousCache = [];
+
+async function openImportPreviousModal() {
+  const modal = document.getElementById('import-prev-modal');
+  const list  = document.getElementById('import-prev-list');
+  if (!modal || !list) return;
+
+  modal.style.display = '';
+  document.body.style.overflow = 'hidden';
+  // Allow clicks on the dim backdrop to close (but not clicks inside the card)
+  modal.onclick = (e) => { if (e.target === modal) closeImportPreviousModal(); };
+  // ESC closes the modal
+  document.addEventListener('keydown', _importModalKeyHandler);
+
+  list.innerHTML = '<div class="modal-empty">Loading past lineups…</div>';
+
+  try {
+    const fb = initFirebase();
+    if (!fb || !_activeTeamId) {
+      list.innerHTML = '<div class="modal-empty">No team selected.</div>';
+      return;
+    }
+    const snap = await fb.db.collection('teams').doc(_activeTeamId)
+      .collection('lineups').get();
+    const lineups = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      // Don't show the lineup we're currently editing as an "import" option
+      .filter(l => !state.editingLineupDocId || l.id !== state.editingLineupDocId);
+
+    if (!lineups.length) {
+      list.innerHTML = '<div class="modal-empty">No past lineups for this team yet. Save a lineup once and you\'ll be able to reuse it next time.</div>';
+      return;
+    }
+
+    // Sort most recent game first; tie-break on createdAt
+    lineups.sort((a, b) => {
+      const ad = a.gameDate || '';
+      const bd = b.gameDate || '';
+      if (ad !== bd) return bd.localeCompare(ad);
+      const at = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : 0;
+      const bt = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : 0;
+      return bt - at;
+    });
+
+    _importPreviousCache = lineups;
+
+    list.innerHTML = lineups.map(l => {
+      const title = l.gameName || (l.opponent ? 'vs ' + l.opponent : 'Game Lineup');
+      const parts = [];
+      if (l.gameDate) parts.push(formatDate(l.gameDate));
+      // Avoid duplicating opponent if it's already in the title
+      if (l.opponent && !title.toLowerCase().includes(l.opponent.toLowerCase())) {
+        parts.push('vs ' + l.opponent);
+      }
+      const playerCount = (l.players || []).length;
+      parts.push(playerCount + ' player' + (playerCount !== 1 ? 's' : ''));
+      const innings = l.innings || 6;
+      parts.push(innings + ' innings');
+      return `
+        <div class="import-item" role="button" tabindex="0"
+             onclick="applyImportFromPrevious('${l.id}')"
+             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();applyImportFromPrevious('${l.id}');}">
+          <div class="import-item-info">
+            <div class="import-item-title">${escHtml(title)}</div>
+            <div class="import-item-meta">${escHtml(parts.join(' · '))}</div>
+          </div>
+          <div class="import-item-arrow">›</div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    console.error('Failed to load past lineups for import:', e);
+    list.innerHTML = '<div class="modal-empty">Failed to load past lineups. Please try again.</div>';
+  }
+}
+
+function _importModalKeyHandler(e) {
+  if (e.key === 'Escape') closeImportPreviousModal();
+}
+
+function closeImportPreviousModal() {
+  const modal = document.getElementById('import-prev-modal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _importModalKeyHandler);
+}
+
+function applyImportFromPrevious(lineupId) {
+  const lineup = _importPreviousCache.find(l => l.id === lineupId);
+  if (!lineup) return;
+
+  // Only carry over players who are still on the current roster
+  const currentIds = new Set(state.players.map(p => p.id));
+  const importedRows = (lineup.players || []).slice()
+    .sort((a, b) => (a.batOrder || 0) - (b.batOrder || 0))
+    .filter(p => currentIds.has(p.playerId));
+
+  if (!importedRows.length) {
+    alert('None of the players from that lineup are on the current roster, so there\'s nothing to import.');
+    return;
+  }
+
+  const skipped = (lineup.players || []).length - importedRows.length;
+
+  // Clip / pad each player's positions to match the CURRENT game's innings
+  const innings = state.innings || 6;
+  state.lineup = importedRows.map(p => {
+    const positions = Array.isArray(p.positions) ? p.positions.slice(0, innings) : [];
+    while (positions.length < innings) positions.push('');
+    return { playerId: p.playerId, positions };
+  });
+
+  // Reset attendance to the imported players — they were the ones
+  // playing in the previous game, so they're the natural starting set.
+  // Anyone else can be toggled on manually.
+  state.attendance = {};
+  importedRows.forEach(p => { state.attendance[p.playerId] = true; });
+
+  // Re-render the entire lineup view
+  if (typeof renderAttendance === 'function')      renderAttendance();
+  if (typeof renderLineupGrid === 'function')      renderLineupGrid();
+  if (typeof renderPlayingTimeSummary === 'function') renderPlayingTimeSummary();
+  if (typeof checkConflicts === 'function')        checkConflicts();
+  // Persist (also kicks off draft auto-save via save → markLineupDirty)
+  save();
+
+  closeImportPreviousModal();
+
+  const title = lineup.gameName || (lineup.opponent ? 'vs ' + lineup.opponent : 'past game');
+  let msg = 'Imported lineup from ' + title;
+  if (skipped > 0) msg += ' · ' + skipped + ' player' + (skipped !== 1 ? 's' : '') + ' skipped (not on roster)';
+  showImportToast(msg);
+}
+
+function showImportToast(msg) {
+  let toast = document.getElementById('import-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'import-toast';
+    toast.className = 'import-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  // Force reflow so re-adding the class re-runs the transition
+  void toast.offsetWidth;
+  toast.classList.add('visible');
+  if (toast._t) clearTimeout(toast._t);
+  toast._t = setTimeout(() => toast.classList.remove('visible'), 2800);
 }
 
 // ═══════════════════════════════════════════════════
