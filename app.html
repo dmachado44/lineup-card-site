@@ -1224,38 +1224,92 @@
     }
     .allinnings-bench-wrap strong { color: var(--text); font-weight: 600; }
 
-    /* PRINT: when All Innings view is active, hide chrome and let the grid expand */
+    /* ── PRINT-ONLY ALL INNINGS SHEET ── */
+    #print-allinnings-sheet { display: none; }
     @media print {
-      body.print-allinnings-mode > *:not(#view-builder) { display: none !important; }
-      body.print-allinnings-mode .topbar,
-      body.print-allinnings-mode .step-footer,
-      body.print-allinnings-mode .wizard-bar,
-      body.print-allinnings-mode #step-1,
-      body.print-allinnings-mode #step-2,
-      body.print-allinnings-mode #step-3,
-      body.print-allinnings-mode #step-5,
-      body.print-allinnings-mode #steps-2-3-wrap,
-      body.print-allinnings-mode .att-pos-row,
-      body.print-allinnings-mode .lineup-toolbar,
-      body.print-allinnings-mode .view-mode-row,
-      body.print-allinnings-mode #conflicts-alert,
-      body.print-allinnings-mode #lineup-list-view,
-      body.print-allinnings-mode #lineup-field-view,
-      body.print-allinnings-mode #pt-summary,
-      body.print-allinnings-mode .strategy-row,
-      body.print-allinnings-mode .strategy-desc,
-      body.print-allinnings-mode #print-sheet { display: none !important; }
-      body.print-allinnings-mode #lineup-allinnings-view { display: block !important; }
-      body.print-allinnings-mode #step-4 .card:not(:has(#lineup-allinnings-view)) { display: none !important; }
-      body.print-allinnings-mode .allinnings-grid {
+      /* Default print behavior already shows #print-sheet via the rule
+         body > *:not(#print-sheet) below. When the user is printing the
+         All Innings layout, body.printing-allinnings swaps in our new sheet. */
+      body.printing-allinnings #print-sheet { display: none !important; }
+      body.printing-allinnings #print-allinnings-sheet {
+        display: block !important;
+        padding: 0;
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: #1a1a1a;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .print-allinnings-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #999;
+      }
+      .print-allinnings-title { font-size: 18px; font-weight: 700; }
+      .print-allinnings-meta  { font-size: 12px; color: #555; }
+      .print-allinnings-body {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+      .print-batting-list {
+        font-size: 11px;
+        line-height: 1.4;
+      }
+      .print-batting-list .print-batting-title {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #555;
+        margin-bottom: 4px;
+        letter-spacing: 0.4px;
+      }
+      .print-batting-list ol {
+        list-style: none;
+        margin: 0; padding: 0;
+        counter-reset: bat;
+      }
+      .print-batting-list li {
+        counter-increment: bat;
+        padding: 2px 0;
+        border-bottom: 1px dotted #ddd;
+      }
+      .print-batting-list li::before {
+        content: counter(bat) ".";
+        display: inline-block;
+        width: 22px;
+        font-weight: 700;
+        color: #22a06b;
+      }
+      .print-allinnings-grid {
+        display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
+        gap: 8px;
       }
-      body.print-allinnings-mode .allinnings-card {
+      .print-allinnings-grid .allinnings-card {
+        page-break-inside: avoid;
         break-inside: avoid;
-        border-color: #ccc;
+        border: 1px solid #d4d4d4;
+        border-radius: 8px;
+        padding: 6px;
+        cursor: default;
       }
-      @page { margin: 0.4in; size: landscape; }
+      .print-allinnings-grid .allinnings-card-header {
+        font-size: 10px;
+        margin-bottom: 4px;
+        color: #555;
+      }
+      .print-allinnings-grid .field-pos-bubble {
+        cursor: default;
+        box-shadow: none;
+        border-width: 1px;
+      }
+      @page { margin: 0.35in; size: landscape; }
     }
 
     /* UTL positions appear below the diamond, since they don't have natural field locations */
@@ -2649,8 +2703,10 @@
     #print-sheet { display: none; }
 
     @media print {
-      /* Hide everything except the print sheet */
-      body > *:not(#print-sheet) { display: none !important; }
+      /* Hide everything except the print sheet(s) — there are two: the
+         standard table-style #print-sheet and the All Innings-style
+         #print-allinnings-sheet. Body class chooses which one is visible. */
+      body > *:not(#print-sheet):not(#print-allinnings-sheet) { display: none !important; }
       #print-sheet {
         display: block !important;
         padding: 0;
@@ -6643,9 +6699,6 @@ function setLineupViewMode(mode) {
 
   if (printBtn) printBtn.style.display = (mode === 'allinnings') ? '' : 'none';
 
-  // Body class signals to the @media print rules which view should print.
-  document.body.classList.toggle('print-allinnings-mode', mode === 'allinnings');
-
   if (mode === 'field') renderFieldView();
   if (mode === 'allinnings') renderAllInningsView();
 
@@ -6771,20 +6824,71 @@ function jumpToFieldInning(idx) {
   setLineupViewMode('field');
 }
 
-// Cmd+P from the All Innings view should print just that view. The body
-// class is already on while the mode is active; these handlers also
-// re-render right before print so the grid is fresh.
+// Cmd+P (or the 🖨 Print button) while in All Innings view prints a
+// dedicated #print-allinnings-sheet that contains the game header, the
+// batting lineup, and the inning grid. The standard #print-sheet is
+// suppressed for this print pass via body.printing-allinnings.
+function populatePrintAllInnings() {
+  const sheet = document.getElementById('print-allinnings-sheet');
+  if (!sheet) return;
+
+  // Header: game title + meta
+  const title = state.gameName || (state.opponent ? 'vs ' + state.opponent : 'Game Lineup');
+  const metaParts = [];
+  if (state.opponent && !title.toLowerCase().includes(state.opponent.toLowerCase())) {
+    metaParts.push('vs ' + state.opponent);
+  }
+  if (state.gameDate) metaParts.push(formatDate(state.gameDate));
+  if (state.gameTime) metaParts.push(formatTime(state.gameTime));
+  if (state.gameLocation) metaParts.push(state.gameLocation);
+
+  // Batting list — attending players in batting order
+  const playerLookup = {};
+  (state.players || []).forEach(p => { playerLookup[p.id] = p; });
+  const battingRows = (state.lineup || [])
+    .filter(r => state.attendance[r.playerId] && playerLookup[r.playerId])
+    .map(r => playerLookup[r.playerId].name);
+
+  // Inning cards
+  const innings = Math.max(1, state.innings || 6);
+  let cardsHtml = '';
+  for (let i = 0; i < innings; i++) {
+    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
+    cardsHtml +=
+      '<div class="allinnings-card">' +
+        '<div class="allinnings-card-header">' +
+          '<span>Inning <span class="allinnings-card-num">' + (i + 1) + '</span></span>' +
+        '</div>' +
+        '<div class="field-stage">' +
+          FIELD_SVG_MARKUP +
+          '<div class="field-positions">' + fieldHtml + '</div>' +
+        '</div>' +
+        utlHtml +
+      '</div>';
+  }
+
+  sheet.innerHTML =
+    '<div class="print-allinnings-header">' +
+      '<div class="print-allinnings-title">' + escHtml(title) + '</div>' +
+      '<div class="print-allinnings-meta">' + escHtml(metaParts.join(' · ')) + '</div>' +
+    '</div>' +
+    '<div class="print-allinnings-body">' +
+      '<div class="print-batting-list">' +
+        '<div class="print-batting-title">Batting Order</div>' +
+        '<ol>' + battingRows.map(n => '<li>' + escHtml(n) + '</li>').join('') + '</ol>' +
+      '</div>' +
+      '<div class="print-allinnings-grid">' + cardsHtml + '</div>' +
+    '</div>';
+}
+
 window.addEventListener('beforeprint', () => {
   if (_lineupViewMode === 'allinnings') {
-    document.body.classList.add('print-allinnings-mode');
-    renderAllInningsView();
+    populatePrintAllInnings();
+    document.body.classList.add('printing-allinnings');
   }
 });
 window.addEventListener('afterprint', () => {
-  // Keep the class only while the view is still active
-  if (_lineupViewMode !== 'allinnings') {
-    document.body.classList.remove('print-allinnings-mode');
-  }
+  document.body.classList.remove('printing-allinnings');
 });
 
 // Wire stored preference at startup so refreshes preserve the user's choice.
@@ -9021,6 +9125,10 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="feedback-success-sub">We read every message and will get back to you soon.</div>
   </div>
 </div>
+
+<!-- ══════════════ PRINT-ONLY ALL INNINGS SHEET ══════════════ -->
+<!-- Populated by populatePrintAllInnings() right before window.print(). -->
+<div id="print-allinnings-sheet"></div>
 
 <!-- ══════════════ PRINT-ONLY SHEET ══════════════ -->
 <div id="print-sheet">
