@@ -1117,6 +1117,21 @@
       outline-offset: -2px;
       background: rgba(34,160,107,0.06);
     }
+    /* Flying clone used during the swap animation */
+    .field-bubble-fly {
+      position: fixed;
+      pointer-events: none;
+      z-index: 500;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+      will-change: transform;
+      /* override the .field-pos-bubble class transform so we control it */
+      transform: none !important;
+      margin: 0 !important;
+    }
+    /* Brief hide of the real bubble's name during animation */
+    .field-pos-bubble.swap-hidden .field-pos-name,
+    .field-pos-bubble.swap-hidden .field-pos-label,
+    .field-bench-chip.swap-hidden { visibility: hidden; }
     .field-pos-bubble .field-pos-label {
       font-size: 10px;
       font-weight: 700;
@@ -6995,7 +7010,8 @@ function renderFieldPositions() {
     html += '<button type="button" class="field-pos-bubble' +
             (empty ? ' empty' : '') +
             (conflict ? ' conflict' : '') +
-            '" style="left:' + coord.x + '%;top:' + coord.y + '%;"' +
+            '" data-pos="' + pos + '"' +
+            ' style="left:' + coord.x + '%;top:' + coord.y + '%;"' +
             dragAttrs +
             ' ondragover="onFieldDragOver(event)"' +
             ' ondragleave="onFieldDragLeave(event)"' +
@@ -7032,7 +7048,8 @@ function renderFieldPositions() {
       utlHtml += '<button type="button" class="field-pos-bubble' +
                  (empty ? ' empty' : '') +
                  (conflict ? ' conflict' : '') +
-                 '" style="position:relative;left:auto;top:auto;transform:none;"' +
+                 '" data-pos="' + pos + '"' +
+                 ' style="position:relative;left:auto;top:auto;transform:none;"' +
                  dragAttrs +
                  ' ondragover="onFieldDragOver(event)"' +
                  ' ondragleave="onFieldDragLeave(event)"' +
@@ -7084,6 +7101,7 @@ function renderFieldBench() {
   wrap.innerHTML = benched.map(r => {
     const p = playerLookup[r.playerId];
     return '<button type="button" class="field-bench-chip"' +
+           ' data-bench-player="' + r.playerId + '"' +
            ' draggable="true"' +
            ' ondragstart="onFieldDragStart(event,\'bench\',\'' + r.playerId + '\')"' +
            ' ondragend="onFieldDragEnd(event)"' +
@@ -7399,6 +7417,16 @@ function performFieldSwap(src, dst) {
   if (src.kind === dst.kind && src.target === dst.target) return;
   if (srcPlayerId === dstPlayerId) return;
 
+  // Capture pre-swap visuals so we can fly clones between old and new spots
+  // after the re-render. Done BEFORE state mutation so the live DOM still
+  // matches what the user dragged.
+  const animPlan = captureSwapAnim({
+    srcKind: src.kind, srcTarget: src.target,
+    dstKind: dst.kind, dstTarget: dst.target,
+    srcPlayerId, dstPlayerId,
+    dstPosition, srcPosition
+  });
+
   // Apply the move
   setPlayerPositionAt(srcPlayerId, inningIdx, dstPosition);
   // If a player was at the destination, swap them into the source slot
@@ -7411,6 +7439,127 @@ function performFieldSwap(src, dst) {
   renderLineupGrid();
   if (typeof renderPlayingTimeSummary === 'function') renderPlayingTimeSummary();
   if (typeof checkConflicts === 'function') checkConflicts();
+
+  // Run the animation now that the new bubbles are in the DOM
+  if (animPlan) runSwapAnim(animPlan);
+}
+
+// Capture old element rects + content, plus the *kind* of new locations
+// the runner will need to look up after re-render.
+function captureSwapAnim(info) {
+  const srcEl = findFieldElByRef(info.srcKind, info.srcTarget);
+  const dstEl = (info.dstKind === 'bench-area')
+    ? document.getElementById('field-bench')
+    : findFieldElByRef(info.dstKind, info.dstTarget);
+  if (!srcEl || !dstEl) return null;
+  const srcRect = srcEl.getBoundingClientRect();
+  const dstRect = dstEl.getBoundingClientRect();
+  // Outer HTML so we can clone the visual exactly. Strip handlers so the
+  // clone behaves as decoration only.
+  const sanitize = (html) => html
+    .replace(/\s(on[a-z]+)="[^"]*"/gi, '')
+    .replace(/\sdraggable="[^"]*"/i, '');
+  return {
+    srcRect, dstRect,
+    srcCloneHTML: sanitize(srcEl.outerHTML),
+    dstCloneHTML: (info.dstPlayerId && info.dstPlayerId !== info.srcPlayerId)
+      ? sanitize(dstEl.outerHTML) : null,
+    // Identifiers used to find the post-render bubbles to hide names on.
+    srcLanding: { playerId: info.srcPlayerId, position: info.dstPosition },
+    dstLanding: info.dstPlayerId
+      ? { playerId: info.dstPlayerId, position: info.srcPosition }
+      : null
+  };
+}
+
+// Find a position bubble (data-pos) or bench chip (data-bench-player) in
+// the live DOM matching a ref descriptor.
+function findFieldElByRef(kind, target) {
+  if (kind === 'pos') {
+    return document.querySelector('.field-pos-bubble[data-pos="' + cssEscape(target) + '"]');
+  }
+  if (kind === 'bench') {
+    return document.querySelector('.field-bench-chip[data-bench-player="' + cssEscape(target) + '"]');
+  }
+  return null;
+}
+
+// Find the bubble/chip a player landed on after a swap re-render.
+function findFieldElForLanding(landing) {
+  if (!landing) return null;
+  if (landing.position === 'Bench') {
+    return document.querySelector('.field-bench-chip[data-bench-player="' + cssEscape(landing.playerId) + '"]');
+  }
+  return document.querySelector('.field-pos-bubble[data-pos="' + cssEscape(landing.position) + '"]');
+}
+
+// Minimal CSS.escape polyfill — playerIds can contain underscores/dots
+function cssEscape(s) {
+  if (window.CSS && CSS.escape) return CSS.escape(s);
+  return String(s).replace(/[^a-zA-Z0-9_-]/g, '\\$&');
+}
+
+function runSwapAnim(plan) {
+  const FLY_MS = 320;
+  const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+  // Find post-render bubbles where each clone will land
+  const srcLandingEl = findFieldElForLanding(plan.srcLanding);
+  const dstLandingEl = findFieldElForLanding(plan.dstLanding);
+
+  // Hide their text while the clone is in flight so we don't see the new
+  // contents pop in before the clone lands.
+  if (srcLandingEl) srcLandingEl.classList.add('swap-hidden');
+  if (dstLandingEl) dstLandingEl.classList.add('swap-hidden');
+
+  const cloneSrc = createSwapClone(plan.srcCloneHTML, plan.srcRect);
+  const cloneDst = plan.dstCloneHTML ? createSwapClone(plan.dstCloneHTML, plan.dstRect) : null;
+
+  // Animate clones. Web Animations API gives us a clean .finished promise.
+  const anims = [];
+  if (cloneSrc) {
+    const dx = plan.dstRect.left - plan.srcRect.left;
+    const dy = plan.dstRect.top  - plan.srcRect.top;
+    anims.push(cloneSrc.animate(
+      [{ transform: 'translate(0,0)' }, { transform: 'translate(' + dx + 'px,' + dy + 'px)' }],
+      { duration: FLY_MS, easing: EASING, fill: 'forwards' }
+    ));
+  }
+  if (cloneDst) {
+    const dx = plan.srcRect.left - plan.dstRect.left;
+    const dy = plan.srcRect.top  - plan.dstRect.top;
+    anims.push(cloneDst.animate(
+      [{ transform: 'translate(0,0)' }, { transform: 'translate(' + dx + 'px,' + dy + 'px)' }],
+      { duration: FLY_MS, easing: EASING, fill: 'forwards' }
+    ));
+  }
+
+  const cleanup = () => {
+    if (cloneSrc) cloneSrc.remove();
+    if (cloneDst) cloneDst.remove();
+    if (srcLandingEl) srcLandingEl.classList.remove('swap-hidden');
+    if (dstLandingEl) dstLandingEl.classList.remove('swap-hidden');
+  };
+
+  if (anims.length === 0) { cleanup(); return; }
+  Promise.all(anims.map(a => a.finished)).then(cleanup, cleanup);
+  // Defensive fallback if .finished fails to settle (older browsers)
+  setTimeout(cleanup, FLY_MS + 80);
+}
+
+function createSwapClone(html, rect) {
+  if (!html || !rect) return null;
+  const wrap = document.createElement('div');
+  wrap.innerHTML = html.trim();
+  const clone = wrap.firstElementChild;
+  if (!clone) return null;
+  clone.classList.add('field-bubble-fly');
+  clone.style.left   = rect.left + 'px';
+  clone.style.top    = rect.top  + 'px';
+  clone.style.width  = rect.width + 'px';
+  clone.style.height = rect.height + 'px';
+  document.body.appendChild(clone);
+  return clone;
 }
 
 function setPlayerPositionAt(playerId, inningIdx, value) {
