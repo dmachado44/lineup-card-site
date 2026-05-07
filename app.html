@@ -1309,6 +1309,11 @@
         box-shadow: none;
         border-width: 1px;
       }
+      /* Save ink: drop the soft green outfield fill in print only.
+         The outfield is the only <path> in the SVG (diamond is polygon,
+         bases are rects, mound is circle), so this targets just that fill
+         and leaves the stroke outline intact. */
+      body.printing-allinnings .field-bg path { fill: #ffffff !important; }
       @page { margin: 0.35in; size: landscape; }
     }
 
