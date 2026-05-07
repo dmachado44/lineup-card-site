@@ -1112,6 +1112,93 @@
     .pos-select optgroup[label="Taken"] { color: #C7C7CC; }
     .pos-select option { font-weight: 400; color: var(--text); }
 
+    /* ── Inning header: drag-to-reorder + click-for-menu ── */
+    .lineup-table th.inning-th {
+      padding: 6px 4px;
+      cursor: grab;
+      user-select: none;
+    }
+    .lineup-table th.inning-th:active { cursor: grabbing; }
+    .lineup-table th.inning-th.sortable-ghost { background: #F5F6F9; opacity: 0.6; }
+    .lineup-table th.inning-th.sortable-chosen { background: var(--white); }
+    .lineup-table th.inning-th.sortable-drag { background: var(--white); opacity: 1; }
+    .inning-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px 10px;
+      min-width: 36px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .inning-trigger:hover {
+      background: var(--white);
+      border-color: var(--border);
+    }
+    .inning-caret {
+      font-size: 9px;
+      color: var(--muted);
+      opacity: 0.45;
+      transition: opacity 0.1s;
+      line-height: 1;
+    }
+    .inning-trigger:hover .inning-caret { opacity: 1; }
+
+    .inning-menu {
+      position: fixed;
+      z-index: 200;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+      padding: 6px;
+      min-width: 200px;
+      font-size: 14px;
+    }
+    .inning-menu .menu-header {
+      padding: 6px 10px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .inning-menu .menu-item {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      background: none;
+      border: none;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .inning-menu .menu-item:hover { background: var(--bg-secondary); }
+    .inning-menu .menu-item.danger { color: #d23b3b; }
+    .inning-menu .menu-item.danger:hover { background: rgba(210,59,59,0.08); }
+    .inning-menu .menu-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 6px;
+    }
+
+    @media (pointer: coarse) {
+      .lineup-table th.inning-th { padding: 4px 2px; }
+      .inning-trigger { padding: 4px 4px; min-width: 0; gap: 2px; }
+      .inning-caret { display: none; }
+    }
+
     /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
     @media (pointer: coarse) {
       .lineup-table { width: auto; min-width: 100%; }
@@ -2878,7 +2965,7 @@
         <div class="lineup-toolbar">
           <div>
             <div class="card-title mb-0">Batting Order & Fielding Positions</div>
-            <div class="text-muted-sm">Drag rows to reorder batting order · Use dropdowns to assign positions per inning</div>
+            <div class="text-muted-sm">Drag rows or innings to reorder · Tap an inning header to copy or clear</div>
           </div>
           <div class="toolbar-spacer"></div>
           <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
@@ -5510,10 +5597,49 @@ function renderLineupGrid() {
     return p && state.attendance[p.id];
   });
 
-  let hRow = `<tr><th>Player</th>`;
-  for (let i = 1; i <= state.innings; i++) hRow += `<th>${i}</th>`;
+  let hRow = `<tr id="lineup-thead-row"><th class="player-th">Player</th>`;
+  for (let i = 1; i <= state.innings; i++) {
+    hRow += `<th class="inning-th" data-inning="${i - 1}">` +
+            `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
+              `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
+              `aria-label="Inning ${i} actions">` +
+              `<span class="inning-num">${i}</span>` +
+              `<span class="inning-caret" aria-hidden="true">▾</span>` +
+            `</button>` +
+            `</th>`;
+  }
   hRow += `</tr>`;
   thead.innerHTML = hRow;
+
+  // Make inning columns drag-reorderable
+  if (window._inningSortable) window._inningSortable.destroy();
+  if (state.innings > 1) {
+    const headRow = document.getElementById('lineup-thead-row');
+    if (headRow) {
+      window._inningSortable = Sortable.create(headRow, {
+        animation: 160,
+        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        handle: '.inning-th',
+        filter: '.player-th',
+        preventOnFilter: false,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        dragClass: 'sortable-drag',
+        onMove(evt) {
+          // Don't allow dropping onto the Player column
+          return !evt.related.classList.contains('player-th');
+        },
+        onStart() { closeInningMenu(); },
+        onEnd(evt) {
+          // Subtract 1 because the first th is the Player column
+          const oldIdx = evt.oldIndex - 1;
+          const newIdx = evt.newIndex - 1;
+          if (oldIdx === newIdx || oldIdx < 0 || newIdx < 0) return;
+          moveInning(oldIdx, newIdx);
+        }
+      });
+    }
+  }
 
   tbody.innerHTML = '';
   activeLineup.forEach((lineupRow, rowIdx) => {
@@ -5628,6 +5754,173 @@ function onPosChange(playerId, inningIdx, value) {
     checkConflicts();
     save();
   }
+}
+
+// ═══════════════════════════════════════════════════
+// INNING COLUMN OPERATIONS — move, copy, clear
+// ═══════════════════════════════════════════════════
+function moveInning(fromIdx, toIdx) {
+  if (fromIdx === toIdx) return;
+  if (fromIdx < 0 || toIdx < 0 || fromIdx >= state.innings || toIdx >= state.innings) return;
+  state.lineup.forEach(row => {
+    if (!Array.isArray(row.positions)) return;
+    // Pad to length so the splice indices line up cleanly
+    while (row.positions.length < state.innings) row.positions.push('');
+    const [moved] = row.positions.splice(fromIdx, 1);
+    row.positions.splice(toIdx, 0, moved !== undefined ? moved : '');
+  });
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  save();
+}
+
+function copyInning(fromIdx, toIdx) {
+  if (fromIdx === toIdx) return;
+  if (fromIdx < 0 || toIdx < 0 || fromIdx >= state.innings || toIdx >= state.innings) return;
+  state.lineup.forEach(row => {
+    if (!Array.isArray(row.positions)) return;
+    while (row.positions.length < state.innings) row.positions.push('');
+    row.positions[toIdx] = row.positions[fromIdx] || '';
+  });
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  save();
+}
+
+function copyInningToAll(fromIdx) {
+  if (fromIdx < 0 || fromIdx >= state.innings) return;
+  state.lineup.forEach(row => {
+    if (!Array.isArray(row.positions)) return;
+    while (row.positions.length < state.innings) row.positions.push('');
+    const src = row.positions[fromIdx] || '';
+    for (let i = 0; i < state.innings; i++) {
+      if (i !== fromIdx) row.positions[i] = src;
+    }
+  });
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  save();
+}
+
+function clearInningPositions(idx) {
+  if (idx < 0 || idx >= state.innings) return;
+  state.lineup.forEach(row => {
+    if (!Array.isArray(row.positions)) return;
+    while (row.positions.length < state.innings) row.positions.push('');
+    row.positions[idx] = '';
+  });
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  save();
+}
+
+// ═══════════════════════════════════════════════════
+// INNING HEADER MENU
+// ═══════════════════════════════════════════════════
+function _ensureInningMenuEl() {
+  let menu = document.getElementById('inning-menu');
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'inning-menu';
+    menu.className = 'inning-menu';
+    menu.style.display = 'none';
+    document.body.appendChild(menu);
+  }
+  return menu;
+}
+
+function openInningMenu(inningIdx, triggerEl) {
+  const menu = _ensureInningMenuEl();
+
+  // Build menu content
+  let html = `<div class="menu-header">Inning ${inningIdx + 1}</div>`;
+
+  if (state.innings > 1) {
+    for (let i = 0; i < state.innings; i++) {
+      if (i === inningIdx) continue;
+      html += `<button type="button" class="menu-item" data-act="copy" data-target="${i}">Copy to inning ${i + 1}</button>`;
+    }
+    if (state.innings > 2) {
+      html += `<div class="menu-divider"></div>`;
+      html += `<button type="button" class="menu-item" data-act="copy-all">Copy to all other innings</button>`;
+    }
+    html += `<div class="menu-divider"></div>`;
+  }
+  html += `<button type="button" class="menu-item danger" data-act="clear">Clear inning ${inningIdx + 1}</button>`;
+  menu.innerHTML = html;
+
+  // Wire up actions
+  menu.querySelectorAll('.menu-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const act = btn.getAttribute('data-act');
+      if (act === 'copy') {
+        const target = parseInt(btn.getAttribute('data-target'), 10);
+        copyInning(inningIdx, target);
+      } else if (act === 'copy-all') {
+        copyInningToAll(inningIdx);
+      } else if (act === 'clear') {
+        clearInningPositions(inningIdx);
+      }
+      closeInningMenu();
+    });
+  });
+
+  // Show + position. Use fixed positioning relative to viewport.
+  menu.style.display = 'block';
+  menu.style.visibility = 'hidden';
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  // Force layout to read offsetWidth/Height
+  const menuW = menu.offsetWidth;
+  const menuH = menu.offsetHeight;
+  const r = triggerEl.getBoundingClientRect();
+  const pad = 6;
+  let left = r.left;
+  let top = r.bottom + 4;
+  // Clamp horizontally
+  if (left + menuW > window.innerWidth - pad) {
+    left = Math.max(pad, window.innerWidth - menuW - pad);
+  }
+  if (left < pad) left = pad;
+  // Flip above if not enough room below
+  if (top + menuH > window.innerHeight - pad && r.top - menuH - 4 > pad) {
+    top = r.top - menuH - 4;
+  }
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+  menu.style.visibility = 'visible';
+
+  // Close on outside click / escape
+  setTimeout(() => {
+    document.addEventListener('mousedown', _inningMenuOutsideHandler);
+    document.addEventListener('touchstart', _inningMenuOutsideHandler, { passive: true });
+    document.addEventListener('keydown', _inningMenuKeyHandler);
+    window.addEventListener('resize', closeInningMenu);
+    window.addEventListener('scroll', closeInningMenu, true);
+  }, 0);
+}
+
+function _inningMenuOutsideHandler(e) {
+  const menu = document.getElementById('inning-menu');
+  if (!menu) return;
+  if (menu.contains(e.target)) return;
+  if (e.target.closest && e.target.closest('.inning-trigger')) return; // let trigger handler reposition
+  closeInningMenu();
+}
+
+function _inningMenuKeyHandler(e) {
+  if (e.key === 'Escape') closeInningMenu();
+}
+
+function closeInningMenu() {
+  const menu = document.getElementById('inning-menu');
+  if (menu) menu.style.display = 'none';
+  document.removeEventListener('mousedown', _inningMenuOutsideHandler);
+  document.removeEventListener('touchstart', _inningMenuOutsideHandler);
+  document.removeEventListener('keydown', _inningMenuKeyHandler);
+  window.removeEventListener('resize', closeInningMenu);
+  window.removeEventListener('scroll', closeInningMenu, true);
 }
 
 function checkConflicts() {
