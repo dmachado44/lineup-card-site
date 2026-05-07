@@ -1152,6 +1152,112 @@
     }
     .field-bench-chip:hover { border-color: var(--green); background: var(--bg-secondary); }
 
+    /* ── ALL INNINGS GRID ── */
+    .view-mode-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .view-mode-spacer { flex: 1; }
+    .allinnings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .allinnings-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--white, #fff);
+      cursor: pointer;
+      transition: border-color 0.12s, box-shadow 0.12s;
+    }
+    .allinnings-card:hover {
+      border-color: var(--green, #22a06b);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .allinnings-card-header {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .allinnings-card-header .allinnings-card-num { color: var(--green, #22a06b); font-size: 15px; }
+    .allinnings-card .field-stage {
+      max-width: 100%;
+      margin: 0;
+    }
+    /* Smaller, tighter bubbles for the mini-fields */
+    .allinnings-card .field-pos-bubble {
+      min-width: 50px;
+      max-width: 90px;
+      padding: 3px 6px;
+      border-width: 1.5px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      cursor: default;
+    }
+    .allinnings-card .field-pos-bubble:hover {
+      border-color: var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .allinnings-card .field-pos-label { font-size: 9px; margin-bottom: 1px; }
+    .allinnings-card .field-pos-name { font-size: 11px; font-weight: 600; }
+    /* UTL positions inside a card: smaller chips */
+    .allinnings-card .field-utl-row { margin-top: 6px; gap: 4px; }
+    .allinnings-card .field-utl-row .field-pos-bubble {
+      position: relative; left: auto; top: auto; transform: none;
+    }
+    .allinnings-bench-wrap {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: var(--bg-secondary, #f5f5f7);
+      border-radius: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .allinnings-bench-wrap strong { color: var(--text); font-weight: 600; }
+
+    /* PRINT: when All Innings view is active, hide chrome and let the grid expand */
+    @media print {
+      body.print-allinnings-mode > *:not(#view-builder) { display: none !important; }
+      body.print-allinnings-mode .topbar,
+      body.print-allinnings-mode .step-footer,
+      body.print-allinnings-mode .wizard-bar,
+      body.print-allinnings-mode #step-1,
+      body.print-allinnings-mode #step-2,
+      body.print-allinnings-mode #step-3,
+      body.print-allinnings-mode #step-5,
+      body.print-allinnings-mode #steps-2-3-wrap,
+      body.print-allinnings-mode .att-pos-row,
+      body.print-allinnings-mode .lineup-toolbar,
+      body.print-allinnings-mode .view-mode-row,
+      body.print-allinnings-mode #conflicts-alert,
+      body.print-allinnings-mode #lineup-list-view,
+      body.print-allinnings-mode #lineup-field-view,
+      body.print-allinnings-mode #pt-summary,
+      body.print-allinnings-mode .strategy-row,
+      body.print-allinnings-mode .strategy-desc,
+      body.print-allinnings-mode #print-sheet { display: none !important; }
+      body.print-allinnings-mode #lineup-allinnings-view { display: block !important; }
+      body.print-allinnings-mode #step-4 .card:not(:has(#lineup-allinnings-view)) { display: none !important; }
+      body.print-allinnings-mode .allinnings-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      body.print-allinnings-mode .allinnings-card {
+        break-inside: avoid;
+        border-color: #ccc;
+      }
+      @page { margin: 0.4in; size: landscape; }
+    }
+
     /* UTL positions appear below the diamond, since they don't have natural field locations */
     .field-utl-row {
       display: flex;
@@ -3453,7 +3559,14 @@
             <button id="view-mode-field" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('field')">
               <span class="view-mode-icon" aria-hidden="true">⚾</span> Field
             </button>
+            <button id="view-mode-allinnings" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('allinnings')">
+              <span class="view-mode-icon" aria-hidden="true">🗂</span> All Innings
+            </button>
           </div>
+          <div class="view-mode-spacer"></div>
+          <button id="view-mode-print-allinnings" class="btn btn-ghost btn-sm" style="display:none;" onclick="window.print()" title="Print this layout">
+            🖨 Print
+          </button>
         </div>
 
         <div id="conflicts-alert" class="alert-warn" style="display:none;"></div>
@@ -3498,6 +3611,12 @@
             <div class="field-bench-label" id="field-bench-label">Bench</div>
             <div class="field-bench" id="field-bench"></div>
           </div>
+        </div>
+
+        <!-- ALL INNINGS GRID: every inning's lineup laid out side-by-side -->
+        <div id="lineup-allinnings-view" style="display:none;">
+          <div class="allinnings-grid" id="allinnings-grid"></div>
+          <div class="allinnings-bench-wrap" id="allinnings-bench-wrap"></div>
         </div>
 
         <!-- POSITION PICKER popup (shared across field-view bubbles + bench chips) -->
@@ -6500,23 +6619,173 @@ const FIELD_POS_COORDS = {
 };
 
 function setLineupViewMode(mode) {
-  if (mode !== 'list' && mode !== 'field') mode = 'list';
+  if (mode !== 'list' && mode !== 'field' && mode !== 'allinnings') mode = 'list';
   _lineupViewMode = mode;
   try { localStorage.setItem(VIEW_MODE_KEY, mode); } catch(e) {}
 
-  const listEl  = document.getElementById('lineup-list-view');
-  const fieldEl = document.getElementById('lineup-field-view');
-  const listBtn = document.getElementById('view-mode-list');
+  const listEl   = document.getElementById('lineup-list-view');
+  const fieldEl  = document.getElementById('lineup-field-view');
+  const allEl    = document.getElementById('lineup-allinnings-view');
+  const listBtn  = document.getElementById('view-mode-list');
   const fieldBtn = document.getElementById('view-mode-field');
-  if (listEl)  listEl.style.display  = (mode === 'list')  ? '' : 'none';
-  if (fieldEl) fieldEl.style.display = (mode === 'field') ? '' : 'none';
-  if (listBtn)  { listBtn.classList.toggle('active',  mode === 'list');  listBtn.setAttribute('aria-selected',  mode === 'list'); }
-  if (fieldBtn) { fieldBtn.classList.toggle('active', mode === 'field'); fieldBtn.setAttribute('aria-selected', mode === 'field'); }
+  const allBtn   = document.getElementById('view-mode-allinnings');
+  const printBtn = document.getElementById('view-mode-print-allinnings');
+
+  if (listEl)  listEl.style.display  = (mode === 'list')       ? '' : 'none';
+  if (fieldEl) fieldEl.style.display = (mode === 'field')      ? '' : 'none';
+  if (allEl)   allEl.style.display   = (mode === 'allinnings') ? '' : 'none';
+
+  [['list', listBtn], ['field', fieldBtn], ['allinnings', allBtn]].forEach(([m, btn]) => {
+    if (!btn) return;
+    btn.classList.toggle('active', m === mode);
+    btn.setAttribute('aria-selected', m === mode);
+  });
+
+  if (printBtn) printBtn.style.display = (mode === 'allinnings') ? '' : 'none';
+
+  // Body class signals to the @media print rules which view should print.
+  document.body.classList.toggle('print-allinnings-mode', mode === 'allinnings');
 
   if (mode === 'field') renderFieldView();
-  // Closing any stray picker if user toggles mid-edit
+  if (mode === 'allinnings') renderAllInningsView();
+
   closeFieldPosPicker();
 }
+
+// ── All Innings grid ────────────────────────────────────────────
+// Reusable copy of the field SVG. Cloned into each inning card so we
+// don't keep the markup in memory more than once at the source level.
+const FIELD_SVG_MARKUP = (
+  '<svg class="field-bg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+    '<path d="M 500 720 L 76 296 A 600 600 0 0 1 924 296 Z" fill="#f0f7ed" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>' +
+    '<polygon points="500,720 700,520 500,320 300,520" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
+    '<rect x="690" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+    '<rect x="490" y="310" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+    '<rect x="290" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+    '<circle cx="500" cy="520" r="28" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
+    '<polygon points="488,712 512,712 512,728 500,738 488,728" fill="#9aa0a6"/>' +
+  '</svg>'
+);
+
+// Build the bubble HTML for one inning. Read-only — no click handlers; the
+// whole card is a link into single-inning Field view for editing.
+function buildInningBubblesHtml(inningIdx) {
+  const playerLookup = {};
+  (state.players || []).forEach(p => { playerLookup[p.id] = p; });
+  const assignedAt = {};
+  (state.lineup || []).forEach(row => {
+    if (!state.attendance[row.playerId]) return;
+    const pos = (row.positions || [])[inningIdx];
+    if (!pos || pos === 'Bench') return;
+    (assignedAt[pos] = assignedAt[pos] || []).push(row.playerId);
+  });
+  const active = (state.gamePositions && state.gamePositions.length > 0)
+    ? state.gamePositions
+    : (state.leagueRules.activePositions || []);
+
+  const onField = active.filter(p => p !== 'Bench' && FIELD_POS_COORDS[p]);
+  const utlPositions = active.filter(p => /^UTL/.test(p));
+
+  let fieldHtml = '';
+  onField.forEach(pos => {
+    const coord = FIELD_POS_COORDS[pos];
+    const assignees = assignedAt[pos] || [];
+    const player = assignees.length ? playerLookup[assignees[0]] : null;
+    const empty = !player;
+    const conflict = assignees.length > 1;
+    const name = player ? shortenPlayerName(player.name) : '— —';
+    fieldHtml +=
+      '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') +
+      '" style="left:' + coord.x + '%;top:' + coord.y + '%;">' +
+        '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
+        '<div class="field-pos-name">' + escHtml(name) + '</div>' +
+      '</div>';
+  });
+
+  let utlHtml = '';
+  if (utlPositions.length) {
+    utlHtml = '<div class="field-utl-row">';
+    utlPositions.forEach(pos => {
+      const assignees = assignedAt[pos] || [];
+      const player = assignees.length ? playerLookup[assignees[0]] : null;
+      const empty = !player;
+      const conflict = assignees.length > 1;
+      const name = player ? shortenPlayerName(player.name) : '— —';
+      utlHtml +=
+        '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + '">' +
+          '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
+          '<div class="field-pos-name">' + escHtml(name) + '</div>' +
+        '</div>';
+    });
+    utlHtml += '</div>';
+  }
+
+  return { fieldHtml, utlHtml };
+}
+
+function renderAllInningsView() {
+  const grid = document.getElementById('allinnings-grid');
+  const benchWrap = document.getElementById('allinnings-bench-wrap');
+  if (!grid) return;
+
+  const innings = Math.max(1, state.innings || 6);
+
+  let html = '';
+  for (let i = 0; i < innings; i++) {
+    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
+    html +=
+      '<div class="allinnings-card" onclick="jumpToFieldInning(' + i + ')" title="Click to edit inning ' + (i + 1) + '">' +
+        '<div class="allinnings-card-header">' +
+          '<span>Inning <span class="allinnings-card-num">' + (i + 1) + '</span></span>' +
+        '</div>' +
+        '<div class="field-stage">' +
+          FIELD_SVG_MARKUP +
+          '<div class="field-positions">' + fieldHtml + '</div>' +
+        '</div>' +
+        utlHtml +
+      '</div>';
+  }
+  grid.innerHTML = html;
+
+  // Players who never play (attending but Bench/empty all game) — show below
+  if (benchWrap) {
+    const playerLookup = {};
+    (state.players || []).forEach(p => { playerLookup[p.id] = p; });
+    const neverPlay = (state.lineup || [])
+      .filter(r => state.attendance[r.playerId] && playerLookup[r.playerId])
+      .filter(r => {
+        const ps = r.positions || [];
+        return ps.every(p => !p || p === 'Bench');
+      })
+      .map(r => playerLookup[r.playerId].name);
+    benchWrap.innerHTML = neverPlay.length
+      ? '<strong>On bench all game:</strong> ' + neverPlay.map(escHtml).join(', ')
+      : '';
+    benchWrap.style.display = neverPlay.length ? '' : 'none';
+  }
+}
+
+// Click a card in All Innings → switch to single-inning Field view focused there.
+function jumpToFieldInning(idx) {
+  _fieldInning = idx;
+  setLineupViewMode('field');
+}
+
+// Cmd+P from the All Innings view should print just that view. The body
+// class is already on while the mode is active; these handlers also
+// re-render right before print so the grid is fresh.
+window.addEventListener('beforeprint', () => {
+  if (_lineupViewMode === 'allinnings') {
+    document.body.classList.add('print-allinnings-mode');
+    renderAllInningsView();
+  }
+});
+window.addEventListener('afterprint', () => {
+  // Keep the class only while the view is still active
+  if (_lineupViewMode !== 'allinnings') {
+    document.body.classList.remove('print-allinnings-mode');
+  }
+});
 
 // Wire stored preference at startup so refreshes preserve the user's choice.
 document.addEventListener('DOMContentLoaded', () => {
@@ -7654,8 +7923,9 @@ function renderLineupGrid() {
 
   // Highlight any existing conflicts after render
   checkConflicts();
-  // Mirror to the field view if it's the active mode (cheap if not)
+  // Mirror to whichever alternate view is active (cheap when not)
   if (typeof renderFieldView === 'function') renderFieldView();
+  if (typeof renderAllInningsView === 'function' && _lineupViewMode === 'allinnings') renderAllInningsView();
 }
 
 function onPosChange(playerId, inningIdx, value) {
