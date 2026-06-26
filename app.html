@@ -2511,9 +2511,32 @@
       font-weight: 500;
     }
 
-    /* Single universal back control: the top-bar back button, on every builder
-       step and mode. In-content back buttons were removed in favor of this. */
-    #view-builder .topbar-back { display: flex; }
+    /* Single universal back control. It lives on the wizard-step row in wizard
+       modes, and on the settings header row in settings mode (which hides the
+       wizard bar). The top-bar back button is not used in the builder. */
+    #view-builder .topbar-back { display: none; }
+    .builder-back {
+      font-size: 14px;
+      color: var(--black);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .builder-back:hover { opacity: 0.7; }
+    /* On the wizard row, float the back button on the left so the 1-2-3 pills
+       stay perfectly centered. */
+    .wizard-bar { position: relative; }
+    .wizard-bar .builder-back {
+      position: absolute;
+      left: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
     .settings-mode .team-builder-banner { display: none !important; }
 
     /* Settings save footer */
@@ -2529,7 +2552,11 @@
 
     @media (max-width: 768px) {
       .topbar { padding: 0 16px; }
-      .wizard-bar { padding: 0 16px; }
+      .wizard-bar { padding: 0 16px; display: flex; align-items: center; gap: 10px; }
+      /* On phones, drop the absolute centering: back sits inline on the left and
+         the step pills left-align and scroll horizontally if they don't fit. */
+      .wizard-bar .builder-back { position: static; transform: none; left: auto; flex: 0 0 auto; }
+      .wizard-bar .wizard-steps { justify-content: flex-start; overflow-x: auto; margin: 0; }
       .page { padding: 32px 16px 60px; }
       .dashboard-page { padding: 32px 16px; }
       .card { padding: 28px 22px; }
@@ -3249,7 +3276,6 @@
 <!-- ══════════════ VIEW 3: BUILDER ══════════════ -->
 <div id="view-builder">
   <div class="topbar">
-    <button class="topbar-back" onclick="backToDashboard()">← Back</button>
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
       <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
       Lineup Card
@@ -3259,6 +3285,7 @@
   </div>
 
   <div class="wizard-bar">
+    <button class="builder-back" onclick="backToDashboard()">← Back</button>
     <div class="wizard-steps" id="wizard-steps">
       <!-- Dynamically rendered by renderWizardBar() -->
     </div>
@@ -3268,6 +3295,7 @@
 
     <!-- Sticky settings header with team logo + save button -->
     <div class="settings-header" id="settings-header" style="display:none;">
+      <button class="builder-back" onclick="backToDashboard()" style="flex-shrink:0;">← Back</button>
       <div id="settings-header-logo"></div>
       <div class="settings-header-info">
         <div class="settings-header-name" id="settings-header-name"></div>
