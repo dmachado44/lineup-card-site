@@ -426,6 +426,10 @@
       color: #fff;
     }
     .wstep-arrow { color: var(--gray-4); font-size: 14px; margin-right: 14px; }
+    /* Completed steps are tappable to jump back without footer buttons */
+    .wstep.clickable { cursor: pointer; }
+    .wstep.clickable:hover { color: var(--accent); }
+    .wstep.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
     /* ── MAIN LAYOUT ── */
     .page { max-width: 1440px; margin: 0 auto; padding: 48px 40px 100px; }
@@ -2507,32 +2511,10 @@
       font-weight: 500;
     }
 
-    /* Back button always lives in the content area, not the topbar */
-    #view-builder .topbar-back { display: none; }
-
-    /* Inline back nav — always visible in builder */
-    #settings-back {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .settings-mode #settings-back { display: none; }
+    /* Single universal back control: the top-bar back button, on every builder
+       step and mode. In-content back buttons were removed in favor of this. */
+    #view-builder .topbar-back { display: flex; }
     .settings-mode .team-builder-banner { display: none !important; }
-    #settings-back button {
-      background: #ECEDF1;
-      border: none;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--black);
-      cursor: pointer;
-      padding: 9px 20px;
-      border-radius: var(--radius-pill);
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      transition: background 0.15s;
-    }
-    #settings-back button:hover { background: #E2E3E8; }
 
     /* Settings save footer */
     #settings-footer { display: none; }
@@ -3267,7 +3249,7 @@
 <!-- ══════════════ VIEW 3: BUILDER ══════════════ -->
 <div id="view-builder">
   <div class="topbar">
-    <button class="topbar-back" onclick="backToDashboard()">← Back to Dashboard</button>
+    <button class="topbar-back" onclick="backToDashboard()">← Back</button>
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
       <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
       Lineup Card
@@ -3284,13 +3266,8 @@
 
   <div class="page">
 
-    <div id="settings-back">
-      <button onclick="backToDashboard()">← Back to Dashboard</button>
-    </div>
-
     <!-- Sticky settings header with team logo + save button -->
     <div class="settings-header" id="settings-header" style="display:none;">
-      <button class="btn btn-back btn-sm" onclick="backToDashboard()" style="flex-shrink:0;">← Back</button>
       <div id="settings-header-logo"></div>
       <div class="settings-header-info">
         <div class="settings-header-name" id="settings-header-name"></div>
@@ -3498,7 +3475,7 @@
       </div><!-- /.rules-row -->
 
       <div class="step-footer">
-        <button class="btn btn-back" onclick="goToStep1()">← Back to Team Setup</button>
+        <div></div>
         <button class="btn btn-primary btn-lg" onclick="goToStep3()">Continue to Roster →</button>
       </div>
     </div>
@@ -3561,7 +3538,6 @@
       </div>
 
       <div class="step-footer">
-        <button id="step3-back" class="btn btn-back" onclick="goToStep2()">← Back to League Rules</button>
         <div style="flex:1;"></div>
         <div class="flex-row gap-md">
           <div class="text-muted" id="step2-status"></div>
@@ -3724,7 +3700,6 @@
       </div>
 
       <div class="step-footer">
-        <button id="step4-back" class="btn btn-back" onclick="goToStep3()">← Back to Setup</button>
         <div style="flex:1;"></div>
         <div class="draft-status" id="draft-saved-status"></div>
         <button id="step4-save-draft" class="btn btn-outline" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
@@ -3758,7 +3733,7 @@
       </div>
 
       <div class="step-footer">
-        <button class="btn btn-back" onclick="goToStep4()">← Back to Edit</button>
+        <div></div>
         <button class="btn btn-outline" onclick="goToStep1()">🏠 New Lineup</button>
       </div>
     </div>
@@ -4578,13 +4553,34 @@ function renderWizardBar() {
     const displayNum = i + 1;
     const isActive = _currentStep === item.step;
     const isDone = _currentStep > item.step;
-    const cls = isActive ? 'wstep active' : isDone ? 'wstep done' : 'wstep';
+    // Completed steps are tappable to jump back. Forward moves stay on the
+    // single Continue/Save button so their validation always runs.
+    const clickable = isDone;
+    let cls = isActive ? 'wstep active' : isDone ? 'wstep done' : 'wstep';
+    if (clickable) cls += ' clickable';
     const arrow = i > 0 ? '<div class="wstep-arrow">›</div>' : '';
-    return `${arrow}<div class="${cls}" id="wstep-${item.step}">
+    const nav = clickable
+      ? ` role="button" tabindex="0" onclick="goToWizardStep(${item.step})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goToWizardStep(${item.step});}"`
+      : '';
+    return `${arrow}<div class="${cls}" id="wstep-${item.step}"${nav}>
       <div class="wstep-num">${displayNum}</div>
       <span>${item.label}</span>
     </div>`;
   }).join('');
+}
+
+// Jump to a builder step from the wizard pills. Only completed (earlier) steps
+// are made clickable, so this always routes through the existing goToStepN
+// transitions (which carry their own save side-effects and validation).
+function goToWizardStep(n) {
+  if (n === _currentStep) return;
+  switch (n) {
+    case 1: goToStep1(); break;
+    case 2: goToStep2(); break;
+    case 3: goToStep3(); break;
+    case 4: goToStep4(); break;
+    case 5: goToStep5(); break;
+  }
 }
 
 function updateStepFooters() {
