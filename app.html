@@ -1981,14 +1981,23 @@
       margin-bottom: 16px;
     }
 
+    /* Each step panel is a flex column so the action row (.step-footer) can be
+       pulled to the top via order:-1 — Continue / Save & Export / Save Draft now
+       sit just under the step pills instead of at the bottom. All the button
+       wiring (ids, onclick, draft logic) is untouched. */
+    .step-panel { display: flex; flex-direction: column; }
+    /* The action row doubles as the page header: "Create Lineup" title on the
+       left, step actions on the right, pulled to the top via order:-1. */
     .step-footer {
+      order: -1;
       display: flex;
       gap: 16px;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
-      margin-top: 40px;
+      margin: 0 0 24px;
       flex-wrap: wrap;
     }
+    .step-footer .flex-row { align-items: center; }
 
     .export-header {
       display: flex;
@@ -2410,59 +2419,15 @@
     }
 
     /* Settings header with sticky save */
+    /* Page title consistent with the other section headers (no logo/team name/
+       border), with the Save action inline on the right. */
     .settings-header {
       display: flex;
-      align-items: center;
-      gap: 16px;
-      padding: 16px 0;
-      margin-bottom: 8px;
-      position: sticky;
-      top: 64px;
-      z-index: 40;
-      background: var(--bg);
-    }
-    .settings-header::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: -40px;
-      right: -40px;
-      height: 1px;
-      background: var(--border);
-    }
-    .settings-header .team-logo-mark {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-    .settings-header .team-letter-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-    .settings-header-info {
-      flex: 1;
-      min-width: 0;
-    }
-    .settings-header-name {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .settings-header-label {
-      font-size: 13px;
-      color: var(--muted);
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
     }
     .settings-save-btn {
       padding: 10px 24px;
@@ -2492,17 +2457,13 @@
     #view-players.active { display: block; }
     .players-page { max-width: 1440px; margin: 0 auto; padding: 32px 40px; }
     .players-header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 32px;
+      margin-bottom: 48px;
     }
-    .players-header-info { flex: 1; }
     .players-header-info h1 {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      margin-bottom: 2px;
+      font-size: 36px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
     }
     .players-header-info .dashboard-sub { margin-bottom: 0; }
     .player-mgmt-count {
@@ -2511,33 +2472,97 @@
       font-weight: 500;
     }
 
-    /* Single universal back control. It lives on the wizard-step row in wizard
-       modes, and on the settings header row in settings mode (which hides the
-       wizard bar). The top-bar back button is not used in the builder. */
+    /* The top-bar back button is not used in the builder; navigation is handled
+       by the side nav. */
     #view-builder .topbar-back { display: none; }
-    .builder-back {
-      font-size: 14px;
-      color: var(--black);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
+
+    /* ════════════════ SIDE NAV ════════════════ */
+    /* Fixed rail on desktop; off-canvas drawer on mobile. Only present once
+       signed in (body.signed-in). Holds an accordion of all teams; each team
+       expands to its sections. */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      width: 248px;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: none;
+      flex-direction: column;
+      z-index: 60;
+      overflow-y: auto;
     }
-    .builder-back:hover { opacity: 0.7; }
-    /* On the wizard row, float the back button on the left so the 1-2-3 pills
-       stay perfectly centered. */
-    .wizard-bar { position: relative; }
-    .wizard-bar .builder-back {
-      position: absolute;
-      left: 40px;
-      top: 50%;
-      transform: translateY(-50%);
+    .signed-in .sidebar { display: flex; }
+    .sidebar-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px;
+      height: 64px; padding: 0 18px;
+      flex-shrink: 0;
+      position: sticky; top: 0; background: var(--white); z-index: 1;
     }
-    .settings-mode .team-builder-banner { display: none !important; }
+    .sidebar-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: var(--black); cursor: pointer; }
+    .sidebar-brand .logo-mark { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; }
+    .sidebar-close { display: none; background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: var(--muted); padding: 6px; }
+    .sidebar-nav { padding: 12px 10px 32px; display: flex; flex-direction: column; gap: 2px; }
+    .sidebar-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px;
+      font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer;
+    }
+    .sidebar-link:hover { background: var(--bg-secondary); }
+    .sidebar-link.active { background: var(--bg-secondary); color: var(--black); font-weight: 600; }
+    .sidebar-link .sidebar-ico { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+    .sidebar-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 14px 12px 6px; }
+    .sidebar-empty { font-size: 13px; color: var(--muted); padding: 8px 12px; }
+    .sidebar-team { display: flex; flex-direction: column; }
+    .sidebar-team-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 8px; width: 100%;
+      background: none; border: none; cursor: pointer; text-align: left;
+      font-size: 14px; font-weight: 600; font-family: inherit; color: var(--black);
+    }
+    .sidebar-team-head:hover { background: var(--bg-secondary); }
+    .sidebar-team.current > .sidebar-team-head { background: var(--bg-secondary); }
+    .sidebar-team-logo { width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; object-fit: cover; }
+    .sidebar-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sidebar-team-chev { color: var(--muted); font-size: 14px; transition: transform 0.15s; flex-shrink: 0; }
+    .sidebar-team.expanded .sidebar-team-chev { transform: rotate(90deg); }
+    .sidebar-team-sections { display: none; flex-direction: column; gap: 1px; padding: 2px 0 8px; }
+    .sidebar-team.expanded .sidebar-team-sections { display: flex; }
+    .sidebar-sublink {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px 8px 46px; border-radius: 8px;
+      font-size: 13.5px; color: var(--muted); cursor: pointer;
+    }
+    .sidebar-sublink:hover { background: var(--bg-secondary); color: var(--text); }
+    .sidebar-sublink.active { background: var(--bg-secondary); color: var(--black); font-weight: 600; }
+    .sidebar-sublink.new-lineup { color: var(--accent); font-weight: 600; }
+
+    /* Mobile hamburger + overlay (hidden on desktop) */
+    .sidebar-hamburger {
+      display: none;
+      position: fixed; top: 12px; left: 12px; z-index: 70;
+      width: 40px; height: 40px; border-radius: 10px;
+      background: var(--white); border: 1px solid var(--border);
+      font-size: 18px; line-height: 1; cursor: pointer;
+      align-items: center; justify-content: center;
+    }
+    .signed-in .sidebar-hamburger { display: none; }
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 59; }
+
+    /* Brand lives in the sidebar once signed in, so hide the per-view topbar logo */
+    .signed-in .topbar-logo { display: none; }
+
+    @media (min-width: 980px) {
+      .signed-in { padding-left: 248px; }
+    }
+    @media (max-width: 979px) {
+      /* Sidebar becomes an off-canvas drawer */
+      .sidebar { transform: translateX(-100%); transition: transform 0.22s ease; width: 280px; box-shadow: 0 0 40px rgba(0,0,0,0.18); }
+      body.sidebar-open .sidebar { transform: translateX(0); }
+      body.sidebar-open .sidebar-overlay { display: block; }
+      .sidebar-close { display: block; }
+      .signed-in .sidebar-hamburger { display: flex; }
+    }
 
     /* Settings save footer */
     #settings-footer { display: none; }
@@ -2553,9 +2578,7 @@
     @media (max-width: 768px) {
       .topbar { padding: 0 16px; }
       .wizard-bar { padding: 0 16px; display: flex; align-items: center; gap: 10px; }
-      /* On phones, drop the absolute centering: back sits inline on the left and
-         the step pills left-align and scroll horizontally if they don't fit. */
-      .wizard-bar .builder-back { position: static; transform: none; left: auto; flex: 0 0 auto; }
+      /* On phones the step pills left-align and scroll horizontally if they don't fit. */
       .wizard-bar .wizard-steps { justify-content: flex-start; overflow-x: auto; margin: 0; }
       .page { padding: 32px 16px 60px; }
       .dashboard-page { padding: 32px 16px; }
@@ -2581,12 +2604,6 @@
       }
       .players-page {
         padding: 32px 16px;
-      }
-      .settings-header {
-        padding: 12px 0;
-      }
-      .settings-header-name {
-        font-size: 16px;
       }
     }
 
@@ -2633,27 +2650,6 @@
       width: 40px;
       height: 40px;
     }
-    .team-builder-banner {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 0;
-      margin-bottom: 8px;
-    }
-    .team-builder-banner .team-logo-mark {
-      width: 44px;
-      height: 44px;
-      border-radius: 10px;
-    }
-    .team-builder-banner .team-banner-name {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-    .team-builder-banner .team-banner-meta {
-      font-size: 13px;
-      color: var(--muted);
-    }
 
     /* ── TEAM LETTER AVATAR (iOS-style) ── */
     .team-letter-avatar {
@@ -2673,11 +2669,6 @@
       width: 40px;
       height: 40px;
       font-size: 15px;
-    }
-    .team-builder-banner .team-letter-avatar {
-      width: 44px;
-      height: 44px;
-      font-size: 16px;
     }
 
     /* ── AVATAR DROPDOWN ── */
@@ -3013,6 +3004,20 @@
 </head>
 <body>
 
+<!-- ══════════════ SIDE NAV ══════════════ -->
+<button class="sidebar-hamburger" id="sidebar-hamburger" onclick="toggleSidebarDrawer()" aria-label="Open navigation">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebarDrawer()"></div>
+<aside class="sidebar" id="sidebar" aria-label="Team navigation">
+  <div class="sidebar-head">
+    <a class="sidebar-brand" href="#/" onclick="navigate('#/'); return false;">
+      <img class="logo-mark" src="assets/icon.png" alt="">
+      <span>Lineup Card</span>
+    </a>
+    <button class="sidebar-close" onclick="closeSidebarDrawer()" aria-label="Close navigation">✕</button>
+  </div>
+  <nav class="sidebar-nav" id="sidebar-nav"><!-- rendered by renderSidebar() --></nav>
+</aside>
+
 <!-- ══════════════ VIEW 1: AUTH ══════════════ -->
 <div id="view-auth">
 
@@ -3127,9 +3132,6 @@
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-paywall"></div>
   </div>
-  <div style="padding:20px 20px 0;">
-    <button class="btn btn-back" onclick="backToDashboard()">← Back</button>
-  </div>
   <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
     <div class="upgrade-card">
       <div class="upgrade-icon">
@@ -3169,21 +3171,18 @@
     <div id="topbar-auth-lineups"></div>
   </div>
 
+
   <div class="dashboard-page">
     <div class="dashboard-header">
       <div class="dashboard-header-left">
         <h1 id="lineups-team-name">Past Lineups</h1>
         <p class="dashboard-sub" id="lineups-team-sub">View saved game lineups</p>
       </div>
-      <button class="btn btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
     </div>
 
     <div id="lineups-list-container"></div>
 
     <div id="lineup-detail-container" style="display:none;">
-      <div style="margin-bottom:16px;">
-        <button class="btn btn-back btn-sm" onclick="showLineupsList()">← Back to all lineups</button>
-      </div>
       <div class="card">
         <div class="export-header">
           <div>
@@ -3217,13 +3216,13 @@
     <div id="topbar-auth-schedule"></div>
   </div>
 
+
   <div class="dashboard-page">
     <div class="dashboard-header">
       <div class="dashboard-header-left">
-        <h1 id="schedule-team-name">Game Schedule</h1>
+        <h1 id="schedule-team-name">Schedule</h1>
         <p class="dashboard-sub" id="schedule-team-sub">Synced from GameChanger</p>
       </div>
-      <button class="btn btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
     </div>
 
     <div id="schedule-sync-status"></div>
@@ -3242,6 +3241,7 @@
     <div id="topbar-auth-players"></div>
   </div>
 
+
   <div class="players-page">
     <div class="players-header">
       <div class="players-header-info">
@@ -3249,7 +3249,6 @@
         <p class="dashboard-sub" id="players-team-sub">Manage your roster</p>
         <span id="roster-save-status" class="roster-save-status" aria-live="polite"></span>
       </div>
-      <button class="btn btn-back" onclick="backToDashboard()">← Back to Dashboard</button>
     </div>
 
     <div class="card">
@@ -3285,7 +3284,6 @@
   </div>
 
   <div class="wizard-bar">
-    <button class="builder-back" onclick="backToDashboard()">← Back</button>
     <div class="wizard-steps" id="wizard-steps">
       <!-- Dynamically rendered by renderWizardBar() -->
     </div>
@@ -3293,18 +3291,14 @@
 
   <div class="page">
 
-    <!-- Sticky settings header with team logo + save button -->
+    <!-- Page title with the Save action inline on the right -->
     <div class="settings-header" id="settings-header" style="display:none;">
-      <button class="builder-back" onclick="backToDashboard()" style="flex-shrink:0;">← Back</button>
-      <div id="settings-header-logo"></div>
-      <div class="settings-header-info">
-        <div class="settings-header-name" id="settings-header-name"></div>
-        <div class="settings-header-label">Team / League Settings</div>
+      <div class="dashboard-header-left">
+        <h1>Team / League Settings</h1>
+        <p class="dashboard-sub">Set field positions, game rules, and roster defaults.</p>
       </div>
       <button class="settings-save-btn inactive" id="settings-save-btn" onclick="settingsSave()">Save Changes</button>
     </div>
-
-    <div id="team-builder-banner" class="team-builder-banner" style="display:none;"></div>
 
     <!-- ══════════════ STEP 1: TEAM SETUP ══════════════ -->
     <div id="step-1" class="step-panel" style="display:none;">
@@ -3381,7 +3375,7 @@
 
 
       <div class="step-footer">
-        <div></div>
+        <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <button id="step1-continue" class="btn btn-primary btn-lg" onclick="goToStep2()">Continue to League Rules →</button>
       </div>
     </div>
@@ -3503,7 +3497,7 @@
       </div><!-- /.rules-row -->
 
       <div class="step-footer">
-        <div></div>
+        <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <button class="btn btn-primary btn-lg" onclick="goToStep3()">Continue to Roster →</button>
       </div>
     </div>
@@ -3566,7 +3560,7 @@
       </div>
 
       <div class="step-footer">
-        <div style="flex:1;"></div>
+        <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="flex-row gap-md">
           <div class="text-muted" id="step2-status"></div>
           <div class="draft-status" id="draft-saved-status-step3"></div>
@@ -3728,10 +3722,12 @@
       </div>
 
       <div class="step-footer">
-        <div style="flex:1;"></div>
-        <div class="draft-status" id="draft-saved-status"></div>
-        <button id="step4-save-draft" class="btn btn-outline" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
-        <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
+        <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
+        <div class="flex-row gap-md">
+          <div class="draft-status" id="draft-saved-status"></div>
+          <button id="step4-save-draft" class="btn btn-outline" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
+          <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
+        </div>
       </div>
     </div>
 
@@ -3761,7 +3757,7 @@
       </div>
 
       <div class="step-footer">
-        <div></div>
+        <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <button class="btn btn-outline" onclick="goToStep1()">🏠 New Lineup</button>
       </div>
     </div>
@@ -3881,6 +3877,8 @@ function initFirebase() {
         if (topbarAuthBuilder) topbarAuthBuilder.innerHTML = '';
         _userTeams = [];
         _activeTeamId = null;
+        document.body.classList.remove('signed-in');
+        document.body.classList.remove('sidebar-open');
         showView('auth');
       }
     });
@@ -4019,16 +4017,19 @@ async function checkSubscription(user) {
       _subscriptionActive = (status === 'active');
     }
 
-    // Let everyone into the dashboard — paywall triggers at lineup creation
-    loadUserTeams(user);
-    showView('dashboard');
+    // Let everyone in — paywall triggers at lineup creation. Render whatever
+    // route the URL points at (deep links resume here after sign-in).
+    document.body.classList.add('signed-in');
+    _teamsReady = loadUserTeams(user);
+    handleRoute();
 
   } catch(e) {
     console.error('checkSubscription error:', e);
     // On network error, let them through rather than blocking
     _subscriptionActive = true; // assume active to avoid false paywall
-    loadUserTeams(user);
-    showView('dashboard');
+    document.body.classList.add('signed-in');
+    _teamsReady = loadUserTeams(user);
+    handleRoute();
   }
 }
 
@@ -4241,6 +4242,7 @@ async function loadUserTeams(user) {
     if (allIds.length === 0) {
       _userTeams = [];
       renderDashboard();
+      renderSidebar();
       return;
     }
 
@@ -4267,6 +4269,7 @@ async function loadUserTeams(user) {
       });
 
     renderDashboard();
+    renderSidebar();
   } catch(e) {
     console.error('loadUserTeams error:', e);
   }
@@ -4308,12 +4311,12 @@ function renderDashboard() {
         <div class="team-card-actions">
           <button class="btn btn-primary btn-create" onclick="enterBuilder('${team.id}', 'lineup', 3)">Create Lineup →</button>
           <div class="btn-row">
-            <button class="btn btn-ghost" onclick="openPastLineups('${team.id}')">Past Lineups</button>
-            ${team.gameChangerCalendarUrl ? `<button class="btn btn-ghost" onclick="openSchedule('${team.id}')">Schedule</button>` : ''}
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/lineups')">Past Lineups</button>
+            ${team.gameChangerCalendarUrl ? `<button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/schedule')">Schedule</button>` : ''}
           </div>
           <div class="btn-row">
-            <button class="btn btn-ghost" onclick="openPlayerManagement('${team.id}')">Players</button>
-            <button class="btn btn-ghost" onclick="enterBuilder('${team.id}', 'settings', 1)">Team / League Settings</button>
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/players')">Players</button>
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</button>
           </div>
         </div>
       </div>
@@ -4388,20 +4391,10 @@ async function selectTeam(teamId, closeDropdown = true) {
       document.documentElement.style.removeProperty('--accent-light');
     }
     if (currentTeam) {
-      const banner = document.getElementById('team-builder-banner');
-      if (banner) {
-        const logoHtml = currentTeam.logoURL
-          ? `<img class="team-logo-mark" src="${currentTeam.logoURL}" alt="" />`
-          : `<div class="team-letter-avatar" style="background:${currentTeam.primaryColor ? currentTeam.primaryColor + '22' : 'var(--gray-5)'};color:${currentTeam.primaryColor || 'var(--text)'};">${escHtml(currentTeam.name.substring(0, 2).toUpperCase())}</div>`;
-        banner.innerHTML = `
-          ${logoHtml}
-          <div>
-            <div class="team-banner-name">${escHtml(currentTeam.name)}</div>
-            <div class="team-banner-meta">${currentTeam.sport} · ${currentTeam.season} ${currentTeam.year}</div>
-          </div>
-        `;
-        banner.style.display = 'flex';
-      }
+      // The "Create Lineup" header lives in each step's action row; set its
+      // subtitle (team · sport · season) across all of them.
+      const subText = `${currentTeam.name} · ${currentTeam.sport} · ${currentTeam.season} ${currentTeam.year}`;
+      document.querySelectorAll('.builder-sub').forEach(el => { el.textContent = subText; });
     }
 
     const players = playerSnap.docs.map(doc => {
@@ -4473,8 +4466,169 @@ function showView(view) {
   if (view === 'players') document.getElementById('view-players').classList.add('active');
 }
 
+// ═══════════════════════════════════════════════════
+// HASH ROUTER
+// ───────────────────────────────────────────────────
+// The app is a single page; each "page" is a URL hash so the browser's
+// Back/Forward buttons Just Work. Destination/section views are routed:
+//   #/                          → dashboard (teams)
+//   #/team/:id/players          → roster
+//   #/team/:id/schedule         → schedule
+//   #/team/:id/lineups          → past lineups (list)
+//   #/team/:id/lineups/:lid     → a saved lineup (detail)
+//   #/team/:id/settings         → team / league settings
+//   #/build                     → the lineup builder (sentinel; see below)
+//
+// The lineup BUILDER holds unsaved, in-memory state, so it is NOT deep-linkable.
+// Entering it pushes a #/build history entry so Back exits the builder cleanly;
+// landing on #/build with no live session (refresh/forward) safely redirects to
+// the dashboard. Navigation NEVER writes to Firestore — resolvers only .get().
+// ═══════════════════════════════════════════════════
+let _builderOpen = false;   // true while the lineup builder is the live view
+let _teamsReady  = null;    // promise that resolves once loadUserTeams() finishes
+
+function parseHash(hash) {
+  let h = (hash || '').replace(/^#/, '');
+  if (h === '' || h === '/') return { name: 'dashboard' };
+  if (h === '/build')        return { name: 'build' };
+  const parts = h.split('/').filter(Boolean);   // ['team','abc','players']
+  if (parts[0] === 'team' && parts[1]) {
+    const teamId = parts[1];
+    switch (parts[2]) {
+      case 'players':  return { name: 'players',  teamId };
+      case 'schedule': return { name: 'schedule', teamId };
+      case 'settings': return { name: 'settings', teamId };
+      case 'lineups':
+        return parts[3]
+          ? { name: 'lineupDetail', teamId, lineupId: parts[3] }
+          : { name: 'lineups', teamId };
+    }
+  }
+  return { name: 'dashboard' };
+}
+
+async function handleRoute() {
+  // Routing is meaningless until the user is signed in.
+  const user = _auth && _auth.currentUser;
+  if (!user || user.isAnonymous) { showView('auth'); return; }
+
+  const m = parseHash(location.hash);
+
+  if (m.name === 'build') {
+    // Can't restore an in-progress builder session from a URL. If we got here
+    // without one (page reload / forward), fall back to the dashboard.
+    if (!_builderOpen) { history.replaceState(null, '', '#/'); showDashboardView(); }
+    return;
+  }
+
+  // Reaching any real route means the builder is no longer the live view.
+  _builderOpen = false;
+
+  // Auto-expand the team you're navigating into.
+  if (m.teamId) _sidebarExpandedTeam = m.teamId;
+
+  // Team routes need the user's teams loaded first (for names, calendar URLs).
+  if (_teamsReady) { try { await _teamsReady; } catch (e) {} }
+
+  switch (m.name) {
+    case 'players':      await openPlayerManagement(m.teamId); break;
+    case 'schedule':     await openSchedule(m.teamId); break;
+    case 'lineups':      await openPastLineups(m.teamId); break;
+    case 'lineupDetail': await openPastLineups(m.teamId); viewLineupDetail(m.lineupId); break;
+    case 'settings':     await enterBuilder(m.teamId, 'settings', 1); break;
+    case 'dashboard':
+    default:             showDashboardView(); break;
+  }
+
+  renderSidebar();   // refresh active-section highlighting
+}
+
+// Single entry point for all in-app navigation: update the hash, let the
+// hashchange handler render. Re-render in place if the hash is unchanged.
+function navigate(hash) {
+  closeSidebarDrawer();   // collapse the mobile drawer on any nav
+  if (location.hash === hash) handleRoute();
+  else location.hash = hash;
+}
+
+window.addEventListener('hashchange', handleRoute);
+
+// ═══════════════════════════════════════════════════
+// SIDE NAV
+// Accordion of all teams; each expands to its sections. Visible on every
+// signed-in screen (rail on desktop, drawer on mobile). Pure navigation —
+// reuses navigate()/enterBuilder(), no Firestore writes.
+// ═══════════════════════════════════════════════════
+let _sidebarExpandedTeam = null;
+
+function renderSidebar() {
+  const nav = document.getElementById('sidebar-nav');
+  if (!nav) return;
+  const route = parseHash(location.hash);
+  const activeTeam = route.teamId || (_builderOpen ? _activeTeamId : null);
+  const section = route.name;
+
+  let html = `
+    <a class="sidebar-link ${section === 'dashboard' ? 'active' : ''}" onclick="navigate('#/')">
+      <span class="sidebar-ico" aria-hidden="true">▦</span> All Teams
+    </a>
+    <div class="sidebar-section-label">Teams</div>`;
+
+  if (!_userTeams.length) {
+    html += `<div class="sidebar-empty">No teams yet — create one from All Teams.</div>`;
+  }
+
+  _userTeams.forEach(team => {
+    const expanded = _sidebarExpandedTeam === team.id;
+    const isCurrent = activeTeam === team.id;
+    const logo = team.logoURL
+      ? `<img class="sidebar-team-logo" src="${team.logoURL}" alt="">`
+      : `<div class="sidebar-team-logo" style="background:${team.primaryColor ? team.primaryColor + '22' : 'var(--gray-5)'};color:${team.primaryColor || 'var(--text)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${escHtml((team.name || '?').substring(0, 2).toUpperCase())}</div>`;
+    const sub = (sec, label) =>
+      `<a class="sidebar-sublink ${isCurrent && section === sec ? 'active' : ''}" onclick="navigate('#/team/${team.id}/${sec === 'lineups' ? 'lineups' : sec}')">${label}</a>`;
+    html += `
+      <div class="sidebar-team ${expanded ? 'expanded' : ''} ${isCurrent ? 'current' : ''}">
+        <button class="sidebar-team-head" onclick="toggleSidebarTeam('${team.id}')">
+          ${logo}
+          <span class="sidebar-team-name">${escHtml(team.name || 'Team')}</span>
+          <span class="sidebar-team-chev" aria-hidden="true">›</span>
+        </button>
+        <div class="sidebar-team-sections">
+          <a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ New Lineup</a>
+          <a class="sidebar-sublink ${isCurrent && (section === 'lineups' || section === 'lineupDetail') ? 'active' : ''}" onclick="navigate('#/team/${team.id}/lineups')">Past Lineups</a>
+          ${team.gameChangerCalendarUrl ? `<a class="sidebar-sublink ${isCurrent && section === 'schedule' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/schedule')">Schedule</a>` : ''}
+          <a class="sidebar-sublink ${isCurrent && section === 'players' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/players')">Players</a>
+          <a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</a>
+        </div>
+      </div>`;
+  });
+
+  nav.innerHTML = html;
+}
+
+function toggleSidebarTeam(teamId) {
+  _sidebarExpandedTeam = (_sidebarExpandedTeam === teamId) ? null : teamId;
+  renderSidebar();
+}
+
+function sidebarNewLineup(teamId) {
+  closeSidebarDrawer();
+  enterBuilder(teamId, 'lineup', 3);
+}
+
+function toggleSidebarDrawer() { document.body.classList.toggle('sidebar-open'); }
+function closeSidebarDrawer() { document.body.classList.remove('sidebar-open'); }
+
 async function enterBuilder(teamId, mode, startStep) {
   _appMode = mode || 'setup';
+  // The lineup builder isn't a deep-linkable route (it holds unsaved state).
+  // Push a sentinel entry so browser Back exits the builder. Settings IS a
+  // route driven by the router, so it must not push here.
+  if (mode !== 'settings') {
+    _builderOpen = true;
+    if (location.hash !== '#/build') history.pushState(null, '', '#/build');
+  }
+  if (teamId) _sidebarExpandedTeam = teamId;
   const builderEl = document.getElementById('view-builder');
 
   if (mode === 'settings') {
@@ -4509,7 +4663,11 @@ async function enterBuilder(teamId, mode, startStep) {
     setStep(startStep);
   }
 
+  // Show/hide the settings-only header based on the current mode, so it can't
+  // leak into the Create Lineup flow when jumping from Settings to + New Lineup.
+  renderSettingsHeader();
   showView('builder');
+  renderSidebar();
 }
 
 function resetForNewTeam() {
@@ -4912,7 +5070,7 @@ async function openPastLineups(teamId) {
   _lineupsTeamId = teamId;
   _lineupsTeamName = team ? team.name : 'Team';
 
-  document.getElementById('lineups-team-name').textContent = _lineupsTeamName + ' — Past Lineups';
+  document.getElementById('lineups-team-name').textContent = 'Past Lineups';
   document.getElementById('lineups-team-sub').textContent = 'View saved game lineups';
 
   // Copy avatar HTML to lineups topbar
@@ -4977,7 +5135,7 @@ function renderPastLineups() {
     parts.push(playerCount + ' player' + (playerCount !== 1 ? 's' : ''));
 
     return `
-      <div class="lineup-item" onclick="viewLineupDetail('${lineup.id}')">
+      <div class="lineup-item" onclick="navigate('#/team/${_lineupsTeamId}/lineups/${lineup.id}')">
         <div class="lineup-item-info">
           <div class="lineup-item-title">${escHtml(title)}</div>
           <div class="lineup-item-meta">${escHtml(parts.join(' · '))}</div>
@@ -5337,7 +5495,7 @@ async function openSchedule(teamId) {
   _scheduleTeamId = teamId;
   _scheduleTeamName = team.name;
 
-  document.getElementById('schedule-team-name').textContent = team.name + ' — Schedule';
+  document.getElementById('schedule-team-name').textContent = 'Schedule';
   document.getElementById('schedule-team-sub').textContent = 'Synced from GameChanger';
 
   // Copy avatar HTML
@@ -5560,22 +5718,10 @@ function loadSavedLineupIntoBuilder(lineup) {
   syncBuilderFormFromState();
 }
 
-// View a saved lineup from the schedule (reuses the Past Lineups detail view)
+// View a saved lineup from the schedule — route to the shared lineup-detail URL
+// so it gets its own history entry (Back returns to the schedule).
 function viewScheduleLineup(lineupId) {
-  // Switch to the lineups view and show the detail
-  _lineupsTeamId = _scheduleTeamId;
-  _lineupsTeamName = _scheduleTeamName;
-  _pastLineups = _scheduleLineups;
-
-  document.getElementById('lineups-team-name').textContent = _lineupsTeamName + ' — Past Lineups';
-  document.getElementById('lineups-team-sub').textContent = 'View saved game lineups';
-
-  const authEl = document.getElementById('topbar-auth');
-  const lineupsAuthEl = document.getElementById('topbar-auth-lineups');
-  if (authEl && lineupsAuthEl) lineupsAuthEl.innerHTML = authEl.innerHTML;
-
-  showView('lineups');
-  viewLineupDetail(lineupId);
+  navigate('#/team/' + _scheduleTeamId + '/lineups/' + lineupId);
 }
 
 // ═══════════════════════════════════════════════════
@@ -5612,30 +5758,12 @@ async function settingsSave() {
 }
 
 function renderSettingsHeader() {
+  // The settings header is now a plain static title; just toggle its visibility
+  // so it only appears in settings mode.
   const header = document.getElementById('settings-header');
-  const nameEl = document.getElementById('settings-header-name');
-  const logoEl = document.getElementById('settings-header-logo');
   if (!header) return;
-
-  // Only show in settings mode
   const builderEl = document.getElementById('view-builder');
-  if (builderEl && builderEl.classList.contains('settings-mode')) {
-    header.style.display = '';
-    nameEl.textContent = state.teamName || 'Unnamed Team';
-
-    // Get team data for logo
-    const team = _userTeams.find(t => t.id === _activeTeamId);
-    if (team && team.logoURL) {
-      logoEl.innerHTML = `<img class="team-logo-mark" src="${team.logoURL}" alt="" />`;
-    } else {
-      const initials = (state.teamName || 'UT').substring(0, 2).toUpperCase();
-      const color = (team && team.primaryColor) || 'var(--text)';
-      const bg = (team && team.primaryColor) ? team.primaryColor + '22' : 'var(--gray-5)';
-      logoEl.innerHTML = `<div class="team-letter-avatar" style="background:${bg};color:${color};">${initials}</div>`;
-    }
-  } else {
-    header.style.display = 'none';
-  }
+  header.style.display = (builderEl && builderEl.classList.contains('settings-mode')) ? '' : 'none';
 }
 
 // Also hook form inputs in step-1 to mark dirty
@@ -5685,7 +5813,7 @@ async function openPlayerManagement(teamId) {
   const team = _userTeams.find(t => t.id === _activeTeamId);
   const teamName = team ? team.name : 'Team';
 
-  document.getElementById('players-team-name').textContent = teamName + ' — Players';
+  document.getElementById('players-team-name').textContent = 'Players';
   document.getElementById('players-team-sub').textContent = `${state.players.length} player${state.players.length !== 1 ? 's' : ''} on the roster`;
 
   // Copy auth bar
@@ -5788,7 +5916,16 @@ function addPlayerFromMgmt() {
   input.focus();
 }
 
+// "Go to the dashboard" — now a thin wrapper over the router so the URL stays
+// in sync. All the existing backToDashboard() callers (exit buttons, logo,
+// save-and-exit flows) route correctly without change.
 async function backToDashboard() {
+  navigate('#/');
+}
+
+// The dashboard resolver: the actual cleanup + render, run whenever we route
+// to '#/'.
+async function showDashboardView() {
   // If we're leaving the Players view, flush any pending auto-save so edits
   // to names, positions, priorities or batting skills are committed to
   // Firestore before we navigate away (otherwise the next selectTeam() fetch
