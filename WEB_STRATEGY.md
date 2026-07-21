@@ -58,14 +58,16 @@ Do it as a layered sweep of the single `<style>` block, not a rewrite:
 
 Verification: side-by-side screenshots against iOS; contrast receipts are pre-computed in the handoff — don't re-litigate, just apply the fill-only / step-down rules.
 
-### Phase 3 — IA restructure: the three tabs
+### Phase 3 — Consolidation, not restructure (REVISED July 21, per Dan)
 
-Reshape navigation to mirror iOS: team-first home (land on last-viewed team, switcher in header wearing emphasis chrome) → **Today's Order / Players / Dugout**.
+**Decision: the web's existing IA (sidebar + dashboard + per-team pages) stays.** It predates the handoff's three-tab prescription and works well; we adopt from iOS only what genuinely cleans things up:
 
-- The existing hash router and per-team routes adapt cleanly: `#/team/:id/order|players|dugout`. The builder stays a coach-gated flow launched from the Dugout (gate at the door — one gated entry point, matching the iOS decision; today's step-4 paywall gate moves to the builder entry).
-- **Roles land here** (prerequisite for the Dugout): `isCoach(uid) = ownerId == uid || coachIds.contains(uid)`. Members see Today's Order + Players; coaches additionally get the Dugout. Skills editing gated to coaches in UI (rules already enforce server-side via affectedKeys).
-- Today's Order = players with `isActive`, sorted by `order` — the data already exists on the roster docs.
-- Desktop = "more room, same IA": centered ~640–720px column for list surfaces; the builder's fielding grid goes wide (~1100px) so innings × positions are visible at once — the single biggest win of the form factor. Mobile-web collapses back to the iOS single-column layout.
+- **Past Lineups folds into Schedule** (shipped) — one consolidated Schedule page for every team, calendar-linked or not: upcoming games (with NEXT GAME pennant on the soonest), past games, and saved lineups that don't match a calendar game. The separate Past Lineups nav entry is gone; `#/team/:id/lineups` redirects to the schedule; the lineup-detail route survives for deep links.
+- **iOS vocabulary** (shipped) — "Build Lineup" replaces "Create Lineup" everywhere; schedule sections are sentence-case.
+- **Gate at the door** (shipped) — the subscription gate moved from builder step 4 to the single `enterBuilder` entry point (settings mode never gated); step-4 check remains as a backstop.
+- Today's Order and the full three-tab mirror are NOT being adopted for now.
+
+**📌 PINNED — roles need a design solve before implementation.** Open questions: what do members/parents see on web (Today's Order equivalent? read-only Players?); how does a member even reach a team on web before invite codes exist (Phase 4); does `isCoach` gating hide pages or disable actions; how do web-only teams (owner-only today) migrate. Firestore rules already enforce the write side (coach-only player fields via affectedKeys), so this is purely a UX/product design question. Revisit alongside Phase 4 invite codes.
 
 ### Phase 4 — Team management parity
 
