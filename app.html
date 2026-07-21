@@ -23,6 +23,11 @@
   <link rel="icon" href="/assets/icon.png" type="image/png" />
   <link rel="apple-touch-icon" href="/assets/icon.png" />
 
+  <!-- ── Fonts (Crate theme: Barlow Semi Condensed body · Sofia Sans Extra Condensed display) ── -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
+
   <!-- ── Open Graph ── -->
   <meta property="og:title" content="Youth Baseball & Softball Lineup Builder – Lineup Card" />
   <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Lineup Card account." />
@@ -68,64 +73,123 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── LINEUP CARD DESIGN TOKENS ── */
+    /* ── CRATE THEME DESIGN TOKENS (Brand/CRATE_THEME.md → web) ──
+       Values lifted verbatim from Color+Theme.swift / LineupTheme.swift
+       (.sandlotCrate palette). The cream page is the page; panels are white. */
     :root {
-      /* Brand colors from lineupdj.app */
-      --teal:        #22c55e;
-      --teal-light:  rgba(34, 197, 94, 0.25);
-      --orange:      #FF9500;
-      --green-cta:   #22c55e;
-      --green-dark:  #16a34a;
-      --black:       #14171F;
-      --white:       #ffffff;
+      /* Surfaces */
+      --page:            #FAF6EB;  /* cream page canvas */
+      --panel:           #FFFFFF;  /* white card/panel */
 
-      /* Grays — inspired by Contra's palette */
-      --gray:        #9BA2B0;
-      --text-secondary: #6C6C70;
-      --gray-3:      #C7C7CC;
-      --gray-4:      #D8D8DC;
-      --gray-5:      #F5F6F9;
-      --bg-secondary:#F5F6F9;
-      --bg:          #F5F6F9;
-      --border:      #E4E6EB;
-      --text:        #14171F;
+      /* Ink */
+      --ink:             #101613;  /* primary text — near-black green */
+      --ink-secondary:   #6B6659;  /* secondary text — warm taupe */
 
-      /* Semantic aliases */
-      --card:        #ffffff;
-      --muted:       #677084;
-      --light:       #9BA2B0;
-      --green:       #34C759;   /* iOS green */
-      --red:         #FF3B30;   /* iOS red */
-      --accent:      var(--teal);  /* team color override, defaults to green */
-      --accent-light: rgba(34, 197, 94, 0.2); /* light tint of accent */
+      /* Signature accent (grass green) */
+      --accent:          #46CF51;  /* FILL ONLY in light mode (2:1 on white) */
+      --accent-down:     #1F7A2A;  /* small text / icons / quiet CTAs in light */
+      --on-accent:       #0B2410;  /* text ON green fills — NEVER white/cream */
+      --accent-wash:     #DFF5E1;  /* selected states, emblems */
 
-      /* Bench colors — warm amber hint */
-      --bench-bg:    #FFF8E7;
-      --bench-border:#FFD60A;
+      /* Sticker button chrome */
+      --sticker-cream:   #FFF8E6;  /* secondary button face */
+      --sticker-ink:     #101613;  /* border + hard shadow */
 
-      /* Tip/Alert colors */
-      --tip-bg:      #f0f7ff;
-      --tip-border:  #c3d9ff;
-      --tip-text:    #0055cc;
-      --warn-text:   #8B6914;
+      /* Pennant red — garnish + alerts ONLY, never the accent */
+      --pennant:         #EC2146;
+      --alert-wash:      #FDE3E8;
+      --alert-ink:       #C4173A;
 
-      /* Team theming */
+      /* Palette-independent */
+      --attention:       #D9731A;  /* amber "needs attention" — never brand-colored */
+      --warm-dark-ink:   #3C362A;  /* warm near-black for cream-family surfaces */
+
+      /* Hairlines (dark mode separates by fill, not border) */
+      --hairline:        color-mix(in srgb, var(--ink-secondary) 18%, transparent);
+      --hairline-strong: color-mix(in srgb, var(--ink-secondary) 30%, transparent);
+
+      /* Typography */
+      --font-body:    "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
+      --font-display: "Sofia Sans Extra Condensed", "Barlow Semi Condensed", sans-serif;
+
+      /* Radii — locked: 12px buttons, 20px cards. Don't invent new ones. */
+      --radius:      20px;
+      --radius-btn:  12px;
+      --radius-pill: 80px;   /* badges/chips/status pills only — not actionable buttons */
+      --radius-sm:   12px;
+
+      /* ── Legacy aliases (pre-Crate token names used throughout) ── */
+      --teal:        var(--accent);
+      --teal-light:  var(--accent-wash);
+      --orange:      var(--attention);
+      --green-cta:   var(--accent);
+      --green-dark:  var(--accent-down);
+      --black:       var(--ink);
+      --white:       var(--panel);
+      --gray:        #8A8578;              /* warm gray, ink-secondary family */
+      --text-secondary: var(--ink-secondary);
+      --gray-3:      #C9C3B4;
+      --gray-4:      #D9D4C6;
+      --gray-5:      #F1ECDD;
+      --bg-secondary:#F6F1E3;              /* soft cream for in-panel rows */
+      --bg:          var(--page);
+      --border:      var(--hairline);
+      --text:        var(--ink);
+      --card:        var(--panel);
+      --muted:       var(--ink-secondary);
+      --light:       #8A8578;
+      --green:       var(--accent);
+      --red:         var(--alert-ink);
+      --accent-light: var(--accent-wash);
+
+      /* Bench colors — cream family */
+      --bench-bg:    var(--sticker-cream);
+      --bench-border:#E5D48E;
+
+      /* Tip/Alert colors — accent wash family (blue is off-palette) */
+      --tip-bg:      var(--accent-wash);
+      --tip-border:  color-mix(in srgb, var(--accent-down) 25%, transparent);
+      --tip-text:    var(--accent-down);
+      --warn-text:   var(--attention);
+
+      /* Team theming — emblem/badge use only (never overrides the accent) */
       --team-primary: #000000;
-      --team-secondary: #D3FFC4;
+      --team-secondary: var(--accent-wash);
       --team-logo: none;
+    }
 
-      /* Radius */
-      --radius:      14px;
-      --radius-pill: 80px;
-      --radius-sm:   10px;
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page:            #0A0B0D;  /* Woodsmoke */
+        --panel:           #16181C;
+        --ink:             #F5F6F8;
+        --ink-secondary:   #8A919E;
+        --accent:          #46CF51;  /* same green — 9.7:1 on Woodsmoke */
+        --accent-down:     #46CF51;
+        --on-accent:       #0B2410;
+        --accent-wash:     #0E2412;
+        --sticker-cream:   #FFF8E6;  /* the cream face KEEPS its fill in dark mode */
+        --sticker-ink:     #020302;  /* border/shadow go near-black */
+        --alert-wash:      #46101C;
+        --alert-ink:       #F5768D;
+        --warm-dark-ink:   #F1F2EC;
+        --gray:            #6E7480;
+        --gray-3:          #3A3F47;
+        --gray-4:          #2E333A;
+        --gray-5:          #1E2126;
+        --bg-secondary:    #1C1F24;
+        --bench-bg:        #241F12;
+        --bench-border:    #6B5E2E;
+      }
     }
 
     body {
-      font-family: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, Inter, sans-serif;
+      font-family: var(--font-body);
       font-size: 16px;
+      font-weight: 500;
       line-height: 1.5;
-      background: var(--bg);
-      color: var(--text);
+      background: var(--page);
+      color: var(--ink);
       min-height: 100vh;
       -webkit-font-smoothing: antialiased;
     }
@@ -133,7 +197,7 @@
 
     /* ── NAV ── */
     .topbar {
-      background: rgba(255,255,255,0.92);
+      background: color-mix(in srgb, var(--panel) 92%, transparent);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
@@ -264,7 +328,7 @@
       transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s;
       font-family: inherit;
     }
-    .auth-provider-btn:hover { border-color: #bbb; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .auth-provider-btn:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .auth-provider-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
     .auth-provider-btn:active { transform: scale(0.98); }
     .auth-provider-btn.is-loading { opacity: 0.6; pointer-events: none; }
@@ -298,7 +362,7 @@
     #view-auth {
       display: none;
       min-height: 100vh;
-      background: var(--bg-secondary);
+      background: var(--page);
       flex: 1;
     }
     #view-auth.active {
@@ -307,13 +371,15 @@
       justify-content: center;
       padding: 20px;
     }
+    /* Auth screen's single card = its one emphasis element */
     .auth-page-card {
-      background: var(--white);
-      border-radius: 18px;
+      background: var(--panel);
+      border: 2px solid var(--sticker-ink);
+      border-radius: var(--radius);
       padding: 48px 40px;
       width: 100%;
       max-width: 420px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
       animation: authCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
     }
     @keyframes authCardIn {
@@ -356,7 +422,7 @@
       font-weight: 700;
       letter-spacing: 0.8px;
       background: var(--accent);
-      color: var(--black);
+      color: var(--on-accent);
       padding: 3px 8px;
       border-radius: 20px;
       vertical-align: middle;
@@ -423,7 +489,7 @@
     }
     .wstep.done .wstep-num {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
     }
     .wstep-arrow { color: var(--gray-4); font-size: 14px; margin-right: 14px; }
     /* Completed steps are tappable to jump back without footer buttons */
@@ -434,19 +500,27 @@
     /* ── MAIN LAYOUT ── */
     .page { max-width: 1440px; margin: 0 auto; padding: 48px 40px 100px; }
 
+    /* Two-tier cards: quiet (hairline, no shadow) everywhere; emphasis
+       (2px ink border + hard offset shadow, matching the stickers) for ONE
+       element per screen at the point of emphasis. */
     .card {
-      background: var(--white);
-      border: 1px solid var(--border);
+      background: var(--panel);
+      border: 1px solid var(--hairline);
       border-radius: var(--radius);
-      padding: 36px 40px;
+      padding: 26px 30px;
       margin-bottom: 24px;
     }
+    .card--emph {
+      border: 2px solid var(--sticker-ink);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+    }
     .card-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: var(--black);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 26px;
+      color: var(--ink);
       margin-bottom: 6px;
-      letter-spacing: -0.5px;
+      letter-spacing: 0.01em;
     }
     .card-sub {
       font-size: 15px;
@@ -462,22 +536,24 @@
     .field { display: flex; flex-direction: column; gap: 6px; }
     .field.full { grid-column: 1 / -1; }
 
+    /* Sentence case — all-caps is reserved for tabs, kickers, sticker labels */
     label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      color: var(--ink-secondary);
     }
 
+    /* Text fields: panel-white fill, 12px radius, hairline at ~30% of the
+       secondary ink. On the cream page, fields read as small white cards.
+       Focus = accent ring (web convention). */
     input[type=text], input[type=url], input[type=email], input[type=password], input[type=date], input[type=time], input[type=number], select, textarea {
-      padding: 14px 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
+      padding: 13px 16px;
+      border: 1px solid var(--hairline-strong);
+      border-radius: var(--radius-btn);
       font-size: 16px;
       font-family: inherit;
       color: var(--text);
-      background: var(--white);
+      background: var(--panel);
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       width: 100%;
@@ -498,85 +574,82 @@
     }
     textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
 
-    /* ── BUTTONS ── */
+    /* ── BUTTONS (Crate sticker system) ──
+       The sticker: 12px rounded rect · 2px ink border · hard 4px offset ink
+       shadow, NO blur · display face 900 uppercase · pressing sinks the face
+       into the shadow — the shadow never moves. This chrome is THE button;
+       new CTAs route through these classes, never hand-rolled. */
     .btn {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       padding: 12px 24px;
-      border-radius: var(--radius-pill);
-      border: none;
-      font-size: 15px;
-      font-weight: 600;
+      border-radius: var(--radius-btn);
+      border: 2px solid var(--sticker-ink);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 17px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s;
       white-space: nowrap;
-      letter-spacing: -0.1px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease, filter 0.15s ease;
     }
-    .btn:active { transform: scale(0.97); }
-    .btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-light), 0 0 0 1px var(--accent); }
+    .btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
+    .btn:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 3px; }
+    .btn:disabled { opacity: 0.55; cursor: default; pointer-events: none; }
 
-    /* Primary = black pill (matches lineupdj.app) */
-    .btn-primary {
-      background: var(--black);
-      color: var(--white);
-    }
-    .btn-primary:hover { background: #2C2C2E; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-    .btn-primary:disabled { opacity: 0.5; cursor: default; pointer-events: none; }
-
-    /* Teal accent */
-    .btn-teal {
+    /* Primary CTA = accent sticker (green is a FILL; text is dark grass, never white) */
+    .btn-primary, .btn-teal, .btn-cta {
       background: var(--accent);
-      color: #fff;
-      font-weight: 700;
+      color: var(--on-accent);
     }
-    .btn-teal:hover { filter: brightness(0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+    .btn-primary:hover, .btn-teal:hover, .btn-cta:hover { filter: brightness(1.04); }
+    .btn-primary:disabled { opacity: 0.55; }
 
-    /* Outline = black border pill */
+    /* Secondary CTA = cream sticker */
     .btn-outline {
-      background: var(--white);
-      color: var(--black);
-      border: 1.5px solid var(--black);
+      background: var(--sticker-cream);
+      color: var(--warm-dark-ink);
     }
-    .btn-outline:hover { background: var(--black); color: var(--white); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .btn-outline:hover { filter: brightness(1.02); }
 
-    /* Ghost = light gray pill */
-    .btn-ghost {
-      background: var(--white);
+    /* Tertiary / quiet actions — 12px hairline, no fill, body face.
+       Sticker chrome is for elements of note only. */
+    .btn-ghost, .btn-back {
+      background: none;
       color: var(--text);
-      border: 1px solid var(--border);
+      border: 1px solid color-mix(in srgb, var(--ink-secondary) 15%, transparent);
+      box-shadow: none;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 15px;
+      text-transform: none;
+      letter-spacing: 0;
     }
-    .btn-ghost:hover { background: var(--bg-secondary); border-color: var(--gray-3); }
+    .btn-ghost:hover, .btn-back:hover { background: var(--panel); border-color: var(--hairline-strong); }
+    .btn-ghost:active, .btn-back:active { transform: scale(0.98); box-shadow: none; }
 
-    /* Danger */
+    /* Danger = alert wash (red is alerts, never the accent) */
     .btn-danger {
-      background: rgba(255,59,48,0.08);
-      color: var(--red);
+      background: var(--alert-wash);
+      color: var(--alert-ink);
       border: none;
+      box-shadow: none;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 15px;
+      text-transform: none;
+      letter-spacing: 0;
     }
-    .btn-danger:hover { background: rgba(255,59,48,0.18); }
+    .btn-danger:hover { filter: brightness(0.97); }
+    .btn-danger:active { transform: scale(0.98); box-shadow: none; }
 
-    /* Back nav — subtle tinted pill */
-    .btn-back {
-      background: #ECEDF1;
-      color: var(--text);
-      border: none;
-    }
-    .btn-back:hover { background: #E2E3E8; }
-
-    .btn-sm { padding: 9px 20px; font-size: 14px; }
-    .btn-lg { padding: 16px 36px; font-size: 17px; letter-spacing: -0.2px; }
-    .btn-icon { padding: 7px 10px; border-radius: var(--radius-sm); }
-
-    /* Green CTA (matches lineupdj.app CTA section) */
-    .btn-cta {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      font-weight: 700;
-    }
-    .btn-cta:hover { filter: brightness(0.9); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .btn-sm { padding: 9px 18px; font-size: 15px; }
+    .btn-lg { padding: 15px 34px; font-size: 19px; }
+    .btn-icon { padding: 7px 10px; border-radius: var(--radius-btn); }
 
     /* ── PLAYER MANAGEMENT ── */
     .player-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
@@ -610,10 +683,10 @@
       transition: all 0.15s;
       font-weight: 500;
     }
-    .pos-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
+    .pos-pill:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); }
     .pos-pill.selected {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       border-color: var(--accent);
       font-weight: 600;
     }
@@ -645,10 +718,10 @@
       transition: all 0.15s;
       font-weight: 500;
     }
-    .priority-pill:hover { border-color: #aaa; background: var(--bg-secondary); }
+    .priority-pill:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); }
     .priority-pill.active {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       border-color: var(--accent);
       font-weight: 600;
     }
@@ -666,8 +739,8 @@
     }
     .roster-save-status.visible { opacity: 1; }
     .roster-save-status.saving { color: var(--muted); }
-    .roster-save-status.saved  { color: #2E7D32; }
-    .roster-save-status.error  { color: #C62828; }
+    .roster-save-status.saved  { color: var(--accent-down); }
+    .roster-save-status.error  { color: var(--alert-ink); }
 
     /* ── Batting skills (Power / Contact / Speed) ── */
     /* Ported from 21st.dev "slider-with-labels-and-tooltip" (OriginUI) —
@@ -722,8 +795,8 @@
         to right,
         var(--accent) 0%,
         var(--accent) calc(var(--fill-ratio, 0.44) * 100%),
-        #E4E4E9 calc(var(--fill-ratio, 0.44) * 100%),
-        #E4E4E9 100%
+        var(--gray-5) calc(var(--fill-ratio, 0.44) * 100%),
+        var(--gray-5) 100%
       );
     }
     .skill-slider:focus { outline: none; }
@@ -752,7 +825,7 @@
     .skill-slider::-moz-range-track {
       height: 8px;
       border-radius: 999px;
-      background: #E4E4E9;
+      background: var(--gray-5);
     }
     .skill-slider::-moz-range-progress {
       height: 8px;
@@ -782,7 +855,7 @@
       left: calc(var(--fill-ratio, 0.44) * (100% - 20px) + 10px);
       transform: translateX(-50%);
       margin-bottom: 10px;
-      background: #1F2937;
+      background: var(--ink);
       color: #ffffff;
       font-size: 11px;
       font-weight: 600;
@@ -804,7 +877,7 @@
       left: 50%;
       transform: translateX(-50%);
       border: 4px solid transparent;
-      border-top-color: #1F2937;
+      border-top-color: var(--ink);
     }
     .slider-wrap.dragging .slider-tooltip,
     .slider-wrap:has(.skill-slider:focus-visible) .slider-tooltip {
@@ -835,12 +908,13 @@
     .add-player-row input { flex: 1; }
 
     /* ── LEAGUE RULES ── */
+    /* Section headers: ONE spec app-wide — 17px semibold, secondary ink,
+       sentence case, sitting OUTSIDE panels. No all-caps headers, ever. */
     .section-label {
-      font-size: 22px;
+      font-size: 17px;
       font-weight: 600;
-      letter-spacing: -0.4px;
-      color: var(--black);
-      margin-bottom: 20px;
+      color: var(--ink-secondary);
+      margin-bottom: 14px;
     }
     .pos-header {
       display: flex;
@@ -859,7 +933,7 @@
       font-size: 12px;
       font-weight: 700;
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       padding: 2px 9px;
       border-radius: 100px;
       letter-spacing: 0.04em;
@@ -905,7 +979,7 @@
     .pos-toggle:hover { border-color: var(--gray-3); background: var(--bg-secondary); }
     .pos-toggle.on {
       background: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       border-color: var(--accent);
       font-weight: 600;
     }
@@ -960,7 +1034,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.18);
       transition: transform 0.2s;
     }
-    .toggle-switch input:checked + .toggle-track { background: #34C759; }
+    .toggle-switch input:checked + .toggle-track { background: var(--accent); }
     .toggle-switch input:checked + .toggle-track::after { transform: translateX(20px); }
 
     .inning-control {
@@ -1009,7 +1083,7 @@
     }
     .view-mode-toggle {
       display: inline-flex;
-      background: var(--bg-secondary, #f5f5f7);
+      background: var(--bg-secondary, var(--bg-secondary));
       border-radius: 10px;
       padding: 3px;
       gap: 2px;
@@ -1045,7 +1119,7 @@
       flex: 1 0 auto;
       min-width: 44px;
       padding: 8px 12px;
-      background: var(--bg-secondary, #f5f5f7);
+      background: var(--bg-secondary, var(--bg-secondary));
       border: 1px solid var(--border);
       border-radius: 8px;
       font-family: inherit;
@@ -1057,9 +1131,9 @@
     }
     .field-inning-tab:hover { color: var(--text); }
     .field-inning-tab.active {
-      background: var(--green, #22a06b);
-      border-color: var(--green, #22a06b);
-      color: #fff;
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--on-accent);
     }
 
     .field-stage {
@@ -1096,12 +1170,12 @@
       transition: border-color 0.12s, transform 0.08s, box-shadow 0.12s;
     }
     .field-pos-bubble:hover {
-      border-color: var(--green, #22a06b);
+      border-color: var(--accent-down);
       box-shadow: 0 4px 12px rgba(0,0,0,0.12);
     }
     .field-pos-bubble:active { transform: translate(-50%, -50%) scale(0.97); }
     .field-pos-bubble.empty { background: rgba(255,255,255,0.85); border-style: dashed; }
-    .field-pos-bubble.conflict { border-color: #f59e0b; background: #fff7ed; }
+    .field-pos-bubble.conflict { border-color: var(--attention); background: var(--bench-bg); }
     .field-pos-bubble[draggable="true"] { cursor: grab; }
     .field-pos-bubble[draggable="true"]:active { cursor: grabbing; }
     .field-pos-bubble.dragging {
@@ -1109,17 +1183,17 @@
       cursor: grabbing;
     }
     .field-pos-bubble.drop-target {
-      border-color: var(--green, #22a06b) !important;
-      background: #e7f7ef !important;
+      border-color: var(--accent-down) !important;
+      background: var(--accent-wash) !important;
       transform: translate(-50%, -50%) scale(1.06);
     }
     .field-bench-chip[draggable="true"] { cursor: grab; }
     .field-bench-chip[draggable="true"]:active { cursor: grabbing; }
     .field-bench-chip.dragging { opacity: 0.4; }
     .field-bench.drop-target {
-      outline: 2px dashed var(--green, #22a06b);
+      outline: 2px dashed var(--accent-down);
       outline-offset: -2px;
-      background: rgba(34,160,107,0.06);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
     }
     /* Flying clone used during the swap animation */
     .field-bubble-fly {
@@ -1139,7 +1213,7 @@
     .field-pos-bubble .field-pos-label {
       font-size: 10px;
       font-weight: 700;
-      color: var(--green, #22a06b);
+      color: var(--accent-down);
       letter-spacing: 0.4px;
       text-transform: uppercase;
       margin-bottom: 2px;
@@ -1170,7 +1244,7 @@
       gap: 8px;
       min-height: 40px;
       padding: 8px;
-      background: var(--bg-secondary, #f5f5f7);
+      background: var(--bg-secondary, var(--bg-secondary));
       border-radius: 10px;
     }
     .field-bench-empty { color: var(--muted); font-size: 13px; padding: 6px; }
@@ -1212,7 +1286,7 @@
       transition: border-color 0.12s, box-shadow 0.12s;
     }
     .allinnings-card:hover {
-      border-color: var(--green, #22a06b);
+      border-color: var(--accent-down);
       box-shadow: 0 4px 12px rgba(0,0,0,0.06);
     }
     .allinnings-card-header {
@@ -1226,7 +1300,7 @@
       justify-content: space-between;
       align-items: baseline;
     }
-    .allinnings-card-header .allinnings-card-num { color: var(--green, #22a06b); font-size: 15px; }
+    .allinnings-card-header .allinnings-card-num { color: var(--accent-down); font-size: 15px; }
     .allinnings-card .field-stage {
       max-width: 100%;
       margin: 0;
@@ -1255,7 +1329,7 @@
     .allinnings-bench-wrap {
       margin-top: 16px;
       padding: 12px 14px;
-      background: var(--bg-secondary, #f5f5f7);
+      background: var(--bg-secondary, var(--bg-secondary));
       border-radius: 10px;
       font-size: 13px;
       color: var(--muted);
@@ -1314,7 +1388,7 @@
         display: inline-block;
         width: 22px;
         font-weight: 700;
-        color: #22a06b;
+        color: var(--accent-down);
       }
       .print-allinnings-grid {
         display: grid;
@@ -1398,7 +1472,7 @@
       color: var(--text);
     }
     .field-pos-picker-item:hover { background: var(--bg-secondary); }
-    .field-pos-picker-item.selected { background: var(--green-light, #e7f7ef); color: var(--green); font-weight: 600; }
+    .field-pos-picker-item.selected { background: var(--green-light, var(--accent-wash)); color: var(--green); font-weight: 600; }
     .field-pos-picker-item.muted { color: var(--muted); font-style: italic; }
     .field-pos-picker-divider { height: 1px; background: var(--border); margin: 4px 6px; }
 
@@ -1433,7 +1507,7 @@
       text-align: center;
     }
     .lineup-table tbody tr:hover { background: var(--bg-secondary); }
-    .lineup-table tbody tr.sortable-ghost { background: #F5F6F9; opacity: 0.6; }
+    .lineup-table tbody tr.sortable-ghost { background: var(--bg-secondary); opacity: 0.6; }
     .lineup-table tbody tr.sortable-chosen { background: var(--white); }
     .lineup-table tbody tr.sortable-drag { background: var(--white); opacity: 1; }
     .lineup-table td:first-child,
@@ -1465,7 +1539,7 @@
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      background: #F5F6F9;
+      background: var(--bg-secondary);
       color: var(--text);
       font-size: 13px;
       font-weight: 600;
@@ -1487,7 +1561,7 @@
       width: 6px;
       height: 6px;
       border-radius: 2px;
-      background: #ccc;
+      background: var(--gray-4);
     }
     .fp-seg.played { background: var(--black); }
     .fp-seg.bench { background: var(--bench-border); }
@@ -1514,13 +1588,13 @@
     .pos-select.filled { background-color: var(--white); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
     .pos-select.conflict {
-      background-color: rgba(255, 149, 0, 0.1);
+      background-color: color-mix(in srgb, var(--attention) 12%, transparent);
       outline: 2px solid var(--orange);
       outline-offset: -1px;
       border-radius: 6px;
     }
     .pos-select optgroup { font-weight: 600; font-size: 12px; color: var(--muted); }
-    .pos-select optgroup[label="Taken"] { color: #C7C7CC; }
+    .pos-select optgroup[label="Taken"] { color: var(--gray-3); }
     .pos-select option { font-weight: 400; color: var(--text); }
 
     /* ── Inning header: drag-to-reorder + click-for-menu ── */
@@ -1530,7 +1604,7 @@
       user-select: none;
     }
     .lineup-table th.inning-th:active { cursor: grabbing; }
-    .lineup-table th.inning-th.sortable-ghost { background: #F5F6F9; opacity: 0.5; }
+    .lineup-table th.inning-th.sortable-ghost { background: var(--bg-secondary); opacity: 0.5; }
     .lineup-table th.inning-th.sortable-chosen { background: var(--white); }
     .lineup-table th.inning-th.sortable-drag { background: var(--white); opacity: 1; }
     /* The fallback element Sortable creates for forceFallback — hide it; we draw our own column ghost */
@@ -1666,8 +1740,8 @@
       color: var(--text);
     }
     .inning-menu .menu-item:hover { background: var(--bg-secondary); }
-    .inning-menu .menu-item.danger { color: #d23b3b; }
-    .inning-menu .menu-item.danger:hover { background: rgba(210,59,59,0.08); }
+    .inning-menu .menu-item.danger { color: var(--alert-ink); }
+    .inning-menu .menu-item.danger:hover { background: var(--alert-wash); }
     .inning-menu .menu-divider {
       height: 1px;
       background: var(--border);
@@ -1801,8 +1875,8 @@
       bottom: 32px;
       left: 50%;
       transform: translateX(-50%) translateY(20px);
-      background: var(--text, #1c2128);
-      color: #fff;
+      background: var(--ink);
+      color: var(--page);
       padding: 10px 18px;
       border-radius: 24px;
       font-size: 14px;
@@ -1887,7 +1961,7 @@
       transition: all 0.15s;
     }
     .att-pill:hover { border-color: var(--gray-3); background: var(--bg-secondary); }
-    .att-pill.in { background: var(--accent); border-color: var(--accent); font-weight: 600; color: #fff; }
+    .att-pill.in { background: var(--accent); border-color: var(--accent); font-weight: 600; color: var(--on-accent); }
     .att-pill.out { background: var(--white); border-color: var(--border); color: var(--muted); }
 
     .att-count { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
@@ -1924,7 +1998,7 @@
     .game-pos-pill.on {
       background: var(--accent);
       border-color: var(--accent);
-      color: #fff;
+      color: var(--on-accent);
       font-weight: 600;
     }
     .game-pos-pill.off {
@@ -1973,7 +2047,7 @@
 
     .alert-warn {
       padding: 12px 16px;
-      background: rgba(255, 149, 0, 0.1);
+      background: color-mix(in srgb, var(--attention) 12%, transparent);
       border: 1px solid var(--orange);
       border-radius: var(--radius-sm);
       color: var(--warn-text);
@@ -2043,30 +2117,32 @@
       margin-bottom: 48px;
     }
     .team-card {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
+      background: var(--panel);
+      border: 1px solid var(--hairline);
+      border-radius: var(--radius);
+      padding: 24px;
       position: relative;
-      transition: box-shadow 0.2s, transform 0.2s;
+      transition: border-color 0.2s, transform 0.2s;
     }
-    .team-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); transform: translateY(-2px); }
+    .team-card:hover { border-color: var(--hairline-strong); transform: translateY(-2px); }
     .team-card-name {
       font-size: 24px;
-      font-weight: 600;
       margin-bottom: 14px;
-      letter-spacing: -0.3px;
     }
+    /* Pennant garnish — chevron-notched red tag, ONE per screen.
+       Reserved for kickers; never a semantic error treatment. */
     .team-card-current {
       position: absolute;
       top: 20px;
       right: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #2a6b1e;
-      background: rgba(150,229,110,0.4);
-      border-radius: 100px;
-      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--sticker-cream);
+      background: var(--pennant);
+      padding: 4px 16px 4px 10px;
+      clip-path: polygon(0 0, calc(100% - 0.45em) 0, 100% 50%, calc(100% - 0.45em) 100%, 0 100%);
     }
     .team-card-pills {
       display: flex;
@@ -2119,7 +2195,7 @@
       cursor: pointer;
       transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
-    .lineup-item:hover { border-color: #aaa; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--bg-secondary); }
+    .lineup-item:hover { border-color: var(--hairline-strong); box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--bg-secondary); }
     .lineup-item:active { transform: scale(0.99); }
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--text); }
@@ -2165,21 +2241,21 @@
     .schedule-item-title { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
     .schedule-item-meta { font-size: 13px; color: var(--muted); }
     .schedule-item-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.3px; }
-    .schedule-item-badge.home { background: var(--teal-light); color: #2d6a12; }
-    .schedule-item-badge.away { background: #FFF3E0; color: #B86E00; }
+    .schedule-item-badge.home { background: var(--teal-light); color: var(--accent-down); }
+    .schedule-item-badge.away { background: color-mix(in srgb, var(--attention) 12%, var(--panel)); color: var(--attention); }
     .schedule-item-action { font-size: 13px; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
     .schedule-item:not(.schedule-past) .schedule-item-action { color: var(--green); font-weight: 600; }
     .schedule-item-action .lineup-linked { color: var(--green); font-weight: 600; }
     /* Draft-in-progress badge — orange, distinct from the green "Lineup saved" badge */
     .schedule-item-action .lineup-draft {
-      color: #B86E00;
+      color: var(--attention);
       font-weight: 600;
-      background: #FFF3E0;
+      background: color-mix(in srgb, var(--attention) 12%, var(--panel));
       padding: 2px 8px;
       border-radius: 10px;
       font-size: 12px;
     }
-    .schedule-item:not(.schedule-past) .schedule-item-action:has(.lineup-draft) { color: #B86E00; }
+    .schedule-item:not(.schedule-past) .schedule-item-action:has(.lineup-draft) { color: var(--attention); }
     /* Draft saved/saving status indicator inside the lineup builder */
     .draft-status {
       font-size: 12px;
@@ -2207,7 +2283,7 @@
     .strategy-slider {
       -webkit-appearance: none; appearance: none;
       width: 100%; height: 10px; border-radius: 5px;
-      background: #E8E8ED; outline: none;
+      background: var(--gray-5); outline: none;
       position: relative; z-index: 1;
     }
     .strategy-slider:focus { outline: none; box-shadow: none; }
@@ -2229,7 +2305,7 @@
       border: none;
       box-shadow: 0 2px 10px rgba(0,0,0,0.25); cursor: grab;
     }
-    .strategy-slider::-moz-range-track { height: 10px; border-radius: 5px; background: #E8E8ED; }
+    .strategy-slider::-moz-range-track { height: 10px; border-radius: 5px; background: var(--gray-5); }
     .strategy-slider::-webkit-slider-runnable-track { -webkit-appearance: none; }
     .strategy-slider::-ms-track { border: none; background: transparent; }
     .strategy-slider::-ms-fill-lower { display: none; }
@@ -2277,11 +2353,12 @@
     }
 
     /* ── UPGRADE CARD ── */
+    /* The paywall's single card = this screen's one emphasis element */
     .upgrade-card {
-      background: #fff;
-      border: 1px solid var(--border);
+      background: var(--panel);
+      border: 2px solid var(--sticker-ink);
       border-radius: 20px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
       padding: 40px 36px 32px;
       max-width: 400px;
       width: 100%;
@@ -2326,7 +2403,7 @@
       transition: background 0.2s, color 0.2s, box-shadow 0.2s;
     }
     .upgrade-toggle-btn.active {
-      background: #fff;
+      background: var(--panel);
       color: var(--text);
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
@@ -2338,8 +2415,8 @@
       letter-spacing: 0.3px;
       padding: 2px 7px;
       border-radius: 99px;
-      background: #22c55e;
-      color: #fff;
+      background: var(--accent);
+      color: var(--on-accent);
       margin-left: 6px;
       vertical-align: 1px;
     }
@@ -2361,17 +2438,22 @@
       display: block;
       width: 100%;
       padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      color: #fff;
-      background: #22c55e;
+      border: 2px solid var(--sticker-ink);
+      border-radius: var(--radius-btn);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--on-accent);
+      background: var(--accent);
       cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
     }
-    .upgrade-cta:hover { background: #16a34a; transform: translateY(-1px); }
-    .upgrade-cta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .upgrade-cta:hover { filter: brightness(1.04); }
+    .upgrade-cta:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
+    .upgrade-cta:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
     .upgrade-note {
       font-size: 13px;
       color: var(--muted);
@@ -2431,23 +2513,25 @@
     }
     .settings-save-btn {
       padding: 10px 24px;
-      border-radius: var(--radius-pill);
-      border: none;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: var(--radius-btn);
+      border: 2px solid var(--sticker-ink);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
       white-space: nowrap;
-      background: var(--black);
-      color: var(--white);
+      background: var(--accent);
+      color: var(--on-accent);
       flex-shrink: 0;
     }
-    .settings-save-btn:hover { background: #2C2C2E; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-    .settings-save-btn:active { transform: scale(0.97); }
+    .settings-save-btn:hover { filter: brightness(1.04); }
+    .settings-save-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
     .settings-save-btn.inactive {
-      background: var(--gray-4);
-      color: var(--gray);
+      opacity: 0.55;
       cursor: default;
       pointer-events: none;
     }
@@ -2825,7 +2909,7 @@
         min-width: 100px;
       }
       .print-table tbody tr:nth-child(even) {
-        background: #f9f9f9 !important;
+        background: var(--bg-secondary) !important;
       }
 
       .print-notes {
@@ -2973,17 +3057,20 @@
       width: 100%;
       padding: 13px;
       border-radius: var(--radius-pill);
-      border: none;
-      background: var(--black);
-      color: var(--white);
-      font-size: 15px;
-      font-weight: 600;
+      border: 2px solid var(--sticker-ink);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+      background: var(--accent);
+      color: var(--on-accent);
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      font-family: inherit;
-      transition: background 0.15s;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
     }
-    .feedback-send-btn:hover { background: #2C2C2E; }
-    .feedback-send-btn:active { transform: scale(0.98); }
+    .feedback-send-btn:hover { filter: brightness(1.04); }
+    .feedback-send-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
 
     .feedback-success {
       text-align: center;
@@ -2999,6 +3086,73 @@
     @media (max-width: 660px) {
       .feedback-tab { right: 16px; padding: 10px 18px; font-size: 14px; }
       .feedback-panel { right: 0; width: 100%; max-width: 100%; border-radius: 14px 14px 0 0; }
+    }
+
+    /* ══════════════ CRATE OVERRIDES (load-order: last wins) ══════════════ */
+
+    /* Hero/title surfaces wear the display face (heavy, compressed).
+       NOT uppercase — all-caps is reserved for tabs, kickers, sticker labels. */
+    .dashboard-header-left h1, .players-header-info h1, .settings-header h1,
+    .auth-page-title, .upgrade-title, .team-card-name, .export-title,
+    .modal-title, .auth-logo-name, .auth-page-logo .logo-name {
+      font-family: var(--font-display);
+      font-weight: 900;
+      letter-spacing: 0.01em;
+    }
+
+    /* Wizard step pills = the tab treatment (one of the three all-caps uses) */
+    .wstep {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .wstep.active { font-weight: 900; }
+
+    /* In-card kicker: 11px heavy, letter-spaced, all-caps (in-card ONLY) */
+    .kicker {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-secondary);
+    }
+    /* Pennant variant — ONE per screen at the point of emphasis */
+    .kicker--pennant {
+      display: inline-block;
+      color: var(--sticker-cream);
+      background: var(--pennant);
+      padding: 3px 14px 3px 9px;
+      clip-path: polygon(0 0, calc(100% - 0.45em) 0, 100% 50%, calc(100% - 0.45em) 100%, 0 100%);
+    }
+
+    /* Section headers that were all-caps go sentence case, one spec app-wide */
+    .schedule-section-label, .schedule-date-label, .pos-header-label, .sidebar-section-label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+    }
+
+    /* One 20px gutter on mobile-width — everything left-aligns to it */
+    @media (max-width: 768px) {
+      .topbar { padding: 0 20px; }
+      .wizard-bar { padding: 0 20px; }
+      .page { padding: 32px 20px 60px; }
+      .dashboard-page { padding: 32px 20px; }
+      .players-page { padding: 32px 20px; }
+    }
+
+    /* Motion: the house springs (snappy ~350ms, quick ~250ms) */
+    .modal { transition-timing-function: cubic-bezier(0.32, 1.25, 0.5, 1); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -3135,7 +3289,7 @@
   <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
     <div class="upgrade-card">
       <div class="upgrade-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1F7A2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </div>
       <h2 class="upgrade-title" id="paywall-title">Unlock Lineup Builder</h2>
       <p class="upgrade-sub" id="paywall-message">Generate balanced lineups, auto-assign positions, and manage game day. Try it free for 7 days.</p>
@@ -3364,8 +3518,8 @@
             <label>GameChanger Schedule</label>
             <div class="calendar-url-row">
               <input type="url" id="team-calendar-url" placeholder="Paste webcal:// link here…" oninput="updateCalendarBtn()" />
-              <button class="btn btn-sm" id="btn-add-calendar" onclick="testCalendarSync()" disabled
-                style="background:var(--accent);color:var(--black);border:none;opacity:0.4;cursor:not-allowed;font-weight:600;padding:0 22px;border-radius:999px;transition:all 0.2s;">Add Calendar</button>
+              <button class="btn btn-sm btn-primary" id="btn-add-calendar" onclick="testCalendarSync()" disabled
+                style="opacity:0.4;cursor:not-allowed;">Add Calendar</button>
             </div>
             <div class="cal-helper">Find it in GameChanger → Team → Schedule → Share → Copy Link.</div>
             <div id="calendar-sync-result" style="font-size:13px;"></div>
@@ -3394,7 +3548,7 @@
         </div>
         <div class="text-hint">Tap a position to toggle it on or off for your lineup.</div>
         <div class="pos-grid" id="pos-grid"></div>
-        <div class="pos-hint mt-md">Teal = active · Tap to toggle on/off</div>
+        <div class="pos-hint mt-md">Green = active · Tap to toggle on/off</div>
       </div>
 
       <!-- Game Rules + Pitching Rules (side by side in settings mode) -->
@@ -3988,7 +4142,7 @@ async function sendPasswordReset() {
   try {
     await fb.auth.sendPasswordResetEmail(email);
     showAuthError('');
-    document.getElementById('auth-error').style.color = '#2a6b1e';
+    document.getElementById('auth-error').style.color = 'var(--accent-down)';
     document.getElementById('auth-error').textContent = '✓ Reset email sent — check your inbox.';
   } catch(e) {
     showAuthError(friendlyAuthError(e));
@@ -4411,13 +4565,15 @@ async function selectTeam(teamId, closeDropdown = true) {
     // Apply team theming to the builder
     const currentTeam = _userTeams.find(t => t.id === teamId);
     // Set accent color to team color (falls back to default teal/green via CSS)
+    // Crate rule: ONE signature color per screen — the grass green accent is
+    // never overridden. Team color is demoted to emblem/badge use only.
     const teamColor = currentTeam && currentTeam.primaryColor ? currentTeam.primaryColor : '';
     if (teamColor) {
-      document.documentElement.style.setProperty('--accent', teamColor);
-      document.documentElement.style.setProperty('--accent-light', teamColor + '33');
+      document.documentElement.style.setProperty('--team-primary', teamColor);
+      document.documentElement.style.setProperty('--team-secondary', teamColor + '33');
     } else {
-      document.documentElement.style.removeProperty('--accent');
-      document.documentElement.style.removeProperty('--accent-light');
+      document.documentElement.style.removeProperty('--team-primary');
+      document.documentElement.style.removeProperty('--team-secondary');
     }
     if (currentTeam) {
       // The "Create Lineup" header lives in each step's action row; set its
@@ -6793,7 +6949,7 @@ function renderLineupImageToCanvas(preset) {
     const circleR = isMobile ? 12 : 14;
     const cx = tableX + 16 + circleR;
     const cy = rowY + ROW_H / 2;
-    ctx.fillStyle = '#22a06b';
+    ctx.fillStyle = '#1F7A2A';
     ctx.beginPath();
     ctx.arc(cx, cy, circleR, 0, Math.PI * 2);
     ctx.fill();
@@ -9162,8 +9318,8 @@ function updateStrategyLabel(val) {
   const slider = document.getElementById('strategy-slider');
   if (slider) {
     const pct = ((val - 1) / 4) * 100;  // 0–100%
-    const fill = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#22c55e';
-    const track = '#E8E8ED';
+    const fill = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#46CF51';
+    const track = getComputedStyle(document.documentElement).getPropertyValue('--gray-5').trim() || '#F1ECDD';
     slider.style.background = `linear-gradient(to right, ${fill} 0%, ${fill} ${pct}%, ${track} ${pct}%, ${track} 100%)`;
     slider.style.borderRadius = '5px';
   }
