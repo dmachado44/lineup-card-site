@@ -4379,6 +4379,35 @@ async function selectTeam(teamId, closeDropdown = true) {
       }
     }
 
+    // Hydrate league rules + innings from the team doc (one-shot .get(),
+    // per the intentional sync boundary — this is NOT live sync). Without
+    // this, the engine runs on — and Save Team writes back — whatever rules
+    // localStorage held from a previous team/session, clobbering iOS edits.
+    if (teamData.leagueRules && typeof teamData.leagueRules === 'object') {
+      state.leagueRules = Object.assign({}, state.leagueRules, teamData.leagueRules);
+      // The doc carries an explicit rules map — engine rules (incl. the
+      // allPlayersBat batting cap) apply as configured.
+      state.rulesExplicit = true;
+    } else {
+      // Pre-rules team: no explicit map on the doc. The decode default for
+      // allPlayersBat is false, but ON is the shipped norm — the batting cap
+      // must NOT apply here (mirrors iOS's effectiveRules path).
+      state.rulesExplicit = false;
+    }
+    if (teamData.innings) state.innings = teamData.innings;
+
+    // Keep the rules-editor UI in sync with the hydrated state
+    const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    setChecked('rule-all-bat',        state.leagueRules.allPlayersBat);
+    setChecked('rule-back-to-back',   state.leagueRules.allowBackToBack !== false);
+    setChecked('rule-coed',           state.leagueRules.coEd);
+    setChecked('rule-pitcher-return', state.leagueRules.pitcherCanReturn !== false);
+    setField('rule-max-same-pos', String(state.leagueRules.maxSamePosition || 0));
+    setField('rule-max-pitch',    String(state.leagueRules.maxInningsPitched || 0));
+    const inningCountEl = document.getElementById('inning-count');
+    if (inningCountEl) inningCountEl.textContent = state.innings;
+    if (typeof renderPosGrid === 'function') renderPosGrid();
+
     // Apply team theming to the builder
     const currentTeam = _userTeams.find(t => t.id === teamId);
     // Set accent color to team color (falls back to default teal/green via CSS)
@@ -5707,14 +5736,17 @@ function loadSavedLineupIntoBuilder(lineup) {
   const sortedPlayers = (lineup.players || []).slice().sort(
     (a, b) => (a.batOrder || 0) - (b.batOrder || 0)
   );
+  // Saved lineups carry roster doc IDs (new format) or prefixed local ids
+  // (legacy) — resolve each back to the in-memory roster id, with a
+  // unique-name fallback matching the iOS contract.
   state.lineup = sortedPlayers.map(p => ({
-    playerId:  p.playerId,
+    playerId:  resolveLocalPlayerId(p.playerId, p.name) || p.playerId,
     positions: Array.isArray(p.positions) ? p.positions.slice() : []
   }));
   // Mark all listed players as attending — anyone not in the saved lineup
   // wasn't there for that game.
   state.attendance = {};
-  sortedPlayers.forEach(p => { state.attendance[p.playerId] = true; });
+  state.lineup.forEach(r => { state.attendance[r.playerId] = true; });
   syncBuilderFormFromState();
 }
 
@@ -6485,11 +6517,16 @@ function applyImportFromPrevious(lineupId) {
   const lineup = _importPreviousCache.find(l => l.id === lineupId);
   if (!lineup) return;
 
-  // Only carry over players who are still on the current roster
-  const currentIds = new Set(state.players.map(p => p.id));
+  // Only carry over players who are still on the current roster.
+  // Saved playerIds are roster doc IDs (new) or prefixed local ids (legacy);
+  // resolve each to the in-memory roster id before matching.
   const importedRows = (lineup.players || []).slice()
     .sort((a, b) => (a.batOrder || 0) - (b.batOrder || 0))
-    .filter(p => currentIds.has(p.playerId));
+    .map(p => {
+      const localId = resolveLocalPlayerId(p.playerId, p.name);
+      return localId ? Object.assign({}, p, { playerId: localId }) : null;
+    })
+    .filter(Boolean);
 
   if (!importedRows.length) {
     alert('None of the players from that lineup are on the current roster, so there\'s nothing to import.');
@@ -7828,6 +7865,9 @@ function saveTeam() {
 }
 
 function saveRules() {
+  // The user explicitly configured rules — engine semantics (incl. the
+  // allPlayersBat batting cap) now apply as configured.
+  state.rulesExplicit = true;
   state.leagueRules.allPlayersBat = document.getElementById('rule-all-bat').checked;
   state.leagueRules.allowBackToBack = document.getElementById('rule-back-to-back').checked;
   state.leagueRules.maxSamePosition = parseInt(document.getElementById('rule-max-same-pos').value) || 0;
@@ -8190,6 +8230,36 @@ async function goToStep5() {
   await saveLineupToFirestore();
 }
 
+// ── Roster identity (cross-client contract — WEB_HANDOFF 2.3) ────────
+// The web keeps local player ids with an `imp_` (loaded from Firestore) or
+// `p_` (created this session) prefix. The shared roster doc ID is that id
+// with the prefix stripped — the SAME id the roster batch writes to and the
+// id iOS resolves lineups against. Saved lineups must carry roster doc IDs
+// in players[].playerId so iOS's exact-ID resolution works (the July 19
+// zero-match benching incident came from saving prefixed local ids).
+function rosterDocIdFor(localId) {
+  const id = String(localId || '');
+  return id.replace(/^(imp_|p_)/, '') || id;
+}
+
+// Map a playerId from a SAVED lineup doc back to the in-memory roster id.
+// Handles the new format (bare roster doc IDs), legacy lineups saved with
+// prefixed local ids, and — mirroring the iOS contract — a unique-name
+// fallback (case/whitespace-insensitive; ambiguous names never guess).
+function resolveLocalPlayerId(savedId, savedName) {
+  const target = rosterDocIdFor(savedId);
+  if (target) {
+    const hit = (state.players || []).find(p => rosterDocIdFor(p.id) === target);
+    if (hit) return hit.id;
+  }
+  if (savedName) {
+    const norm = s => String(s).trim().toLowerCase().replace(/\s+/g, ' ');
+    const matches = (state.players || []).filter(p => norm(p.name) === norm(savedName));
+    if (matches.length === 1) return matches[0].id;
+  }
+  return null;
+}
+
 async function saveLineupToFirestore() {
   const fb = initFirebase();
   if (!fb || !_activeTeamId) return;
@@ -8216,7 +8286,9 @@ async function saveLineupToFirestore() {
     players: activeLineup.map((row, idx) => {
       const player = state.players.find(p => p.id === row.playerId);
       return {
-        playerId:  row.playerId,
+        // Write the shared roster doc ID (prefix stripped), never the local
+        // id — iOS resolves lineup players by exact roster doc ID first.
+        playerId:  rosterDocIdFor(row.playerId),
         name:      player ? player.name : 'Unknown',
         batOrder:  idx + 1,
         positions: row.positions || []
@@ -8821,6 +8893,31 @@ function checkConflicts() {
     });
   }
 
+  // Check 3: pitching rules (pitcherCanReturn / maxInningsPitched)
+  const pitcherCanReturn = state.leagueRules.pitcherCanReturn !== false;
+  const maxPitch = state.leagueRules.maxInningsPitched || 0;
+  if (!pitcherCanReturn || maxPitch > 0) {
+    attending.forEach(player => {
+      const row = state.lineup.find(r => r.playerId === player.id);
+      if (!row) return;
+      let pTotal = 0, stints = 0, inStint = false;
+      row.positions.forEach(pos => {
+        if (pos === 'P') {
+          pTotal++;
+          if (!inStint) { stints++; inStint = true; }
+        } else {
+          inStint = false;
+        }
+      });
+      if (maxPitch > 0 && pTotal > maxPitch) {
+        conflicts.push(`${player.name} pitches ${pTotal} innings (max: ${maxPitch})`);
+      }
+      if (!pitcherCanReturn && stints > 1) {
+        conflicts.push(`${player.name} returns to pitch after leaving the mound`);
+      }
+    });
+  }
+
   const unique = [...new Set(conflicts)];
   if (unique.length > 0) {
     alertEl.style.display = '';
@@ -8962,12 +9059,29 @@ function battingRepairNoBackToBackK(assigned) {
   }
 }
 
+// Effective batting-order cap (allPlayersBat semantics — WEB_HANDOFF 2.4).
+// ON is the shipped norm: every attendee bats, bench-sitters included.
+// OFF caps the GENERATED batting order at the active-position count —
+// everyone still fields via rotation, but no batting slot beyond the cap.
+// The struct/decode default is false, so the cap only applies when the team
+// has an explicit rules map (mirrors iOS's effectiveRules path — this
+// asymmetry is deliberate, don't "clean it up").
+function effectiveBattingCap(attendingCount) {
+  const allBat = state.rulesExplicit
+    ? (state.leagueRules.allPlayersBat !== false)
+    : true;
+  if (allBat) return attendingCount;
+  const posCount = (getActiveFieldPositions() || []).length;
+  return Math.max(1, Math.min(attendingCount, posCount || attendingCount));
+}
+
 function shuffleBatting() {
   const attending = state.players.filter(p => state.attendance[p.id]);
   if (attending.length === 0) return;
 
   const strategy = state.strategyLevel || 3;
   const competitiveBias = (strategy - 1) / 4; // 0.0 (fairness) → 1.0 (full competitive)
+  const battingN = effectiveBattingCap(attending.length);
 
   let order;
 
@@ -8975,7 +9089,9 @@ function shuffleBatting() {
     // Pure random — skills have no influence at all
     order = [...attending].sort(() => Math.random() - 0.5);
   } else {
-    const n = attending.length;
+    // Slot weights are computed for the CAPPED order size; players beyond
+    // the cap are appended below it (they field, they don't bat).
+    const n = battingN;
     const slots = battingSlotWeightsForN(n);
     const priorityOrder = battingPriorityOrder(n);
 
@@ -9009,7 +9125,10 @@ function shuffleBatting() {
       battingRepairNoBackToBackK(assigned);
     }
 
-    order = assigned;
+    // Attendees beyond the batting cap (allPlayersBat OFF) still field via
+    // rotation — append them after the capped order, in pre-shuffled order.
+    const leftovers = pool.filter(p => !usedIds.has(p.id));
+    order = assigned.concat(leftovers);
   }
 
   state.lineup = order.map(player =>
@@ -9079,6 +9198,13 @@ function shuffleFielding() {
   const competitiveBias = (strategy - 1) / 4; // 0.0 to 1.0
   const maxSame = state.leagueRules.maxSamePosition || 0;
   const noBackToBack = state.leagueRules.allowBackToBack === false;
+  // Pitching rules (WEB_HANDOFF 2.4): canReturn=false ⇒ a player's innings
+  // at P must form ONE contiguous stint; maxInnings ⇒ per-player cap at P
+  // (0 = unlimited). Enforced as hard constraints like maxSame/backToBack.
+  const pitching = {
+    canReturn:  state.leagueRules.pitcherCanReturn !== false,
+    maxInnings: state.leagueRules.maxInningsPitched || 0
+  };
 
   // Try multiple candidates; pick the one with fewest violations, then best balance.
   const ATTEMPTS = 25;
@@ -9087,10 +9213,10 @@ function shuffleFielding() {
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const candidate = buildFieldingAttempt(
-      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack
+      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching
     );
-    repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack);
-    const score = scoreFieldingCandidate(candidate, attending, maxSame, noBackToBack);
+    repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack, pitching);
+    const score = scoreFieldingCandidate(candidate, attending, maxSame, noBackToBack, pitching);
 
     if (score < bestScore) {
       bestScore = score;
@@ -9115,7 +9241,7 @@ function shuffleFielding() {
 // Rules are enforced strictly per-inning. If a player has no legal position this
 // inning (e.g., higher-priority players claimed all the valid spots), we defer
 // them to a second pass and let the repair step untangle it.
-function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack) {
+function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching) {
   const result = {};
   attending.forEach(p => { result[p.id] = Array(numInnings).fill(''); });
 
@@ -9162,10 +9288,10 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
         return;
       }
 
-      // HARD constraints: maxSamePosition + back-to-back
+      // HARD constraints: maxSamePosition + back-to-back + pitching rules
       const playerInnings = result[player.id];
       const legal = available.filter(pos =>
-        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack)
+        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack, pitching)
       );
 
       if (legal.length === 0) {
@@ -9213,7 +9339,7 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
       }
       const playerInnings = result[player.id];
       const stillLegal = remaining.filter(pos =>
-        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack)
+        isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack, pitching)
       );
       const pool = stillLegal.length > 0 ? stillLegal : remaining;
       const chosen = pool[Math.floor(Math.random() * pool.length)];
@@ -9227,7 +9353,7 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
 
 // Can `pos` be assigned to this player at `inning` without breaking any hard rule?
 // Only looks at already-set innings (the current slot is assumed empty).
-function isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack) {
+function isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack, pitching) {
   if (maxSame > 0) {
     let count = 0;
     for (let i = 0; i < playerInnings.length; i++) {
@@ -9239,12 +9365,58 @@ function isPositionLegalFor(playerInnings, inning, pos, maxSame, noBackToBack) {
     if (inning > 0 && playerInnings[inning - 1] === pos) return false;
     if (inning < playerInnings.length - 1 && playerInnings[inning + 1] === pos) return false;
   }
+  if (pitching && pos === 'P') {
+    // maxInningsPitched: per-player cap on total innings at P (0 = unlimited)
+    if (pitching.maxInnings > 0) {
+      let pCount = 0;
+      for (let i = 0; i < playerInnings.length; i++) {
+        if (i !== inning && playerInnings[i] === 'P') pCount++;
+      }
+      if (pCount >= pitching.maxInnings) return false;
+    }
+    // pitcherCanReturn OFF: innings at P must form ONE contiguous stint —
+    // once a player leaves the mound they don't return. Placing P here is
+    // legal only if no already-assigned non-P inning sits between this
+    // inning and any existing P inning (unset '' innings don't block; any
+    // residual gap is caught by rowViolationCount and repaired/scored).
+    if (pitching.canReturn === false) {
+      let minP = inning, maxP = inning;
+      for (let i = 0; i < playerInnings.length; i++) {
+        if (i !== inning && playerInnings[i] === 'P') {
+          if (i < minP) minP = i;
+          if (i > maxP) maxP = i;
+        }
+      }
+      for (let i = minP; i <= maxP; i++) {
+        if (i === inning) continue;
+        if (playerInnings[i] !== 'P' && playerInnings[i] !== '') return false;
+      }
+    }
+  }
   return true;
 }
 
 // Count hard-rule violations in a single player's positions row.
-function rowViolationCount(positions, maxSame, noBackToBack) {
+function rowViolationCount(positions, maxSame, noBackToBack, pitching) {
   let violations = 0;
+  if (pitching && (pitching.canReturn === false || pitching.maxInnings > 0)) {
+    // One pass: total innings at P + number of contiguous P stints
+    let pTotal = 0, stints = 0, inStint = false;
+    positions.forEach(p => {
+      if (p === 'P') {
+        pTotal++;
+        if (!inStint) { stints++; inStint = true; }
+      } else {
+        inStint = false;
+      }
+    });
+    if (pitching.maxInnings > 0 && pTotal > pitching.maxInnings) {
+      violations += pTotal - pitching.maxInnings;
+    }
+    if (pitching.canReturn === false && stints > 1) {
+      violations += stints - 1;
+    }
+  }
   if (maxSame > 0) {
     const counts = {};
     positions.forEach(p => {
@@ -9266,7 +9438,7 @@ function rowViolationCount(positions, maxSame, noBackToBack) {
 
 // Try to fix any rule violations by swapping same-inning assignments between
 // two players. Only applies swaps that strictly reduce total violations.
-function repairFieldingViolations(result, attending, numInnings, maxSame, noBackToBack) {
+function repairFieldingViolations(result, attending, numInnings, maxSame, noBackToBack, pitching) {
   // Multiple passes — each swap can unlock new fixable cases downstream.
   for (let pass = 0; pass < 10; pass++) {
     let changed = false;
@@ -9277,7 +9449,7 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
         const posA = result[playerA.id][inning];
         if (!posA || posA === 'Bench') continue;
 
-        const aViolationBefore = rowViolationCount(result[playerA.id], maxSame, noBackToBack);
+        const aViolationBefore = rowViolationCount(result[playerA.id], maxSame, noBackToBack, pitching);
         if (aViolationBefore === 0) continue;
 
         // Try: swap A's inning-slot with another fielding player B
@@ -9292,9 +9464,9 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
           const newB = [...result[playerB.id]]; newB[inning] = posA;
 
           const oldTotal = aViolationBefore
-            + rowViolationCount(result[playerB.id], maxSame, noBackToBack);
-          const newTotal = rowViolationCount(newA, maxSame, noBackToBack)
-            + rowViolationCount(newB, maxSame, noBackToBack);
+            + rowViolationCount(result[playerB.id], maxSame, noBackToBack, pitching);
+          const newTotal = rowViolationCount(newA, maxSame, noBackToBack, pitching)
+            + rowViolationCount(newB, maxSame, noBackToBack, pitching);
 
           if (newTotal < oldTotal) {
             result[playerA.id] = newA;
@@ -9316,9 +9488,9 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
           const newB = [...result[playerB.id]]; newB[inning] = posA;
 
           const oldTotal = aViolationBefore
-            + rowViolationCount(result[playerB.id], maxSame, noBackToBack);
-          const newTotal = rowViolationCount(newA, maxSame, noBackToBack)
-            + rowViolationCount(newB, maxSame, noBackToBack);
+            + rowViolationCount(result[playerB.id], maxSame, noBackToBack, pitching);
+          const newTotal = rowViolationCount(newA, maxSame, noBackToBack, pitching)
+            + rowViolationCount(newB, maxSame, noBackToBack, pitching);
 
           if (newTotal < oldTotal) {
             result[playerA.id] = newA;
@@ -9335,10 +9507,10 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
 }
 
 // Lower is better. Violations dominate; imbalance is the tiebreaker.
-function scoreFieldingCandidate(result, attending, maxSame, noBackToBack) {
+function scoreFieldingCandidate(result, attending, maxSame, noBackToBack, pitching) {
   let violations = 0;
   attending.forEach(p => {
-    violations += rowViolationCount(result[p.id], maxSame, noBackToBack);
+    violations += rowViolationCount(result[p.id], maxSame, noBackToBack, pitching);
   });
 
   // Imbalance = spread of bench time across players (fairness tiebreaker)
