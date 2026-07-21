@@ -69,12 +69,17 @@ Verification: side-by-side screenshots against iOS; contrast receipts are pre-co
 
 **📌 PINNED — roles need a design solve before implementation.** Open questions: what do members/parents see on web (Today's Order equivalent? read-only Players?); how does a member even reach a team on web before invite codes exist (Phase 4); does `isCoach` gating hide pages or disable actions; how do web-only teams (owner-only today) migrate. Firestore rules already enforce the write side (coach-only player fields via affectedKeys), so this is purely a UX/product design question. Revisit alongside Phase 4 invite codes.
 
-### Phase 4 — Team management parity
+### Phase 4 — Team management parity (SHIPPED July 21, with the roles design)
 
-- **Invite codes:** generate the 8-char uppercase code on web team creation, backfill for existing web-created teams (they have none — the blank-code misjoin incident), and guard the join flow against empty codes. Join = the `where('inviteCode','==',code).limit(1)` lookup the rules already support.
-- **Members list with roles**, coach promotion (`coachIds` writable by owner only), `memberNames` map upkeep.
-- **League settings editor** stays payload-identical to iOS (it already is — keep the write-contract shape pinned; consider porting a few of iOS's seeded engine tests to a small JS test file to pin both engine and payload).
-- Converge team loading on `ownerId ==` / `memberIds array_contains` queries here.
+Roles design (the previously pinned item, decided): **members/parents get read-only Schedule + Players** on joined teams; **coaches get write parity** with the owner for rosters and lineup building; **team settings stay owner-only**. Gating is hide-not-disable in nav (no Build Lineup / Settings for non-qualifying roles) plus disabled inputs on the read-only roster; batting-skills sliders are hidden entirely from members.
+
+Shipped:
+
+- **Invite codes** — generated (8-char, lookalike-free charset) on web team creation; lazily backfilled by a single targeted write when an owner opens Settings on a code-less team; displayed in the new **Members & invite** settings card with copy action.
+- **Join flow** — standalone `#/join` page (sidebar "Join a Team" link + dashboard button): `inviteCode == code` `limit(1)` lookup, hard guard against empty/short codes, already-a-member detection, targeted join write (`memberIds` arrayUnion + one `memberNames` map key via merge), legacy `memberTeamIds` list maintained for the fallback loader.
+- **Members list** — owner sees promote/demote coach (`coachIds`, owner-only per rules) and remove member (two arrayRemoves + map-key delete — all targeted).
+- **Coach write parity** — roster saves accept owner OR coach; `saveTeamToFirestore` no longer forks a copy when a coach/member saves (coaches skip the core write but keep the roster batch; members write nothing; true strangers keep the legacy copy-on-save).
+- **Query convergence** — teams load via `ownerId ==` + `memberIds array-contains` (the iOS pattern), with the legacy user-doc ID lists as an automatic fallback if the queries fail.
 
 ### Phase 5 — Web-native bonuses
 

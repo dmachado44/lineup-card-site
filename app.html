@@ -2483,6 +2483,36 @@
     /* ── SETTINGS MODE (flat all-in-one edit view) ── */
     .settings-mode .wizard-bar { display: none; }
 
+    /* Members & invite card only exists in settings mode */
+    #settings-members-card { display: none; }
+    .settings-mode #settings-members-card { display: block; order: 3; }
+    .invite-code-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+    .invite-code-value {
+      font-family: var(--font-display);
+      font-weight: 900;
+      font-size: 28px;
+      letter-spacing: 0.18em;
+      color: var(--ink);
+      background: var(--bg-secondary);
+      border: 1px dashed var(--hairline-strong);
+      border-radius: var(--radius-btn);
+      padding: 8px 16px 8px 20px;
+    }
+    .member-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .member-row:last-child { border-bottom: none; }
+    .member-row-name { font-weight: 600; }
+    .member-role-pill {
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+      padding: 3px 10px; border-radius: var(--radius-pill);
+      background: var(--gray-5); color: var(--ink-secondary);
+    }
+    .member-role-pill.owner { background: var(--accent-wash); color: var(--accent-down); }
+    .member-role-pill.coach { background: var(--accent-wash); color: var(--accent-down); }
+
     /* Show steps 1–2 simultaneously, hide step 3 (roster) */
     .settings-mode #step-1,
     .settings-mode #step-2 { display: flex !important; flex-direction: column; gap: 20px; }
@@ -2552,6 +2582,8 @@
     /* ── PLAYER MANAGEMENT VIEW ── */
     #view-players { display: none; }
     #view-players.active { display: block; }
+    #view-join { display: none; }
+    #view-join.active { display: block; }
     .players-page { max-width: 1440px; margin: 0 auto; padding: 32px 40px; }
     .players-header {
       margin-bottom: 48px;
@@ -3272,6 +3304,7 @@
         <h1>Your Teams</h1>
         <p class="dashboard-sub">Select a team to build a game-day lineup.</p>
       </div>
+      <button class="btn btn-ghost" onclick="navigate('#/join')">Join Team</button>
       <button class="btn btn-primary" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">+ New Team</button>
     </div>
 
@@ -3319,6 +3352,37 @@
       <div class="upgrade-footer">
         Already a Lineup DJ subscriber? <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign in with that account</a>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ VIEW: JOIN TEAM ══════════════ -->
+<div id="view-join">
+  <div class="topbar">
+    <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
+      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
+      Lineup Card
+    </a>
+    <div class="topbar-spacer"></div>
+    <div id="topbar-auth-join"></div>
+  </div>
+  <div class="dashboard-page" style="max-width:640px;">
+    <div class="dashboard-header">
+      <div class="dashboard-header-left">
+        <h1>Join a Team</h1>
+        <p class="dashboard-sub">Enter the invite code your coach shared with you.</p>
+      </div>
+    </div>
+    <div class="card card--emph">
+      <div class="card-title">Invite code</div>
+      <div class="card-sub">Codes are 8 characters — find yours in the team's settings on the Lineup DJ app or this site.</div>
+      <div class="add-player-row">
+        <input type="text" id="join-code-input" placeholder="e.g. K7KMHXWN" autocomplete="off" autocapitalize="characters"
+          style="text-transform:uppercase;letter-spacing:0.15em;font-weight:700;"
+          onkeydown="if(event.key==='Enter') joinTeamWithCode()" />
+        <button class="btn btn-primary" id="join-team-btn" onclick="joinTeamWithCode()">Join Team</button>
+      </div>
+      <div id="join-status" style="margin-top:14px;font-size:14px;min-height:20px;"></div>
     </div>
   </div>
 </div>
@@ -3538,6 +3602,13 @@
         </div>
       </div>
 
+      <!-- Members & Invite (settings mode only; rendered by renderMembersCard) -->
+      <div class="card" id="settings-members-card">
+        <div class="section-label">Members &amp; invite</div>
+        <div class="card-sub">Share the invite code so parents and coaches can join this team from the Lineup DJ app or this site.</div>
+        <div id="invite-code-block"></div>
+        <div id="members-list-block"></div>
+      </div>
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
@@ -4396,49 +4467,260 @@ function friendlyAuthError(e) {
 let _userTeams      = [];
 let _activeTeamId   = null;
 
+// ═══════════════════════════════════════════════════
+// MEMBERS & INVITE (settings card)
+// ═══════════════════════════════════════════════════
+async function renderMembersCard() {
+  const codeBlock = document.getElementById('invite-code-block');
+  const listBlock = document.getElementById('members-list-block');
+  if (!codeBlock || !listBlock || !_activeTeamMeta) return;
+  const meta = _activeTeamMeta;
+  const uid = currentUid();
+  const isOwner = meta.ownerId === uid;
+
+  // Backfill (WEB_HANDOFF 2.2): web-created teams historically had NO invite
+  // code. When the owner opens settings on a code-less team, generate one
+  // with a single targeted merge write.
+  if (isOwner && !meta.inviteCode) {
+    const fb = initFirebase();
+    try {
+      const code = generateInviteCode();
+      await fb.db.collection('teams').doc(meta.id).set({ inviteCode: code }, { merge: true });
+      meta.inviteCode = code;
+    } catch (e) { console.error('invite code backfill failed:', e); }
+  }
+
+  codeBlock.innerHTML = meta.inviteCode
+    ? `<div class="invite-code-row">
+         <span class="invite-code-value" id="invite-code-value">${escHtml(meta.inviteCode)}</span>
+         <button class="btn btn-ghost btn-sm" id="copy-invite-btn" onclick="copyInviteCode()">Copy invite</button>
+       </div>`
+    : `<div class="text-muted-sm">No invite code yet.</div>`;
+
+  const ids = [...new Set([meta.ownerId, ...(meta.memberIds || [])])].filter(Boolean);
+  const nameFor = id => (meta.memberNames && meta.memberNames[id])
+    || (id === uid ? (( _auth.currentUser && (_auth.currentUser.displayName || _auth.currentUser.email)) || 'You') : 'Member ' + id.slice(0, 6));
+  const roleFor = id => id === meta.ownerId ? 'owner' : ((meta.coachIds || []).includes(id) ? 'coach' : 'member');
+
+  listBlock.innerHTML = ids.map(id => {
+    const role = roleFor(id);
+    const actions = (isOwner && id !== meta.ownerId) ? `
+      <span class="flex-row gap-sm">
+        ${role === 'coach'
+          ? `<button class="btn btn-ghost btn-sm" onclick="setMemberCoach('${id}', false)">Remove coach</button>`
+          : `<button class="btn btn-ghost btn-sm" onclick="setMemberCoach('${id}', true)">Make coach</button>`}
+        <button class="btn btn-danger btn-sm" onclick="removeMember('${id}')">Remove</button>
+      </span>` : '';
+    return `<div class="member-row">
+      <div><span class="member-row-name">${escHtml(nameFor(id))}</span>${id === uid ? ' <span class="text-muted-sm">(you)</span>' : ''}</div>
+      <div class="flex-row gap-sm"><span class="member-role-pill ${role}">${role}</span>${actions}</div>
+    </div>`;
+  }).join('');
+}
+
+function copyInviteCode() {
+  if (!_activeTeamMeta || !_activeTeamMeta.inviteCode) return;
+  const btn = document.getElementById('copy-invite-btn');
+  const done = () => { if (btn) { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = 'Copy invite'; }, 1600); } };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(_activeTeamMeta.inviteCode).then(done).catch(() => {});
+  }
+}
+
+// Owner-only: coachIds is writable only by the owner (firestore.rules).
+async function setMemberCoach(memberUid, makeCoach) {
+  const fb = initFirebase();
+  if (!fb || !_activeTeamMeta || _activeTeamMeta.ownerId !== currentUid()) return;
+  try {
+    await fb.db.collection('teams').doc(_activeTeamMeta.id).update({
+      coachIds: makeCoach
+        ? firebase.firestore.FieldValue.arrayUnion(memberUid)
+        : firebase.firestore.FieldValue.arrayRemove(memberUid)
+    });
+    const set = new Set(_activeTeamMeta.coachIds || []);
+    makeCoach ? set.add(memberUid) : set.delete(memberUid);
+    _activeTeamMeta.coachIds = [...set];
+    renderMembersCard();
+  } catch (e) {
+    console.error('setMemberCoach error:', e);
+    alert('Could not update coach role. Please try again.');
+  }
+}
+
+async function removeMember(memberUid) {
+  const fb = initFirebase();
+  if (!fb || !_activeTeamMeta || _activeTeamMeta.ownerId !== currentUid()) return;
+  const name = (_activeTeamMeta.memberNames || {})[memberUid] || 'this member';
+  if (!confirm(`Remove ${name} from the team? They can rejoin with the invite code.`)) return;
+  try {
+    // Targeted removal: two arrayRemoves + one map-key delete. Nothing else.
+    await fb.db.collection('teams').doc(_activeTeamMeta.id).update({
+      memberIds: firebase.firestore.FieldValue.arrayRemove(memberUid),
+      coachIds:  firebase.firestore.FieldValue.arrayRemove(memberUid),
+      ['memberNames.' + memberUid]: firebase.firestore.FieldValue.delete()
+    });
+    _activeTeamMeta.memberIds = (_activeTeamMeta.memberIds || []).filter(id => id !== memberUid);
+    _activeTeamMeta.coachIds  = (_activeTeamMeta.coachIds  || []).filter(id => id !== memberUid);
+    if (_activeTeamMeta.memberNames) delete _activeTeamMeta.memberNames[memberUid];
+    renderMembersCard();
+  } catch (e) {
+    console.error('removeMember error:', e);
+    alert('Could not remove member. Please try again.');
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// JOIN TEAM (invite codes)
+// ═══════════════════════════════════════════════════
+// Codes are 8 uppercase characters (iOS pattern). Charset skips lookalikes
+// (I/O/0/1). Join lookups use the rules-sanctioned limit(1) query, and
+// empty/short codes are hard-guarded — an empty code once silently joined
+// a stranger to a team (WEB_HANDOFF appendix).
+function generateInviteCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const buf = new Uint32Array(8);
+  (window.crypto || {}).getRandomValues ? crypto.getRandomValues(buf)
+    : buf.forEach((_, i) => buf[i] = Math.floor(Math.random() * chars.length));
+  return Array.from(buf, n => chars[n % chars.length]).join('');
+}
+
+function openJoinTeam() {
+  const authEl = document.getElementById('topbar-auth');
+  const joinAuthEl = document.getElementById('topbar-auth-join');
+  if (authEl && joinAuthEl) joinAuthEl.innerHTML = authEl.innerHTML;
+  const status = document.getElementById('join-status');
+  if (status) status.innerHTML = '';
+  showView('join');
+  const input = document.getElementById('join-code-input');
+  if (input) { input.value = ''; input.focus(); }
+}
+
+async function joinTeamWithCode() {
+  const fb = initFirebase();
+  if (!fb || !fb.auth.currentUser) return;
+  const uid = fb.auth.currentUser.uid;
+  const input = document.getElementById('join-code-input');
+  const status = document.getElementById('join-status');
+  const btn = document.getElementById('join-team-btn');
+  const code = (input.value || '').trim().toUpperCase();
+
+  // Hard guard: never look up empty/short codes.
+  if (code.length < 6) {
+    status.innerHTML = '<span style="color:var(--alert-ink);">Please enter the full invite code.</span>';
+    return;
+  }
+
+  btn.disabled = true;
+  status.innerHTML = 'Looking up team…';
+  try {
+    const snap = await fb.db.collection('teams')
+      .where('inviteCode', '==', code).limit(1).get();
+    if (snap.empty) {
+      status.innerHTML = '<span style="color:var(--alert-ink);">No team found for that code. Double-check it and try again.</span>';
+      btn.disabled = false;
+      return;
+    }
+    const doc = snap.docs[0];
+    const d = doc.data();
+    if (d.ownerId === uid || (d.memberIds || []).includes(uid)) {
+      status.innerHTML = `You're already on <strong>${escHtml(d.name || 'this team')}</strong>. <a style="text-decoration:underline;cursor:pointer;" onclick="navigate('#/team/${doc.id}/schedule')">Open it →</a>`;
+      btn.disabled = false;
+      return;
+    }
+
+    // Targeted join write: add ONLY ourselves. arrayUnion + a single
+    // memberNames map key via merge — nothing else on the doc is touched.
+    const displayName = fb.auth.currentUser.displayName || fb.auth.currentUser.email || 'Member';
+    await fb.db.collection('teams').doc(doc.id).set({
+      memberIds: firebase.firestore.FieldValue.arrayUnion(uid),
+      memberNames: { [uid]: displayName }
+    }, { merge: true });
+    // Maintain the legacy user-doc list too (query fallback path uses it)
+    await fb.db.collection('users').doc(uid).set(
+      { memberTeamIds: firebase.firestore.FieldValue.arrayUnion(doc.id) },
+      { merge: true }
+    );
+
+    status.innerHTML = `<span style="color:var(--accent-down);">✓ Joined <strong>${escHtml(d.name || 'team')}</strong>!</span>`;
+    await loadUserTeams(fb.auth.currentUser);
+    navigate('#/team/' + doc.id + '/schedule');
+  } catch (e) {
+    console.error('joinTeamWithCode error:', e);
+    status.innerHTML = '<span style="color:var(--alert-ink);">Could not join right now — please try again.</span>';
+    btn.disabled = false;
+  }
+}
+
+// ── Roles (WEB_HANDOFF 2.7): isCoach = owner OR in coachIds. Authorization
+// is granted (on the team doc), never self-declared. Members/parents get
+// read-only Schedule + Players; coaches also build lineups + edit rosters;
+// team settings stay owner-only for now.
+let _activeTeamMeta = null;   // roles/invite metadata for the selected team
+
+function currentUid() {
+  return (_auth && _auth.currentUser) ? _auth.currentUser.uid : '';
+}
+
+// Role of the signed-in user on a _userTeams entry: 'owner' | 'coach' | 'member'
+function teamRole(team) {
+  const uid = currentUid();
+  if (!team || !uid) return 'member';
+  if (team.ownerId === uid) return 'owner';
+  if ((team.coachIds || []).includes(uid)) return 'coach';
+  return 'member';
+}
+function isCoachRole(team) { const r = teamRole(team); return r === 'owner' || r === 'coach'; }
+
+function mapTeamDoc(d) {
+  const data = d.data();
+  return {
+    id: d.id,
+    name: data.name || 'Unnamed Team',
+    sport: data.sport || 'Baseball',
+    level: data.level || '',
+    ageGroup: data.ageGroup || '',
+    season: data.season || 'Spring',
+    year: data.year || new Date().getFullYear(),
+    logoURL: data.logoURL || data.teamLogoURL || '',
+    primaryColor: data.color || data.primaryColor || data.teamColor || '',
+    secondaryColor: data.secondaryColor || '',
+    gameChangerCalendarUrl: data.gameChangerCalendarUrl || '',
+    ownerId:   data.ownerId || '',
+    coachIds:  data.coachIds || [],
+    memberIds: data.memberIds || []
+  };
+}
+
 async function loadUserTeams(user) {
   const fb = initFirebase();
   if (!fb) return;
   try {
-    const userDoc = await fb.db.collection('users').doc(user.uid).get();
-    const data = userDoc.exists ? userDoc.data() : {};
-    const ownedIds  = data.ownedTeamIds  || [];
-    const memberIds = data.memberTeamIds || [];
-    const allIds    = [...new Set([...ownedIds, ...memberIds])];
-
-    if (allIds.length === 0) {
-      _userTeams = [];
-      renderDashboard();
-      renderSidebar();
-      return;
-    }
-
-    const teamDocs = await Promise.all(
-      allIds.map(id => fb.db.collection('teams').doc(id).get())
-    );
-    _userTeams = teamDocs
-      .filter(d => d.exists)
-      .map(d => {
-        const data = d.data();
-        return {
-          id: d.id,
-          name: data.name || 'Unnamed Team',
-          sport: data.sport || 'Baseball',
-          level: data.level || '',
-          ageGroup: data.ageGroup || '',
-          season: data.season || 'Spring',
-          year: data.year || new Date().getFullYear(),
-          logoURL: data.logoURL || data.teamLogoURL || '',
-          primaryColor: data.color || data.primaryColor || data.teamColor || '',
-          secondaryColor: data.secondaryColor || '',
-          gameChangerCalendarUrl: data.gameChangerCalendarUrl || ''
-        };
-      });
+    // iOS query pattern (WEB_HANDOFF 2.2): owned = ownerId ==, joined =
+    // memberIds array-contains. Replaces the legacy users/{uid} ID lists.
+    const [ownedSnap, joinedSnap] = await Promise.all([
+      fb.db.collection('teams').where('ownerId', '==', user.uid).get(),
+      fb.db.collection('teams').where('memberIds', 'array-contains', user.uid).get()
+    ]);
+    const byId = {};
+    ownedSnap.docs.concat(joinedSnap.docs).forEach(d => { byId[d.id] = d; });
+    _userTeams = Object.values(byId).map(mapTeamDoc);
 
     renderDashboard();
     renderSidebar();
   } catch(e) {
-    console.error('loadUserTeams error:', e);
+    console.error('loadUserTeams query error, falling back to user-doc lists:', e);
+    // Legacy fallback: users/{uid}.ownedTeamIds + memberTeamIds
+    try {
+      const userDoc = await fb.db.collection('users').doc(user.uid).get();
+      const data = userDoc.exists ? userDoc.data() : {};
+      const allIds = [...new Set([...(data.ownedTeamIds || []), ...(data.memberTeamIds || [])])];
+      const teamDocs = await Promise.all(allIds.map(id => fb.db.collection('teams').doc(id).get()));
+      _userTeams = teamDocs.filter(d => d.exists).map(mapTeamDoc);
+      renderDashboard();
+      renderSidebar();
+    } catch(e2) {
+      console.error('loadUserTeams fallback error:', e2);
+    }
   }
 }
 
@@ -4476,16 +4758,18 @@ function renderDashboard() {
           <span class="team-pill">${team.season} ${team.year}</span>
           ${team.level ? `<span class="team-pill">${team.level}</span>` : ''}
           ${team.ageGroup ? `<span class="team-pill">${team.ageGroup}</span>` : ''}
+          ${teamRole(team) === 'coach' ? '<span class="team-pill">Coach</span>' : ''}
+          ${teamRole(team) === 'member' ? '<span class="team-pill">Member</span>' : ''}
         </div>
         <div class="team-card-actions">
-          <button class="btn btn-primary btn-create" onclick="enterBuilder('${team.id}', 'lineup', 3)">Build Lineup →</button>
+          ${isCoachRole(team) ? `<button class="btn btn-primary btn-create" onclick="enterBuilder('${team.id}', 'lineup', 3)">Build Lineup →</button>` : ''}
           <div class="btn-row">
             <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/schedule')">Schedule</button>
             <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/players')">Players</button>
           </div>
-          <div class="btn-row">
+          ${teamRole(team) === 'owner' ? `<div class="btn-row">
             <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</button>
-          </div>
+          </div>` : ''}
         </div>
       </div>
     `;
@@ -4512,6 +4796,17 @@ async function selectTeam(teamId, closeDropdown = true) {
 
     const teamData = teamDoc.exists ? teamDoc.data() : {};
     const teamName = teamData.name || 'Unnamed Team';
+
+    // Team membership/role metadata for role gating + the members card.
+    // Read-only snapshot — never echoed back wholesale.
+    _activeTeamMeta = {
+      id: teamId,
+      ownerId:     teamData.ownerId || '',
+      coachIds:    teamData.coachIds || [],
+      memberIds:   teamData.memberIds || [],
+      memberNames: teamData.memberNames || {},
+      inviteCode:  teamData.inviteCode || ''
+    };
 
     state.teamName     = teamName;
     state.teamSport    = teamData.sport    || state.teamSport    || 'Baseball';
@@ -4659,7 +4954,9 @@ function showView(view) {
   document.getElementById('view-lineups').classList.remove('active');
   document.getElementById('view-schedule').classList.remove('active');
   document.getElementById('view-players').classList.remove('active');
+  document.getElementById('view-join').classList.remove('active');
 
+  if (view === 'join') document.getElementById('view-join').classList.add('active');
   if (view === 'auth') document.getElementById('view-auth').classList.add('active');
   if (view === 'dashboard') document.getElementById('view-dashboard').classList.add('active');
   if (view === 'builder') document.getElementById('view-builder').classList.add('active');
@@ -4694,6 +4991,7 @@ function parseHash(hash) {
   let h = (hash || '').replace(/^#/, '');
   if (h === '' || h === '/') return { name: 'dashboard' };
   if (h === '/build')        return { name: 'build' };
+  if (h === '/join')         return { name: 'join' };
   const parts = h.split('/').filter(Boolean);   // ['team','abc','players']
   if (parts[0] === 'team' && parts[1]) {
     const teamId = parts[1];
@@ -4739,6 +5037,7 @@ async function handleRoute() {
   switch (m.name) {
     case 'players':      await openPlayerManagement(m.teamId); break;
     case 'schedule':     await openSchedule(m.teamId); break;
+    case 'join':         openJoinTeam(); break;
     case 'lineupDetail': await openPastLineups(m.teamId); viewLineupDetail(m.lineupId); break;
     case 'settings':     await enterBuilder(m.teamId, 'settings', 1); break;
     case 'dashboard':
@@ -4799,13 +5098,18 @@ function renderSidebar() {
           <span class="sidebar-team-chev" aria-hidden="true">›</span>
         </button>
         <div class="sidebar-team-sections">
-          <a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ Build Lineup</a>
+          ${isCoachRole(team) ? `<a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ Build Lineup</a>` : ''}
           <a class="sidebar-sublink ${isCurrent && (section === 'schedule' || section === 'lineupDetail') ? 'active' : ''}" onclick="navigate('#/team/${team.id}/schedule')">Schedule</a>
           <a class="sidebar-sublink ${isCurrent && section === 'players' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/players')">Players</a>
-          <a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</a>
+          ${teamRole(team) === 'owner' ? `<a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</a>` : ''}
         </div>
       </div>`;
   });
+
+  html += `
+    <a class="sidebar-link ${section === 'join' ? 'active' : ''}" onclick="navigate('#/join')">
+      <span class="sidebar-ico" aria-hidden="true">＋</span> Join a Team
+    </a>`;
 
   nav.innerHTML = html;
 }
@@ -4849,12 +5153,19 @@ async function enterBuilder(teamId, mode, startStep) {
       await selectTeam(teamId, false);
       // If another team was selected while loading, bail — that enterBuilder call will finish instead
       if (_activeTeamId !== teamId) return;
+      // Settings are owner-only (coach/member links are hidden, but guard
+      // direct URLs too). Non-owners land on the schedule instead.
+      if (_activeTeamMeta && _activeTeamMeta.ownerId && _activeTeamMeta.ownerId !== currentUid()) {
+        navigate('#/team/' + teamId + '/schedule');
+        return;
+      }
     }
     // Show steps 1–2 (team info + rules); hide 3–5 (roster is separate now)
     [1,2,3,4,5].forEach(i => {
       document.getElementById(`step-${i}`).style.display = (i <= 2) ? '' : 'none';
     });
     renderSettingsHeader();
+    renderMembersCard();
     resetSettingsDirty();
     renderWizardBar();
     updateStepFooters();
@@ -5078,8 +5389,12 @@ async function saveRosterOnlyToFirestore() {
     // (e.g. a borrowed iOS team doc viewed via a shared link).
     const teamDoc = await teamRef.get();
     const uid = fb.auth.currentUser.uid;
-    if (!teamDoc.exists || teamDoc.data().ownerId !== uid) {
-      console.warn('saveRosterOnlyToFirestore: not owner of', _activeTeamId, '— skipping');
+    // Coach parity (WEB_HANDOFF 2.7): the lineup/coach player fields are
+    // writable by owner OR coach. firestore.rules enforces the same.
+    const td = teamDoc.exists ? teamDoc.data() : {};
+    const canWrite = teamDoc.exists && (td.ownerId === uid || (td.coachIds || []).includes(uid));
+    if (!canWrite) {
+      console.warn('saveRosterOnlyToFirestore: not owner/coach of', _activeTeamId, '— skipping');
       return false;
     }
 
@@ -5184,9 +5499,10 @@ async function saveTeamToFirestore() {
       // Brand new team — create with ownership fields
       const ref = await fb.db.collection('teams').add({
         ...coreFields,
-        ownerId:   uid,
-        memberIds: [uid],         // owner is also a member
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        ownerId:    uid,
+        memberIds:  [uid],         // owner is also a member
+        inviteCode: generateInviteCode(),   // iOS-style 8-char join code
+        createdAt:  firebase.firestore.FieldValue.serverTimestamp()
       });
       teamId = ref.id;
       _activeTeamId = teamId;
@@ -5197,16 +5513,28 @@ async function saveTeamToFirestore() {
       );
     } else {
       // SAFETY: verify the current user owns this team before writing.
-      // If they don't (e.g. _activeTeamId somehow points at another user's
-      // iOS team), treat it as a new team instead of overwriting foreign data.
       const existingDoc = await fb.db.collection('teams').doc(teamId).get();
-      if (!existingDoc.exists || existingDoc.data().ownerId !== uid) {
-        console.warn('saveTeamToFirestore: not owner of team', teamId, '— creating new team instead');
+      const existing = existingDoc.exists ? existingDoc.data() : {};
+      if (existingDoc.exists && existing.ownerId === uid) {
+        // Confirmed owner — update core fields only; preserve memberIds/ownerId as-is
+        await fb.db.collection('teams').doc(teamId).set(coreFields, { merge: true });
+      } else if (existingDoc.exists &&
+                 ((existing.coachIds || []).includes(uid) || (existing.memberIds || []).includes(uid))) {
+        // Coach or member of THIS team — never fork a copy of it, and never
+        // write core team fields (owner-only). Coaches still get the roster
+        // batch below; plain members write nothing.
+        console.warn('saveTeamToFirestore: not owner of', teamId, '— skipping core team write');
+        if (!(existing.coachIds || []).includes(uid)) return true;
+      } else {
+        // Not on this team at all (e.g. borrowed via shared link) — the
+        // legacy behavior: create their own copy instead of touching it.
+        console.warn('saveTeamToFirestore: not on team', teamId, '— creating new team instead');
         const ref = await fb.db.collection('teams').add({
           ...coreFields,
-          ownerId:   uid,
-          memberIds: [uid],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          ownerId:    uid,
+          memberIds:  [uid],
+          inviteCode: generateInviteCode(),
+          createdAt:  firebase.firestore.FieldValue.serverTimestamp()
         });
         teamId = ref.id;
         _activeTeamId = teamId;
@@ -5214,9 +5542,6 @@ async function saveTeamToFirestore() {
           { ownedTeamIds: firebase.firestore.FieldValue.arrayUnion(teamId) },
           { merge: true }
         );
-      } else {
-        // Confirmed owner — update core fields only; preserve memberIds/ownerId as-is
-        await fb.db.collection('teams').doc(teamId).set(coreFields, { merge: true });
       }
     }
 
@@ -5528,6 +5853,7 @@ function populatePrintSheet(data) {
 // ═══════════════════════════════════════════════════
 let _scheduleTeamId = null;
 let _scheduleTeamName = '';
+let _scheduleCanCoach = true;   // members get a read-only schedule
 let _scheduleGames = [];
 let _scheduleLineups = [];
 
@@ -5731,6 +6057,7 @@ async function openSchedule(teamId) {
 
   _scheduleTeamId = teamId;
   _scheduleTeamName = team.name;
+  _scheduleCanCoach = isCoachRole(team);
 
   document.getElementById('schedule-team-name').textContent = 'Schedule';
   document.getElementById('schedule-team-sub').textContent = calUrl
@@ -5811,7 +6138,7 @@ function renderSchedule() {
       <div style="font-size:32px;margin-bottom:12px;">📅</div>
       ${hasCal ? 'No games found on this calendar.' : 'No games yet.'}<br>
       <span style="font-size:13px;color:var(--muted);">Lineups you build and save will show up here${hasCal ? '' : ' — or link a GameChanger calendar in Team / League Settings'}.</span>
-      <div style="margin-top:18px;"><button class="btn btn-primary" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build Lineup →</button></div>
+      ${_scheduleCanCoach ? `<div style="margin-top:18px;"><button class="btn btn-primary" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build Lineup →</button></div>` : ''}
     </div>`;
     return;
   }
@@ -5874,7 +6201,16 @@ function renderSchedule() {
 
     let actionHtml;
     let onclick;
-    if (draftHit) {
+    if (!_scheduleCanCoach) {
+      // Read-only (member/parent): saved lineups open; everything else inert.
+      if (matchedLineup) {
+        actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
+        onclick = `viewScheduleLineup('${matchedLineup.id}')`;
+      } else {
+        actionHtml = `<div class="schedule-item-action"></div>`;
+        onclick = '';
+      }
+    } else if (draftHit) {
       const ago = relativeTimeShort(draftHit.draft.updatedAt);
       const label = matchedLineup
         ? 'Draft (editing) · ' + ago
@@ -6105,10 +6441,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // ═══════════════════════════════════════════════════
 // PLAYER MANAGEMENT
 // ═══════════════════════════════════════════════════
+let _playersCanEdit = true;   // members get a read-only roster
+
 async function openPlayerManagement(teamId) {
   if (teamId) {
     await selectTeam(teamId, false);
   }
+
+  const uid = currentUid();
+  _playersCanEdit = !!(ALLOW_TEAM_CREATION && _activeTeamMeta &&
+    (_activeTeamMeta.ownerId === uid || (_activeTeamMeta.coachIds || []).includes(uid)));
 
   const team = _userTeams.find(t => t.id === _activeTeamId);
   const teamName = team ? team.name : 'Team';
@@ -6130,6 +6472,10 @@ function renderPlayerManagementList() {
   const container = document.getElementById('player-list-mgmt');
   if (!container) return;
 
+  // Members/parents see the roster read-only: no edits, no skills, no
+  // add/remove. (Coach skills privacy proper migrates to coachAssessments.)
+  const canEdit = _playersCanEdit !== false;
+
   container.innerHTML = '';
   state.players.forEach((player, idx) => {
     const row = document.createElement('div');
@@ -6141,32 +6487,32 @@ function renderPlayerManagementList() {
     row.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
         <input type="text" value="${escHtml(player.name)}" placeholder="Full name"
-          onchange="updatePlayerName('${player.id}', this.value); renderPlayerManagementList()"
+          ${canEdit ? `onchange="updatePlayerName('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'}
           style="flex:1;min-width:80px;" />
         <input type="text" inputmode="numeric" class="player-num-input" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
-          onchange="updatePlayerNumber('${player.id}', this.value); renderPlayerManagementList()" />
-        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="Pronunciation (optional)"
-          onchange="updatePlayerPronunciation('${player.id}', this.value); renderPlayerManagementList()" />
-        <button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}'); renderPlayerManagementList()" title="Remove player">✕</button>
+          ${canEdit ? `onchange="updatePlayerNumber('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'} />
+        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="${canEdit ? 'Pronunciation (optional)' : ''}"
+          ${canEdit ? `onchange="updatePlayerPronunciation('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'} />
+        ${canEdit ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}'); renderPlayerManagementList()" title="Remove player">✕</button>` : ''}
       </div>
       <div class="priority-row">
         <span class="priority-label">Positions:</span>
         <div class="pos-pills">
           ${getActiveFieldPositions().map(pos =>
             `<span class="pos-pill ${player.prefPos.includes(pos) ? 'selected' : ''}"
-              onclick="togglePrefPos('${player.id}','${pos}'); renderPlayerManagementList()">${pos}</span>`
+              ${canEdit ? `onclick="togglePrefPos('${player.id}','${pos}'); renderPlayerManagementList()"` : 'style="cursor:default;"'}>${pos}</span>`
           ).join('')}
         </div>
       </div>
-      <div class="priority-row">
+      ${canEdit ? `<div class="priority-row">
         <span class="priority-label">Prioritize:</span>
         <div class="priority-pills">
           <span class="priority-pill ${prio === 'infield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','infield'); renderPlayerManagementList()">Infield</span>
           <span class="priority-pill ${prio === 'outfield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','outfield'); renderPlayerManagementList()">Outfield</span>
           <span class="priority-pill ${prio === 'both' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','both'); renderPlayerManagementList()">Both</span>
         </div>
-      </div>
-      <div class="priority-row skills-row">
+      </div>` : ''}
+      ${canEdit ? `<div class="priority-row skills-row">
         <span class="priority-label">Batting:</span>
         <div class="skills-grid">
           ${['power', 'contact', 'speed'].map(s => {
@@ -6188,7 +6534,7 @@ function renderPlayerManagementList() {
           `;
           }).join('')}
         </div>
-      </div>
+      </div>` : ''}
     `;
     container.appendChild(row);
   });
@@ -6200,12 +6546,13 @@ function renderPlayerManagementList() {
   const bottomEl = document.getElementById('players-team-sub-bottom');
   if (bottomEl) bottomEl.textContent = countText;
 
-  // Hide add row if team creation is gated
+  // Hide add row if team creation is gated OR the viewer can't edit
   const addRow = document.getElementById('add-player-row-mgmt');
-  if (addRow) addRow.style.display = ALLOW_TEAM_CREATION ? '' : 'none';
+  if (addRow) addRow.style.display = (ALLOW_TEAM_CREATION && canEdit) ? '' : 'none';
 }
 
 function addPlayerFromMgmt() {
+  if (_playersCanEdit === false) return;
   const input = document.getElementById('new-player-name-mgmt');
   const numInput = document.getElementById('new-player-num-mgmt');
   const pronInput = document.getElementById('new-player-pron-mgmt');
@@ -8349,6 +8696,8 @@ function setRosterSaveStatus(state /* 'saving' | 'saved' | 'error' | 'idle' */) 
 }
 
 function scheduleRosterSave() {
+  // Read-only viewers (members/parents) never auto-save.
+  if (_playersCanEdit === false && isPlayersViewActive()) return;
   // Only auto-save when the user is actually on the Players management view.
   // The same edit handlers are used from the builder wizard (step 2), which
   // has its own explicit "Save Team" flow we don't want to interfere with.
