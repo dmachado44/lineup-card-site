@@ -647,9 +647,12 @@
     .btn-danger:hover { filter: brightness(0.97); }
     .btn-danger:active { transform: scale(0.98); box-shadow: none; }
 
-    .btn-sm { padding: 9px 18px; font-size: 15px; }
-    .btn-lg { padding: 15px 34px; font-size: 19px; }
-    .btn-icon { padding: 7px 10px; border-radius: var(--radius-btn); }
+    /* Normalized heights so sibling buttons always align regardless of
+       variant (sticker vs hairline vs danger have different fonts/borders) */
+    .btn { min-height: 48px; }
+    .btn-sm { padding: 8px 18px; font-size: 15px; min-height: 40px; }
+    .btn-lg { padding: 14px 34px; font-size: 19px; min-height: 54px; }
+    .btn-icon { padding: 7px 10px; border-radius: var(--radius-btn); min-height: 0; }
 
     /* ── PLAYER MANAGEMENT ── */
     .player-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
@@ -658,11 +661,21 @@
       flex-direction: column;
       gap: 12px;
       padding: 18px 22px;
-      background: var(--bg-secondary);
+      /* Barely-there cream tint — panels stay white, rows just whisper */
+      background: color-mix(in srgb, var(--page) 35%, var(--panel));
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
       transition: border-color 0.15s;
     }
+    /* Jersey number — deliberately full-strength accent (locked decision) */
+    .player-num-input {
+      flex: 0 0 72px;
+      width: 72px;
+      text-align: center;
+      font-weight: 800;
+      color: var(--accent);
+    }
+    .player-pron-input { flex: 1; min-width: 120px; }
     .player-row:hover { border-color: var(--gray-4); }
     .player-row input[type=text] {
       min-width: 80px;
@@ -2711,12 +2724,8 @@
     .empty-icon { font-size: 48px; margin-bottom: 16px; }
 
     /* ── TEAM THEMING ── */
-    .team-card {
-      border-top: 4px solid var(--border);
-    }
-    .team-card[data-primary] {
-      border-top-color: var(--tc-primary, var(--border));
-    }
+    /* (Colored top-border stripe removed — team color lives in the
+       logo/avatar emblem only, per the one-signature-color rule.) */
     .team-logo-mark {
       width: 36px;
       height: 36px;
@@ -3417,7 +3426,9 @@
       <div id="player-list-mgmt" class="player-list"></div>
 
       <div class="add-player-row" id="add-player-row-mgmt">
-        <input type="text" id="new-player-name-mgmt" placeholder="Player name..." onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
+        <input type="text" id="new-player-name-mgmt" placeholder="Full name..." onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
+        <input type="text" inputmode="numeric" class="player-num-input" id="new-player-num-mgmt" placeholder="#" onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
+        <input type="text" class="player-pron-input" id="new-player-pron-mgmt" placeholder="Pronunciation (optional)" onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
         <button class="btn btn-primary btn-sm" onclick="addPlayerFromMgmt()">+ Add Player</button>
       </div>
     </div>
@@ -3707,7 +3718,9 @@
           <div id="player-list" class="player-list"></div>
 
           <div class="add-player-row" id="add-player-row">
-            <input type="text" id="new-player-name" placeholder="Player name..." onkeydown="if(event.key==='Enter') addPlayer()" />
+            <input type="text" id="new-player-name" placeholder="Full name..." onkeydown="if(event.key==='Enter') addPlayer()" />
+            <input type="text" inputmode="numeric" class="player-num-input" id="new-player-num" placeholder="#" onkeydown="if(event.key==='Enter') addPlayer()" />
+            <input type="text" class="player-pron-input" id="new-player-pron" placeholder="Pronunciation (optional)" onkeydown="if(event.key==='Enter') addPlayer()" />
             <button class="btn btn-primary btn-sm" onclick="addPlayer()">+ Add Player</button>
           </div>
         </div>
@@ -3718,7 +3731,7 @@
         <div class="flex-row gap-md">
           <div class="text-muted" id="step2-status"></div>
           <div class="draft-status" id="draft-saved-status-step3"></div>
-          <button id="step3-save-draft" class="btn btn-outline" style="display:none" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
+          <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
           <button id="step3-continue" class="btn btn-primary btn-lg" onclick="goToStep4()">Continue to Edit Lineup →</button>
         </div>
@@ -3782,7 +3795,7 @@
           <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
             Generate Batting Order
           </button>
-          <button class="btn btn-teal btn-sm" onclick="shuffleFielding()" title="Re-randomize position assignments across all innings">
+          <button class="btn btn-ghost btn-sm" onclick="shuffleFielding()" title="Re-randomize position assignments across all innings">
             Rearrange Positions
           </button>
           <button class="btn btn-ghost btn-sm" onclick="clearFielding()">
@@ -3879,7 +3892,7 @@
         <div class="dashboard-header-left"><h1>Create Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="flex-row gap-md">
           <div class="draft-status" id="draft-saved-status"></div>
-          <button id="step4-save-draft" class="btn btn-outline" onclick="saveDraftAndExit()">💾 Save Draft &amp; Exit</button>
+          <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
         </div>
       </div>
@@ -4445,7 +4458,9 @@ function renderDashboard() {
 
   emptyState.style.display = 'none';
   grid.innerHTML = _userTeams.map(team => {
-    const borderStyle = team.primaryColor ? `style="border-top-color:${team.primaryColor}"` : '';
+    // Team color stays in the emblem/avatar only — no card stripe
+    // (one-signature-color rule; stripe removed by request July 2026).
+    const borderStyle = '';
     const logoHtml = team.logoURL
       ? `<img class="team-logo-mark" src="${team.logoURL}" alt="" />`
       : `<div class="team-letter-avatar" style="background:${team.primaryColor ? team.primaryColor + '22' : 'var(--gray-5)'};color:${team.primaryColor || 'var(--text)'};">${escHtml(team.name.substring(0, 2).toUpperCase())}</div>`;
@@ -4590,7 +4605,11 @@ async function selectTeam(teamId, closeDropdown = true) {
         prefPos: d.prefPos || [],
         fieldPriority: d.fieldPriority || 'both',
         battingSkills: d.battingSkills || { power: 5, contact: 5, speed: 5 },
-        gender:  d.gender || ''
+        gender:  d.gender || '',
+        // Shared basic info (matches iOS player creation). number: 0 is a
+        // real jersey number; null/undefined = unset ("team doesn't use numbers").
+        number:  (typeof d.number === 'number') ? d.number : null,
+        namePronunciation: d.namePronunciation || ''
       };
     });
 
@@ -5060,7 +5079,8 @@ async function saveRosterOnlyToFirestore() {
 
     // Upsert every current player. Rule #1 + #2: merge-safe writes, and
     // only the fields this client manages. iOS-only fields (walkoutSong,
-    // voiceIntro, jerseyNumber, …) are untouched.
+    // voiceIntro, songId, …) are untouched. Basic info (name, number,
+    // namePronunciation) is SHARED with iOS player creation.
     state.players.forEach(player => {
       const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
       const ref = teamRef.collection('players').doc(docId);
@@ -5068,6 +5088,15 @@ async function saveRosterOnlyToFirestore() {
         name:   player.name,
         gender: player.gender || ''
       };
+      // Jersey number: 0 is a real number; unset = OMIT the field entirely
+      // (nil means "team doesn't use numbers"). Never write null — omission
+      // preserves whatever iOS has on the doc.
+      if (typeof player.number === 'number' && !isNaN(player.number)) {
+        playerData.number = player.number;
+      }
+      if (player.namePronunciation && player.namePronunciation.trim()) {
+        playerData.namePronunciation = player.namePronunciation.trim();
+      }
       if (player.prefPos && player.prefPos.length > 0) {
         playerData.prefPos = player.prefPos;
       }
@@ -5197,6 +5226,14 @@ async function saveTeamToFirestore() {
           name:   player.name,
           gender: player.gender || ''
         };
+        // Shared basic info (matches iOS player creation): jersey number
+        // (0 real, unset omitted — never null) and pronunciation.
+        if (typeof player.number === 'number' && !isNaN(player.number)) {
+          playerData.number = player.number;
+        }
+        if (player.namePronunciation && player.namePronunciation.trim()) {
+          playerData.namePronunciation = player.namePronunciation.trim();
+        }
         if (player.prefPos && player.prefPos.length > 0) {
           playerData.prefPos = player.prefPos;
         }
@@ -6027,10 +6064,14 @@ function renderPlayerManagementList() {
     const prio = player.fieldPriority || 'both';
     const skills = player.battingSkills || { power: 5, contact: 5, speed: 5 };
     row.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;width:100%;">
-        <input type="text" value="${escHtml(player.name)}" placeholder="Player name"
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
+        <input type="text" value="${escHtml(player.name)}" placeholder="Full name"
           onchange="updatePlayerName('${player.id}', this.value); renderPlayerManagementList()"
           style="flex:1;min-width:80px;" />
+        <input type="text" inputmode="numeric" class="player-num-input" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
+          onchange="updatePlayerNumber('${player.id}', this.value); renderPlayerManagementList()" />
+        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="Pronunciation (optional)"
+          onchange="updatePlayerPronunciation('${player.id}', this.value); renderPlayerManagementList()" />
         <button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}'); renderPlayerManagementList()" title="Remove player">✕</button>
       </div>
       <div class="priority-row">
@@ -6091,12 +6132,22 @@ function renderPlayerManagementList() {
 
 function addPlayerFromMgmt() {
   const input = document.getElementById('new-player-name-mgmt');
+  const numInput = document.getElementById('new-player-num-mgmt');
+  const pronInput = document.getElementById('new-player-pron-mgmt');
   const name = input.value.trim();
   if (!name) return;
   const id = 'p_' + Date.now();
-  state.players.push({ id, name, prefPos: [], fieldPriority: 'both', battingSkills: { power: 5, contact: 5, speed: 5 } });
+  state.players.push({
+    id, name,
+    number: parseJerseyNumber(numInput ? numInput.value : ''),
+    namePronunciation: pronInput ? pronInput.value.trim() : '',
+    prefPos: [], fieldPriority: 'both',
+    battingSkills: { power: 5, contact: 5, speed: 5 }
+  });
   state.attendance[id] = true;
   input.value = '';
+  if (numInput) numInput.value = '';
+  if (pronInput) pronInput.value = '';
   renderPlayerManagementList();
   renderPlayerList(); // keep main roster in sync
   save();
@@ -8061,14 +8112,32 @@ function changeInnings(delta) {
 // ═══════════════════════════════════════════════════
 // PLAYERS
 // ═══════════════════════════════════════════════════
+// Parse a jersey-number field: '' → null (unset), '0' → 0 (a real number).
+function parseJerseyNumber(raw) {
+  const s = String(raw || '').trim();
+  if (s === '') return null;
+  const n = parseInt(s, 10);
+  return isNaN(n) ? null : n;
+}
+
 function addPlayer() {
   const input = document.getElementById('new-player-name');
+  const numInput = document.getElementById('new-player-num');
+  const pronInput = document.getElementById('new-player-pron');
   const name = input.value.trim();
   if (!name) return;
   const id = 'p_' + Date.now();
-  state.players.push({ id, name, prefPos: [], fieldPriority: 'both', battingSkills: { power: 5, contact: 5, speed: 5 } });
+  state.players.push({
+    id, name,
+    number: parseJerseyNumber(numInput ? numInput.value : ''),
+    namePronunciation: pronInput ? pronInput.value.trim() : '',
+    prefPos: [], fieldPriority: 'both',
+    battingSkills: { power: 5, contact: 5, speed: 5 }
+  });
   state.attendance[id] = true;
   input.value = '';
+  if (numInput) numInput.value = '';
+  if (pronInput) pronInput.value = '';
   renderPlayerList();
   updateStep2Status();
   save();
@@ -8146,6 +8215,20 @@ function handleSkillSliderInput(el) {
 function updatePlayerName(id, name) {
   const p = state.players.find(p => p.id === id);
   if (p) p.name = name;
+  save();
+  scheduleRosterSave();
+}
+
+function updatePlayerNumber(id, value) {
+  const p = state.players.find(p => p.id === id);
+  if (p) p.number = parseJerseyNumber(value);
+  save();
+  scheduleRosterSave();
+}
+
+function updatePlayerPronunciation(id, value) {
+  const p = state.players.find(p => p.id === id);
+  if (p) p.namePronunciation = String(value || '').trim();
   save();
   scheduleRosterSave();
 }
@@ -8267,10 +8350,16 @@ function renderPlayerList() {
 
     const prio = player.fieldPriority || 'both';
     row.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;width:100%;">
-        <input type="text" value="${escHtml(player.name)}" placeholder="Player name"
+      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
+        <input type="text" value="${escHtml(player.name)}" placeholder="Full name"
           onchange="updatePlayerName('${player.id}', this.value)"
           style="flex:1;min-width:80px;${!ALLOW_TEAM_CREATION ? 'opacity:0.7;background:var(--bg-secondary);' : ''}"
+          ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
+        <input type="text" inputmode="numeric" class="player-num-input" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
+          onchange="updatePlayerNumber('${player.id}', this.value)"
+          ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
+        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="Pronunciation (optional)"
+          onchange="updatePlayerPronunciation('${player.id}', this.value)"
           ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
         ${ALLOW_TEAM_CREATION ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}')" title="Remove player">✕</button>` : ''}
       </div>
