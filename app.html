@@ -1401,7 +1401,7 @@
         display: inline-block;
         width: 22px;
         font-weight: 700;
-        color: var(--accent-down);
+        color: #1a1a1a;   /* B&W print — no accent color */
       }
       .print-allinnings-grid {
         display: grid;
@@ -1425,7 +1425,27 @@
         cursor: default;
         box-shadow: none;
         border-width: 1px;
+        /* Compact chips so 10-11 positions fit without overlapping:
+           smaller type, tighter padding, hard width cap. Still B&W. */
+        min-width: 0;
+        max-width: 64px;
+        padding: 1px 4px;
+        border-radius: 5px;
+        line-height: 1.1;
       }
+      .print-allinnings-grid .field-pos-label {
+        font-size: 6.5px;
+        margin-bottom: 0;
+        letter-spacing: 0.2px;
+        color: #555;   /* B&W print — no accent color */
+      }
+      .print-allinnings-grid .field-pos-name {
+        font-size: 8.5px;
+        font-weight: 600;
+        max-width: 56px;
+      }
+      .print-allinnings-grid .field-utl-row { gap: 3px; margin-top: 4px; }
+      .print-allinnings-grid .allinnings-card-num { color: #1a1a1a; }
       /* Save ink: drop the soft green outfield fill in print only.
          The outfield is the only <path> in the SVG (diamond is polygon,
          bases are rects, mound is circle), so this targets just that fill
