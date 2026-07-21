@@ -2483,6 +2483,11 @@
     /* ── SETTINGS MODE (flat all-in-one edit view) ── */
     .settings-mode .wizard-bar { display: none; }
 
+    /* Split views (iOS parity): Team Settings shows step-1 only;
+       League Rules shows step-2 only. */
+    .settings-mode.settings-team #step-2 { display: none !important; }
+    .settings-mode.settings-rules #step-1 { display: none !important; }
+
     /* Members & invite card only exists in settings mode */
     #settings-members-card { display: none; }
     .settings-mode #settings-members-card { display: block; order: 3; }
@@ -4875,7 +4880,10 @@ function renderDashboard() {
             <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/players')">Players</button>
           </div>
           ${teamRole(team) === 'owner' ? `<div class="btn-row">
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</button>
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/rules')">League Rules</button>
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/settings')">Team Settings</button>
+          </div>` : teamRole(team) === 'coach' ? `<div class="btn-row">
+            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/rules')">League Rules</button>
           </div>` : ''}
         </div>
       </div>
@@ -5096,6 +5104,10 @@ function showView(view) {
 // the dashboard. Navigation NEVER writes to Firestore — resolvers only .get().
 // ═══════════════════════════════════════════════════
 let _builderOpen = false;   // true while the lineup builder is the live view
+// iOS parity: Team Settings and League Rules are SEPARATE views.
+// 'team' = members/invite + team info (owner-only) · 'rules' = positions +
+// game/pitching rules (owner OR coach — iOS shows League Rules to coaches).
+let _settingsSection = 'team';
 let _teamsReady  = null;    // promise that resolves once loadUserTeams() finishes
 
 function parseHash(hash) {
@@ -5111,6 +5123,7 @@ function parseHash(hash) {
       case 'players':  return { name: 'players',  teamId };
       case 'schedule': return { name: 'schedule', teamId };
       case 'settings': return { name: 'settings', teamId };
+      case 'rules':    return { name: 'rules',    teamId };
       case 'lineups':
         // Past lineups are consolidated into Schedule (iOS parity, July 2026).
         // Bare #/team/:id/lineups now lands on the schedule; the lineup
@@ -5151,7 +5164,8 @@ async function handleRoute() {
     case 'schedule':     await openSchedule(m.teamId); break;
     case 'join':         openJoinTeam(m.code); break;
     case 'lineupDetail': await openPastLineups(m.teamId); viewLineupDetail(m.lineupId); break;
-    case 'settings':     await enterBuilder(m.teamId, 'settings', 1); break;
+    case 'settings':     _settingsSection = 'team';  await enterBuilder(m.teamId, 'settings', 1); break;
+    case 'rules':        _settingsSection = 'rules'; await enterBuilder(m.teamId, 'settings', 1); break;
     case 'dashboard':
     default:             showDashboardView(); break;
   }
@@ -5213,7 +5227,8 @@ function renderSidebar() {
           ${isCoachRole(team) ? `<a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ Build Lineup</a>` : ''}
           <a class="sidebar-sublink ${isCurrent && (section === 'schedule' || section === 'lineupDetail') ? 'active' : ''}" onclick="navigate('#/team/${team.id}/schedule')">Schedule</a>
           <a class="sidebar-sublink ${isCurrent && section === 'players' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/players')">Players</a>
-          ${teamRole(team) === 'owner' ? `<a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</a>` : ''}
+          ${isCoachRole(team) ? `<a class="sidebar-sublink ${isCurrent && section === 'rules' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/rules')">League Rules</a>` : ''}
+          ${teamRole(team) === 'owner' ? `<a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team Settings</a>` : ''}
           <a class="sidebar-sublink" onclick="openShareTeamModal('${team.id}')">Share Team</a>
         </div>
       </div>`;
@@ -5262,23 +5277,31 @@ async function enterBuilder(teamId, mode, startStep) {
 
   if (mode === 'settings') {
     builderEl.classList.add('settings-mode');
+    builderEl.classList.toggle('settings-team',  _settingsSection === 'team');
+    builderEl.classList.toggle('settings-rules', _settingsSection === 'rules');
     if (teamId) {
       await selectTeam(teamId, false);
       // If another team was selected while loading, bail — that enterBuilder call will finish instead
       if (_activeTeamId !== teamId) return;
-      // Settings are owner-only (coach/member links are hidden, but guard
-      // direct URLs too). Non-owners land on the schedule instead.
-      if (_activeTeamMeta && _activeTeamMeta.ownerId && _activeTeamMeta.ownerId !== currentUid()) {
+      // Access (mirrors iOS): Team Settings = owner-only; League Rules =
+      // owner OR coach. Links are hidden by role, but guard direct URLs too.
+      const uid = currentUid();
+      const meta = _activeTeamMeta || {};
+      const allowed = _settingsSection === 'rules'
+        ? (meta.ownerId === uid || (meta.coachIds || []).includes(uid))
+        : (meta.ownerId === uid);
+      if (meta.ownerId && !allowed) {
         navigate('#/team/' + teamId + '/schedule');
         return;
       }
     }
-    // Show steps 1–2 (team info + rules); hide 3–5 (roster is separate now)
+    // Show steps 1–2 (the settings-team/settings-rules classes hide the
+    // one that doesn't belong to this section); hide 3–5.
     [1,2,3,4,5].forEach(i => {
       document.getElementById(`step-${i}`).style.display = (i <= 2) ? '' : 'none';
     });
     renderSettingsHeader();
-    renderMembersCard();
+    if (_settingsSection === 'team') renderMembersCard();
     resetSettingsDirty();
     renderWizardBar();
     updateStepFooters();
@@ -6516,9 +6539,16 @@ function resetSettingsDirty() {
 
 async function settingsSave() {
   if (!_settingsDirty) return;
-  saveTeam();
-  saveRules();
-  const ok = await saveTeamToFirestore();
+  let ok;
+  if (_settingsSection === 'rules') {
+    // League Rules view: scoped rules-only write (coach-safe)
+    saveRules();
+    ok = await saveLeagueRulesToFirestore();
+  } else {
+    // Team Settings view: full owner-only core save
+    saveTeam();
+    ok = await saveTeamToFirestore();
+  }
   if (ok) {
     resetSettingsDirty();
     // Brief visual feedback
@@ -6531,12 +6561,50 @@ async function settingsSave() {
 }
 
 function renderSettingsHeader() {
-  // The settings header is now a plain static title; just toggle its visibility
-  // so it only appears in settings mode.
   const header = document.getElementById('settings-header');
   if (!header) return;
   const builderEl = document.getElementById('view-builder');
-  header.style.display = (builderEl && builderEl.classList.contains('settings-mode')) ? '' : 'none';
+  const inSettings = builderEl && builderEl.classList.contains('settings-mode');
+  header.style.display = inSettings ? '' : 'none';
+  if (inSettings) {
+    const h1 = header.querySelector('h1');
+    const sub = header.querySelector('.dashboard-sub');
+    if (_settingsSection === 'rules') {
+      if (h1) h1.textContent = 'League Rules';
+      if (sub) sub.textContent = 'Field positions, game rules, and pitching rules.';
+    } else {
+      if (h1) h1.textContent = 'Team Settings';
+      if (sub) sub.textContent = 'Team info, members, and the invite code.';
+    }
+  }
+}
+
+// Scoped rules save — EXACTLY the pinned write-contract payload (WEB_HANDOFF
+// 2.4): innings + leagueRules + updatedAt, nothing else. This is what lets
+// coaches save League Rules without touching owner-only core team fields.
+async function saveLeagueRulesToFirestore() {
+  const fb = initFirebase();
+  if (!fb || !fb.auth.currentUser || !_activeTeamId) return false;
+  try {
+    const teamRef = fb.db.collection('teams').doc(_activeTeamId);
+    const teamDoc = await teamRef.get();
+    const uid = fb.auth.currentUser.uid;
+    const td = teamDoc.exists ? teamDoc.data() : {};
+    const canWrite = teamDoc.exists && (td.ownerId === uid || (td.coachIds || []).includes(uid));
+    if (!canWrite) {
+      console.warn('saveLeagueRulesToFirestore: not owner/coach — skipping');
+      return false;
+    }
+    await teamRef.set({
+      innings: state.innings,
+      leagueRules: state.leagueRules,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    return true;
+  } catch (e) {
+    console.error('saveLeagueRulesToFirestore error:', e);
+    return false;
+  }
 }
 
 // Also hook form inputs in step-1 to mark dirty
