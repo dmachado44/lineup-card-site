@@ -5010,7 +5010,11 @@ async function selectTeam(teamId, closeDropdown = true) {
         // Shared basic info (matches iOS player creation). number: 0 is a
         // real jersey number; null/undefined = unset ("team doesn't use numbers").
         number:  (typeof d.number === 'number') ? d.number : null,
-        namePronunciation: d.namePronunciation || ''
+        namePronunciation: d.namePronunciation || '',
+        // iOS Player model fields (Today's Order = isActive sorted by order).
+        // null = missing on the doc → the next roster save backfills them.
+        order:    (typeof d.order === 'number') ? d.order : null,
+        isActive: (typeof d.isActive === 'boolean') ? d.isActive : null
       };
     });
 
@@ -5513,13 +5517,25 @@ async function saveRosterOnlyToFirestore() {
     // only the fields this client manages. iOS-only fields (walkoutSong,
     // voiceIntro, songId, …) are untouched. Basic info (name, number,
     // namePronunciation) is SHARED with iOS player creation.
-    state.players.forEach(player => {
+    state.players.forEach((player, idx) => {
       const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
       const ref = teamRef.collection('players').doc(docId);
       const playerData = {
         name:   player.name,
         gender: player.gender || ''
       };
+      // iOS REQUIRES order + isActive to decode a player (Today's Order =
+      // players with isActive, sorted by order — WEB_HANDOFF 2.3/3.1).
+      // Write them ONLY when missing (new players + legacy web-created docs);
+      // never clobber values the iOS coach editor manages.
+      if (typeof player.order !== 'number') {
+        playerData.order = idx;
+        player.order = idx;
+      }
+      if (typeof player.isActive !== 'boolean') {
+        playerData.isActive = true;
+        player.isActive = true;
+      }
       // Jersey number: 0 is a real number; unset = OMIT the field entirely
       // (nil means "team doesn't use numbers"). Never write null — omission
       // preserves whatever iOS has on the doc.
@@ -5661,13 +5677,25 @@ async function saveTeamToFirestore() {
     // empty array would silently overwrite preferences set in the iOS app.
     if (state.players.length > 0) {
       const batch = fb.db.batch();
-      state.players.forEach(player => {
+      state.players.forEach((player, idx) => {
         const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
         const ref = fb.db.collection('teams').doc(teamId).collection('players').doc(docId);
         const playerData = {
           name:   player.name,
           gender: player.gender || ''
         };
+      // iOS REQUIRES order + isActive to decode a player (Today's Order =
+        // players with isActive, sorted by order — WEB_HANDOFF 2.3/3.1).
+        // Write them ONLY when missing (new players + legacy web-created docs);
+        // never clobber values the iOS coach editor manages.
+        if (typeof player.order !== 'number') {
+          playerData.order = idx;
+          player.order = idx;
+        }
+        if (typeof player.isActive !== 'boolean') {
+          playerData.isActive = true;
+          player.isActive = true;
+        }
         // Shared basic info (matches iOS player creation): jersey number
         // (0 real, unset omitted — never null) and pronunciation.
         if (typeof player.number === 'number' && !isNaN(player.number)) {
@@ -6575,6 +6603,14 @@ async function openPlayerManagement(teamId) {
   renderPlayerManagementList();
   showView('players');
   window.scrollTo(0, 0);
+
+  // Auto-heal: if any loaded player doc is missing the iOS-required
+  // order/isActive fields (legacy web-created rosters), trigger one roster
+  // save — it backfills exactly the missing fields and nothing else.
+  if (_playersCanEdit && state.players.some(p =>
+      typeof p.order !== 'number' || typeof p.isActive !== 'boolean')) {
+    scheduleRosterSave();
+  }
 }
 
 function renderPlayerManagementList() {
@@ -6672,6 +6708,7 @@ function addPlayerFromMgmt() {
     id, name,
     number: parseJerseyNumber(numInput ? numInput.value : ''),
     namePronunciation: pronInput ? pronInput.value.trim() : '',
+    order: null, isActive: null,   // assigned on first roster save (iOS-required)
     prefPos: [], fieldPriority: 'both',
     battingSkills: { power: 5, contact: 5, speed: 5 }
   });
@@ -8662,6 +8699,7 @@ function addPlayer() {
     id, name,
     number: parseJerseyNumber(numInput ? numInput.value : ''),
     namePronunciation: pronInput ? pronInput.value.trim() : '',
+    order: null, isActive: null,   // assigned on first roster save (iOS-required)
     prefPos: [], fieldPriority: 'both',
     battingSkills: { power: 5, contact: 5, speed: 5 }
   });
