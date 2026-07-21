@@ -3318,8 +3318,10 @@
         <h1>Your Teams</h1>
         <p class="dashboard-sub">Select a team to build a game-day lineup.</p>
       </div>
-      <button class="btn btn-ghost" onclick="navigate('#/join')">Join Team</button>
-      <button class="btn btn-primary" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">+ New Team</button>
+      <div class="flex-row gap-sm">
+        <button class="btn btn-ghost" onclick="navigate('#/join')">Join Team</button>
+        <button class="btn btn-primary" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">+ New Team</button>
+      </div>
     </div>
 
     <div class="teams-grid" id="teams-grid"></div>
@@ -4854,12 +4856,10 @@ function renderDashboard() {
       <div class="team-card" ${borderStyle}>
         <div class="team-card-header">
           ${logoHtml}
-          <div style="display:flex;align-items:center;gap:10px;min-width:0;">
-            <div class="team-card-name mb-0">${escHtml(team.name)}</div>
-            <button class="team-share-btn" onclick="event.stopPropagation(); openShareTeamModal('${team.id}')" title="Share team invite" aria-label="Share team invite">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            </button>
-          </div>
+          <div class="team-card-name mb-0" style="min-width:0;">${escHtml(team.name)}</div>
+          <button class="team-share-btn" style="margin-left:auto;" onclick="event.stopPropagation(); openShareTeamModal('${team.id}')" title="Share team invite" aria-label="Share team invite">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          </button>
         </div>
         <div class="team-card-pills">
           <span class="team-pill">${team.season} ${team.year}</span>
@@ -5209,8 +5209,8 @@ function renderSidebar() {
           ${isCoachRole(team) ? `<a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ Build Lineup</a>` : ''}
           <a class="sidebar-sublink ${isCurrent && (section === 'schedule' || section === 'lineupDetail') ? 'active' : ''}" onclick="navigate('#/team/${team.id}/schedule')">Schedule</a>
           <a class="sidebar-sublink ${isCurrent && section === 'players' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/players')">Players</a>
-          <a class="sidebar-sublink" onclick="openShareTeamModal('${team.id}')">Share Team</a>
           ${teamRole(team) === 'owner' ? `<a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team / League Settings</a>` : ''}
+          <a class="sidebar-sublink" onclick="openShareTeamModal('${team.id}')">Share Team</a>
         </div>
       </div>`;
   });
