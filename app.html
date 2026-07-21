@@ -3205,6 +3205,127 @@
       .players-page { padding: 32px 20px; }
     }
 
+    /* ── CRATE FIELD (screen-only; the print sheets keep legacy styles) ──
+       Scoped under the two screen view containers so #print-allinnings-sheet
+       (which shares class names) is never affected. */
+    #lineup-field-view .field-stage,
+    #lineup-allinnings-view .field-stage { aspect-ratio: 1.08; }
+
+    /* Occupied chip: panel card, radius 10, 8%-ink hairline, soft shadow */
+    #lineup-field-view .field-pos-bubble,
+    #lineup-allinnings-view .field-pos-bubble {
+      border-radius: 10px;
+      border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+      background: var(--panel);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.16);
+      min-width: 68px;
+      padding: 7px 12px;
+    }
+    #lineup-field-view .field-pos-bubble:hover {
+      border-color: color-mix(in srgb, var(--ink) 20%, transparent);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    }
+    /* Empty slot: black 72% pill, white heavy position code */
+    #lineup-field-view .field-pos-bubble.empty,
+    #lineup-allinnings-view .field-pos-bubble.empty {
+      background: rgba(0,0,0,0.72);
+      border: none;
+      border-style: solid;
+      box-shadow: none;
+      min-width: 0;
+      padding: 8px 14px;
+    }
+    #lineup-field-view .field-pos-bubble.empty .field-pos-label,
+    #lineup-allinnings-view .field-pos-bubble.empty .field-pos-label {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    #lineup-field-view .field-pos-bubble .field-pos-name,
+    #lineup-allinnings-view .field-pos-bubble .field-pos-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .field-pos-counts {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      font-size: 11px;
+      font-weight: 900;
+      margin-top: 2px;
+      line-height: 1;
+    }
+    .field-pos-counts .f { color: var(--accent-down); }
+    .field-pos-counts .b { color: var(--alert-ink); }
+    .field-pos-bubble.swap-hidden .field-pos-counts { visibility: hidden; }
+    /* Conflict: 2px alert border (iOS spec) */
+    #lineup-field-view .field-pos-bubble.conflict,
+    #lineup-allinnings-view .field-pos-bubble.conflict {
+      border: 2px solid var(--alert-ink);
+      background: var(--panel);
+    }
+    /* Drop target: 3px accent ring + scale (quick spring) */
+    #lineup-field-view .field-pos-bubble.drop-target {
+      outline: 3px solid var(--accent);
+      outline-offset: -1px;
+      border-color: transparent !important;
+      background: var(--panel) !important;
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    #lineup-field-view .field-utl-row .field-pos-bubble.drop-target { transform: scale(1.08); }
+
+    /* Bench: quiet panel card, BENCH kicker, muted page-fill chips */
+    #lineup-field-view .field-bench {
+      background: var(--panel);
+      border: 1px solid var(--hairline);
+      border-radius: 16px;
+      padding: 12px;
+    }
+    #lineup-field-view .field-bench-label {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--ink-secondary);
+      text-transform: uppercase;
+    }
+    #lineup-field-view .field-bench-chip {
+      flex-direction: column;
+      gap: 0;
+      background: var(--page);
+      border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+      border-radius: 10px;
+      padding: 7px 12px;
+      box-shadow: none;
+    }
+    #lineup-field-view .field-bench-chip .field-pos-name { font-size: 14px; font-weight: 700; }
+    #lineup-field-view .field-bench-chip:hover { border-color: var(--hairline-strong); background: var(--page); }
+    #lineup-field-view .field-bench.drop-target {
+      outline: 3px solid var(--accent);
+      outline-offset: -1px;
+      background: var(--panel);
+    }
+    #lineup-field-view .field-bench-empty {
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--ink-secondary);
+      padding: 14px 0;
+    }
+
+    /* All-innings minis: same system, smaller metrics */
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble {
+      min-width: 0;
+      max-width: 96px;
+      padding: 3px 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty { padding: 4px 9px; box-shadow: none; }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty .field-pos-label { font-size: 10px; }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble .field-pos-name { font-size: 11px; font-weight: 700; }
+
     /* Motion: the house springs (snappy ~350ms, quick ~250ms) */
     .modal { transition-timing-function: cubic-bezier(0.32, 1.25, 0.5, 1); }
     @media (prefers-reduced-motion: reduce) {
@@ -3929,25 +4050,23 @@
         <div id="lineup-field-view" style="display:none;">
           <div class="field-inning-tabs" id="field-inning-tabs" role="tablist" aria-label="Inning"></div>
           <div class="field-stage" id="field-stage">
-            <svg class="field-bg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-              <!--
-                Outfield grass: a 90° pie slice anchored at home plate (500, 720).
-                The two foul-line endpoints sit on a circle of radius 600 at ±45°,
-                landing at (76, 296) and (924, 296). The arc connects them via the top.
-              -->
-              <path d="M 500 720 L 76 296 A 600 600 0 0 1 924 296 Z"
-                    fill="#f0f7ed" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>
-              <!-- Infield: a clean diamond, no curved-grass overlays -->
-              <polygon points="500,720 700,520 500,320 300,520"
-                       fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
-              <!-- Base bags at the three corners (home plate is drawn separately below) -->
-              <rect x="690" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
-              <rect x="490" y="310" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
-              <rect x="290" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>
-              <!-- Pitcher's mound -->
-              <circle cx="500" cy="520" r="28" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>
-              <!-- Home plate -->
-              <polygon points="488,712 512,712 512,728 500,738 488,728" fill="#9aa0a6"/>
+            <!-- iOS FieldBackground: grass gradient · clay diamond · white outline · bases -->
+            <svg class="field-bg" viewBox="0 0 540 500" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="crateGrass" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#3D9954"/><stop offset="1" stop-color="#2E8547"/>
+                </linearGradient>
+                <clipPath id="crateRounded"><rect width="540" height="500" rx="24"/></clipPath>
+              </defs>
+              <g clip-path="url(#crateRounded)">
+                <rect width="540" height="500" fill="url(#crateGrass)"/>
+                <polygon points="270,450 432,260 270,120 108,260" fill="#DEB382"/>
+                <polygon points="270,450 432,260 270,120 108,260" fill="none" stroke="#FFF" stroke-opacity="0.85" stroke-width="2"/>
+                <rect x="264" y="444" width="12" height="12" fill="#FFF"/>
+                <rect x="426" y="254" width="12" height="12" fill="#FFF"/>
+                <rect x="264" y="114" width="12" height="12" fill="#FFF"/>
+                <rect x="102" y="254" width="12" height="12" fill="#FFF"/>
+              </g>
             </svg>
             <div class="field-positions" id="field-positions"></div>
           </div>
@@ -7731,6 +7850,59 @@ let _fieldInning    = 0;        // zero-indexed inning shown in field view
 //   home plate (500,720)   1B (700,520)   2B base (500,320)   3B (300,520)   mound (500,520)
 //   outfield arc: radius 600 from home, foul lines land at (76,296) and (924,296)
 // Each percentage is relative to the field-stage container (1000 wide × 800 tall).
+// ═══ CRATE FIELD (screen-only) — iOS LineupFieldView parity ═══
+// The PRINT sheets deliberately keep the legacy FIELD_SVG_MARKUP /
+// FIELD_POS_COORDS below so printed output stays byte-identical B&W.
+// Do NOT point print code at these crate versions.
+const FIELD_SVG_MARKUP_CRATE = (
+  '<svg class="field-bg" viewBox="0 0 540 500" preserveAspectRatio="none" aria-hidden="true">' +
+    '<defs><linearGradient id="crateGrassM" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#3D9954"/><stop offset="1" stop-color="#2E8547"/>' +
+    '</linearGradient>' +
+    '<clipPath id="crateRoundedM"><rect width="540" height="500" rx="24"/></clipPath></defs>' +
+    '<g clip-path="url(#crateRoundedM)">' +
+      '<rect width="540" height="500" fill="url(#crateGrassM)"/>' +
+      '<polygon points="270,450 432,260 270,120 108,260" fill="#DEB382"/>' +
+      '<polygon points="270,450 432,260 270,120 108,260" fill="none" stroke="#FFF" stroke-opacity="0.85" stroke-width="2"/>' +
+      '<rect x="264" y="444" width="12" height="12" fill="#FFF"/>' +
+      '<rect x="426" y="254" width="12" height="12" fill="#FFF"/>' +
+      '<rect x="264" y="114" width="12" height="12" fill="#FFF"/>' +
+      '<rect x="102" y="254" width="12" height="12" fill="#FFF"/>' +
+    '</g>' +
+  '</svg>'
+);
+
+// The exact iOS placement dictionary (LineupFieldView.fieldCoordinates), ×100
+const FIELD_POS_COORDS_CRATE = {
+  'P':   { x: 50, y: 63 },
+  'C':   { x: 50, y: 87 },
+  '1B':  { x: 74, y: 57 },
+  '2B':  { x: 64, y: 40 },
+  'SS':  { x: 36, y: 40 },
+  '3B':  { x: 26, y: 57 },
+  'LF':  { x: 14, y: 24 },
+  'CF':  { x: 50, y: 12 },
+  'RF':  { x: 86, y: 24 },
+  'LCF': { x: 32, y: 14 },
+  'RCF': { x: 68, y: 14 }
+  // UTL1/2/3 render in a row below the diamond, not on it.
+};
+
+function firstNameOf(name) {
+  return String(name || '').trim().split(/\s+/)[0] || '?';
+}
+
+// Innings fielded / benched for a player across the whole game (chip counts)
+function fieldBenchCountsFor(playerId) {
+  const row = (state.lineup || []).find(r => r.playerId === playerId);
+  const positions = row ? (row.positions || []) : [];
+  return {
+    f: positions.filter(p => p && p !== 'Bench').length,
+    b: positions.filter(p => p === 'Bench').length
+  };
+}
+
+// ═══ LEGACY field constants — PRINT ONLY (keep byte-identical) ═══
 const FIELD_POS_COORDS = {
   'P':   { x: 50, y: 65 },   // pitcher's mound
   'C':   { x: 50, y: 90 },   // catcher, behind home plate
@@ -7794,7 +7966,8 @@ const FIELD_SVG_MARKUP = (
 
 // Build the bubble HTML for one inning. Read-only — no click handlers; the
 // whole card is a link into single-inning Field view for editing.
-function buildInningBubblesHtml(inningIdx) {
+function buildInningBubblesHtml(inningIdx, crate) {
+  const COORDS = crate ? FIELD_POS_COORDS_CRATE : FIELD_POS_COORDS;
   const playerLookup = {};
   (state.players || []).forEach(p => { playerLookup[p.id] = p; });
   const assignedAt = {};
@@ -7808,23 +7981,33 @@ function buildInningBubblesHtml(inningIdx) {
     ? state.gamePositions
     : (state.leagueRules.activePositions || []);
 
-  const onField = active.filter(p => p !== 'Bench' && FIELD_POS_COORDS[p]);
+  const onField = active.filter(p => p !== 'Bench' && COORDS[p]);
   const utlPositions = active.filter(p => /^UTL/.test(p));
+
+  // Crate (screen) chips: empty = dark pill with the code; occupied = panel
+  // chip with the first name. Legacy markup below is kept for PRINT.
+  const bubble = (pos, player, conflict, positioned, coord) => {
+    const empty = !player;
+    const style = positioned ? '" style="left:' + coord.x + '%;top:' + coord.y + '%;' : '';
+    if (crate) {
+      const inner = empty
+        ? '<div class="field-pos-label">' + escHtml(pos) + '</div>'
+        : '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>';
+      return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
+    }
+    const name = player ? shortenPlayerName(player.name) : '— —';
+    return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' +
+      '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
+      '<div class="field-pos-name">' + escHtml(name) + '</div>' +
+    '</div>';
+  };
 
   let fieldHtml = '';
   onField.forEach(pos => {
-    const coord = FIELD_POS_COORDS[pos];
+    const coord = COORDS[pos];
     const assignees = assignedAt[pos] || [];
     const player = assignees.length ? playerLookup[assignees[0]] : null;
-    const empty = !player;
-    const conflict = assignees.length > 1;
-    const name = player ? shortenPlayerName(player.name) : '— —';
-    fieldHtml +=
-      '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') +
-      '" style="left:' + coord.x + '%;top:' + coord.y + '%;">' +
-        '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
-        '<div class="field-pos-name">' + escHtml(name) + '</div>' +
-      '</div>';
+    fieldHtml += bubble(pos, player, assignees.length > 1, true, coord);
   });
 
   let utlHtml = '';
@@ -7833,14 +8016,7 @@ function buildInningBubblesHtml(inningIdx) {
     utlPositions.forEach(pos => {
       const assignees = assignedAt[pos] || [];
       const player = assignees.length ? playerLookup[assignees[0]] : null;
-      const empty = !player;
-      const conflict = assignees.length > 1;
-      const name = player ? shortenPlayerName(player.name) : '— —';
-      utlHtml +=
-        '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + '">' +
-          '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
-          '<div class="field-pos-name">' + escHtml(name) + '</div>' +
-        '</div>';
+      utlHtml += bubble(pos, player, assignees.length > 1, false, null);
     });
     utlHtml += '</div>';
   }
@@ -7857,14 +8033,14 @@ function renderAllInningsView() {
 
   let html = '';
   for (let i = 0; i < innings; i++) {
-    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
+    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i, true);
     html +=
       '<div class="allinnings-card" onclick="jumpToFieldInning(' + i + ')" title="Click to edit inning ' + (i + 1) + '">' +
         '<div class="allinnings-card-header">' +
           '<span>Inning <span class="allinnings-card-num">' + (i + 1) + '</span></span>' +
         '</div>' +
         '<div class="field-stage">' +
-          FIELD_SVG_MARKUP +
+          FIELD_SVG_MARKUP_CRATE +
           '<div class="field-positions">' + fieldHtml + '</div>' +
         '</div>' +
         utlHtml +
@@ -8041,17 +8217,25 @@ function renderFieldPositions() {
     ? state.gamePositions
     : (state.leagueRules.activePositions || []);
 
-  const onField = active.filter(p => p !== 'Bench' && FIELD_POS_COORDS[p]);
+  const onField = active.filter(p => p !== 'Bench' && FIELD_POS_COORDS_CRATE[p]);
   const utlPositions = active.filter(p => /^UTL/.test(p));
+
+  // iOS chip spec: first name (14 bold) + green fielded / red benched counts;
+  // empty slots are dark pills with just the position code.
+  const chipInner = (pos, player) => {
+    if (!player) return '<div class="field-pos-label">' + escHtml(pos) + '</div>';
+    const c = fieldBenchCountsFor(player.id);
+    return '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>' +
+           '<div class="field-pos-counts"><span class="f">' + c.f + '</span><span class="b">' + c.b + '</span></div>';
+  };
 
   let html = '';
   onField.forEach(pos => {
-    const coord = FIELD_POS_COORDS[pos];
+    const coord = FIELD_POS_COORDS_CRATE[pos];
     const assignees = assignedAt[pos] || [];
     const player = assignees.length ? playerLookup[assignees[0]] : null;
     const conflict = assignees.length > 1;
     const empty = !player;
-    const name = player ? player.name : '— empty —';
     // Bubbles with a player are draggable; empty bubbles can still be drop
     // targets so you can move someone onto them.
     const dragAttrs = player
@@ -8069,8 +8253,7 @@ function renderFieldPositions() {
             ' ondragend="onFieldDragEnd(event)"' +
             ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
             ' title="Drag to swap or tap to change ' + pos + ' for inning ' + (inningIdx + 1) + '">' +
-            '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
-            '<div class="field-pos-name">' + escHtml(name) + '</div>' +
+            chipInner(pos, player) +
             '</button>';
   });
   wrap.innerHTML = html;
@@ -8091,7 +8274,6 @@ function renderFieldPositions() {
       const player = assignees.length ? playerLookup[assignees[0]] : null;
       const conflict = assignees.length > 1;
       const empty = !player;
-      const name = player ? player.name : '— empty —';
       const dragAttrs = player
         ? ' draggable="true" ondragstart="onFieldDragStart(event,\'pos\',\'' + pos + '\')"'
         : ' draggable="false"';
@@ -8106,8 +8288,7 @@ function renderFieldPositions() {
                  ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
                  ' ondragend="onFieldDragEnd(event)"' +
                  ' onclick="openFieldPosPicker(\'' + pos + '\', this)">' +
-                 '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
-                 '<div class="field-pos-name">' + escHtml(name) + '</div>' +
+                 chipInner(pos, player) +
                  '</button>';
     });
     utlWrap.innerHTML = utlHtml;
@@ -8145,18 +8326,21 @@ function renderFieldBench() {
   wrap.setAttribute('ondrop', 'onFieldDrop(event,\'bench-area\',\'\')');
 
   if (!benched.length) {
-    wrap.innerHTML = '<div class="field-bench-empty">All attending players are on the field this inning.</div>';
+    wrap.innerHTML = '<div class="field-bench-empty">Everyone\u2019s on the field</div>';
     return;
   }
   wrap.innerHTML = benched.map(r => {
     const p = playerLookup[r.playerId];
+    const c = fieldBenchCountsFor(p.id);
     return '<button type="button" class="field-bench-chip"' +
            ' data-bench-player="' + r.playerId + '"' +
            ' draggable="true"' +
            ' ondragstart="onFieldDragStart(event,\'bench\',\'' + r.playerId + '\')"' +
            ' ondragend="onFieldDragEnd(event)"' +
            ' onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)">' +
-           escHtml(p.name) + '</button>';
+           '<span class="field-pos-name">' + escHtml(firstNameOf(p.name)) + '</span>' +
+           '<span class="field-pos-counts"><span class="f">' + c.f + '</span><span class="b">' + c.b + '</span></span>' +
+           '</button>';
   }).join('');
 }
 
