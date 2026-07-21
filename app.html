@@ -2510,7 +2510,7 @@
 
     /* Members & invite card only exists in settings mode */
     #settings-members-card { display: none; }
-    .settings-mode #settings-members-card { display: block; order: 3; }
+    .settings-mode #settings-members-card { display: block; }
     .invite-code-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
     .invite-code-value {
       font-family: var(--font-display);
@@ -2557,9 +2557,7 @@
     .settings-mode #step-2 { display: flex !important; flex-direction: column; gap: 20px; }
     .settings-mode #step-3 { display: none !important; }
 
-    /* Reorder step-1 cards: Import first, Team Info second */
-    .settings-mode #step-1 .card:nth-child(1) { order: 2; }
-    .settings-mode #step-1 .card:nth-child(2) { order: 1; }
+    /* Step-1 cards render in DOM order: Team Information, then Members & invite */
 
     /* Hide all per-step navigation footers */
     .settings-mode .step-footer { display: none !important; }
