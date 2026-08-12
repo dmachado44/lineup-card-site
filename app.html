@@ -14,14 +14,15 @@
   </script>
 
   <!-- ── SEO ── -->
-  <title>Lineup Card – Youth Baseball & Softball Lineup Builder</title>
+  <title>Leadoff — the coach web app</title>
   <meta name="description" content="Free baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and share with your team. Built for coaches and parents." />
   <meta name="keywords" content="youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation tool, coach pitch lineup, youth sports lineup card, baseball lineup auto assign positions" />
   <link rel="canonical" href="https://lineupcard.app/app" />
 
-  <!-- ── Favicon ── -->
-  <link rel="icon" href="/assets/icon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/assets/icon.png" />
+  <!-- ── Favicon (Leadoff L-tile) ── -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/assets/favicon-180.png" />
 
   <!-- ── Fonts (Crate theme: Barlow Semi Condensed body · Sofia Sans Extra Condensed display) ── -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,25 +30,25 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
 
   <!-- ── Open Graph ── -->
-  <meta property="og:title" content="Youth Baseball & Softball Lineup Builder – Lineup Card" />
-  <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Lineup Card account." />
+  <meta property="og:title" content="Leadoff — Build a fair lineup in your browser" />
+  <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Leadoff account." />
   <meta property="og:url" content="https://lineupcard.app/app" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://lineupcard.app/assets/icon.png" />
-  <meta property="og:site_name" content="Lineup Card" />
+  <meta property="og:image" content="https://getleadoff.com/og.png" />
+  <meta property="og:site_name" content="Leadoff" />
 
   <!-- ── Twitter Card ── -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Youth Baseball & Softball Lineup Builder – Lineup Card" />
+  <meta name="twitter:title" content="Leadoff — Build a fair lineup in your browser" />
   <meta name="twitter:description" content="Free lineup builder for youth baseball and softball teams. Auto-assign positions, save game history, and build fair rotations. Built for coaches and parents." />
-  <meta name="twitter:image" content="https://lineupcard.app/assets/icon.png" />
+  <meta name="twitter:image" content="https://getleadoff.com/og.png" />
 
   <!-- ── Structured Data ── -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Lineup Card – Baseball & Softball Lineup Builder",
+    "name": "Leadoff — Baseball & Softball Lineup Builder",
     "url": "https://lineupcard.app",
     "description": "A free online lineup builder for youth baseball and softball teams. Auto-assign fielding positions, generate batting orders, save past game lineups, and share with your team.",
     "applicationCategory": "SportsApplication",
@@ -59,8 +60,8 @@
     },
     "creator": {
       "@type": "Organization",
-      "name": "Lineup Card",
-      "url": "https://lineupcard.app"
+      "name": "Leadoff",
+      "url": "https://getleadoff.com"
     },
     "keywords": "youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation, coach pitch lineup"
   }
@@ -103,6 +104,8 @@
       /* Palette-independent */
       --attention:       #D9731A;  /* amber "needs attention" — never brand-colored */
       --warm-dark-ink:   #3C362A;  /* warm near-black for cream-family surfaces */
+      --on-sticker-cream: #3C362A; /* text ON the cream sticker face — the face keeps its
+                                      fill in dark mode, so this must NOT flip with the theme */
 
       /* Hairlines (dark mode separates by fill, not border) */
       --hairline:        color-mix(in srgb, var(--ink-secondary) 18%, transparent);
@@ -225,6 +228,13 @@
       object-fit: cover;
       flex-shrink: 0;
     }
+    /* ── Leadoff brand chrome ──
+       Wordmark rules (README-INTEGRATION §1): ink colorway on light/cream
+       surfaces, white colorway in dark mode (swapped via <picture>, never
+       recolored). Never render the wordmark below ~100px wide — at the
+       3.28:1 aspect that means a 32px height minimum. */
+    .brand-wordmark { display: block; height: 32px; width: auto; }
+    .topbar-logo picture, .sidebar-brand picture { display: block; line-height: 0; }
     .topbar-divider { width: 1px; height: 18px; background: var(--border); }
     .topbar-title {
       font-size: 14px;
@@ -315,23 +325,31 @@
     .auth-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
     .auth-providers { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+    /* Provider buttons are sticker buttons (README-INTEGRATION §3): green
+       primary + cream secondaries. Cream face keeps its fill in dark mode,
+       so its label uses the non-flipping --on-sticker-cream. */
     .auth-provider-btn {
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
       width: 100%;
-      padding: 14px 18px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-sm);
-      background: var(--white);
-      font-size: 15px;
-      font-weight: 600;
+      padding: 13px 18px;
+      border: 2px solid var(--sticker-ink);
+      border-radius: 12px;
+      background: var(--sticker-cream);
+      color: var(--on-sticker-cream);
+      box-shadow: 4px 4px 0 0 var(--sticker-ink);
+      font-family: "Sofia Sans Extra Condensed", sans-serif;
+      font-weight: 900;
+      font-size: 17px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
       cursor: pointer;
-      transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s;
-      font-family: inherit;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
-    .auth-provider-btn:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .auth-provider-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-    .auth-provider-btn:active { transform: scale(0.98); }
-    .auth-provider-btn.is-loading { opacity: 0.6; pointer-events: none; }
+    .auth-provider-btn.auth-provider-primary { background: var(--accent); color: var(--on-accent); }
+    .auth-provider-btn:hover { filter: brightness(1.02); }
+    .auth-provider-btn:focus-visible { outline: none; box-shadow: 4px 4px 0 0 var(--sticker-ink), 0 0 0 3px var(--accent-wash); }
+    .auth-provider-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
+    .auth-provider-btn.is-loading { opacity: 0.55; pointer-events: none; }
     .auth-provider-btn svg, .auth-provider-btn img { width: 20px; height: 20px; flex-shrink: 0; }
     .auth-divider {
       display: flex; align-items: center; gap: 12px;
@@ -367,6 +385,7 @@
     }
     #view-auth.active {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
@@ -401,21 +420,52 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 32px;
+      margin-bottom: 18px;
       justify-content: center;
     }
-    .auth-page-logo .logo-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      object-fit: contain;
-      flex-shrink: 0;
+    .auth-page-logo .brand-wordmark {
+      height: auto;
+      width: min(240px, 70%);
+      margin: 0 auto;
     }
-    .auth-page-logo .logo-name {
-      font-weight: 700;
-      font-size: 19px;
-      letter-spacing: -0.3px;
+    /* The Leadoff front door (README-INTEGRATION §3) */
+    .auth-kicker {
+      font-family: "Sofia Sans Extra Condensed", sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: var(--accent-down);
+      text-align: center;
+      margin-bottom: 8px;
     }
+    .auth-page-line {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    .auth-foot {
+      margin-top: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .auth-foot a { color: var(--accent-down); font-weight: 700; text-decoration: none; }
+    .auth-foot a:hover { text-decoration: underline; }
+    /* Footer credit under the auth card (README-INTEGRATION §4) */
+    .auth-page-credit {
+      margin-top: 22px;
+      font-size: 13px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .auth-page-credit a { color: var(--muted); text-decoration: none; font-weight: 600; }
+    .auth-page-credit a:hover { color: var(--black); }
     .beta-tag {
       display: inline-block;
       font-size: 10px;
@@ -612,7 +662,7 @@
     /* Secondary CTA = cream sticker */
     .btn-outline {
       background: var(--sticker-cream);
-      color: var(--warm-dark-ink);
+      color: var(--on-sticker-cream);
     }
     .btn-outline:hover { filter: brightness(1.02); }
 
@@ -2666,7 +2716,16 @@
       position: sticky; top: 0; background: var(--white); z-index: 1;
     }
     .sidebar-brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; color: var(--black); cursor: pointer; }
-    .sidebar-brand .logo-mark { width: 28px; height: 28px; border-radius: 7px; object-fit: cover; }
+    .sidebar-brand .brand-wordmark { height: 32px; width: auto; }
+    .sidebar-foot {
+      margin-top: auto;
+      padding: 16px 18px 18px;
+      font-size: 12px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .sidebar-foot a { color: var(--muted); text-decoration: none; font-weight: 600; }
+    .sidebar-foot a:hover { color: var(--black); }
     .sidebar-close { display: none; background: none; border: none; font-size: 18px; line-height: 1; cursor: pointer; color: var(--muted); padding: 6px; }
     .sidebar-nav { padding: 12px 10px 32px; display: flex; flex-direction: column; gap: 2px; }
     .sidebar-link {
@@ -3362,13 +3421,16 @@
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebarDrawer()"></div>
 <aside class="sidebar" id="sidebar" aria-label="Team navigation">
   <div class="sidebar-head">
-    <a class="sidebar-brand" href="#/" onclick="navigate('#/'); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="">
-      <span>Lineup Card</span>
+    <a class="sidebar-brand" href="#/" onclick="navigate('#/'); return false;" aria-label="Leadoff — home">
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <button class="sidebar-close" onclick="closeSidebarDrawer()" aria-label="Close navigation">✕</button>
   </div>
   <nav class="sidebar-nav" id="sidebar-nav"><!-- rendered by renderSidebar() --></nav>
+  <div class="sidebar-foot">A <strong>Leadoff</strong> app · <a href="https://getleadoff.com" target="_blank" rel="noopener">getleadoff.com</a></div>
 </aside>
 
 <!-- ══════════════ VIEW 1: AUTH ══════════════ -->
@@ -3376,15 +3438,17 @@
 
   <!-- ── Panel 1: Provider Picker ── -->
   <div class="auth-page-card" id="auth-panel-providers">
-    <a class="auth-page-logo" href="https://lineupcard.app">
-      <img src="assets/icon.png" alt="Lineup Card" style="width:48px;height:48px;border-radius:12px;">
-      <div class="logo-name">Lineup Card <span class="beta-tag">BETA</span></div>
+    <a class="auth-page-logo" href="https://getleadoff.com">
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
-    <h1 class="auth-page-title">Youth Baseball & Softball Lineup Builder</h1>
-    <p class="auth-page-sub">Sign in or create an account to get started.</p>
+    <p class="auth-kicker">The coach web app</p>
+    <h1 class="auth-page-line">Build the lineup here. It lands on every phone Saturday.</h1>
 
     <div class="auth-providers">
-      <button class="auth-provider-btn" onclick="signInWithGoogle()">
+      <button class="auth-provider-btn auth-provider-primary" onclick="signInWithGoogle()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -3407,13 +3471,17 @@
         Continue with Email
       </button>
     </div>
+
+    <p class="auth-foot">New here? Leadoff is free for your first 3 players. <a href="/pricing">See pricing</a></p>
   </div>
 
   <!-- ── Panel 2: Email Sign-In / Sign-Up ── -->
   <div class="auth-page-card" id="auth-panel-email" style="display:none;">
-    <a class="auth-page-logo" href="https://lineupcard.app">
-      <img src="assets/icon.png" alt="Lineup Card" style="width:48px;height:48px;border-radius:12px;">
-      <div class="logo-name">Lineup Card <span class="beta-tag">BETA</span></div>
+    <a class="auth-page-logo" href="https://getleadoff.com">
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <h2 class="auth-page-title" id="auth-email-title">Sign in with Email</h2>
     <p class="auth-page-sub" id="auth-email-sub">Enter your email and password.</p>
@@ -3443,14 +3511,18 @@
     </div>
   </div>
 
+  <p class="auth-page-credit">A <strong>Leadoff</strong> app · <a href="https://getleadoff.com">getleadoff.com</a></p>
+
 </div>
 
 <!-- ══════════════ VIEW 2: DASHBOARD ══════════════ -->
 <div id="view-dashboard">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth"></div>
@@ -3482,8 +3554,10 @@
 <div id="view-paywall">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-paywall"></div>
@@ -3520,8 +3594,10 @@
 <div id="view-join">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-join"></div>
@@ -3551,8 +3627,10 @@
 <div id="view-lineups">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-lineups"></div>
@@ -3596,8 +3674,10 @@
 <div id="view-schedule">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-schedule"></div>
@@ -3621,8 +3701,10 @@
 <div id="view-players">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-players"></div>
@@ -3665,8 +3747,10 @@
 <div id="view-builder">
   <div class="topbar">
     <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
-      <img class="logo-mark" src="assets/icon.png" alt="Lineup Card">
-      Lineup Card
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
     </a>
     <div class="topbar-spacer"></div>
     <div id="topbar-auth-builder"></div>
@@ -5273,17 +5357,33 @@ function parseHash(hash) {
   return { name: 'dashboard' };
 }
 
+// Tab titles follow the brand pattern "Leadoff — <screen>"
+// (README-INTEGRATION §2). No screen = the login-page title.
+function setDocTitle(screen) {
+  document.title = screen ? 'Leadoff — ' + screen : 'Leadoff — the coach web app';
+}
+const _routeTitles = {
+  dashboard:    'All teams',
+  players:      'Players',
+  schedule:     'Schedule',
+  join:         'Join a team',
+  lineupDetail: 'Saved lineup',
+  settings:     'Team settings',
+  rules:        'League rules',
+};
+
 async function handleRoute() {
   // Routing is meaningless until the user is signed in.
   const user = _auth && _auth.currentUser;
-  if (!user || user.isAnonymous) { showView('auth'); return; }
+  if (!user || user.isAnonymous) { showView('auth'); setDocTitle(''); return; }
 
   const m = parseHash(location.hash);
 
   if (m.name === 'build') {
     // Can't restore an in-progress builder session from a URL. If we got here
     // without one (page reload / forward), fall back to the dashboard.
-    if (!_builderOpen) { history.replaceState(null, '', '#/'); showDashboardView(); }
+    if (!_builderOpen) { history.replaceState(null, '', '#/'); showDashboardView(); setDocTitle(_routeTitles.dashboard); }
+    else setDocTitle('Build lineup');
     return;
   }
 
@@ -5306,6 +5406,8 @@ async function handleRoute() {
     case 'dashboard':
     default:             showDashboardView(); break;
   }
+
+  setDocTitle(_routeTitles[m.name] || _routeTitles.dashboard);
 
   renderSidebar();   // refresh active-section highlighting
 }
