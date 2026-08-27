@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- ── Google Analytics ── -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZLK73N6CX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5ZLK73N6CX');
+  </script>
+
+  <!-- ── SEO ── -->
+  <title>Lineup Card for Little Leagues — Free for Every Coach in Your League</title>
+  <meta name="description" content="A free, COPPA-considerate lineup tool for Little League and rec league coaches. Add Lineup Card to your league's Coaches Resources page in minutes." />
+  <link rel="canonical" href="https://lineupcard.app/for-leagues" />
+
+  <!-- ── Favicon ── -->
+  <link rel="icon" href="/assets/icon.png" type="image/png" />
+  <link rel="apple-touch-icon" href="/assets/icon.png" />
+
+  <!-- ── Open Graph ── -->
+  <meta property="og:title" content="Lineup Card for Little Leagues" />
+  <meta property="og:description" content="A free, COPPA-considerate lineup tool for Little League and rec league coaches. Add Lineup Card to your league's Coaches Resources page in minutes." />
+  <meta property="og:url" content="https://lineupcard.app/for-leagues" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://lineupcard.app/assets/icon.png" />
+  <meta property="og:site_name" content="Lineup Card" />
+
+  <!-- ── Twitter Card ── -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Lineup Card for Little Leagues" />
+  <meta name="twitter:description" content="A free lineup tool for Little League coaches. Add it to your league's Coaches Resources page in minutes." />
+  <meta name="twitter:image" content="https://lineupcard.app/assets/icon.png" />
+
+  <style>
+    /* ═══════════════════════════════════════════════════
+       LINEUP CARD – FOR LEAGUES
+       Design language matches index.html / pricing.html
+       ═══════════════════════════════════════════════════ */
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --green-light: #dcfce7;
+      --blue: #3b82f6;
+      --blue-light: #dbeafe;
+      --orange: #f59e0b;
+      --orange-light: #fef3c7;
+      --purple: #8b5cf6;
+      --purple-light: #ede9fe;
+      --text: #111827;
+      --text-secondary: #4b5563;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --bg: #ffffff;
+      --bg-soft: #f9fafb;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 20px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, "system-ui", "SF Pro Display", "SF Pro Text", Inter, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; display: block; }
+
+    /* ── SKIP NAV ── */
+    .skip-to-content {
+      position: absolute;
+      left: -9999px;
+      top: 8px;
+      z-index: 200;
+      background: var(--text);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .skip-to-content:focus { left: 50%; transform: translateX(-50%); }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .inline-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      vertical-align: -3px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .inline-icon-sm {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      vertical-align: -2px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .site-header.scrolled {
+      border-bottom-color: var(--border);
+      background: rgba(255,255,255,0.95);
+    }
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      border-radius: 8px;
+      transition: opacity 0.15s;
+    }
+    .header-logo:hover { opacity: 0.8; }
+    .header-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
+    .header-logo img { width: 32px; height: 32px; border-radius: 8px; }
+    .header-nav { display: flex; align-items: center; gap: 4px; }
+    .header-nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-nav-link:hover { background: var(--bg-soft); color: var(--text); }
+    .header-nav-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+
+    /* ── BUTTONS ── */
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 22px;
+      background: var(--text);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-cta:hover { background: #000; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+    .btn-cta:active { transform: translateY(0); box-shadow: none; }
+    .btn-cta:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    .btn-cta-green { background: var(--green); }
+    .btn-cta-green:hover { background: var(--green-dark); }
+    .btn-outline {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { background: var(--bg-soft); border-color: #d1d5db; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+    .btn-cta-lg { font-size: 16px; padding: 14px 32px; border-radius: 12px; }
+
+    /* CTA on green band */
+    .btn-cta-on-green {
+      background: #fff;
+      color: var(--green-dark);
+    }
+    .btn-cta-on-green:hover { background: #f6fff9; color: var(--green-dark); }
+
+    /* ── NAV AUTH ── */
+    .nav-auth { display: flex; align-items: center; gap: 4px; }
+    .btn-nav-signin {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-nav-signin:hover { background: var(--bg-soft); color: var(--text); }
+    .btn-nav-signup {
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      background: var(--green);
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .btn-nav-signup:hover { background: var(--green-dark); transform: translateY(-1px); }
+
+    /* ── MOBILE NAV ── */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+      color: var(--text);
+      transition: background 0.15s;
+    }
+    .mobile-menu-btn:hover { background: var(--bg-soft); }
+    .mobile-menu-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+    .mobile-menu-btn svg { display: block; }
+
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 64px; left: 0; right: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      z-index: 99;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      flex-direction: column;
+      gap: 4px;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: background 0.15s, color 0.15s;
+    }
+    .mobile-nav a:hover { background: var(--bg-soft); color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 140px 0 72px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 99px;
+      margin-bottom: 24px;
+      letter-spacing: 0.2px;
+    }
+    .hero h1 {
+      font-size: clamp(34px, 5vw, 54px);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      max-width: 780px;
+      margin: 0 auto 20px;
+    }
+    .hero h1 .accent {
+      background: linear-gradient(135deg, var(--green), #15803d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-width: 620px;
+      margin: 0 auto 36px;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .hero-note {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+
+    /* ── SECTION HEADINGS ── */
+    .section-label {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--green-dark);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 17px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      text-align: center;
+      max-width: 620px;
+      margin: 0 auto 56px;
+    }
+
+    /* ── LEAGUE BENEFITS (3 cards) ── */
+    .leagues-section { padding: 72px 0; background: var(--bg-soft); }
+    .leagues-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .lc-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .lc-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg);
+    }
+    .lc-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+    .lc-card-icon.green  { background: var(--green-light); color: var(--green-dark); }
+    .lc-card-icon.blue   { background: var(--blue-light); color: #1d4ed8; }
+    .lc-card-icon.orange { background: var(--orange-light); color: #b45309; }
+    .lc-card-icon.purple { background: var(--purple-light); color: #6d28d9; }
+    .lc-card h3 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .lc-card p {
+      font-size: 15px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+
+    /* ── COACH BENEFITS (4 cards, 2 col grid) ── */
+    .coaches-section { padding: 80px 0; }
+    .coaches-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    /* ── LITTLE LEAGUE DETAIL ── */
+    .ll-section { padding: 80px 0; background: var(--bg-soft); }
+    .ll-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .ll-intro {
+      font-size: 17px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      text-align: center;
+      margin: 0 auto 36px;
+      max-width: 620px;
+    }
+    .ll-checklist {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      list-style: none;
+    }
+    .ll-checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .ll-checklist li:last-child { border-bottom: 0; }
+    .ll-checklist .check {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--green-light);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .ll-checklist .check svg { display: block; }
+
+    .quote-callout {
+      margin: 32px auto 0;
+      max-width: 640px;
+      padding: 22px 26px;
+      border-left: 4px solid var(--green);
+      background: var(--bg);
+      border-radius: 8px;
+      box-shadow: var(--shadow-sm);
+    }
+    .quote-callout p {
+      font-style: italic;
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .quote-callout .quote-attr {
+      font-style: normal;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .quote-callout-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+
+    /* ── FOUNDER ── */
+    .founder-section { padding: 80px 0; }
+    .founder-wrap {
+      display: flex;
+      align-items: center;
+      gap: 48px;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+    .founder-photo {
+      flex: 0 0 180px;
+    }
+    .founder-photo .photo-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      padding: 12px;
+    }
+    .founder-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .founder-content { flex: 1; }
+    .founder-content h2 {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+    .founder-content p {
+      font-size: 16px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 14px;
+    }
+    .founder-sig {
+      font-style: italic;
+      color: var(--text);
+      font-size: 15px;
+      margin-top: 8px;
+      display: inline-block;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── PRIVACY ── */
+    .privacy-section { padding: 80px 0; background: var(--bg-soft); }
+    .privacy-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 40px;
+    }
+    .privacy-wrap h2 {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .privacy-list { list-style: none; }
+    .privacy-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+    }
+    .privacy-list li:last-child { border-bottom: 0; }
+    .privacy-list .shield {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--green-light);
+      color: var(--green-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .privacy-link {
+      text-align: center;
+      margin-top: 28px;
+    }
+    .privacy-link a {
+      color: var(--green-dark);
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .privacy-link a:hover { text-decoration: underline; }
+
+    /* ── HOW STEPS ── */
+    .how-section { padding: 80px 0; }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 56px;
+    }
+    .step-card {
+      text-align: center;
+      padding: 0 12px;
+    }
+    .step-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--text);
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .step-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .step-card p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+    .step-card p a {
+      color: var(--green-dark);
+      font-weight: 600;
+    }
+    .step-card p a:hover { text-decoration: underline; }
+
+    /* ── FAQ ── */
+    .faq-section { padding: 80px 0; background: var(--bg-soft); }
+    .faq-wrap { max-width: 760px; margin: 0 auto; }
+    .faq-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .faq-item[open] { box-shadow: var(--shadow-sm); }
+    .faq-item summary {
+      list-style: none;
+      padding: 18px 22px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      user-select: none;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '';
+      width: 12px; height: 12px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: rotate(45deg);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+      margin-top: -4px;
+    }
+    .faq-item[open] summary::after { transform: rotate(-135deg); margin-top: 4px; }
+    .faq-item summary:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: -2px;
+      border-radius: 12px;
+    }
+    .faq-body {
+      padding: 0 22px 20px;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+    .faq-body p + p { margin-top: 10px; }
+
+    /* ── CLOSING CTA BAND ── */
+    .cta-band {
+      background: linear-gradient(135deg, var(--green), #15803d);
+      padding: 80px 0;
+      text-align: center;
+      color: #fff;
+    }
+    .cta-band h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 14px;
+      color: #fff;
+    }
+    .cta-band p {
+      font-size: 17px;
+      color: rgba(255,255,255,0.92);
+      max-width: 540px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0 32px;
+    }
+    .footer-cols {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .footer-brand img { width: 28px; height: 28px; border-radius: 7px; }
+    .footer-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      max-width: 260px;
+    }
+    .footer-col h4 {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .footer-col a {
+      font-size: 13px;
+      color: var(--muted);
+      transition: color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-col a:hover { color: var(--text); }
+    .footer-col a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 4px; }
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .reveal-up {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .reveal-up.revealed { opacity: 1; transform: translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .leagues-grid { grid-template-columns: 1fr; }
+      .coaches-grid { grid-template-columns: 1fr; }
+      .steps-grid { grid-template-columns: 1fr; gap: 40px; }
+      .founder-wrap { flex-direction: column; text-align: center; gap: 28px; }
+      .founder-photo { flex: none; }
+      .footer-cols { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) {
+      .hero { padding: 120px 0 56px; }
+      .hero-sub { font-size: 16px; }
+      .privacy-wrap { padding: 28px 22px; }
+      .ll-checklist { padding: 18px 22px; }
+      .ll-checklist li { font-size: 15px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+
+      /* Mobile nav toggle */
+      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+      .header-nav { display: none; }
+    }
+
+    @media (max-width: 520px) {
+      .hero-actions { flex-direction: column; width: 100%; }
+      .hero-actions .btn-cta { width: 100%; }
+      .footer-cols { grid-template-columns: 1fr; gap: 24px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .reveal-up { opacity: 1; transform: none; transition: none; }
+      .lc-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#main" class="skip-to-content">Skip to content</a>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="site-header" id="site-header">
+    <div class="container header-inner">
+      <a href="/" class="header-logo">
+        <img src="/assets/icon.png" alt="Lineup Card" width="32" height="32" />
+        Lineup Card
+      </a>
+      <nav class="header-nav" aria-label="Main navigation">
+        <a href="/#features" class="header-nav-link">Features</a>
+        <a href="/#how-it-works" class="header-nav-link">How It Works</a>
+        <a href="/pricing" class="header-nav-link">Pricing</a>
+        <a href="/app" class="header-nav-link">Open Builder</a>
+        <div class="nav-auth">
+          <a class="btn-nav-signin" href="/">Sign In</a>
+          <a class="btn-nav-signup" href="/">Sign Up</a>
+        </div>
+      </nav>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+      <a href="/#features">Features</a>
+      <a href="/#how-it-works">How It Works</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/app">Open Builder</a>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        <a class="btn-cta" href="/" style="width:100%;justify-content:center;">Sign In</a>
+        <a class="btn-cta btn-cta-green" href="/" style="width:100%;justify-content:center;">Sign Up Free</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+
+    <!-- ═══════════ HERO ═══════════ -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">For Little Leagues &amp; Rec Leagues</div>
+        <h1>Built for the volunteers who hold youth baseball <span class="accent">together.</span></h1>
+        <p class="hero-sub">A free game-day lineup tool, available to every coach in your league. No accounts for the league to manage. No data risk. No catch.</p>
+        <div class="hero-actions">
+          <a href="mailto:leagues@lineupcard.app?subject=Lineup%20Card%20for%20%5BLeague%20Name%5D" class="btn-cta btn-cta-green btn-cta-lg">Add Lineup Card to your league</a>
+          <!-- TODO: replace /sample-lineup-card.pdf with the real sample PDF when ready -->
+          <a href="/sample-lineup-card.pdf" class="btn-cta btn-outline btn-cta-lg" target="_blank" rel="noopener">See a sample lineup card</a>
+        </div>
+        <p class="hero-note">Made by a Little League coach. Used by parents and coaches at chartered leagues.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════ WHAT IT MEANS FOR YOUR LEAGUE ═══════════ -->
+    <section class="leagues-section">
+      <div class="container">
+        <p class="section-label">For your board</p>
+        <h2 class="section-title">What it means for your league</h2>
+        <p class="section-sub">We lead with your interests, not our product. Here's what changes for the league when your coaches start using Lineup Card.</p>
+
+        <div class="leagues-grid">
+
+          <div class="lc-card reveal-up">
+            <div class="lc-card-icon green" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <h3>Free for every coach. Forever.</h3>
+            <p>Every coach in your league gets unlimited access at no cost. No subscription pitch, no upsell to parents.</p>
+          </div>
+
+          <div class="lc-card reveal-up" style="--delay:100ms">
+            <div class="lc-card-icon blue" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            </div>
+            <h3>Zero integration work.</h3>
+            <p>You add one link to your Coaches Resources page. That's it. No accounts to provision, no rosters to sync, no IT effort.</p>
+          </div>
+
+          <div class="lc-card reveal-up" style="--delay:200ms">
+            <div class="lc-card-icon purple" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Zero data risk.</h3>
+            <p>Coaches can use Lineup Card with first-name-only rosters. No player PII is required. COPPA-considerate by design.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ WHAT YOUR COACHES GET ═══════════ -->
+    <section class="coaches-section">
+      <div class="container">
+        <p class="section-label">For your coaches</p>
+        <h2 class="section-title">What your coaches actually get</h2>
+        <p class="section-sub">Four things they'll notice from the very first game.</p>
+
+        <div class="coaches-grid">
+
+          <div class="lc-card reveal-up">
+            <div class="lc-card-icon orange" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>
+            </div>
+            <h3>Fair playing time, every game.</h3>
+            <p>Auto-assigns defensive positions and tracks who's played where, so no kid sits the bench more than their teammates. Parents stop sending those emails.</p>
+          </div>
+
+          <div class="lc-card reveal-up" style="--delay:100ms">
+            <div class="lc-card-icon green" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <h3>Lineups in 2 minutes.</h3>
+            <p>Faster than the Notes app, smarter than a spreadsheet. Built for volunteers, not analysts.</p>
+          </div>
+
+          <div class="lc-card reveal-up" style="--delay:200ms">
+            <div class="lc-card-icon blue" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"/><path d="M3 7l3-3h12l3 3"/><path d="M8 11h8"/><path d="M8 15h5"/></svg>
+            </div>
+            <h3>Little League rules, baked in.</h3>
+            <!-- VERIFY: are mandatory play tracking AND pitch-count visibility shipped in the current product? -->
+            <p>Continuous batting order, mandatory play (6 defensive outs + 1 at-bat per player), pitch-count-aware. Your coaches won't break a rule they didn't know existed.</p>
+          </div>
+
+          <div class="lc-card reveal-up" style="--delay:300ms">
+            <div class="lc-card-icon purple" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <h3>Print or share to the dugout.</h3>
+            <p>Clean lineup cards printable on standard paper, or shareable via link to assistant coaches.</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ BUILT FOR LITTLE LEAGUE ═══════════ -->
+    <section class="ll-section">
+      <div class="container">
+        <p class="section-label">Speaks your language</p>
+        <h2 class="section-title">We speak Little League.</h2>
+        <div class="ll-wrap">
+          <p class="ll-intro">Most lineup tools are built for travel-ball dads with a stats obsession. Lineup Card was built for volunteers running a Saturday Minors game who just need a fair lineup and a printed card for the dugout fence.</p>
+
+          <!-- VERIFY: confirm every line below maps to a shipped feature before linking from a league site -->
+          <ul class="ll-checklist reveal-up">
+            <li>
+              <span class="check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span>Continuous batting order with auto-rotated defensive positions</span>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <!-- VERIFY: mandatory play tracker — is this shipped? -->
+              <span>Mandatory play tracker — never accidentally bench a kid for the season</span>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <!-- VERIFY: pitch count visibility — is this shipped? -->
+              <span>Pitch count visibility for pitcher eligibility</span>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span>Print formats sized for the dugout, not a desk</span>
+            </li>
+            <li>
+              <span class="check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </span>
+              <span>Schedule import from GameChanger (the scorebook your league already uses)</span>
+            </li>
+          </ul>
+
+          <!-- TODO: replace with a real coach quote -->
+          <figure class="quote-callout reveal-up">
+            <div class="quote-callout-label">Coach's note</div>
+            <blockquote>
+              <p>"I used to spend the night before every game pushing names around the Notes app, trying to be fair. Now I open Lineup Card on my phone in the dugout and I'm done in two minutes — and every kid plays everywhere across the season."</p>
+              <figcaption class="quote-attr">— Coach, AA Division (TODO: real attribution)</figcaption>
+            </blockquote>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ FOUNDER ═══════════ -->
+    <section class="founder-section">
+      <div class="container">
+        <div class="founder-wrap">
+          <div class="founder-photo" aria-hidden="true">
+            <!-- TODO: drop in real headshot at /assets/dan-headshot.jpg -->
+            <div class="photo-circle">
+              <img src="/assets/dan-headshot.jpg" alt="Dan Machado, founder of Turn Two Labs" onerror="this.style.display='none'; this.parentElement.textContent='Headshot coming soon';" />
+            </div>
+          </div>
+          <div class="founder-content">
+            <h2>Built by a coach in your shoes.</h2>
+            <!-- TODO: tighten this once Dan's exact league + division are confirmed -->
+            <p>I'm Dan. I coach AA at Northwood Little League in Irvine, CA. I built Lineup Card after one too many Friday nights spent in the Notes app at 10pm, balancing positions across innings to make sure no kid played outfield all season.</p>
+            <p>The goal was simple: a tool that does the math so volunteer coaches can focus on coaching. Lineup Card stays free for any league that adds it to their Coaches Resources page — that's a commitment, not a marketing line.</p>
+            <p class="founder-sig">Dan · Coach, AA Division</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ PRIVACY ═══════════ -->
+    <section class="privacy-section">
+      <div class="container">
+        <div class="privacy-wrap">
+          <h2>Safe for coaches. Safe for kids.</h2>
+          <ul class="privacy-list">
+            <li>
+              <span class="shield" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </span>
+              <span>No player PII required. First-name-only rosters work fine.</span>
+            </li>
+            <li>
+              <span class="shield" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              </span>
+              <span>No advertising. No data sold. Ever.</span>
+            </li>
+            <li>
+              <span class="shield" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <span>Coach accounts are optional — coaches can use Lineup Card without signing up.</span>
+            </li>
+          </ul>
+          <div class="privacy-link">
+            <a href="https://lineupdj.app/privacy" target="_blank" rel="noopener">Read the full privacy policy →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ HOW IT WORKS ═══════════ -->
+    <section class="how-section">
+      <div class="container">
+        <p class="section-label">Three steps</p>
+        <h2 class="section-title">How to bring Lineup Card to your league</h2>
+        <p class="section-sub">If a board meeting can decide it, this can be live before your next season starts.</p>
+
+        <div class="steps-grid">
+          <div class="step-card reveal-up">
+            <div class="step-number" aria-hidden="true">1</div>
+            <h3>Email us.</h3>
+            <p>Send a note to <a href="mailto:leagues@lineupcard.app?subject=Lineup%20Card%20for%20%5BLeague%20Name%5D">leagues@lineupcard.app</a> with your league name. We'll reply within one business day.</p>
+          </div>
+          <div class="step-card reveal-up" style="--delay:100ms">
+            <div class="step-number" aria-hidden="true">2</div>
+            <h3>Get the board packet.</h3>
+            <p>We'll send a one-page PDF you can forward to your board for review.</p>
+          </div>
+          <div class="step-card reveal-up" style="--delay:200ms">
+            <div class="step-number" aria-hidden="true">3</div>
+            <h3>Add the link.</h3>
+            <p>Put <strong>lineupcard.app</strong> on your Coaches Resources page. We'll send a coaches' welcome blurb you can drop into your next league email.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ FAQ ═══════════ -->
+    <section class="faq-section">
+      <div class="container">
+        <p class="section-label">FAQ</p>
+        <h2 class="section-title">Questions boards always ask</h2>
+        <p class="section-sub">Plain answers, no legalese. If your board has a question that isn't here, email us — we'll answer it for everyone.</p>
+
+        <div class="faq-wrap">
+
+          <details class="faq-item">
+            <summary>Is it really free for every coach in our league?</summary>
+            <div class="faq-body">
+              <p>Yes. Every coach in a chartered Little League or rec league that links to Lineup Card gets full access to the core lineup builder at no cost — no trial, no per-team fee, no "premium" lockouts on the basics. That's the whole offer.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>What data do you collect on players?</summary>
+            <div class="faq-body">
+              <p>As little as the coach decides to enter. Lineup Card works with first-name-only rosters; there's no required field for last name, birthdate, or any other identifier. We don't collect parent contact info, addresses, or anything tied to a child. The full details are in our privacy policy.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Do you support continuous batting order and mandatory play?</summary>
+            <div class="faq-body">
+              <!-- VERIFY: confirm mandatory play tracking is shipped before linking this page -->
+              <p>Yes. Continuous batting order is the default. Defensive positions auto-rotate across innings so playing time is balanced across the season, and mandatory play tracking flags any player who hasn't met the minimum yet so the coach can see it before the lineup is locked.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Will you market other products to our parents?</summary>
+            <div class="faq-body">
+              <p>No. We do not contact league parents directly, and we don't sell or share contact information.</p>
+              <p>To be specific about what's on offer: we do make a companion iOS app called <strong>Lineup DJ</strong> — it handles batter walkout music and announcer intros. An individual coach who wants those features can choose to subscribe to Lineup DJ from the App Store, the same way they'd subscribe to anything else. That's a personal decision a coach can make for themselves. Lineup Card itself stays free for every coach in your league.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>What if a coach also wants the paid features?</summary>
+            <div class="faq-body">
+              <p>The lineup builder your league cares about — auto-rotation, fair playing time, printable cards, Little League rule support — is free. There are some advanced features (multiple teams, strategy tuning, season history, link sharing) that an individual coach can subscribe to if they want, billed to that coach personally for a couple of dollars a month. The league has no role in that, and it never bills back to the league.</p>
+            </div>
+          </details>
+
+          <details class="faq-item">
+            <summary>Who built this and why?</summary>
+            <div class="faq-body">
+              <p>Lineup Card is built by Dan Machado, a Little League coach in Southern California, under his independent studio Turn Two Labs. The "why" is in the founder section above: he got tired of doing position math in his Notes app the night before every game, so he built a tool that does it instead. The league-friendly pricing is intentional — leagues that link to Lineup Card make it sustainable, and in return their coaches get the tool free.</p>
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════ CLOSING CTA ═══════════ -->
+    <section class="cta-band">
+      <div class="container">
+        <h2>Want Lineup Card for your league's coaches?</h2>
+        <p>One email. One link. Free for every coach in your league.</p>
+        <a href="mailto:leagues@lineupcard.app?subject=Lineup%20Card%20for%20%5BLeague%20Name%5D" class="btn-cta btn-cta-on-green btn-cta-lg">Email leagues@lineupcard.app</a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-cols">
+        <div>
+          <div class="footer-brand">
+            <img src="/assets/icon.png" alt="Lineup Card" width="28" height="28" />
+            Lineup Card
+          </div>
+          <p class="footer-tagline">A free game-day lineup tool for youth baseball &amp; softball coaches.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="/#features">Features</a></li>
+            <li><a href="/#how-it-works">How It Works</a></li>
+            <li><a href="/pricing">Pricing</a></li>
+            <li><a href="/app">Open Builder</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Leagues</h4>
+          <ul>
+            <li><a href="/for-leagues">For Little Leagues</a></li>
+            <li><a href="mailto:leagues@lineupcard.app?subject=Lineup%20Card%20for%20%5BLeague%20Name%5D">Email our leagues team</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="https://lineupdj.app" target="_blank" rel="noopener"><img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon inline-icon-sm" width="16" height="16" /> Lineup DJ</a></li>
+            <li><a href="https://lineupdj.app/blog" target="_blank" rel="noopener">Blog</a></li>
+            <li><a href="https://lineupdj.app/privacy" target="_blank" rel="noopener">Privacy</a></li>
+            <li><a href="https://lineupdj.app/terms" target="_blank" rel="noopener">Terms</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Lineup Card</span>
+        <span>Made by a coach, for coaches.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── Sticky header scroll effect ──
+    (function() {
+      var header = document.getElementById('site-header');
+      window.addEventListener('scroll', function() {
+        header.classList.toggle('scrolled', window.scrollY > 20);
+      }, { passive: true });
+    })();
+
+    // ── Mobile menu toggle ──
+    (function() {
+      var btn = document.getElementById('mobile-menu-btn');
+      var nav = document.getElementById('mobile-nav');
+      var isOpen = false;
+      var iconOpen = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>';
+      var iconClosed = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+
+      btn.addEventListener('click', function() {
+        isOpen = !isOpen;
+        nav.classList.toggle('open', isOpen);
+        btn.setAttribute('aria-expanded', isOpen);
+        btn.innerHTML = isOpen ? iconOpen : iconClosed;
+      });
+
+      nav.querySelectorAll('a').forEach(function(link) {
+        link.addEventListener('click', function() {
+          isOpen = false;
+          nav.classList.remove('open');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.innerHTML = iconClosed;
+        });
+      });
+    })();
+
+    // ── IntersectionObserver for scroll-in animations ──
+    (function() {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            var delay = getComputedStyle(el).getPropertyValue('--delay') || '0ms';
+            setTimeout(function() {
+              el.classList.add('revealed');
+            }, parseInt(delay) || 0);
+            observer.unobserve(el);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+
+      document.querySelectorAll('.reveal-up').forEach(function(el) {
+        observer.observe(el);
+      });
+    })();
+
+    // ── Animated FAQ accordion (matches pricing.html) ──
+    (function() {
+      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      document.querySelectorAll('.faq-item').forEach(function(details) {
+        var summary = details.querySelector('summary');
+        summary.addEventListener('click', function(e) {
+          e.preventDefault();
+          if (prefersReduced) {
+            details.open = !details.open;
+            return;
+          }
+          details.style.overflow = 'hidden';
+          if (details.open) {
+            var closing = details.animate(
+              [{ height: details.scrollHeight + 'px' }, { height: summary.scrollHeight + 'px' }],
+              { duration: 280, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+            );
+            closing.onfinish = function() { details.open = false; details.style.overflow = ''; };
+          } else {
+            details.open = true;
+            details.animate(
+              [{ height: summary.scrollHeight + 'px' }, { height: details.scrollHeight + 'px' }],
+              { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+            ).onfinish = function() { details.style.overflow = ''; };
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>

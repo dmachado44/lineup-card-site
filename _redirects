@@ -4,7 +4,8 @@
 # (which is what Google needs to consolidate duplicate URLs in its index).
 # The trailing ! makes the rule a forced/shadow redirect so it wins
 # even if Netlify would otherwise serve the .html file directly.
-/index.html    /          301!
-/pricing.html  /pricing   301!
-/app.html      /app       301!
-/success.html  /success   301!
+/index.html         /              301!
+/pricing.html       /pricing       301!
+/app.html           /app           301!
+/success.html       /success       301!
+/for-leagues.html   /for-leagues   301!
