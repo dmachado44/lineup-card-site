@@ -1,1555 +1,1014 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pricing — Leadoff</title>
+<meta name="description" content="Leadoff Pro is $2.99/mo or $12.99/yr with a 7-day free trial. Fair lineups, printable lineup cards, and a roster that syncs to the stands. Included with your Leadoff iOS subscription.">
+<link rel="canonical" href="https://app.getleadoff.com/pricing">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/favicon-180.png">
+<meta property="og:title" content="Pricing — Leadoff">
+<meta property="og:description" content="One plan, everything included. 7-day free trial. Included with your Leadoff iOS subscription.">
+<meta property="og:url" content="https://app.getleadoff.com/pricing">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://getleadoff.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZLK73N6CX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-5ZLK73N6CX');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet">
+<style>
+  /* ── Leadoff design tokens (source: leadoff-design-system tokens/, mirrors index.html) ── */
+  :root {
+    --page-marketing:  #FFFFFF;
+    --band:            #FAF6EB;
+    --panel:           #FFFFFF;
+    --ink:             #101613;
+    --ink-secondary:   #6B6659;
+    --warm-dark-ink:   #3C362A;
+    --accent:          #46CF51;
+    --accent-down:     #1F7A2A;
+    --on-accent:       #0B2410;
+    --accent-wash:     #DFF5E1;
+    --sticker-cream:   #FFF8E6;
+    --on-sticker-cream:#3C362A;
+    --sticker-ink:     #101613;
+    --pennant:         #EC2146;
+    --pennant-wash:    #FDE7EC;
+    --gold:            #F0CC3B;
+    --sky-wash:        #DDF0FA;
+    --hairline:        rgba(107,102,89,.18);
 
-  <!-- ── Google Analytics ── -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZLK73N6CX"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-5ZLK73N6CX');
-  </script>
+    --font-display: "Sofia Sans Extra Condensed", "Arial Narrow", sans-serif;
+    --font-body: "Barlow Semi Condensed", system-ui, sans-serif;
+    --text-title: 26px;
+    --text-marketing-hero: clamp(48px, 8vw, 88px);
+    --text-marketing-head: clamp(36px, 5vw, 56px);
+    --kicker-tracking: 0.14em;
 
-  <!-- ── SEO ── -->
-  <title>Pricing – Lineup Card</title>
-  <meta name="description" content="Lineup Card pricing. Free for Lineup DJ subscribers. Pro plan starts at $2.99/mo or $12.99/yr. Build balanced lineups, auto-assign positions, and manage your team." />
-  <link rel="canonical" href="https://lineupcard.app/pricing" />
-  <link rel="icon" href="/assets/icon.png" type="image/png" />
-  <link rel="apple-touch-icon" href="/assets/icon.png" />
+    --radius-button: 12px;
+    --radius-card: 20px;
+    --shadow-sticker: 4px 4px 0 0 var(--sticker-ink);
+    --section-rhythm: 112px;
+    --content-max: 1160px;
 
-  <meta property="og:title" content="Pricing – Lineup Card" />
-  <meta property="og:description" content="Free for Lineup DJ subscribers. Pro starts at $2.99/mo." />
-  <meta property="og:url" content="https://lineupcard.app/pricing" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://lineupcard.app/assets/icon.png" />
+    --ease-snappy: cubic-bezier(0.32, 1.25, 0.5, 1);
+    --dur-snappy: 350ms;
+  }
 
-  <style>
-    /* ═══════════════════════════════════════════════════
-       LINEUP CARD – PRICING PAGE
-       ═══════════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--page-marketing);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  img { max-width: 100%; }
+  a { color: inherit; }
+  button { font-family: inherit; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .display {
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+  .skip-to-content {
+    position: absolute; left: -9999px; top: 8px; z-index: 200;
+    background: var(--ink); color: #F4F2EC; padding: 10px 20px;
+    border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none;
+  }
+  .skip-to-content:focus { left: 50%; transform: translateX(-50%); }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 
-    :root {
-      --green: #22c55e;
-      --green-dark: #16a34a;
-      --green-light: #dcfce7;
-      --blue: #3b82f6;
-      --blue-light: #dbeafe;
-      --text: #111827;
-      --text-secondary: #4b5563;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --bg: #ffffff;
-      --bg-soft: #f9fafb;
-      --bg-dark: #111827;
-      --radius: 16px;
-      --radius-sm: 10px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04);
-      --shadow-md: 0 4px 20px rgba(0,0,0,0.06);
-      --shadow-lg: 0 8px 40px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
-    }
+  /* ── StickerButton ── */
+  .sticker-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    line-height: 1;
+    color: var(--ink);
+    background: var(--panel);
+    border: 2px solid var(--sticker-ink);
+    border-radius: var(--radius-button);
+    box-shadow: var(--shadow-sticker);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .sticker-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 0 var(--sticker-ink); }
+  .sticker-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
+  .sticker-btn:disabled { opacity: .6; cursor: wait; transform: none; box-shadow: var(--shadow-sticker); }
+  .sticker-btn.accent { background: var(--accent); color: var(--on-accent); }
+  .sticker-btn.cream { background: var(--sticker-cream); color: var(--on-sticker-cream); }
+  .sticker-btn.sm { font-size: 17px; padding: 10px 16px; min-height: 40px; }
+  .sticker-btn.lg { font-size: 20px; padding: 15px 28px; min-height: 52px; }
+  .sticker-btn.full { width: 100%; }
+  .sticker-btn svg { flex: none; transform: translateY(-2px); }
 
-    html { scroll-behavior: smooth; }
+  /* ── PennantTag ── */
+  .pennant {
+    display: inline-block;
+    background: var(--pennant);
+    color: var(--sticker-cream);
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 13px;
+    letter-spacing: var(--kicker-tracking);
+    padding: 5px 20px 5px 12px;
+    clip-path: polygon(0 0, calc(100% - .45em) 0, 100% 50%, calc(100% - .45em) 100%, 0 100%);
+  }
 
-    body {
-      font-family: -apple-system, "system-ui", "SF Pro Display", "SF Pro Text", Inter, sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      color: var(--text);
-      background: var(--bg);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+  /* ── Kicker ── */
+  .kicker {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--kicker-tracking);
+    color: var(--accent-down);
+  }
 
-    a { color: inherit; text-decoration: none; }
-    img { max-width: 100%; display: block; }
+  /* ── Cards: emphasis (one per screen) + quiet ── */
+  .card {
+    background: var(--panel);
+    border: 2px solid var(--sticker-ink);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-sticker);
+  }
+  .card-quiet {
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-card);
+  }
 
-    .skip-to-content {
-      position: absolute;
-      left: -9999px;
-      top: 8px;
-      z-index: 200;
-      background: var(--text);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-    .skip-to-content:focus { left: 50%; transform: translateX(-50%); }
+  /* ── Chips ── */
+  .chip {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 6px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .chip.green { background: var(--accent-wash); color: var(--accent-down); }
+  .chip.quiet { background: var(--band); color: var(--ink-secondary); }
+  .chip.gold  { background: var(--gold); color: var(--warm-dark-ink); }
 
-    .container {
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
+  /* ── Nav ── */
+  nav { position: sticky; top: 14px; z-index: 20; padding: 0 16px; }
+  .nav-pill {
+    width: 740px;
+    max-width: 100%;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 2px solid var(--sticker-ink);
+    border-radius: 12px;
+    padding: 14px 18px 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-pill img { height: 38px; display: block; }
+  .nav-pill .spacer { flex: 1; }
 
-    .inline-icon {
-      width: 20px;
-      height: 20px;
-      border-radius: 5px;
-      vertical-align: -3px;
-      display: inline-block;
-      flex-shrink: 0;
-    }
-    .inline-icon-sm {
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      vertical-align: -2px;
-    }
+  /* ── Layout ── */
+  .content { max-width: var(--content-max); margin: 0 auto; padding: 0 32px; }
+  .section { margin-top: var(--section-rhythm); }
 
-    /* Visually hidden but accessible to screen readers */
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border: 0;
-    }
+  /* ── Hero ── */
+  .hero { padding: 72px 32px 0; max-width: 720px; margin: 0 auto; text-align: center; }
+  .hero h1 {
+    font-size: var(--text-marketing-hero);
+    line-height: 0.94;
+    color: var(--ink);
+    margin: 18px 0 0;
+  }
+  .hero .sub {
+    font-size: 20px; font-weight: 500; line-height: 1.5;
+    color: var(--ink-secondary);
+    max-width: 520px; margin: 22px auto 0;
+  }
 
-    /* ── HEADER ── */
-    .site-header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 100;
-      background: rgba(255,255,255,0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.3s, background 0.3s;
-    }
-    .site-header.scrolled {
-      border-bottom-color: var(--border);
-      background: rgba(255,255,255,0.95);
-    }
-    .header-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-    }
-    .header-logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-      border-radius: 8px;
-      transition: opacity 0.15s;
-    }
-    .header-logo:hover { opacity: 0.8; }
-    .header-logo:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; }
-    .header-logo img { width: 32px; height: 32px; border-radius: 8px; }
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .header-nav-link {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      padding: 8px 14px;
-      border-radius: 8px;
-      transition: background 0.15s, color 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .header-nav-link:hover { background: var(--bg-soft); color: var(--text); }
-    .header-nav-link:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    .header-nav-link.active { color: var(--text); font-weight: 600; }
-    .btn-cta {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px 22px;
-      background: var(--text);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-      text-decoration: none;
-      white-space: nowrap;
-    }
-    .btn-cta:hover { background: #000; transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    .btn-cta:active { transform: translateY(0); box-shadow: none; }
-    .btn-cta:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    .btn-cta-green { background: var(--green); }
-    .btn-cta-green:hover { background: var(--green-dark); }
-    .btn-outline {
-      background: var(--bg);
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-    .btn-outline:hover { background: var(--bg-soft); border-color: #d1d5db; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-    .btn-cta-lg { font-size: 16px; padding: 14px 32px; border-radius: 12px; }
-    .btn-cta-full { width: 100%; }
+  /* ── Billing toggle ── */
+  .billing-toggle {
+    display: inline-flex;
+    margin: 36px auto 0;
+    background: var(--panel);
+    border: 2px solid var(--sticker-ink);
+    border-radius: var(--radius-button);
+    padding: 4px;
+    gap: 4px;
+  }
+  .billing-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: 18px; letter-spacing: .02em; line-height: 1;
+    padding: 10px 18px; min-height: 40px;
+    border: none; border-radius: 8px; cursor: pointer;
+    background: transparent; color: var(--ink);
+    transition: background .15s ease, color .15s ease;
+  }
+  .billing-btn:hover { background: var(--band); }
+  .billing-btn.active { background: var(--accent); color: var(--on-accent); }
+  .billing-btn .chip { font-family: var(--font-body); }
 
-    /* Mobile nav */
-    .mobile-menu-btn {
-      display: none;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 8px;
-      color: var(--text);
-      transition: background 0.15s;
-    }
-    .mobile-menu-btn:hover { background: var(--bg-soft); }
-    .mobile-menu-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    .mobile-menu-btn svg { display: block; }
-    .mobile-nav {
-      display: none;
-      position: fixed;
-      top: 64px; left: 0; right: 0;
-      background: var(--bg);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      z-index: 99;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      flex-direction: column;
-      gap: 4px;
-    }
-    .mobile-nav.open { display: flex; }
-    .mobile-nav a {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      transition: background 0.15s;
-    }
-    .mobile-nav a:hover { background: var(--bg-soft); color: var(--text); }
-    .mobile-nav .btn-cta { margin-top: 8px; width: 100%; }
+  /* ── Pricing card ── */
+  .plan-wrap { max-width: 480px; margin: 44px auto 0; padding: 0 32px; }
+  .plan { padding: 36px 36px 32px; display: flex; flex-direction: column; }
+  .plan .pennant { align-self: flex-start; }
+  .plan-name {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: 40px; line-height: 0.96; color: var(--ink); margin-top: 18px;
+  }
+  .plan-sub { font-size: 16px; color: var(--ink-secondary); margin-top: 6px; }
+  .plan-price { display: flex; align-items: baseline; gap: 6px; margin-top: 22px; }
+  .plan-amount {
+    font-family: var(--font-display); font-weight: 900;
+    font-size: 76px; line-height: 0.9; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .plan-period { font-size: 20px; font-weight: 700; color: var(--ink-secondary); }
+  .plan-note { font-size: 14px; color: var(--ink-secondary); margin-top: 8px; min-height: 21px; }
+  .plan-tagline { font-size: 15px; font-weight: 700; color: var(--accent-down); margin-top: 26px; }
+  .plan-features { list-style: none; display: grid; gap: 12px; margin-top: 14px; }
+  .plan-feature { display: flex; align-items: flex-start; gap: 10px; font-size: 16px; font-weight: 600; color: var(--ink); }
+  .tick {
+    flex: none; width: 20px; height: 20px; border-radius: 6px; margin-top: 2px;
+    background: var(--accent); color: var(--on-accent);
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .plan .sticker-btn { margin-top: 30px; }
+  .plan-fine { font-size: 14px; color: var(--ink-secondary); text-align: center; margin-top: 14px; }
 
-    /* ── PAGE HERO ── */
-    .page-hero {
-      padding: 140px 0 48px;
-      text-align: center;
-    }
-    .page-hero h1 {
-      font-size: clamp(36px, 5vw, 52px);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      margin-bottom: 16px;
-    }
-    .page-hero-sub {
-      font-size: 17px;
-      color: var(--text-secondary);
-      max-width: 480px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
+  /* ── iOS subscriber callout ── */
+  .ios-callout {
+    max-width: 640px; margin: 28px auto 0;
+    display: flex; align-items: center; gap: 18px;
+    padding: 18px 20px 18px 22px;
+  }
+  .ios-callout .badge {
+    flex: none; width: 44px; height: 44px; border-radius: 12px;
+    border: 2px solid var(--sticker-ink); background: var(--sticker-cream);
+    display: grid; place-items: center; color: var(--ink);
+  }
+  .ios-callout .text { flex: 1; font-size: 15px; color: var(--ink-secondary); line-height: 1.4; }
+  .ios-callout .text strong { display: block; color: var(--ink); font-size: 16px; font-weight: 700; margin-bottom: 2px; }
 
-    /* ── BILLING TOGGLE ── */
-    .billing-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin: 32px auto 40px;
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 4px;
-      width: fit-content;
-    }
-    .billing-btn {
-      padding: 10px 24px;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      border-radius: 9px;
-      cursor: pointer;
-      background: transparent;
-      color: var(--muted);
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-      position: relative;
-    }
-    .billing-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-    .billing-btn.active {
-      background: var(--bg);
-      color: var(--text);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
-    .billing-save {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      padding: 3px 8px;
-      border-radius: 99px;
-      background: var(--green);
-      color: #fff;
-      margin-left: 8px;
-      vertical-align: 1px;
-    }
+  /* ── Marketing H2 ── */
+  .m-head { font-size: var(--text-marketing-head); line-height: 0.94; color: var(--ink); text-align: center; }
+  .m-sub { font-size: 18px; font-weight: 500; color: var(--ink-secondary); text-align: center; margin: 12px auto 0; max-width: 460px; }
 
-    /* ── PRICING CARDS ── */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-      max-width: 820px;
-      margin: 0 auto 40px;
-    }
-    .pricing-grid-single {
-      grid-template-columns: 1fr;
-      max-width: 480px;
-    }
+  /* ── Compare band ── */
+  .compare-band { background: var(--sky-wash); margin-top: var(--section-rhythm); padding: 88px 32px; }
+  .compare-table {
+    max-width: 820px; margin: 44px auto 0;
+    background: var(--panel);
+    border: 2px solid var(--sticker-ink);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+  }
+  .compare-row {
+    display: grid; grid-template-columns: 1fr 150px 150px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .compare-row:last-child { border-bottom: none; }
+  .compare-head { border-bottom: 2px solid var(--sticker-ink); }
+  .compare-cell { padding: 16px 24px; display: flex; align-items: center; font-size: 15px; }
+  .compare-cell.center { justify-content: center; text-align: center; }
+  .compare-cell.pro-col { background: var(--accent-wash); }
+  .compare-head .compare-cell { flex-direction: column; justify-content: center; gap: 2px; padding: 18px 24px; }
+  .compare-head .compare-cell:first-child { align-items: flex-start; }
+  .compare-head .name {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: 24px; line-height: 1; color: var(--ink);
+  }
+  .compare-head .label { font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+  .compare-feature { font-weight: 700; color: var(--ink); }
+  .compare-desc { font-size: 13px; color: var(--ink-secondary); line-height: 1.35; margin-top: 2px; }
+  .check-yes { color: var(--accent-down); }
+  .check-no { color: rgba(107,102,89,.35); }
 
-    .ldj-callout {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      max-width: 580px;
-      margin: 0 auto 80px;
-      padding: 20px 24px;
-      background: var(--bg-soft);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
-    .ldj-callout img {
-      flex-shrink: 0;
-      border-radius: 6px;
-    }
-    .ldj-callout div {
-      flex: 1;
-      font-size: 14px;
-      line-height: 1.5;
-      color: var(--text-secondary);
-    }
-    .ldj-callout strong {
-      display: block;
-      color: var(--text);
-      font-size: 15px;
-      margin-bottom: 2px;
-    }
-    .pricing-card {
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 40px 36px;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-    }
-    .pricing-card.featured {
-      background: var(--bg-dark);
-      color: #fff;
-      border-color: var(--bg-dark);
-      box-shadow: var(--shadow-lg);
-      position: relative;
-    }
-    .pricing-card.featured .pricing-sub { color: #9ca3af; }
-    .pricing-card.featured .pricing-feature { color: #d1d5db; }
-    .pricing-card.featured .pricing-feature svg { color: var(--green); }
-    .pricing-card.featured .pricing-divider { border-color: #374151; }
+  /* ── FAQ (mirrors index.html) ── */
+  .faq { max-width: 760px; margin: 44px auto 0; display: grid; gap: 16px; }
+  .faq details { background: var(--panel); border: 2px solid var(--sticker-ink); border-radius: var(--radius-card); }
+  .faq summary {
+    cursor: pointer; list-style: none;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+    padding: 20px 24px; font-size: 17px; font-weight: 700; color: var(--ink);
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq .plus {
+    flex: none; width: 20px; height: 20px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 600; line-height: 1;
+    color: var(--accent-down); transition: transform .2s ease;
+  }
+  .faq details.expanded .plus { transform: rotate(45deg); }
+  .faq .a {
+    display: grid; grid-template-rows: 0fr;
+    transition: grid-template-rows var(--dur-snappy) var(--ease-snappy);
+    font-size: 16px; font-weight: 500; line-height: 1.5; color: var(--ink-secondary);
+  }
+  .faq details.expanded .a { grid-template-rows: 1fr; }
+  .faq .a-in { overflow: hidden; min-height: 0; padding: 0 24px; }
+  .faq .a-in::after { content: ""; display: block; height: 20px; }
 
-    .pricing-badge {
-      display: inline-block;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      padding: 4px 12px;
-      border-radius: 99px;
-      background: var(--green);
-      color: #fff;
-      margin-bottom: 16px;
-      width: fit-content;
-    }
+  /* ── Footer (mirrors index.html) ── */
+  footer { background: #0A0B0D; margin-top: var(--section-rhythm); padding: 96px 32px 0; overflow: hidden; }
+  .footer-inner { max-width: var(--content-max); margin: 0 auto; }
+  .footer-cta { text-align: center; padding-bottom: 88px; }
+  .footer-cta h2 { font-size: var(--text-marketing-head); line-height: 0.94; color: #F4F2EC; }
+  .footer-cta p { font-size: 18px; font-weight: 500; color: #8A919E; margin: 18px auto 30px; max-width: 460px; }
+  .cta-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .footer-cta .cta-row { justify-content: center; margin-top: 0; }
+  .footer-cta .fine { font-size: 14px; color: #8A919E; margin-top: 18px; }
+  .footer-links { display: flex; justify-content: space-between; align-items: start; gap: 32px; padding-bottom: 64px; flex-wrap: wrap; }
+  .footer-col { display: grid; gap: 14px; align-content: start; font-size: 14px; font-weight: 500; color: #8A919E; }
+  .footer-col .foot-kicker { font-size: 12px; font-weight: 700; letter-spacing: var(--kicker-tracking); text-transform: uppercase; color: #5A6069; }
+  .footer-col a { text-decoration: none; font-size: 15px; font-weight: 600; }
+  .footer-col a.light { color: #F4F2EC; }
+  .footer-col a.green { color: var(--accent); }
+  .footer-col a.muted { color: #8A919E; font-weight: 500; }
+  .footer-col a.muted:hover, .footer-col a.light:hover { color: var(--accent); }
+  .footer-logo { margin-top: 40px; display: flex; justify-content: center; }
+  .footer-logo img { width: 96vw; max-width: 1800px; display: block; transform: translateY(10%); }
 
-    .pricing-name {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-    .pricing-sub {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-    }
-    .pricing-price {
-      display: flex;
-      align-items: baseline;
-      gap: 4px;
-      margin-bottom: 4px;
-    }
-    .pricing-amount {
-      font-size: 48px;
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-    }
-    .pricing-period {
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--muted);
-    }
-    .pricing-card.featured .pricing-period { color: #9ca3af; }
-    .pricing-annual-note {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-    .pricing-card.featured .pricing-annual-note { color: #9ca3af; }
+  /* ── Auth modal ── */
+  .auth-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(16,22,19,.55);
+    z-index: 200; align-items: center; justify-content: center; padding: 20px;
+  }
+  .auth-overlay.open { display: flex; }
+  .auth-modal {
+    width: 100%; max-width: 420px; padding: 36px 32px 28px; position: relative; text-align: center;
+  }
+  .auth-modal-close {
+    position: absolute; top: 14px; right: 14px; background: none; border: none;
+    cursor: pointer; padding: 6px; border-radius: 8px; color: var(--ink-secondary);
+  }
+  .auth-modal-close:hover { background: var(--band); color: var(--ink); }
+  .auth-modal-logo { display: flex; justify-content: center; margin-bottom: 18px; }
+  .auth-modal-logo img { height: 34px; }
+  .auth-modal h2 {
+    font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+    font-size: 32px; line-height: 1; color: var(--ink); margin-bottom: 8px;
+  }
+  .auth-modal .auth-sub { font-size: 15px; color: var(--ink-secondary); margin-bottom: 22px; }
+  .auth-providers-list { display: flex; flex-direction: column; gap: 10px; }
+  .auth-provider-btn {
+    display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%;
+    padding: 12px 16px; border: 2px solid var(--sticker-ink); border-radius: var(--radius-button);
+    font-size: 15px; font-weight: 700; color: var(--ink); background: var(--panel); cursor: pointer;
+  }
+  .auth-provider-btn:hover { background: var(--band); }
+  .auth-provider-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .auth-divider-line { display: flex; align-items: center; gap: 12px; margin: 18px 0; font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+  .auth-divider-line::before, .auth-divider-line::after { content: ''; flex: 1; height: 1px; background: var(--hairline); }
+  .auth-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .auth-fields input {
+    width: 100%; padding: 12px 14px; border: 2px solid var(--hairline); border-radius: var(--radius-button);
+    font-size: 15px; font-family: inherit; font-weight: 500; color: var(--ink); background: var(--panel);
+  }
+  .auth-fields input:focus { outline: none; border-color: var(--sticker-ink); }
+  .auth-modal .sticker-btn { width: 100%; }
+  .auth-error-msg { color: var(--pennant); font-size: 13px; font-weight: 600; margin-top: 10px; min-height: 18px; }
+  .auth-footer-link { font-size: 14px; color: var(--ink-secondary); margin-top: 14px; }
+  .auth-footer-link a { color: var(--accent-down); font-weight: 700; cursor: pointer; text-decoration: underline; }
 
-    .pricing-divider {
-      border: none;
-      border-top: 1px solid var(--border);
-      margin: 0 0 24px;
-    }
-
-    .pricing-tagline {
-      font-size: 14px;
-      color: var(--green-dark);
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .pricing-card.featured .pricing-tagline { color: var(--green); }
-
-    .pricing-features {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-bottom: 32px;
-      flex: 1;
-    }
-    .pricing-feature {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 15px;
-      line-height: 1.5;
-      color: var(--text-secondary);
-    }
-    .pricing-feature svg {
-      flex-shrink: 0;
-      margin-top: 2px;
-      color: var(--green);
-    }
-
-    .pricing-note {
-      font-size: 13px;
-      color: var(--muted);
-      text-align: center;
-      margin-top: 12px;
-    }
-    .pricing-card.featured .pricing-note { color: #9ca3af; }
-
-    /* ── COMPARISON TABLE ── */
-    .compare-section {
-      padding: 80px 0;
-      background: var(--bg-soft);
-    }
-    .compare-title {
-      font-size: clamp(24px, 3.5vw, 36px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      text-align: center;
-      margin-bottom: 8px;
-    }
-    .compare-sub {
-      font-size: 15px;
-      color: var(--text-secondary);
-      text-align: center;
-      margin-bottom: 48px;
-    }
-
-    .included-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .included-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 20px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-sm);
-      transition: box-shadow 0.2s;
-    }
-    .included-item:hover { box-shadow: var(--shadow-sm); }
-    .included-item svg { flex-shrink: 0; margin-top: 2px; }
-    .included-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-    .included-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-    .compare-table {
-      max-width: 820px;
-      margin: 0 auto;
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .compare-header {
-      display: grid;
-      grid-template-columns: 1fr 140px 140px;
-      gap: 0;
-      border-bottom: 2px solid var(--border);
-    }
-    .compare-header-cell {
-      padding: 20px 24px;
-      font-size: 14px;
-      font-weight: 700;
-      text-align: center;
-    }
-    .compare-header-cell:first-child { text-align: left; }
-    .compare-header-cell.pro {
-      background: var(--bg-dark);
-      color: #fff;
-    }
-    .compare-header-label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .compare-header-cell.pro .compare-header-label { color: #9ca3af; }
-
-    .compare-row {
-      display: grid;
-      grid-template-columns: 1fr 140px 140px;
-      gap: 0;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
-    }
-    .compare-row:last-child { border-bottom: none; }
-    .compare-row:hover { background: var(--bg-soft); }
-    .compare-cell {
-      padding: 16px 24px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-    }
-    .compare-cell.center { justify-content: center; }
-    .compare-cell.pro-col { background: rgba(17,24,39,0.03); }
-    .compare-feature-name {
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 2px;
-    }
-    .compare-feature-desc {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-    .check-yes { color: var(--green); }
-    .check-no { color: #d1d5db; }
-    .compare-label {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 99px;
-    }
-    .compare-label.basic { background: var(--bg-soft); color: var(--muted); }
-    .compare-label.advanced { background: var(--green-light); color: var(--green-dark); }
-
-    /* ── FAQ (lineupdj.app style) ── */
-    .faq-section {
-      padding: 80px 0;
-    }
-    .faq-title {
-      font-size: clamp(24px, 3.5vw, 36px);
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .faq-list {
-      max-width: 800px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .faq-item {
-      background: var(--bg-soft);
-      border-radius: var(--radius);
-      border: none;
-      overflow: hidden;
-    }
-    .faq-item summary {
-      padding: 20px 24px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      list-style: none;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      user-select: none;
-      transition: color 0.15s;
-    }
-    .faq-item summary:hover { color: var(--green-dark); }
-    .faq-item summary:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; border-radius: var(--radius); }
-    .faq-item summary::-webkit-details-marker { display: none; }
-    .faq-item summary::after {
-      content: "+";
-      font-size: 1.4rem;
-      font-weight: 300;
-      color: var(--muted);
-      flex-shrink: 0;
-      margin-left: 16px;
-      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .faq-item[open] summary::after {
-      transform: rotate(45deg);
-    }
-    .faq-answer {
-      padding: 0 24px 20px;
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--text-secondary);
-    }
-
-    /* ── CTA ── */
-    .cta-section {
-      padding: 80px 0 100px;
-      text-align: center;
-      background: var(--bg-soft);
-    }
-    .cta-section h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 16px;
-    }
-    .cta-section p {
-      font-size: 17px;
-      color: var(--text-secondary);
-      max-width: 480px;
-      margin: 0 auto 32px;
-      line-height: 1.6;
-    }
-    .cta-buttons {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .cta-note {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 16px;
-    }
-
-    /* ── FOOTER ── */
-    .site-footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 0;
-    }
-    .footer-inner {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .footer-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-    }
-    .footer-brand img { width: 28px; height: 28px; border-radius: 7px; }
-    .footer-links { display: flex; gap: 24px; }
-    .footer-links a {
-      font-size: 13px;
-      color: var(--muted);
-      transition: color 0.15s;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 4px 0;
-    }
-    .footer-links a:hover { color: var(--text); }
-    .footer-links a:focus-visible { outline: 2px solid var(--green); outline-offset: 4px; border-radius: 4px; }
-    .footer-copy { font-size: 13px; color: var(--muted); }
-
-    /* ── RESPONSIVE ── */
-    /* ── NAV AUTH BUTTONS ── */
-    .nav-auth { display: flex; align-items: center; gap: 4px; }
-    .btn-nav-signin {
-      font-size: 14px; font-weight: 500; color: var(--text-secondary);
-      padding: 8px 14px; border-radius: 8px; background: none; border: none;
-      cursor: pointer; transition: background 0.15s, color 0.15s;
-    }
-    .btn-nav-signin:hover { background: var(--bg-soft); color: var(--text); }
-    .btn-nav-signup {
-      font-size: 14px; font-weight: 600; color: #fff; padding: 8px 18px;
-      border-radius: 8px; background: var(--green); border: none; cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
-    }
-    .btn-nav-signup:hover { background: var(--green-dark); transform: translateY(-1px); }
-    .nav-avatar-wrap { position: relative; }
-    .nav-avatar-btn {
-      display: flex; align-items: center; gap: 8px; background: none; border: none;
-      cursor: pointer; padding: 4px 8px; border-radius: 8px; transition: background 0.15s;
-    }
-    .nav-avatar-btn:hover { background: var(--bg-soft); }
-    .nav-avatar {
-      width: 32px; height: 32px; border-radius: 50%; background: var(--green); color: #fff;
-      font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; overflow: hidden;
-    }
-    .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .nav-avatar-name { font-size: 14px; font-weight: 500; color: var(--text); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .nav-dropdown {
-      display: none; position: absolute; top: calc(100% + 6px); right: 0; background: var(--bg);
-      border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-md);
-      min-width: 200px; z-index: 110; padding: 6px;
-    }
-    .nav-dropdown.open { display: block; }
-    .nav-dropdown-header { padding: 10px 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
-    .nav-dropdown-name { font-size: 14px; font-weight: 600; color: var(--text); }
-    .nav-dropdown-email { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .nav-dropdown-item {
-      display: block; width: 100%; text-align: left; padding: 10px 12px; font-size: 14px;
-      font-weight: 500; color: var(--text-secondary); background: none; border: none;
-      border-radius: 6px; cursor: pointer; transition: background 0.15s;
-    }
-    .nav-dropdown-item:hover { background: var(--bg-soft); color: var(--text); }
-    .nav-dropdown-item.danger { color: #dc2626; }
-    .nav-dropdown-item.danger:hover { background: #fef2f2; }
-
-    /* ── AUTH MODAL ── */
-    .auth-overlay {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-      z-index: 200; align-items: center; justify-content: center; padding: 20px;
-    }
-    .auth-overlay.open { display: flex; }
-    .auth-modal {
-      background: var(--bg); border-radius: var(--radius); box-shadow: var(--shadow-lg);
-      width: 100%; max-width: 420px; padding: 40px 36px 32px; position: relative; text-align: center;
-    }
-    .auth-modal-close {
-      position: absolute; top: 14px; right: 14px; background: none; border: none;
-      cursor: pointer; padding: 6px; border-radius: 6px; color: var(--muted); transition: background 0.15s, color 0.15s;
-    }
-    .auth-modal-close:hover { background: var(--bg-soft); color: var(--text); }
-    .auth-modal-logo { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 700; margin-bottom: 20px; }
-    .auth-modal-logo img { width: 28px; height: 28px; border-radius: 7px; }
-    .auth-modal h2 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
-    .auth-modal .auth-sub { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
-    .auth-providers-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .auth-provider-btn {
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px;
-      font-size: 15px; font-weight: 500; color: var(--text); background: var(--bg);
-      cursor: pointer; transition: background 0.15s, border-color 0.15s; width: 100%;
-    }
-    .auth-provider-btn:hover { background: var(--bg-soft); border-color: #d1d5db; }
-    .auth-provider-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-    .auth-provider-btn.is-loading { opacity: 0.6; pointer-events: none; }
-    .auth-divider-line { display: flex; align-items: center; gap: 12px; margin: 20px 0; font-size: 13px; color: var(--muted); }
-    .auth-divider-line::before, .auth-divider-line::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-    .auth-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-    .auth-fields input {
-      padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px;
-      font-size: 15px; font-family: inherit; color: var(--text); transition: border-color 0.15s; width: 100%;
-    }
-    .auth-fields input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
-    .auth-submit-btn {
-      width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 15px;
-      font-weight: 600; color: #fff; background: var(--text); cursor: pointer; transition: opacity 0.15s;
-    }
-    .auth-submit-btn:hover { opacity: 0.9; }
-    .auth-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .auth-submit-btn.green { background: var(--green); }
-    .auth-submit-btn.green:hover { background: var(--green-dark); }
-    .auth-error-msg { color: #dc2626; font-size: 13px; margin-top: 8px; min-height: 18px; }
-    .auth-footer-link { font-size: 13px; color: var(--muted); margin-top: 16px; }
-    .auth-footer-link a { color: var(--green-dark); font-weight: 600; cursor: pointer; text-decoration: underline; }
-
-    @media (max-width: 768px) {
-      .page-hero { padding: 120px 0 40px; }
-      .pricing-grid { grid-template-columns: 1fr; }
-      .included-grid { grid-template-columns: repeat(2, 1fr); }
-      .ldj-callout { flex-direction: column; text-align: center; gap: 12px; }
-      .ldj-callout .btn-cta { width: 100%; }
-      .compare-header, .compare-row { grid-template-columns: 1fr 100px 100px; }
-      .compare-cell { padding: 14px 12px; font-size: 13px; }
-      .compare-header-cell { padding: 16px 12px; font-size: 13px; }
-      .footer-inner { flex-direction: column; gap: 16px; text-align: center; }
-      .footer-links { justify-content: center; flex-wrap: wrap; }
-      .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
-      .header-nav { display: none; }
-    }
-
-    @media (max-width: 480px) {
-      .pricing-card { padding: 32px 24px; }
-      .pricing-amount { font-size: 40px; }
-      .compare-header, .compare-row { grid-template-columns: 1fr 80px 80px; }
-      .compare-header-cell { padding: 12px 8px; font-size: 12px; }
-      .compare-cell { padding: 12px 8px; font-size: 12px; }
-      .included-grid { grid-template-columns: 1fr; }
-      .cta-buttons { flex-direction: column; }
-      .cta-buttons .btn-cta { width: 100%; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .faq-item summary::after { transition: none; }
-      .feature-card, .pricing-card, .compare-row { transition: none; }
-    }
-  </style>
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    :root { --section-rhythm: 72px; }
+    .hero { padding: 48px 24px 0; }
+    .content { padding: 0 24px; }
+    .compare-band { padding: 64px 24px; }
+    .compare-row { grid-template-columns: 1fr 110px 110px; }
+    .compare-cell { padding: 14px 16px; font-size: 14px; }
+  }
+  @media (max-width: 720px) {
+    .nav-pill { gap: 12px; padding: 10px 12px 10px 16px; }
+    .nav-pill img { height: 30px; }
+    .sticker-btn.sm { font-size: 15px; padding: 8px 12px; min-height: 36px; }
+    .plan-wrap { padding: 0 24px; }
+    .plan { padding: 28px 24px 24px; }
+    .plan-amount { font-size: 64px; }
+    .ios-callout { flex-direction: column; text-align: center; margin-left: 24px; margin-right: 24px; }
+    .compare-row { grid-template-columns: 1fr 84px 84px; }
+    .compare-cell { padding: 12px 10px; font-size: 13px; }
+    .compare-head .name { font-size: 20px; }
+    .compare-head .label { display: none; }
+    .footer-cta .cta-row .sticker-btn { width: 100%; }
+  }
+  @media (max-width: 480px) {
+    .nav-pill .ios-nav-label { display: none; }
+    .billing-btn { font-size: 16px; padding: 9px 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .faq .a, .faq .plus, .sticker-btn, .billing-btn { transition: none; }
+  }
+</style>
 </head>
 <body>
 
-  <a href="#main" class="skip-to-content">Skip to content</a>
+<a href="#main" class="skip-to-content">Skip to content</a>
 
-  <!-- ═══════════ HEADER ═══════════ -->
-  <header class="site-header" id="site-header">
-    <div class="container header-inner">
-      <a href="/" class="header-logo">
-        <img src="/assets/icon.png" alt="Lineup Card" width="32" height="32" />
-        Lineup Card
-      </a>
-      <nav class="header-nav" aria-label="Main navigation">
-        <a href="/#features" class="header-nav-link">Features</a>
-        <a href="/#how-it-works" class="header-nav-link">How It Works</a>
-        <a href="/pricing" class="header-nav-link active">Pricing</a>
-        <a href="/app" class="header-nav-link">Open Builder</a>
-        <div class="nav-auth" id="nav-auth">
-          <button class="btn-nav-signin" onclick="openAuthModal('signin')">Sign In</button>
-          <button class="btn-nav-signup" onclick="openAuthModal('signup')">Sign Up</button>
-        </div>
-        <div class="nav-avatar-wrap" id="nav-user" style="display:none;">
-          <button class="nav-avatar-btn" onclick="toggleNavDropdown()">
-            <div class="nav-avatar" id="nav-avatar-circle"></div>
-            <span class="nav-avatar-name" id="nav-avatar-name"></span>
-          </button>
-          <div class="nav-dropdown" id="nav-dropdown">
-            <div class="nav-dropdown-header">
-              <div class="nav-dropdown-name" id="nav-dropdown-name"></div>
-              <div class="nav-dropdown-email" id="nav-dropdown-email"></div>
-            </div>
-            <a href="/app" class="nav-dropdown-item">Open Builder</a>
-            <button class="nav-dropdown-item danger" onclick="doSignOut()">Sign Out</button>
-          </div>
-        </div>
-      </nav>
-      <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
-      <a href="/#features">Features</a>
-      <a href="/#how-it-works">How It Works</a>
-      <a href="/pricing">Pricing</a>
-      <a href="/app">Open Builder</a>
-      <div id="mobile-auth" style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-        <button class="btn-cta" onclick="openAuthModal('signin')" style="width:100%;justify-content:center;">Sign In</button>
-        <button class="btn-cta btn-cta-green" onclick="openAuthModal('signup')" style="width:100%;justify-content:center;">Sign Up Free</button>
-      </div>
-      <div id="mobile-user" style="display:none;margin-top:8px;">
-        <button onclick="doSignOut()" style="width:100%;padding:12px;background:none;border:1px solid var(--border);border-radius:10px;font-size:14px;color:#dc2626;cursor:pointer;">Sign Out</button>
-      </div>
-    </nav>
-  </header>
+<!-- ═══════════ NAV (shared with index.html) ═══════════ -->
+<nav>
+  <div class="nav-pill">
+    <img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIyNi4wIDk0LjAgMjA1OS4wIDU1Ni4wIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfNDYzMF83NTg1KSI+Cgo8cGF0aCBkPSJNMzA0LjU3MSAxMDMuNDM1QzMxMC44NDUgMTAyLjg0MiAzMTcuMTY4IDEwMy4wNjggMzIzLjM4MyAxMDQuMTA4QzM2NC45NjggMTEwLjY2MSAzOTkuNDM0IDEzOS4xNSAzOTUuNzI3IDE4My41MzdDMzk1LjIzMiAxODkuNDY0IDM4OC45OTUgMjA3LjYgMzkyLjE2NSAyMTEuNzk4QzM5Ni43MTggMjEwLjQ5OSA0MDcuNTMyIDIwNS4wNDggNDEyLjM0MiAyMDIuODAyQzQyMi4xOTQgMTk4LjEyMyA0MzIuMjA5IDE5My43OTYgNDQyLjM2OCAxODkuODI3QzQ5NS4yMSAxNjkuMTA3IDU2Ni43OTIgMTQ3Ljk2NCA2MjMuMTUxIDE0MS4yMDRDNjQ1LjQzOCAxMzguNTMxIDY3NS43OTUgMTQ1Ljc2NiA2OTEuMjcyIDE2Mi41MDdDNjk2Ljc3NCAxNjguNDU4IDcwMS45OTYgMTc2LjIxMiA3MDguMTMxIDE4MS42MzZDNzEwLjM1NiAxODIuMjYgNzEwLjUxMiAxODIuNTA1IDcxMi4zOTMgMTgwLjY4MkM3MzYuODM0IDE1Ni45OTMgNzYxLjM2OCAxMjcuMDU4IDc5OC4wMSAxMjMuODEzQzgyMy4xODQgMTIxLjU4MyA4NjEuMjggMTM3LjE3NSA4ODIuNTQ3IDE1MC45NjFDODg4LjIyOSAxNTQuNjQ1IDg5Ni44NDggMTY5LjI4OSA5MDIuNjQzIDE3NC4yMzFDOTA0LjE3IDE3NS42MjggOTA2LjExNCAxNzYuMDQyIDkwOC4xMzUgMTc1LjQ3MkM5MjEuNjA0IDE3MS42NjggOTM1Ljc0OCAxNjUuMzEzIDk0OS4xNjkgMTYwLjYwNUM5NzkuODUgMTQ5Ljg0MiAxMDEwLjYxIDE0Mi40MzQgMTA0My4xNSAxMzguNjY5QzExMTEuNDUgMTMxLjU1NyAxMTg4LjAyIDE0MS43NDUgMTI0Ny41MiAxNzcuNzc2QzEyNTYuMzkgMTgzLjE1IDEyNzkuMjMgMjExLjg5NCAxMjg2LjU1IDIwOC41NjZDMTI5NC43IDIwNC44NTYgMTMwOC4wNiAxOTIuMTEgMTMxNi41OCAxODYuODQyQzEzNjEuMDcgMTU5LjMxNSAxNDI1LjY2IDEzMS40MDkgMTQ3Ni42MiAxNTYuODI2QzE0ODIuNzIgMTU5Ljg3OSAxNDk3LjY0IDE3My4xMzIgMTUwMy41MiAxNzIuMTY0QzE1MTkuNTYgMTY5LjUyNiAxNTM0LjE3IDE1Ny42MDMgMTU1MC41NyAxNTQuNTQ0QzE1ODguMiAxNDUuMzQxIDE2MjcuOCAxMzguMTk3IDE2NjYuMjkgMTMzLjk4QzE3MTEuMzcgMTI5LjA0MiAxNzU0Ljg5IDEyMy4yNTMgMTc5Mi44IDE1My4wMzFDMTgwOS4xMiAxNTQuNzk1IDE4MTkuMjMgMTQ4LjYyMyAxODM0LjE5IDE0Ni4yMzlDMTg5Mi4xOCAxMzYuOTk4IDIwMDEuOTMgMTEyLjQ5NSAyMDUxLjYyIDE0OS4xMDRDMjA2NC42MyAxNTguNTg4IDIwNzMuMjYgMTcyLjkxNyAyMDc1LjU2IDE4OC44NDdDMjA3Ny40IDIwMS4wODIgMjA3Ni4wNyAyMTQuNjk4IDIwNzEuMDQgMjI2LjA2NUMyMDUwLjI1IDI3My4wNTYgMTk4NS45MSAyNjUuNTQ0IDE5NzcuNDkgMjc3LjAzNEMxOTgwLjkgMjgyLjY0MSAxOTkzLjU2IDI4Ny4wNDEgMjAwMC44NSAzMDAuMTY2QzIwMDkuOTQgMzE0LjkwNSAyMDExLjM4IDMzMi4yNDIgMjAwNy41NSAzNDkuMDQ1QzIwMDQuMzkgMzYyLjg2NCAxOTk1LjU5IDM3OS40NjEgMTk4Mi43NiAzODYuOTA1QzE5NDguMTYgNDA2Ljk5NiAxOTA1Ljg3IDQxNC41MTUgMTg2Ny45IDQyNi40NjRDMTg1Ny40OCA0MjkuNzQ0IDE4NDUuNzUgNDMxLjM1OSAxODM2LjE4IDQzNi43MzlDMTgzMi43OSA0MzguNzE2IDE4MjkuMzkgNDQ5LjU5NCAxODI3LjYyIDQ1My40NTlDMTgxNC4xNiA0ODIuODQyIDE3OTkuOTIgNTM1LjI0NCAxNzgyLjM4IDU2MC40MjdDMTc3NC41NiA1NzEuNjkxIDE3NjQuNDIgNTgxLjE1NiAxNzUyLjY1IDU4OC4xODlDMTcxMy4wMSA2MTIuMTc3IDE2NjEuMTYgNjAxLjI5NiAxNjUyLjIgNTUxLjYzM0MxNjQ4LjU0IDUzMS40IDE2NTIuNDYgNTEyLjM4NSAxNjU3LjM0IDQ5Mi44NDFDMTY2MS44NiA0NzUuMTIxIDE2NjkuMDggNDU4LjAzMyAxNjcxLjkgNDQwLjA5MUMxNjcyLjcxIDQzNC45MyAxNjYyLjM3IDQxOS45NTcgMTY1Ny41NyA0MTkuODgxQzE2NDkuNjkgNDE5Ljc1NSAxNTkyLjAyIDQzNS4yMDkgMTU5MC4wMiA0MzguODc5QzE1NjYuOTkgNDgxLjEyNCAxNTU5LjQ3IDUzNi4yNyAxNTI2Ljk0IDU3Mi45OThDMTUxMi4xNCA1ODYuODk2IDE0OTAuMzMgNTk5LjUyNSAxNDY5LjE4IDU5OC4yMjNDMTQwOC4xOSA1OTQuNDcyIDE0MDguMDkgNTQ3LjIxMiAxNDA5LjUgNTAzLjMxOUMxNDAyLjUyIDUwNy4yMTUgMTM5MS42NyA1MTUuNTk5IDEzODQuODcgNTIwLjQ5MkMxMzQ1LjMzIDU0OS40NTggMTI5Mi40OCA1NzIuNzkxIDEyNDMuMTIgNTYzLjM3OEMxMTk0LjE4IDU1NC4wNDQgMTE2Ny42NCA1MzAuNTczIDExNDkuODQgNDg2LjQ0NkMxMTQ5LjA4IDQ4NC41ODEgMTE0My44NiA0ODMuMjE0IDExNDEuNjkgNDg0LjE3QzExMjYuNzYgNDkxLjM0OSAxMTEyLjk5IDUwMi4xOTkgMTA5OC44NCA1MTEuMTlDMTA2MC40NyA1MzUuNzk4IDEwMjAuNyA1NTguMTUxIDk3OS43MjggNTc4LjAyM0M5MzkuOTcxIDU5Ny4zMDQgODk3Ljc1MSA2MTUuMTgxIDg1My45NDUgNTk2LjMwNkM4NDEuNzUzIDU5MS4wNTIgODM1LjM1NyA1ODQuMTExIDgyOC4yOSA1NzMuMTU3QzgyMS41MDkgNTYyLjY0NyA4MTMgNTYxLjg1NiA4MDEuNzUzIDU2MC41MTJDNzY1LjU4MSA1NTQuOTg2IDc1NC43NyA1MjEuMTQgNzUwLjA4MiA0ODkuNDk4Qzc0OC43OTMgNDgxLjY0MyA3NDcuNDA2IDQ3MC4yNjMgNzQyLjg0NyA0NjMuOTg4QzczNy43OTcgNDYyLjIzOCA3MDIuOTE4IDQ3Mi44MjQgNjk3LjA2MSA0NzUuNTM3QzY3Ni4xNzcgNTA1LjU1OSA2NjEuNzM2IDU0NC45MzUgNjMwLjQ4NiA1NjQuMzkxQzYwMy41NTYgNTgxLjE1NyA1NjUuMTU4IDU4My4wNjQgNTQzLjA4NCA1NTcuNjIxQzUzNi41NzYgNTUwLjExOSA1MzMuMzIxIDU0MS41MzkgNTI2LjcxMiA1MzQuNTY2QzUyNC4zNTggNTMyLjA4MyA1MjAuNDg3IDUzMi44MTUgNTE3LjE1OCA1MzMuNzIzQzQ5Ny41MDUgNTM4Ljg4NSA0NzkuOTAyIDU0Ni4wNTUgNDYwLjU1NCA1NTIuNjUyQzQyNi4xMiA1NjQuMzk0IDM4Ny4zNzUgNTc3LjY2OSAzNTAuOTE5IDU4MC4wMTNDMzMzLjI3OSA1ODEuMTQ4IDMyMS42OSA1NzYuMDUgMzAyLjg3NiA1ODEuNDY3QzI2Mi43OTMgNTkzLjAwOCAyMjQuNDI5IDYwNy43ODIgMTg1LjE3OSA2MjEuNjc1QzE1NS45MyA2MzEuOCAxMjUuMDY1IDY0Ni40MzIgOTMuNjc2OSA2MzguNjQ0Qzc2Ljk1OSA2MzQuNTg0IDU2Ljc4MzQgNjIzLjg4MyA0Ny4wNDIxIDYwOS4yMThDMjAuNDE2NCA1NjkuMTM1IDQ1LjE1OTIgNTI0Ljk1MyA2MS42MTcyIDQ4Ni4zNTFDODcuNjE3NiA0MjUuNTI5IDExNi4xMDMgMzY1LjggMTQ3LjAwMSAzMDcuMzE0QzE1NC42NjIgMjkyLjk1NyAxNzguMjIxIDI1Mi45MjIgMTgxLjMxNCAyNDAuMzQzTDE4MS40MTggMjM5LjkwNUMxNzguNjgzIDIyOS43ODQgMTc0Ljk1MyAyMjIuNTQgMTczLjM4MSAyMTEuMjU4QzE3MC44MTEgMTkzLjczOSAxNzUuMzMzIDE3NS45MTkgMTg1Ljk0NSAxNjEuNzQ2QzIwNi42NjMgMTM0LjQwNSAyNzAuODkxIDEwOC4wMiAzMDQuNTcxIDEwMy40MzVaIiBmaWxsPSJibGFjayI+PC9wYXRoPgo8cGF0aCBkPSJNMjAyNS4wMSAxNzMuMTg3QzIwNDYuOTQgMTg0LjM3MyAyMDQ0LjM4IDIxMy42NzUgMjAyMy4wOCAyMjMuMjcyQzE5NzUuNSAyNDQuODg0IDE5MTQuMDEgMjUwLjA0IDE4NjMuMTMgMjYyLjg3MkMxODU1LjIzIDI3OS4yOTYgMTg0Ny40MyAyOTYuMzIzIDE4NDEuMTkgMzEzLjQ1MkMxODc0LjI4IDMwNy44NzQgMTkyOS40MSAyOTMuMzY5IDE5NjAuODkgMzA5Ljc5NEMxOTg4LjM1IDMyNC4xMzMgMTk2OC42NyAzNTYuNDcxIDE5NDYuNDcgMzYzLjE2M0MxOTAxLjA0IDM3Ni44NTggMTg1My42NyAzOTIuMjk1IDE4MDcuNTUgNDAzLjAzNUMxNzk0LjY5IDQ0MS45OTMgMTc3NS41OCA0ODEuODYzIDE3NjIuMjYgNTIxLjA5MkMxNzU0Ljg4IDU0Mi44NDggMTc0Mi4xNCA1NTAuOTEgMTcyMi4yMSA1NjAuODUzQzE2OTkuMjEgNTcyLjMyMiAxNjgzLjIgNTUwLjYxIDE2ODUuNSA1MjguODczQzE2OTAuNDcgNDkxLjA0NyAxNzA2LjMgNDQ5LjkzOCAxNzE4LjU2IDQxNC41MjlDMTY4NS4yNyA0MTEuMDggMTY5My44MSAzODUuODM4IDE3MDEuMjcgMzYzLjg2MkMxNjUzLjk2IDM3NC40NTUgMTYwOC44NiAzOTMuOTggMTU2MS41MSA0MDQuNzczQzE1NDcuOTQgNDM5LjIwOSAxNTM0Ljc0IDQ3My43OTEgMTUyMS45MSA1MDguNTE0QzE1MTIuMTggNTM0LjU0OCAxNTA0LjYxIDU0OC42MSAxNDc4LjA4IDU1OS4zMjNDMTQ0NS45OSA1NzIuMjc3IDE0NDAuNzEgNTMyLjM3MSAxNDQ0LjM0IDUxMi4wMTVDMTQ1MS4wMSA0NzQuNTk1IDE0NjEuMiA0NDAuMDU5IDE0NzQuODMgNDA1LjEyNkMxNDY5Ljg0IDQwMC42MDYgMTQ2Ni4wNyAzOTQuNzUyIDE0NjEuNjggMzg5LjM0MkMxNDYxLjQyIDM4OS40NDcgMTQyNS41MyA0MzQuMTk0IDE0MTguNzMgNDQxLjIyNEMxMzczLjI0IDQ4OC4yMjIgMTI5NC42NyA1NTIuNzA1IDEyMjQuNjIgNTE4Ljc5MUMxMTYyLjI2IDQ4OC41OTUgMTE3OS41NSA0MTcuODE3IDEyMDQuMDggMzY3LjM5OEMxMTQwLjExIDQ1Ny4xMjcgMTAyOS45NiA1MTEuOTIxIDkzMi44ODEgNTU3LjEwN0M4OTUuMDkxIDU3NC42OTkgODQxLjYxOSA1NjcuOTQ5IDg2NS4zMyA1MTMuMDU4Qzg3NS4wOTMgNDk3LjUgODk3LjcxMSA0ODYuNjkyIDkxMi44NjYgNDc4LjgzNEM4OTcuODMxIDQ1MS45NjUgOTEzLjIzIDQyNC41NjYgOTIzLjc5NSAzOTguNDU0Qzk0Mi4zMzEgMzUyLjY0NyA5NjMuMjAyIDMwNy40MzQgOTgzLjczMSAyNjIuNTA1Qzk2Ny43NjggMjY2LjA5NyA5NTEuOTcgMjcxLjExMiA5MzUuODk3IDI3NC4xODdDODg2LjQ2NiAyODMuNjQ1IDg5NS4zMiAyMjAuMzUxIDkyNy44MzQgMjA0LjQ5N0MxMDAwLjIzIDE2OS4xOTggMTIwMC4xOSAxMzAuNjE0IDEyNDguODQgMjI5Ljc3NEMxMjYxLjEyIDI1NC43ODkgMTI1Mi45NCAyNzguNzQyIDEyNDQuNzMgMzAzLjE5NUMxMjczLjI3IDI2NS4yNjUgMTMxMC45MiAyMjcuMzg4IDEzNTQuMSAyMDMuNDMzQzE0NjIuMDIgMTQzLjU0NyAxNTI0LjczIDI0MS45NTcgMTQ4Ni4zNSAzNDAuOTk2QzE1MTEuNTMgMzI1LjAxNiAxNTE1Ljg5IDMwMi44MDggMTUyOC4yNSAyNzQuODA0QzE1MTMuNjIgMjcxLjQ5NSAxNDk5LjQxIDI2MS43MDggMTQ5OC43MSAyNDUuMjE5QzE0OTUuMjQgMTY2LjUwMiAxNjY0Ljg2IDE2NC4xNjUgMTcxMC41MiAxNjMuNjU3QzE3MzcuNDEgMTYzLjM1OCAxNzczLjk5IDE2Ny4xNTEgMTc3NC4yNyAyMDEuNDc0QzE4MzUuNDggMTcxLjMyNiAxOTU3LjU3IDEzOC43NzkgMjAyNS4wMSAxNzMuMTg3WiIgZmlsbD0iI0Y4RjhGOCI+PC9wYXRoPgo8cGF0aCBkPSJNMTE0NC44OCAzMTMuODU0QzExMDIuODQgMzcxLjAxMiAxMDQ0LjI1IDQxMS4zODQgOTgyLjE1NiA0NDQuMDM5QzEwMDYuOTIgMzc4Ljk1MSAxMDQyLjU5IDMxMi44MTYgMTA3NC4yMyAyNTAuNjE4QzEwODQuODUgMjI5Ljg2NCAxMTkzLjI5IDI0OC4wNzkgMTE0NC44OCAzMTMuODU0WiIgZmlsbD0iYmxhY2siPjwvcGF0aD4KPHBhdGggZD0iTTE0MDIuODkgMjYxLjkzNEMxNDM0LjYxIDI2MS45NjMgMTQwNi44MiAzMjEuMzIgMTM5OS44IDMzNS4wNTZDMTM3OCAzNzcuNzQyIDEzMjcuODQgNDM1LjU3NiAxMjgxLjEyIDQ1MC4yNjRDMTI1MC40OCA0NDguNDA2IDEyNzAuMSA0MDcuODMyIDEyNzcuNTcgMzkyLjk3N0MxMjk4LjM0IDM1MS43MDMgMTM1OC41NCAyNzYuMzY0IDE0MDIuODkgMjYxLjkzNFoiIGZpbGw9ImJsYWNrIj48L3BhdGg+CjxwYXRoIGQ9Ik0xNzQ1LjIzIDIzMS4xMjVDMTc0Ny42IDIzMS4zOTIgMTc0MS4wMiAyNDcuNDM3IDE3NDAuMjUgMjQ5Ljk0MUMxNzQ1LjU5IDI2Ny4zMjEgMTc1Ni4yOSAyNzQuMzgxIDE3NzMuNTQgMjc1Ljg4QzE3NjQuODIgMjk0LjAzMSAxNzU2LjU5IDMxNS40IDE3NDkuMjUgMzM0LjE1NkMxNzM0Ljg3IDMzOC43MjIgMTcyMS43NCAzNDYuMjU5IDE3MDkuMjMgMzU0LjUzN0MxNzIyLjY0IDMyOC4yNjEgMTcwOS4xNSAzMDMuNDYyIDE2NzcuMDkgMzAxLjk3MUMxNjQ4LjUxIDMwNC4xNTUgMTYyNC4yMSAzMDguOTQzIDE1OTYuMDUgMzE0LjEyM0MxNjAyLjMzIDI5Ny4xMjUgMTYwOS45MyAyODAuNDgxIDE2MTcuMDYgMjYzLjc4MkMxNjM1LjAyIDI1OS44MjUgMTY1NC4xNiAyNTMuODc4IDE2NzIuMjYgMjQ5LjQ3NEMxNjk2LjU5IDI0My41NTQgMTcyMS4yMiAyMzguMTIgMTc0NS4yMyAyMzEuMTI1WiIgZmlsbD0iYmxhY2siPjwvcGF0aD4KPHBhdGggZD0iTTIyOS4xMSAyMjcuOTEzQzIyMy44MiAyMjQuMzYgMjEyLjE1NSAyMTQuMTAzIDIwOC45MTEgMjA4LjI5MUMxODkuNDM1IDE3My4zOTkgMjg3LjU2OSAxMzIuNzcgMzE1Ljg2OSAxMzYuNjg3QzM1Ny4xOTQgMTQyLjQwMSAzNjYuNTEyIDE3MS40NjIgMzQ4LjY3MSAyMDQuNzk2QzMxMS41NjggMjcxLjQzOSAyNzMuMzE1IDMzNy41NTEgMjM4IDQwNS4xN0MyMjMuNjUgNDMyLjY0NSAyMDkuNjY2IDQ1OS44NiAxOTguMDQzIDQ4OC42NDdDMjQ5LjMyOCA0NzUuMDc0IDI5NS43NiA0NjAuNzIzIDM0OC4zNjQgNDQ4LjYxN0wzNjEuMjEyIDQyMi43MDRDMzU4LjUxNSA0MjIuNDE4IDM1Mi4wNDEgNDIxLjY5OCAzNDkuODk4IDQyMC40MjhDMzE5LjA2OCA0MDIuMTcyIDMzMi43OTkgMzgxLjA1IDM1MS4xMiAzNTkuNTJDMzYzLjg3OSAzNDYuNDYzIDM4OS44MDYgMzM4LjEyMiA0MDcuMDM4IDMzMi42NzRDNDEwLjcyNyAzMjUuMTU0IDQxNC45NDQgMzE3LjMwOSA0MTguODAxIDMwOS44MjNDMzk4LjIxNCAzMTAuNzM5IDM3MS4zNTYgMjk0Ljg4MyAzODAuODE5IDI3Mi4xOTJDMzk0LjM1MSAyMzkuNzQzIDQ0Ny4wMzggMjIyLjIzMyA0NzguMzYyIDIxMS4zOTVDNTI2LjA5MyAxOTQuODc5IDU4MC43OTkgMTc3LjU2NSA2MzEuMDkxIDE3My44OThDNjc4LjE3MiAxNzAuNDY1IDY4Mi4yIDIyMi41MDIgNjQ3LjMwNiAyNDIuMjcyQzYyNy45NzUgMjQ5LjQ1IDYwNi42MyAyNTMuNzgzIDU4Ni41MzUgMjU5LjQxNEM1NjQuMjMyIDI2NS44MzUgNTQyLjA0NyAyNzIuNjY0IDUxOS45OTMgMjc5Ljg5NkM1MTIuOTUyIDI5MC43NjYgNTA2LjE4MyAzMDIuNzE2IDQ5OS41OTUgMzEzLjkzNkM1MTguMTI3IDMwOS41OTcgNTU4LjA4NiAyOTguOTkgNTc0LjE5NCAzMDkuNjE4QzU5OC44NjMgMzI1Ljg5MSA1ODkuNzQxIDM1NC4xMzIgNTY1Ljg3MyAzNjkuMTM0QzU1My4yMjEgMzc3LjA4NSA0NzIuNDc3IDM5Ny4xMzggNDUxLjkwNCA0MDIuOTQyQzQ0Ni4xNDkgNDEzLjE2NiA0MzkuOTYgNDI2LjA0OCA0MzQuNDk4IDQzNi42NTRDNDYyLjg5IDQyNy43NDMgNTMwLjk5OSA0MDMuNDczIDU2MC44MjggNDEyLjI0N0M1OTAuNDg3IDQyMC45NzYgNTgzLjk4NCA0NjkuMjc4IDU1OC4zMzIgNDc5LjY1NkM0OTUuNTU4IDUwNS4wNTUgNDIzLjg3NSA1MzEuMzcgMzU3LjM2MyA1NDEuNDQ0QzMzMi41MDQgNTQ1LjIwOSAzMjYuNzk0IDUzMy45MTEgMjk3LjQzNyA1NDIuNTA5QzIzOS45NzMgNTU5LjMzOCAxODUuMDg4IDU4My4zMTkgMTI4LjA0MSA2MDEuMTk0QzEwNy44NDkgNjA3LjUyIDYzLjA5NDcgNTkyLjk3MyA2OS4xMzEyIDU2NC41ODhDNzMuNDIxMSA1NDQuNDE1IDgzLjEwMTEgNTI0LjI5MiA5MS4xNDU3IDUwNS4xOEMxMzEuNDk4IDQxMC4wNTkgMTc3LjU3IDMxNy40NjggMjI5LjExIDIyNy45MTNaIiBmaWxsPSIjRjhGOEY4Ij48L3BhdGg+CjxwYXRoIGQ9Ik02MjkuMjM3IDM2NS4xNzVDNjU4LjEzNCAzMTQuNzY0IDY5MC41NTYgMjY2LjQ1NiA3MjYuMjYgMjIwLjYxMkM3NDIuMDE2IDIwMC40NjQgNzY4LjkyMiAxNjUuMDc1IDc5NC4yNzMgMTU4LjQ5NUM4MTkuMTgzIDE1MS44MzQgODYzLjYzNCAxNjcuMjIyIDg3MC43MjggMTk1LjAwNUM4NzMuMjIyIDIwNC44OTggODY5LjM4OCAyNTcuMDc5IDg2OS4xNjcgMjY5Ljk1NUM4NjguODkxIDI4Ni4wODYgODY4LjkwOCAzMDUuMTc1IDg2OS4wNTUgMzIxLjgwNkM5NDQuMTIgMzExLjU5MyA5MjguNTUyIDM3OC4yMDYgODcwLjkyOSAzOTIuOThDODcyLjc4MSA0MjMuNDg5IDg4Ny4yNDggNDc2LjE5NCA4NjYuNjAxIDUwMi4wMUM4NTMuNzM3IDUxOC4wOTIgODE4LjgxNiA1MzYuMjcxIDgwMC4yNSA1MTkuNTk5Qzc4Mi4wMTIgNTAzLjM3MiA3NzkuNjczIDQzOC45NDUgNzc3LjEzMyA0MTMuNDMzQzc0MS4zMzUgNDIxLjIyNiA3MDUuODI1IDQzNC4yNzQgNjcxLjUzMSA0NDEuNTI3QzY1NS4xODIgNDY5LjQzNCA2MzguMDI1IDUwNi4xMDcgNjE1LjQ5MiA1MjkuMjU2QzU5My44OSA1NTEuNDU1IDU2OS4wOTIgNTM1Ljk0NyA1NjAuNzI5IDUxMC42MDRDNTY1Ljg0NyA0ODMuODQ2IDU3OC44ODggNDU4Ljc5IDU5MS4xNjYgNDM0LjcwNEM1NjEuMTExIDQwNC43ODggNjAwLjcwMiAzNzUuNjExIDYyOS4yMzcgMzY1LjE3NVoiIGZpbGw9IiNGOEY4RjgiPjwvcGF0aD4KPHBhdGggZD0iTTc3MS40MTkgMjg2LjcyOEM3NzMuMzk4IDI4OC45MTEgNzczLjkyOCAzMzYuMDUyIDc3NC4yNjUgMzQzLjAxNkM3NTcuNjM0IDM0Ni4yNjEgNzQxLjU4NiAzNTAuNjk0IDcyNC41OTIgMzUzLjY2Nkw3MjMuMTc5IDM1My41NDNDNzIyLjg3MiAzNDguMDI5IDc2Ni4zMTggMjkyLjU4NyA3NzEuNDE5IDI4Ni43MjhaIiBmaWxsPSJibGFjayI+PC9wYXRoPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzQ2MzBfNzU4NSI+CjxyZWN0IHdpZHRoPSIyMTEzIiBoZWlnaHQ9Ijc0NCIgZmlsbD0id2hpdGUiPjwvcmVjdD4KPC9jbGlwUGF0aD4KPC9kZWZzPgo8L3N2Zz4=" alt="Leadoff">
+    <span class="spacer"></span>
+    <a class="sticker-btn cream sm" data-cta="appstore" data-loc="nav" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener">
+      <svg width="16" height="19" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788 340c-6 4-109 62-109 190 0 148 130 200 134 201-1 3-21 71-69 141-43 61-88 122-156 122s-86-40-165-40c-77 0-104 41-166 41s-106-57-156-127C43 785 0 665 0 551c0-183 119-280 236-280 62 0 114 41 153 41 37 0 95-43 166-43 27 0 124 2 233 71zM551 156c31-37 53-88 53-139 0-7-1-14-2-17-50 2-110 33-146 75-29 33-56 84-56 136 0 8 1 15 2 18 3 1 8 1 13 1 45 0 102-30 136-74z"/></svg><span class="ios-nav-label">Download iOS app</span>
+    </a>
+    <a class="sticker-btn accent sm" data-cta="webapp" data-loc="nav" href="/app">Build lineups</a>
+  </div>
+</nav>
 
-  <main id="main">
+<main id="main">
 
-  <!-- ═══════════ PAGE HERO ═══════════ -->
-  <section class="page-hero">
-    <div class="container">
-      <h1>Pricing</h1>
-      <p class="page-hero-sub">One plan, everything included. Try it free for 7 days.</p>
-    </div>
-  </section>
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <span class="kicker">Pricing</span>
+    <h1 class="display">One plan.<br>The whole gameday.</h1>
+    <p class="sub">Fair lineups, printable lineup cards, and a roster that syncs straight to the stands. Try it free for 7 days.</p>
 
-  <!-- ═══════════ BILLING TOGGLE ═══════════ -->
-  <div class="container">
     <div class="billing-toggle" role="radiogroup" aria-label="Billing period">
       <button class="billing-btn active" id="btn-monthly" role="radio" aria-checked="true" onclick="setBilling('monthly')">Monthly</button>
-      <button class="billing-btn" id="btn-yearly" role="radio" aria-checked="false" onclick="setBilling('yearly')">Yearly<span class="billing-save">Save 64%</span></button>
-    </div>
-  </div>
-
-  <!-- ═══════════ PRICING CARD ═══════════ -->
-  <section class="container" aria-label="Pricing plans">
-    <div class="pricing-grid pricing-grid-single">
-
-      <!-- PRO TIER -->
-      <div class="pricing-card featured">
-        <div class="pricing-badge">7-Day Free Trial</div>
-        <div class="pricing-name">Pro</div>
-        <p class="pricing-sub">Everything you need on game day</p>
-        <div class="pricing-price">
-          <span class="pricing-amount" id="pro-price">$2.99</span>
-          <span class="pricing-period" id="pro-period">/mo</span>
-        </div>
-        <p class="pricing-annual-note" id="pro-note">Billed monthly. Switch to yearly and save 64%.</p>
-        <hr class="pricing-divider" />
-        <ul class="pricing-features">
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Unlimited teams
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Advanced lineup algorithm
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Strategy slider for competitive play
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Full game history and statistics
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Share lineups with coaches and parents
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Import roster from Lineup DJ
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Import schedule from GameChanger
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Save and print lineup cards
-          </li>
-          <li class="pricing-feature">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            Priority support
-          </li>
-        </ul>
-        <button onclick="startCheckout()" class="btn-cta btn-cta-green btn-cta-full" id="btn-start-trial">Start Free Trial</button>
-        <p class="pricing-note">7-day free trial. Cancel anytime.</p>
-      </div>
-
-    </div>
-
-    <!-- LDJ subscriber callout -->
-    <div class="ldj-callout">
-      <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="24" height="24" />
-      <div>
-        <strong>Already a Lineup DJ subscriber?</strong>
-        <span>Sign in with your Lineup DJ account to get free access to Pro.</span>
-      </div>
-      <a href="/app" class="btn-cta btn-outline">Sign In</a>
+      <button class="billing-btn" id="btn-yearly" role="radio" aria-checked="false" onclick="setBilling('yearly')">Yearly <span class="chip gold">Save 64%</span></button>
     </div>
   </section>
 
-  <!-- ═══════════ COMPARISON TABLE ═══════════ -->
-  <section class="compare-section">
-    <div class="container">
-      <h2 class="compare-title">Compare Plans</h2>
-      <p class="compare-sub">See what you get with each plan</p>
+  <!-- ═══════════ PLAN CARD ═══════════ -->
+  <section class="plan-wrap" aria-label="Pricing plans">
+    <div class="card plan">
+      <span class="pennant">7-day free trial</span>
+      <div class="plan-name">Pro</div>
+      <p class="plan-sub">Everything a coach needs on gameday</p>
+      <div class="plan-price">
+        <span class="plan-amount" id="pro-price">$2.99</span>
+        <span class="plan-period" id="pro-period">/mo</span>
+      </div>
+      <p class="plan-note" id="pro-note">Billed monthly. Switch to yearly and save 64%.</p>
+      <p class="plan-tagline">Everything included:</p>
+      <ul class="plan-features">
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Unlimited teams</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Fair-play lineup engine with auto-assigned positions</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Strategy slider for competitive play</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Full game history and playing-time stats</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Share lineups with coaches and parents</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Roster synced with the Leadoff iOS app</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Schedule import from GameChanger</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Save and print lineup cards</li>
+        <li class="plan-feature"><span class="tick" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>Priority support</li>
+      </ul>
+      <button onclick="startCheckout()" class="sticker-btn accent lg full" id="btn-start-trial">Start free trial</button>
+      <p class="plan-fine">7 days free, then <span id="pro-fine">$2.99/mo</span>. Cancel anytime.</p>
+    </div>
+  </section>
 
-      <div class="compare-table" role="table" aria-label="Feature comparison">
-        <div class="compare-header" role="row">
-          <div class="compare-header-cell" role="columnheader">Feature</div>
-          <div class="compare-header-cell" role="columnheader">
-            Public Tools
-            <div class="compare-header-label">Free, but limited</div>
-          </div>
-          <div class="compare-header-cell pro" role="columnheader">
-            Pro
-            <div class="compare-header-label">Full-featured</div>
-          </div>
-        </div>
+  <!-- iOS subscriber callout -->
+  <div class="card-quiet ios-callout">
+    <div class="badge" aria-hidden="true">
+      <svg width="18" height="22" viewBox="0 0 814 1000" fill="currentColor"><path d="M788 340c-6 4-109 62-109 190 0 148 130 200 134 201-1 3-21 71-69 141-43 61-88 122-156 122s-86-40-165-40c-77 0-104 41-166 41s-106-57-156-127C43 785 0 665 0 551c0-183 119-280 236-280 62 0 114 41 153 41 37 0 95-43 166-43 27 0 124 2 233 71zM554 154c33-39 56-93 56-147 0-8-1-15-2-21-53 2-116 35-154 79-30 34-58 88-58 143 0 8 1 16 2 19 3 1 8 2 13 2 48 0 108-32 143-75z"/></svg>
+    </div>
+    <div class="text">
+      <strong>Already subscribed to Leadoff on iOS?</strong>
+      Pro on the web is included. Sign in with the same account and you are set.
+    </div>
+    <a href="/app" class="sticker-btn cream sm">Sign in</a>
+  </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Teams</div><div class="compare-feature-desc">Create and manage teams</div></div></div>
-          <div class="compare-cell center" role="cell"><span class="compare-label basic">1 team</span></div>
-          <div class="compare-cell center pro-col" role="cell"><span class="compare-label advanced">Unlimited</span></div>
-        </div>
+  <!-- ═══════════ COMPARE ═══════════ -->
+  <section class="compare-band" id="compare">
+    <h2 class="m-head display">Compare plans</h2>
+    <p class="m-sub">Start free. Go Pro when the season gets serious.</p>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Import from Lineup DJ</div><div class="compare-feature-desc">Sync your roster and player data</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+    <div class="compare-table" role="table" aria-label="Feature comparison">
+      <div class="compare-row compare-head" role="row">
+        <div class="compare-cell" role="columnheader"><span class="name">Feature</span></div>
+        <div class="compare-cell center" role="columnheader"><span class="name">Free</span><span class="label">Get started</span></div>
+        <div class="compare-cell center pro-col" role="columnheader"><span class="name">Pro</span><span class="label">Everything included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">GameChanger Schedule Import</div><div class="compare-feature-desc">Pull in your full season schedule</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Teams</div><div class="compare-desc">Create and manage teams</div></div></div>
+        <div class="compare-cell center" role="cell"><span class="chip quiet">1 team</span></div>
+        <div class="compare-cell center pro-col" role="cell"><span class="chip green">Unlimited</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Auto-Assign Algorithm</div><div class="compare-feature-desc">Balanced fielding position assignment</div></div></div>
-          <div class="compare-cell center" role="cell"><span class="compare-label basic">Basic</span></div>
-          <div class="compare-cell center pro-col" role="cell"><span class="compare-label advanced">Advanced</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Sync with the Leadoff iOS app</div><div class="compare-desc">One roster for the dugout and the stands</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Strategy Slider</div><div class="compare-feature-desc">Balance fairness vs. competitive play</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">GameChanger schedule import</div><div class="compare-desc">Pull in your full season schedule</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Save &amp; Print Lineups</div><div class="compare-feature-desc">Save lineups and print clean lineup cards</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Auto-assign positions</div><div class="compare-desc">Balanced fielding rotations</div></div></div>
+        <div class="compare-cell center" role="cell"><span class="chip quiet">Basic</span></div>
+        <div class="compare-cell center pro-col" role="cell"><span class="chip green">Advanced</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Game History</div><div class="compare-feature-desc">Track past games and lineups</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Strategy slider</div><div class="compare-desc">Balance fairness vs. competitive play</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Team Statistics</div><div class="compare-feature-desc">Position and playing time stats</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Save and print lineup cards</div><div class="compare-desc">Clean cards for the dugout and the ump</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Share Lineups</div><div class="compare-feature-desc">Share with coaches and parents</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Game history</div><div class="compare-desc">Track past games and lineups</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
-        <div class="compare-row" role="row">
-          <div class="compare-cell" role="cell"><div><div class="compare-feature-name">Priority Support</div><div class="compare-feature-desc">Fast response from our team</div></div></div>
-          <div class="compare-cell center" role="cell"><svg width="20" height="20" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
-          <div class="compare-cell center pro-col" role="cell"><svg width="20" height="20" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
-        </div>
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Team statistics</div><div class="compare-desc">Position and playing-time stats</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
 
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Share lineups</div><div class="compare-desc">Send to coaches and parents</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
+      </div>
+
+      <div class="compare-row" role="row">
+        <div class="compare-cell" role="cell"><div><div class="compare-feature">Priority support</div><div class="compare-desc">Fast answers from the Leadoff team</div></div></div>
+        <div class="compare-cell center" role="cell"><svg width="22" height="22" class="check-no" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg><span class="sr-only">Not included</span></div>
+        <div class="compare-cell center pro-col" role="cell"><svg width="22" height="22" class="check-yes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg><span class="sr-only">Included</span></div>
       </div>
     </div>
   </section>
 
   <!-- ═══════════ FAQ ═══════════ -->
-  <section class="faq-section">
-    <div class="container">
-      <h2 class="faq-title">Frequently Asked Questions</h2>
-
-      <div class="faq-list">
-
-        <details class="faq-item">
-          <summary>Is Lineup Card really free for Lineup DJ users?</summary>
-          <div class="faq-answer">Yes. If you have an active Lineup DJ subscription, sign into Lineup Card with the same email and you get full Pro access at no extra cost. Your roster, players, and position preferences sync automatically.</div>
-        </details>
-
-        <details class="faq-item">
-          <summary>What do I get with the Pro plan?</summary>
-          <div class="faq-answer">Pro unlocks unlimited teams, the advanced auto-assign algorithm, the strategy slider for competitive play weighting, full game history and team statistics, lineup sharing with coaches and parents, and priority support.</div>
-        </details>
-
-        <details class="faq-item">
-          <summary>How does the 7-day free trial work?</summary>
-          <div class="faq-answer">When you start the Pro trial, you get full access to every Pro feature for 7 days at no charge. If you decide it's not for you, cancel before the trial ends and you won't be charged.</div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Can I cancel my subscription anytime?</summary>
-          <div class="faq-answer">Yes. You can cancel at any time from your account settings. You'll keep access to Pro features through the end of your current billing period.</div>
-        </details>
-
-        <details class="faq-item">
-          <summary>Do I need Lineup DJ to use Lineup Card?</summary>
-          <div class="faq-answer">No. Anyone can sign up for the Pro plan directly. Lineup DJ subscribers get free access as a perk, but Lineup Card works great as a standalone tool.</div>
-        </details>
-
-      </div>
+  <section class="content section" id="faq">
+    <h2 class="m-head display">Questions, answered</h2>
+    <div class="faq">
+      <details>
+        <summary>Is Pro really included with my Leadoff iOS subscription?<span class="plus" aria-hidden="true">+</span></summary>
+        <div class="a"><div class="a-in">Yes. If you have an active Leadoff subscription on iOS, sign in here with the same account and you get full Pro access at no extra cost. Your roster, players, and position preferences sync automatically.</div></div>
+      </details>
+      <details>
+        <summary>What do I get with Pro?<span class="plus" aria-hidden="true">+</span></summary>
+        <div class="a"><div class="a-in">Pro unlocks unlimited teams, the advanced fair-play lineup engine, the strategy slider for competitive play, full game history and team statistics, lineup sharing with coaches and parents, and priority support.</div></div>
+      </details>
+      <details>
+        <summary>How does the 7-day free trial work?<span class="plus" aria-hidden="true">+</span></summary>
+        <div class="a"><div class="a-in">Start the trial and you get every Pro feature for 7 days at no charge. If it is not for you, cancel before the trial ends and you will not be billed.</div></div>
+      </details>
+      <details>
+        <summary>Can I cancel anytime?<span class="plus" aria-hidden="true">+</span></summary>
+        <div class="a"><div class="a-in">Yes. Cancel at any time from your account settings. You keep Pro through the end of your current billing period.</div></div>
+      </details>
+      <details>
+        <summary>Do I need the iOS app to use Leadoff on the web?<span class="plus" aria-hidden="true">+</span></summary>
+        <div class="a"><div class="a-in">No. Anyone can subscribe to Pro directly on the web. iOS subscribers get it included, but the web lineup builder works great on its own.</div></div>
+      </details>
     </div>
   </section>
 
-  <!-- ═══════════ CTA ═══════════ -->
-  <section class="cta-section">
-    <div class="container">
-      <h2>Ready to build your lineup?</h2>
-      <p>Start your 7-day free trial today. Lineup DJ subscribers get free access.</p>
-      <div class="cta-buttons">
-        <button onclick="startCheckout()" class="btn-cta btn-cta-green btn-cta-lg">Start Free Trial</button>
-        <a href="/app" class="btn-cta btn-outline btn-cta-lg">
-          <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon" width="20" height="20" />
-          I Have Lineup DJ
-        </a>
-      </div>
-      <p class="cta-note">7-day free trial. Cancel anytime.</p>
+</main>
+
+<!-- ═══════════ AUTH MODAL ═══════════ -->
+<div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
+  <div class="card auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
+    </button>
+    <div class="auth-modal-logo">
+      <img src="/assets/leadoff-logo-ink.svg" alt="Leadoff" height="34">
     </div>
-  </section>
-
-  </main>
-
-  <!-- ═══════════ AUTH MODAL ═══════════ -->
-  <div class="auth-overlay" id="auth-overlay" onclick="if(event.target===this)closeAuthModal()">
-    <div class="auth-modal">
-      <button class="auth-modal-close" onclick="closeAuthModal()" aria-label="Close">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>
-      </button>
-      <div class="auth-modal-logo">
-        <img src="/assets/icon.png" alt="" width="28" height="28" />
-        Lineup Card
+    <div id="auth-panel-providers">
+      <h2 id="auth-modal-title">Sign in</h2>
+      <p class="auth-sub" id="auth-modal-sub">Welcome back. Sign in to your account.</p>
+      <div class="auth-providers-list">
+        <button class="auth-provider-btn" onclick="authGoogle()">
+          <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="auth-provider-btn" onclick="authApple()">
+          <svg viewBox="0 0 14 17" fill="currentColor"><path d="M11.098 8.686c.008-.626.174-1.24.483-1.784.31-.545.75-1.002 1.284-1.33a3.98 3.98 0 0 0-1.006-.963 4.06 4.06 0 0 0-1.687-.368c-1.26-.132-2.48.753-3.122.753-.645 0-1.633-.739-2.697-.717a4.13 4.13 0 0 0-1.947.565 4.18 4.18 0 0 0-1.408 1.465C-.164 8.546.682 12.237 2.072 14.267c.695.994 1.507 2.104 2.57 2.065 1.041-.043 1.429-.663 2.685-.663 1.244 0 1.608.663 2.693.638 1.116-.018 1.82-.998 2.49-2.002a8.23 8.23 0 0 0 1.14-2.319 3.71 3.71 0 0 1-2.19-1.32 3.72 3.72 0 0 1-.362-3.98z"/><path d="M9.049 2.618a3.64 3.64 0 0 0 .836-2.618A3.72 3.72 0 0 0 7.48 1.245a3.5 3.5 0 0 0-.87 1.175 3.36 3.36 0 0 0-.309 1.346c.465.005.925-.096 1.346-.295.42-.199.79-.49 1.082-.853z"/></svg>
+          Continue with Apple
+        </button>
       </div>
-      <div id="auth-panel-providers">
-        <h2 id="auth-modal-title">Sign In</h2>
-        <p class="auth-sub" id="auth-modal-sub">Welcome back. Sign in to your account.</p>
-        <div class="auth-providers-list">
-          <button class="auth-provider-btn" onclick="authGoogle()">
-            <svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Continue with Google
-          </button>
-          <button class="auth-provider-btn" onclick="authApple()">
-            <svg viewBox="0 0 14 17" fill="currentColor"><path d="M11.098 8.686c.008-.626.174-1.24.483-1.784.31-.545.75-1.002 1.284-1.33a3.98 3.98 0 0 0-1.006-.963 4.06 4.06 0 0 0-1.687-.368c-1.26-.132-2.48.753-3.122.753-.645 0-1.633-.739-2.697-.717a4.13 4.13 0 0 0-1.947.565 4.18 4.18 0 0 0-1.408 1.465C-.164 8.546.682 12.237 2.072 14.267c.695.994 1.507 2.104 2.57 2.065 1.041-.043 1.429-.663 2.685-.663 1.244 0 1.608.663 2.693.638 1.116-.018 1.82-.998 2.49-2.002a8.23 8.23 0 0 0 1.14-2.319 3.71 3.71 0 0 1-2.19-1.32 3.72 3.72 0 0 1-.362-3.98z"/><path d="M9.049 2.618a3.64 3.64 0 0 0 .836-2.618A3.72 3.72 0 0 0 7.48 1.245a3.5 3.5 0 0 0-.87 1.175 3.36 3.36 0 0 0-.309 1.346c.465.005.925-.096 1.346-.295.42-.199.79-.49 1.082-.853z"/></svg>
-            Continue with Apple
-          </button>
-        </div>
-        <div class="auth-divider-line">or</div>
-        <div class="auth-fields">
-          <input type="email" id="modal-email" placeholder="Email address" autocomplete="email" />
-          <input type="password" id="modal-password" placeholder="Password" autocomplete="current-password" />
-          <input type="password" id="modal-password-confirm" placeholder="Confirm password" autocomplete="new-password" style="display:none;" />
-        </div>
-        <button class="auth-submit-btn" id="modal-submit-btn" onclick="submitModalAuth()">Sign In</button>
-        <div class="auth-error-msg" id="modal-error"></div>
-        <div class="auth-footer-link" id="modal-reset-link">
-          <a onclick="toggleModalReset()">Forgot password?</a>
-        </div>
-        <div class="auth-footer-link" id="modal-toggle">
-          Don't have an account? <a onclick="switchAuthMode('signup')">Sign up free</a>
-        </div>
+      <div class="auth-divider-line">or</div>
+      <div class="auth-fields">
+        <input type="email" id="modal-email" placeholder="Email address" autocomplete="email" />
+        <input type="password" id="modal-password" placeholder="Password" autocomplete="current-password" />
+        <input type="password" id="modal-password-confirm" placeholder="Confirm password" autocomplete="new-password" style="display:none;" />
       </div>
-      <div id="auth-panel-reset" style="display:none;">
-        <h2>Reset Password</h2>
-        <p class="auth-sub">Enter your email and we'll send a reset link.</p>
-        <div class="auth-fields">
-          <input type="email" id="modal-reset-email" placeholder="Email address" autocomplete="email" />
-        </div>
-        <button class="auth-submit-btn" onclick="sendModalReset()">Send Reset Email</button>
-        <div class="auth-error-msg" id="modal-reset-error"></div>
-        <div class="auth-footer-link">
-          <a onclick="switchAuthMode('signin')">← Back to sign in</a>
-        </div>
+      <button class="sticker-btn accent sm" id="modal-submit-btn" onclick="submitModalAuth()">Sign in</button>
+      <div class="auth-error-msg" id="modal-error"></div>
+      <div class="auth-footer-link" id="modal-reset-link">
+        <a onclick="toggleModalReset()">Forgot password?</a>
+      </div>
+      <div class="auth-footer-link" id="modal-toggle">
+        Don't have an account? <a onclick="switchAuthMode('signup')">Sign up free</a>
+      </div>
+    </div>
+    <div id="auth-panel-reset" style="display:none;">
+      <h2>Reset password</h2>
+      <p class="auth-sub">Enter your email and we'll send a reset link.</p>
+      <div class="auth-fields">
+        <input type="email" id="modal-reset-email" placeholder="Email address" autocomplete="email" />
+      </div>
+      <button class="sticker-btn accent sm" onclick="sendModalReset()">Send reset email</button>
+      <div class="auth-error-msg" id="modal-reset-error"></div>
+      <div class="auth-footer-link">
+        <a onclick="switchAuthMode('signin')">Back to sign in</a>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ═══════════ FOOTER ═══════════ -->
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <img src="/assets/icon.png" alt="Lineup Card" width="28" height="28" />
-        Lineup Card
-      </div>
-      <div class="footer-links">
-        <a href="/for-leagues">For leagues</a>
-        <a href="https://lineupdj.app" target="_blank" rel="noopener">
-          <img src="https://lineupdj.app/assets/newblue1024x1024.png" alt="" class="inline-icon inline-icon-sm" width="16" height="16" />
-          Lineup DJ
+<!-- ═══════════ FOOTER (shared with index.html) ═══════════ -->
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-cta">
+      <h2 class="display">Showtime is one tap away</h2>
+      <p>Free to start. Set the order once and the stands handle the rest.</p>
+      <div class="cta-row">
+        <a class="sticker-btn cream lg" data-cta="appstore" data-loc="footer" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener">
+          <svg width="16" height="19" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788 340c-6 4-109 62-109 190 0 148 130 200 134 201-1 3-21 71-69 141-43 61-88 122-156 122s-86-40-165-40c-77 0-104 41-166 41s-106-57-156-127C43 785 0 665 0 551c0-183 119-280 236-280 62 0 114 41 153 41 37 0 95-43 166-43 27 0 124 2 233 71zM551 156c31-37 53-88 53-139 0-7-1-14-2-17-50 2-110 33-146 75-29 33-56 84-56 136 0 8 1 15 2 18 3 1 8 1 13 1 45 0 102-30 136-74z"/></svg>Download iOS app
         </a>
-        <a href="https://lineupdj.app/blog" target="_blank" rel="noopener">Blog</a>
-        <a href="https://lineupdj.app/privacy" target="_blank" rel="noopener">Privacy</a>
-        <a href="https://lineupdj.app/terms" target="_blank" rel="noopener">Terms</a>
+        <a class="sticker-btn accent lg" data-cta="webapp" data-loc="footer" href="/app">Build lineups</a>
       </div>
-      <div class="footer-copy">&copy; 2026 Lineup Card</div>
     </div>
-  </footer>
+    <div class="footer-links">
+      <div class="footer-col">
+        <span class="foot-kicker">Play ball</span>
+        <a class="light" data-cta="appstore" data-loc="footer-links" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener">Get the iOS app</a>
+        <a class="green" data-cta="webapp" data-loc="footer-links" href="/app">Build a lineup on the web ↗</a>
+        <a class="light" href="/pricing">Pricing</a>
+        <a class="light" href="/for-leagues">For leagues</a>
+      </div>
+      <div class="footer-col">
+        <span class="foot-kicker">Leadoff</span>
+        <span>The music. The lineup. <span style="color:#F4F2EC; font-weight:700">One place.</span></span>
+        <span>© 2026 Leadoff · getleadoff.com</span>
+        <span style="color:var(--gold)">★ 4.8 on the App Store</span>
+      </div>
+      <div class="footer-col">
+        <span class="foot-kicker">Get in touch</span>
+        <a class="light" href="mailto:hello@getleadoff.com">hello@getleadoff.com</a>
+        <a class="muted" href="https://getleadoff.com/privacy">Privacy Policy</a>
+        <a class="muted" href="https://getleadoff.com/terms">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-logo">
+    <img src="data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIyNi4wIDk0LjAgMjA1OS4wIDU1Ni4wIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDBfNDYzMF83NTg1KSI+Cgo8cGF0aCBkPSJNMzA0LjU3MSAxMDMuNDM1QzMxMC44NDUgMTAyLjg0MiAzMTcuMTY4IDEwMy4wNjggMzIzLjM4MyAxMDQuMTA4QzM2NC45NjggMTEwLjY2MSAzOTkuNDM0IDEzOS4xNSAzOTUuNzI3IDE4My41MzdDMzk1LjIzMiAxODkuNDY0IDM4OC45OTUgMjA3LjYgMzkyLjE2NSAyMTEuNzk4QzM5Ni43MTggMjEwLjQ5OSA0MDcuNTMyIDIwNS4wNDggNDEyLjM0MiAyMDIuODAyQzQyMi4xOTQgMTk4LjEyMyA0MzIuMjA5IDE5My43OTYgNDQyLjM2OCAxODkuODI3QzQ5NS4yMSAxNjkuMTA3IDU2Ni43OTIgMTQ3Ljk2NCA2MjMuMTUxIDE0MS4yMDRDNjQ1LjQzOCAxMzguNTMxIDY3NS43OTUgMTQ1Ljc2NiA2OTEuMjcyIDE2Mi41MDdDNjk2Ljc3NCAxNjguNDU4IDcwMS45OTYgMTc2LjIxMiA3MDguMTMxIDE4MS42MzZDNzEwLjM1NiAxODIuMjYgNzEwLjUxMiAxODIuNTA1IDcxMi4zOTMgMTgwLjY4MkM3MzYuODM0IDE1Ni45OTMgNzYxLjM2OCAxMjcuMDU4IDc5OC4wMSAxMjMuODEzQzgyMy4xODQgMTIxLjU4MyA4NjEuMjggMTM3LjE3NSA4ODIuNTQ3IDE1MC45NjFDODg4LjIyOSAxNTQuNjQ1IDg5Ni44NDggMTY5LjI4OSA5MDIuNjQzIDE3NC4yMzFDOTA0LjE3IDE3NS42MjggOTA2LjExNCAxNzYuMDQyIDkwOC4xMzUgMTc1LjQ3MkM5MjEuNjA0IDE3MS42NjggOTM1Ljc0OCAxNjUuMzEzIDk0OS4xNjkgMTYwLjYwNUM5NzkuODUgMTQ5Ljg0MiAxMDEwLjYxIDE0Mi40MzQgMTA0My4xNSAxMzguNjY5QzExMTEuNDUgMTMxLjU1NyAxMTg4LjAyIDE0MS43NDUgMTI0Ny41MiAxNzcuNzc2QzEyNTYuMzkgMTgzLjE1IDEyNzkuMjMgMjExLjg5NCAxMjg2LjU1IDIwOC41NjZDMTI5NC43IDIwNC44NTYgMTMwOC4wNiAxOTIuMTEgMTMxNi41OCAxODYuODQyQzEzNjEuMDcgMTU5LjMxNSAxNDI1LjY2IDEzMS40MDkgMTQ3Ni42MiAxNTYuODI2QzE0ODIuNzIgMTU5Ljg3OSAxNDk3LjY0IDE3My4xMzIgMTUwMy41MiAxNzIuMTY0QzE1MTkuNTYgMTY5LjUyNiAxNTM0LjE3IDE1Ny42MDMgMTU1MC41NyAxNTQuNTQ0QzE1ODguMiAxNDUuMzQxIDE2MjcuOCAxMzguMTk3IDE2NjYuMjkgMTMzLjk4QzE3MTEuMzcgMTI5LjA0MiAxNzU0Ljg5IDEyMy4yNTMgMTc5Mi44IDE1My4wMzFDMTgwOS4xMiAxNTQuNzk1IDE4MTkuMjMgMTQ4LjYyMyAxODM0LjE5IDE0Ni4yMzlDMTg5Mi4xOCAxMzYuOTk4IDIwMDEuOTMgMTEyLjQ5NSAyMDUxLjYyIDE0OS4xMDRDMjA2NC42MyAxNTguNTg4IDIwNzMuMjYgMTcyLjkxNyAyMDc1LjU2IDE4OC44NDdDMjA3Ny40IDIwMS4wODIgMjA3Ni4wNyAyMTQuNjk4IDIwNzEuMDQgMjI2LjA2NUMyMDUwLjI1IDI3My4wNTYgMTk4NS45MSAyNjUuNTQ0IDE5NzcuNDkgMjc3LjAzNEMxOTgwLjkgMjgyLjY0MSAxOTkzLjU2IDI4Ny4wNDEgMjAwMC44NSAzMDAuMTY2QzIwMDkuOTQgMzE0LjkwNSAyMDExLjM4IDMzMi4yNDIgMjAwNy41NSAzNDkuMDQ1QzIwMDQuMzkgMzYyLjg2NCAxOTk1LjU5IDM3OS40NjEgMTk4Mi43NiAzODYuOTA1QzE5NDguMTYgNDA2Ljk5NiAxOTA1Ljg3IDQxNC41MTUgMTg2Ny45IDQyNi40NjRDMTg1Ny40OCA0MjkuNzQ0IDE4NDUuNzUgNDMxLjM1OSAxODM2LjE4IDQzNi43MzlDMTgzMi43OSA0MzguNzE2IDE4MjkuMzkgNDQ5LjU5NCAxODI3LjYyIDQ1My40NTlDMTgxNC4xNiA0ODIuODQyIDE3OTkuOTIgNTM1LjI0NCAxNzgyLjM4IDU2MC40MjdDMTc3NC41NiA1NzEuNjkxIDE3NjQuNDIgNTgxLjE1NiAxNzUyLjY1IDU4OC4xODlDMTcxMy4wMSA2MTIuMTc3IDE2NjEuMTYgNjAxLjI5NiAxNjUyLjIgNTUxLjYzM0MxNjQ4LjU0IDUzMS40IDE2NTIuNDYgNTEyLjM4NSAxNjU3LjM0IDQ5Mi44NDFDMTY2MS44NiA0NzUuMTIxIDE2NjkuMDggNDU4LjAzMyAxNjcxLjkgNDQwLjA5MUMxNjcyLjcxIDQzNC45MyAxNjYyLjM3IDQxOS45NTcgMTY1Ny41NyA0MTkuODgxQzE2NDkuNjkgNDE5Ljc1NSAxNTkyLjAyIDQzNS4yMDkgMTU5MC4wMiA0MzguODc5QzE1NjYuOTkgNDgxLjEyNCAxNTU5LjQ3IDUzNi4yNyAxNTI2Ljk0IDU3Mi45OThDMTUxMi4xNCA1ODYuODk2IDE0OTAuMzMgNTk5LjUyNSAxNDY5LjE4IDU5OC4yMjNDMTQwOC4xOSA1OTQuNDcyIDE0MDguMDkgNTQ3LjIxMiAxNDA5LjUgNTAzLjMxOUMxNDAyLjUyIDUwNy4yMTUgMTM5MS42NyA1MTUuNTk5IDEzODQuODcgNTIwLjQ5MkMxMzQ1LjMzIDU0OS40NTggMTI5Mi40OCA1NzIuNzkxIDEyNDMuMTIgNTYzLjM3OEMxMTk0LjE4IDU1NC4wNDQgMTE2Ny42NCA1MzAuNTczIDExNDkuODQgNDg2LjQ0NkMxMTQ5LjA4IDQ4NC41ODEgMTE0My44NiA0ODMuMjE0IDExNDEuNjkgNDg0LjE3QzExMjYuNzYgNDkxLjM0OSAxMTEyLjk5IDUwMi4xOTkgMTA5OC44NCA1MTEuMTlDMTA2MC40NyA1MzUuNzk4IDEwMjAuNyA1NTguMTUxIDk3OS43MjggNTc4LjAyM0M5MzkuOTcxIDU5Ny4zMDQgODk3Ljc1MSA2MTUuMTgxIDg1My45NDUgNTk2LjMwNkM4NDEuNzUzIDU5MS4wNTIgODM1LjM1NyA1ODQuMTExIDgyOC4yOSA1NzMuMTU3QzgyMS41MDkgNTYyLjY0NyA4MTMgNTYxLjg1NiA4MDEuNzUzIDU2MC41MTJDNzY1LjU4MSA1NTQuOTg2IDc1NC43NyA1MjEuMTQgNzUwLjA4MiA0ODkuNDk4Qzc0OC43OTMgNDgxLjY0MyA3NDcuNDA2IDQ3MC4yNjMgNzQyLjg0NyA0NjMuOTg4QzczNy43OTcgNDYyLjIzOCA3MDIuOTE4IDQ3Mi44MjQgNjk3LjA2MSA0NzUuNTM3QzY3Ni4xNzcgNTA1LjU1OSA2NjEuNzM2IDU0NC45MzUgNjMwLjQ4NiA1NjQuMzkxQzYwMy41NTYgNTgxLjE1NyA1NjUuMTU4IDU4My4wNjQgNTQzLjA4NCA1NTcuNjIxQzUzNi41NzYgNTUwLjExOSA1MzMuMzIxIDU0MS41MzkgNTI2LjcxMiA1MzQuNTY2QzUyNC4zNTggNTMyLjA4MyA1MjAuNDg3IDUzMi44MTUgNTE3LjE1OCA1MzMuNzIzQzQ5Ny41MDUgNTM4Ljg4NSA0NzkuOTAyIDU0Ni4wNTUgNDYwLjU1NCA1NTIuNjUyQzQyNi4xMiA1NjQuMzk0IDM4Ny4zNzUgNTc3LjY2OSAzNTAuOTE5IDU4MC4wMTNDMzMzLjI3OSA1ODEuMTQ4IDMyMS42OSA1NzYuMDUgMzAyLjg3NiA1ODEuNDY3QzI2Mi43OTMgNTkzLjAwOCAyMjQuNDI5IDYwNy43ODIgMTg1LjE3OSA2MjEuNjc1QzE1NS45MyA2MzEuOCAxMjUuMDY1IDY0Ni40MzIgOTMuNjc2OSA2MzguNjQ0Qzc2Ljk1OSA2MzQuNTg0IDU2Ljc4MzQgNjIzLjg4MyA0Ny4wNDIxIDYwOS4yMThDMjAuNDE2NCA1NjkuMTM1IDQ1LjE1OTIgNTI0Ljk1MyA2MS42MTcyIDQ4Ni4zNTFDODcuNjE3NiA0MjUuNTI5IDExNi4xMDMgMzY1LjggMTQ3LjAwMSAzMDcuMzE0QzE1NC42NjIgMjkyLjk1NyAxNzguMjIxIDI1Mi45MjIgMTgxLjMxNCAyNDAuMzQzTDE4MS40MTggMjM5LjkwNUMxNzguNjgzIDIyOS43ODQgMTc0Ljk1MyAyMjIuNTQgMTczLjM4MSAyMTEuMjU4QzE3MC44MTEgMTkzLjczOSAxNzUuMzMzIDE3NS45MTkgMTg1Ljk0NSAxNjEuNzQ2QzIwNi42NjMgMTM0LjQwNSAyNzAuODkxIDEwOC4wMiAzMDQuNTcxIDEwMy40MzVaIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+CjxwYXRoIGQ9Ik0yMDI1LjAxIDE3My4xODdDMjA0Ni45NCAxODQuMzczIDIwNDQuMzggMjEzLjY3NSAyMDIzLjA4IDIyMy4yNzJDMTk3NS41IDI0NC44ODQgMTkxNC4wMSAyNTAuMDQgMTg2My4xMyAyNjIuODcyQzE4NTUuMjMgMjc5LjI5NiAxODQ3LjQzIDI5Ni4zMjMgMTg0MS4xOSAzMTMuNDUyQzE4NzQuMjggMzA3Ljg3NCAxOTI5LjQxIDI5My4zNjkgMTk2MC44OSAzMDkuNzk0QzE5ODguMzUgMzI0LjEzMyAxOTY4LjY3IDM1Ni40NzEgMTk0Ni40NyAzNjMuMTYzQzE5MDEuMDQgMzc2Ljg1OCAxODUzLjY3IDM5Mi4yOTUgMTgwNy41NSA0MDMuMDM1QzE3OTQuNjkgNDQxLjk5MyAxNzc1LjU4IDQ4MS44NjMgMTc2Mi4yNiA1MjEuMDkyQzE3NTQuODggNTQyLjg0OCAxNzQyLjE0IDU1MC45MSAxNzIyLjIxIDU2MC44NTNDMTY5OS4yMSA1NzIuMzIyIDE2ODMuMiA1NTAuNjEgMTY4NS41IDUyOC44NzNDMTY5MC40NyA0OTEuMDQ3IDE3MDYuMyA0NDkuOTM4IDE3MTguNTYgNDE0LjUyOUMxNjg1LjI3IDQxMS4wOCAxNjkzLjgxIDM4NS44MzggMTcwMS4yNyAzNjMuODYyQzE2NTMuOTYgMzc0LjQ1NSAxNjA4Ljg2IDM5My45OCAxNTYxLjUxIDQwNC43NzNDMTU0Ny45NCA0MzkuMjA5IDE1MzQuNzQgNDczLjc5MSAxNTIxLjkxIDUwOC41MTRDMTUxMi4xOCA1MzQuNTQ4IDE1MDQuNjEgNTQ4LjYxIDE0NzguMDggNTU5LjMyM0MxNDQ1Ljk5IDU3Mi4yNzcgMTQ0MC43MSA1MzIuMzcxIDE0NDQuMzQgNTEyLjAxNUMxNDUxLjAxIDQ3NC41OTUgMTQ2MS4yIDQ0MC4wNTkgMTQ3NC44MyA0MDUuMTI2QzE0NjkuODQgNDAwLjYwNiAxNDY2LjA3IDM5NC43NTIgMTQ2MS42OCAzODkuMzQyQzE0NjEuNDIgMzg5LjQ0NyAxNDI1LjUzIDQzNC4xOTQgMTQxOC43MyA0NDEuMjI0QzEzNzMuMjQgNDg4LjIyMiAxMjk0LjY3IDU1Mi43MDUgMTIyNC42MiA1MTguNzkxQzExNjIuMjYgNDg4LjU5NSAxMTc5LjU1IDQxNy44MTcgMTIwNC4wOCAzNjcuMzk4QzExNDAuMTEgNDU3LjEyNyAxMDI5Ljk2IDUxMS45MjEgOTMyLjg4MSA1NTcuMTA3Qzg5NS4wOTEgNTc0LjY5OSA4NDEuNjE5IDU2Ny45NDkgODY1LjMzIDUxMy4wNThDODc1LjA5MyA0OTcuNSA4OTcuNzExIDQ4Ni42OTIgOTEyLjg2NiA0NzguODM0Qzg5Ny44MzEgNDUxLjk2NSA5MTMuMjMgNDI0LjU2NiA5MjMuNzk1IDM5OC40NTRDOTQyLjMzMSAzNTIuNjQ3IDk2My4yMDIgMzA3LjQzNCA5ODMuNzMxIDI2Mi41MDVDOTY3Ljc2OCAyNjYuMDk3IDk1MS45NyAyNzEuMTEyIDkzNS44OTcgMjc0LjE4N0M4ODYuNDY2IDI4My42NDUgODk1LjMyIDIyMC4zNTEgOTI3LjgzNCAyMDQuNDk3QzEwMDAuMjMgMTY5LjE5OCAxMjAwLjE5IDEzMC42MTQgMTI0OC44NCAyMjkuNzc0QzEyNjEuMTIgMjU0Ljc4OSAxMjUyLjk0IDI3OC43NDIgMTI0NC43MyAzMDMuMTk1QzEyNzMuMjcgMjY1LjI2NSAxMzEwLjkyIDIyNy4zODggMTM1NC4xIDIwMy40MzNDMTQ2Mi4wMiAxNDMuNTQ3IDE1MjQuNzMgMjQxLjk1NyAxNDg2LjM1IDM0MC45OTZDMTUxMS41MyAzMjUuMDE2IDE1MTUuODkgMzAyLjgwOCAxNTI4LjI1IDI3NC44MDRDMTUxMy42MiAyNzEuNDk1IDE0OTkuNDEgMjYxLjcwOCAxNDk4LjcxIDI0NS4yMTlDMTQ5NS4yNCAxNjYuNTAyIDE2NjQuODYgMTY0LjE2NSAxNzEwLjUyIDE2My42NTdDMTczNy40MSAxNjMuMzU4IDE3NzMuOTkgMTY3LjE1MSAxNzc0LjI3IDIwMS40NzRDMTgzNS40OCAxNzEuMzI2IDE5NTcuNTcgMTM4Ljc3OSAyMDI1LjAxIDE3My4xODdaIiBmaWxsPSIjMTAxNjEzIj48L3BhdGg+CjxwYXRoIGQ9Ik0xMTQ0Ljg4IDMxMy44NTRDMTEwMi44NCAzNzEuMDEyIDEwNDQuMjUgNDExLjM4NCA5ODIuMTU2IDQ0NC4wMzlDMTAwNi45MiAzNzguOTUxIDEwNDIuNTkgMzEyLjgxNiAxMDc0LjIzIDI1MC42MThDMTA4NC44NSAyMjkuODY0IDExOTMuMjkgMjQ4LjA3OSAxMTQ0Ljg4IDMxMy44NTRaIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+CjxwYXRoIGQ9Ik0xNDAyLjg5IDI2MS45MzRDMTQzNC42MSAyNjEuOTYzIDE0MDYuODIgMzIxLjMyIDEzOTkuOCAzMzUuMDU2QzEzNzggMzc3Ljc0MiAxMzI3Ljg0IDQzNS41NzYgMTI4MS4xMiA0NTAuMjY0QzEyNTAuNDggNDQ4LjQwNiAxMjcwLjEgNDA3LjgzMiAxMjc3LjU3IDM5Mi45NzdDMTI5OC4zNCAzNTEuNzAzIDEzNTguNTQgMjc2LjM2NCAxNDAyLjg5IDI2MS45MzRaIiBmaWxsPSIjRkZGRkZGIj48L3BhdGg+CjxwYXRoIGQ9Ik0xNzQ1LjIzIDIzMS4xMjVDMTc0Ny42IDIzMS4zOTIgMTc0MS4wMiAyNDcuNDM3IDE3NDAuMjUgMjQ5Ljk0MUMxNzQ1LjU5IDI2Ny4zMjEgMTc1Ni4yOSAyNzQuMzgxIDE3NzMuNTQgMjc1Ljg4QzE3NjQuODIgMjk0LjAzMSAxNzU2LjU5IDMxNS40IDE3NDkuMjUgMzM0LjE1NkMxNzM0Ljg3IDMzOC43MjIgMTcyMS43NCAzNDYuMjU5IDE3MDkuMjMgMzU0LjUzN0MxNzIyLjY0IDMyOC4yNjEgMTcwOS4xNSAzMDMuNDYyIDE2NzcuMDkgMzAxLjk3MUMxNjQ4LjUxIDMwNC4xNTUgMTYyNC4yMSAzMDguOTQzIDE1OTYuMDUgMzE0LjEyM0MxNjAyLjMzIDI5Ny4xMjUgMTYwOS45MyAyODAuNDgxIDE2MTcuMDYgMjYzLjc4MkMxNjM1LjAyIDI1OS44MjUgMTY1NC4xNiAyNTMuODc4IDE2NzIuMjYgMjQ5LjQ3NEMxNjk2LjU5IDI0My41NTQgMTcyMS4yMiAyMzguMTIgMTc0NS4yMyAyMzEuMTI1WiIgZmlsbD0iI0ZGRkZGRiI+PC9wYXRoPgo8cGF0aCBkPSJNMjI5LjExIDIyNy45MTNDMjIzLjgyIDIyNC4zNiAyMTIuMTU1IDIxNC4xMDMgMjA4LjkxMSAyMDguMjkxQzE4OS40MzUgMTczLjM5OSAyODcuNTY5IDEzMi43NyAzMTUuODY5IDEzNi42ODdDMzU3LjE5NCAxNDIuNDAxIDM2Ni41MTIgMTcxLjQ2MiAzNDguNjcxIDIwNC43OTZDMzExLjU2OCAyNzEuNDM5IDI3My4zMTUgMzM3LjU1MSAyMzggNDA1LjE3QzIyMy42NSA0MzIuNjQ1IDIwOS42NjYgNDU5Ljg2IDE5OC4wNDMgNDg4LjY0N0MyNDkuMzI4IDQ3NS4wNzQgMjk1Ljc2IDQ2MC43MjMgMzQ4LjM2NCA0NDguNjE3TDM2MS4yMTIgNDIyLjcwNEMzNTguNTE1IDQyMi40MTggMzUyLjA0MSA0MjEuNjk4IDM0OS44OTggNDIwLjQyOEMzMTkuMDY4IDQwMi4xNzIgMzMyLjc5OSAzODEuMDUgMzUxLjEyIDM1OS41MkMzNjMuODc5IDM0Ni40NjMgMzg5LjgwNiAzMzguMTIyIDQwNy4wMzggMzMyLjY3NEM0MTAuNzI3IDMyNS4xNTQgNDE0Ljk0NCAzMTcuMzA5IDQxOC44MDEgMzA5LjgyM0MzOTguMjE0IDMxMC43MzkgMzcxLjM1NiAyOTQuODgzIDM4MC44MTkgMjcyLjE5MkMzOTQuMzUxIDIzOS43NDMgNDQ3LjAzOCAyMjIuMjMzIDQ3OC4zNjIgMjExLjM5NUM1MjYuMDkzIDE5NC44NzkgNTgwLjc5OSAxNzcuNTY1IDYzMS4wOTEgMTczLjg5OEM2NzguMTcyIDE3MC40NjUgNjgyLjIgMjIyLjUwMiA2NDcuMzA2IDI0Mi4yNzJDNjI3Ljk3NSAyNDkuNDUgNjA2LjYzIDI1My43ODMgNTg2LjUzNSAyNTkuNDE0QzU2NC4yMzIgMjY1LjgzNSA1NDIuMDQ3IDI3Mi42NjQgNTE5Ljk5MyAyNzkuODk2QzUxMi45NTIgMjkwLjc2NiA1MDYuMTgzIDMwMi43MTYgNDk5LjU5NSAzMTMuOTM2QzUxOC4xMjcgMzA5LjU5NyA1NTguMDg2IDI5OC45OSA1NzQuMTk0IDMwOS42MThDNTk4Ljg2MyAzMjUuODkxIDU4OS43NDEgMzU0LjEzMiA1NjUuODczIDM2OS4xMzRDNTUzLjIyMSAzNzcuMDg1IDQ3Mi40NzcgMzk3LjEzOCA0NTEuOTA0IDQwMi45NDJDNDQ2LjE0OSA0MTMuMTY2IDQzOS45NiA0MjYuMDQ4IDQzNC40OTggNDM2LjY1NEM0NjIuODkgNDI3Ljc0MyA1MzAuOTk5IDQwMy40NzMgNTYwLjgyOCA0MTIuMjQ3QzU5MC40ODcgNDIwLjk3NiA1ODMuOTg0IDQ2OS4yNzggNTU4LjMzMiA0NzkuNjU2QzQ5NS41NTggNTA1LjA1NSA0MjMuODc1IDUzMS4zNyAzNTcuMzYzIDU0MS40NDRDMzMyLjUwNCA1NDUuMjA5IDMyNi43OTQgNTMzLjkxMSAyOTcuNDM3IDU0Mi41MDlDMjM5Ljk3MyA1NTkuMzM4IDE4NS4wODggNTgzLjMxOSAxMjguMDQxIDYwMS4xOTRDMTA3Ljg0OSA2MDcuNTIgNjMuMDk0NyA1OTIuOTczIDY5LjEzMTIgNTY0LjU4OEM3My40MjExIDU0NC40MTUgODMuMTAxMSA1MjQuMjkyIDkxLjE0NTcgNTA1LjE4QzEzMS40OTggNDEwLjA1OSAxNzcuNTcgMzE3LjQ2OCAyMjkuMTEgMjI3LjkxM1oiIGZpbGw9IiMxMDE2MTMiPjwvcGF0aD4KPHBhdGggZD0iTTYyOS4yMzcgMzY1LjE3NUM2NTguMTM0IDMxNC43NjQgNjkwLjU1NiAyNjYuNDU2IDcyNi4yNiAyMjAuNjEyQzc0Mi4wMTYgMjAwLjQ2NCA3NjguOTIyIDE2NS4wNzUgNzk0LjI3MyAxNTguNDk1QzgxOS4xODMgMTUxLjgzNCA4NjMuNjM0IDE2Ny4yMjIgODcwLjcyOCAxOTUuMDA1Qzg3My4yMjIgMjA0Ljg5OCA4NjkuMzg4IDI1Ny4wNzkgODY5LjE2NyAyNjkuOTU1Qzg2OC44OTEgMjg2LjA4NiA4NjguOTA4IDMwNS4xNzUgODY5LjA1NSAzMjEuODA2Qzk0NC4xMiAzMTEuNTkzIDkyOC41NTIgMzc4LjIwNiA4NzAuOTI5IDM5Mi45OEM4NzIuNzgxIDQyMy40ODkgODg3LjI0OCA0NzYuMTk0IDg2Ni42MDEgNTAyLjAxQzg1My43MzcgNTE4LjA5MiA4MTguODE2IDUzNi4yNzEgODAwLjI1IDUxOS41OTlDNzgyLjAxMiA1MDMuMzcyIDc3OS42NzMgNDM4Ljk0NSA3NzcuMTMzIDQxMy40MzNDNzQxLjMzNSA0MjEuMjI2IDcwNS44MjUgNDM0LjI3NCA2NzEuNTMxIDQ0MS41MjdDNjU1LjE4MiA0NjkuNDM0IDYzOC4wMjUgNTA2LjEwNyA2MTUuNDkyIDUyOS4yNTZDNTkzLjg5IDU1MS40NTUgNTY5LjA5MiA1MzUuOTQ3IDU2MC43MjkgNTEwLjYwNEM1NjUuODQ3IDQ4My44NDYgNTc4Ljg4OCA0NTguNzkgNTkxLjE2NiA0MzQuNzA0QzU2MS4xMTEgNDA0Ljc4OCA2MDAuNzAyIDM3NS42MTEgNjI5LjIzNyAzNjUuMTc1WiIgZmlsbD0iIzEwMTYxMyI+PC9wYXRoPgo8cGF0aCBkPSJNNzcxLjQxOSAyODYuNzI4Qzc3My4zOTggMjg4LjkxMSA3NzMuOTI4IDMzNi4wNTIgNzc0LjI2NSAzNDMuMDE2Qzc1Ny42MzQgMzQ2LjI2MSA3NDEuNTg2IDM1MC42OTQgNzI0LjU5MiAzNTMuNjY2TDcyMy4xNzkgMzUzLjU0M0M3MjIuODcyIDM0OC4wMjkgNzY2LjMxOCAyOTIuNTg3IDc3MS40MTkgMjg2LjcyOFoiIGZpbGw9IiNGRkZGRkYiPjwvcGF0aD4KPC9nPgo8ZGVmcz4KPGNsaXBQYXRoIGlkPSJjbGlwMF80NjMwXzc1ODUiPgo8cmVjdCB3aWR0aD0iMjExMyIgaGVpZ2h0PSI3NDQiIGZpbGw9IndoaXRlIj48L3JlY3Q+CjwvY2xpcFBhdGg+CjwvZGVmcz4KPC9zdmc+" alt="Leadoff">
+  </div>
+</footer>
 
-  <script>
-    // ── Header scroll ──
-    (function() {
-      var header = document.getElementById('site-header');
-      window.addEventListener('scroll', function() {
-        header.classList.toggle('scrolled', window.scrollY > 20);
-      }, { passive: true });
-    })();
+<script>
+  // ── Billing toggle ──
+  function setBilling(period) {
+    var btnMonthly = document.getElementById('btn-monthly');
+    var btnYearly = document.getElementById('btn-yearly');
+    var price = document.getElementById('pro-price');
+    var periodEl = document.getElementById('pro-period');
+    var note = document.getElementById('pro-note');
+    var fine = document.getElementById('pro-fine');
 
-    // ── Mobile menu ──
-    (function() {
-      var btn = document.getElementById('mobile-menu-btn');
-      var nav = document.getElementById('mobile-nav');
-      var isOpen = false;
-      btn.addEventListener('click', function() {
-        isOpen = !isOpen;
-        nav.classList.toggle('open', isOpen);
-        btn.setAttribute('aria-expanded', isOpen);
-        btn.innerHTML = isOpen
-          ? '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="6" y1="18" x2="18" y2="6"/></svg>'
-          : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
-      });
-      nav.querySelectorAll('a').forEach(function(link) {
-        link.addEventListener('click', function() {
-          isOpen = false;
-          nav.classList.remove('open');
-          btn.setAttribute('aria-expanded', 'false');
-          btn.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
-        });
-      });
-    })();
-
-    // ── Billing toggle ──
-    function setBilling(period) {
-      var btnMonthly = document.getElementById('btn-monthly');
-      var btnYearly = document.getElementById('btn-yearly');
-      var price = document.getElementById('pro-price');
-      var periodEl = document.getElementById('pro-period');
-      var note = document.getElementById('pro-note');
-
-      if (period === 'yearly') {
-        btnYearly.classList.add('active');
-        btnYearly.setAttribute('aria-checked', 'true');
-        btnMonthly.classList.remove('active');
-        btnMonthly.setAttribute('aria-checked', 'false');
-        price.textContent = '$12.99';
-        periodEl.textContent = '/yr';
-        note.textContent = 'That\'s just $1.08/mo. Billed annually.';
-      } else {
-        btnMonthly.classList.add('active');
-        btnMonthly.setAttribute('aria-checked', 'true');
-        btnYearly.classList.remove('active');
-        btnYearly.setAttribute('aria-checked', 'false');
-        price.textContent = '$2.99';
-        periodEl.textContent = '/mo';
-        note.textContent = 'Billed monthly. Switch to yearly and save 64%.';
-      }
+    if (period === 'yearly') {
+      btnYearly.classList.add('active');
+      btnYearly.setAttribute('aria-checked', 'true');
+      btnMonthly.classList.remove('active');
+      btnMonthly.setAttribute('aria-checked', 'false');
+      price.textContent = '$12.99';
+      periodEl.textContent = '/yr';
+      note.textContent = 'That\'s just $1.08/mo. Billed annually.';
+      fine.textContent = '$12.99/yr';
+    } else {
+      btnMonthly.classList.add('active');
+      btnMonthly.setAttribute('aria-checked', 'true');
+      btnYearly.classList.remove('active');
+      btnYearly.setAttribute('aria-checked', 'false');
+      price.textContent = '$2.99';
+      periodEl.textContent = '/mo';
+      note.textContent = 'Billed monthly. Switch to yearly and save 64%.';
+      fine.textContent = '$2.99/mo';
     }
+  }
 
-    // ── FAQ animated accordion ──
-    (function() {
-      var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      document.querySelectorAll('.faq-item').forEach(function(details) {
-        var summary = details.querySelector('summary');
-        summary.addEventListener('click', function(e) {
-          e.preventDefault();
-          if (prefersReduced) {
-            details.open = !details.open;
-            return;
-          }
-          details.style.overflow = 'hidden';
-          if (details.open) {
-            var closing = details.animate(
-              [{ height: details.scrollHeight + 'px' }, { height: summary.scrollHeight + 'px' }],
-              { duration: 280, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-            );
-            closing.onfinish = function() { details.open = false; details.style.overflow = ''; };
-          } else {
-            details.open = true;
-            details.animate(
-              [{ height: summary.scrollHeight + 'px' }, { height: details.scrollHeight + 'px' }],
-              { duration: 320, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
-            ).onfinish = function() { details.style.overflow = ''; };
-          }
-        });
-      });
-    })();
-  </script>
-
-  <!-- ── Firebase SDK ── -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script>
-    // ═══════════════════════════════════════════════
-    // FIREBASE + AUTH + CHECKOUT
-    // ═══════════════════════════════════════════════
-    var FIREBASE_CONFIG = {
-      apiKey:            'AIzaSyA4yVZNO-Tn8rQQbmjB9zdK24jCNIilNvE',
-      authDomain:        'lineup-dj-b7080.firebaseapp.com',
-      projectId:         'lineup-dj-b7080',
-      storageBucket:     'lineup-dj-b7080.firebasestorage.app',
-      messagingSenderId: '639812808286',
-      appId:             '1:639812808286:web:c1fa2c5f9076e166ad0ecf',
-    };
-
-    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    var auth = firebase.auth();
-
-    var _modalMode = 'signin';
-    var _pendingCheckout = false; // true when user clicked "Start Free Trial" while logged out
-
-    // Track billing toggle
-    var _selectedPlan = 'monthly';
-    var _origSetBilling = setBilling;
-    setBilling = function(period) {
-      _selectedPlan = period;
-      _origSetBilling(period);
-    };
-
-    // ── Auth state → nav ──
-    auth.onAuthStateChanged(function(user) {
-      var navAuth    = document.getElementById('nav-auth');
-      var navUser    = document.getElementById('nav-user');
-      var mobileAuth = document.getElementById('mobile-auth');
-      var mobileUser = document.getElementById('mobile-user');
-
-      if (user && !user.isAnonymous) {
-        var name     = user.displayName || user.email || 'User';
-        var initials = name.charAt(0).toUpperCase();
-        var photo    = user.photoURL;
-
-        navAuth.style.display = 'none';
-        navUser.style.display = '';
-        document.getElementById('nav-avatar-circle').innerHTML = photo
-          ? '<img src="' + photo + '" alt="' + initials + '" />' : initials;
-        document.getElementById('nav-avatar-name').textContent = name;
-        document.getElementById('nav-dropdown-name').textContent = name;
-        document.getElementById('nav-dropdown-email').textContent = user.email || '';
-
-        mobileAuth.style.display = 'none';
-        mobileUser.style.display = '';
-
-        closeAuthModal();
-
-        // If they just signed in/up after clicking "Start Free Trial", proceed to checkout
-        if (_pendingCheckout) {
-          _pendingCheckout = false;
-          startCheckout();
-        }
+  // ── FAQ accordion (same behavior as index.html) ──
+  var faqReducedMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)");
+  document.querySelectorAll(".faq details").forEach(function (d) {
+    d.querySelector("summary").addEventListener("click", function (e) {
+      if (faqReducedMotion && faqReducedMotion.matches) return;
+      e.preventDefault();
+      if (!d.open) {
+        d.open = true;
+        requestAnimationFrame(function () { requestAnimationFrame(function () {
+          d.classList.add("expanded");
+        }); });
+      } else if (d.classList.contains("expanded")) {
+        d.classList.remove("expanded");
+        var finish = function () { if (!d.classList.contains("expanded")) d.open = false; };
+        d.querySelector(".a").addEventListener("transitionend", finish, { once: true });
+        setTimeout(finish, 450);
       } else {
-        navAuth.style.display = '';
-        navUser.style.display = 'none';
-        mobileAuth.style.display = '';
-        mobileUser.style.display = 'none';
+        d.classList.add("expanded");
       }
     });
+    d.addEventListener("toggle", function () {
+      if (faqReducedMotion && faqReducedMotion.matches) d.classList.toggle("expanded", d.open);
+    });
+  });
 
-    // ── Nav dropdown ──
-    function toggleNavDropdown() {
-      document.getElementById('nav-dropdown').classList.toggle('open');
-    }
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.nav-avatar-wrap')) {
-        var dd = document.getElementById('nav-dropdown');
-        if (dd) dd.classList.remove('open');
+  // ── URL config + CTA click tracking (same as index.html) ──
+  var LEADOFF_URLS = {
+    appStore: "https://apps.apple.com/app/id6743953226",
+    webApp: "/app"
+  };
+  document.querySelectorAll("[data-cta]").forEach(function (a) {
+    var kind = a.getAttribute("data-cta");
+    a.href = kind === "appstore" ? LEADOFF_URLS.appStore : LEADOFF_URLS.webApp;
+    a.addEventListener("click", function () {
+      if (typeof gtag === "function") {
+        gtag("event", "cta_click", { cta: kind, location: a.getAttribute("data-loc") || "" });
       }
     });
+  });
+</script>
 
-    // ── Auth modal ──
-    function openAuthModal(mode) {
-      _modalMode = mode || 'signin';
-      applyModalMode();
-      document.getElementById('auth-overlay').classList.add('open');
-      document.getElementById('auth-panel-providers').style.display = '';
-      document.getElementById('auth-panel-reset').style.display = 'none';
-      document.getElementById('modal-email').value = '';
-      document.getElementById('modal-password').value = '';
-      document.getElementById('modal-password-confirm').value = '';
-      document.getElementById('modal-error').textContent = '';
-      setTimeout(function() { document.getElementById('modal-email').focus(); }, 100);
-    }
+<!-- ── Firebase SDK ── -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script>
+  // ═══════════════════════════════════════════════
+  // FIREBASE + AUTH + CHECKOUT
+  // ═══════════════════════════════════════════════
+  var FIREBASE_CONFIG = {
+    apiKey:            'AIzaSyA4yVZNO-Tn8rQQbmjB9zdK24jCNIilNvE',
+    authDomain:        'lineup-dj-b7080.firebaseapp.com',
+    projectId:         'lineup-dj-b7080',
+    storageBucket:     'lineup-dj-b7080.firebasestorage.app',
+    messagingSenderId: '639812808286',
+    appId:             '1:639812808286:web:c1fa2c5f9076e166ad0ecf',
+  };
 
-    function closeAuthModal() {
-      document.getElementById('auth-overlay').classList.remove('open');
-    }
+  if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+  var auth = firebase.auth();
 
-    function switchAuthMode(mode) {
-      _modalMode = mode;
-      applyModalMode();
-      document.getElementById('auth-panel-providers').style.display = '';
-      document.getElementById('auth-panel-reset').style.display = 'none';
-      document.getElementById('modal-error').textContent = '';
-    }
+  var _modalMode = 'signin';
+  var _pendingCheckout = false; // true when user clicked "Start free trial" while logged out
 
-    function applyModalMode() {
-      var title   = document.getElementById('auth-modal-title');
-      var sub     = document.getElementById('auth-modal-sub');
-      var btn     = document.getElementById('modal-submit-btn');
-      var confirm = document.getElementById('modal-password-confirm');
-      var toggle  = document.getElementById('modal-toggle');
-      var resetLnk = document.getElementById('modal-reset-link');
-      var pwField = document.getElementById('modal-password');
+  // Track billing toggle
+  var _selectedPlan = 'monthly';
+  var _origSetBilling = setBilling;
+  setBilling = function(period) {
+    _selectedPlan = period;
+    _origSetBilling(period);
+  };
 
-      if (_modalMode === 'signup') {
-        title.textContent   = 'Create an Account';
-        sub.textContent     = 'Sign up to start building lineups for your team.';
-        btn.textContent     = 'Create Account';
-        btn.className       = 'auth-submit-btn green';
-        confirm.style.display = '';
-        pwField.style.display = '';
-        pwField.autocomplete  = 'new-password';
-        resetLnk.style.display = 'none';
-        toggle.innerHTML    = 'Already have an account? <a onclick="switchAuthMode(\'signin\')">Sign in</a>';
-      } else {
-        title.textContent   = 'Sign In';
-        sub.textContent     = 'Welcome back. Sign in to your account.';
-        btn.textContent     = 'Sign In';
-        btn.className       = 'auth-submit-btn';
-        confirm.style.display = 'none';
-        pwField.style.display = '';
-        pwField.autocomplete  = 'current-password';
-        resetLnk.style.display = '';
-        toggle.innerHTML    = 'Don\'t have an account? <a onclick="switchAuthMode(\'signup\')">Sign up free</a>';
+  // ── Auth state ──
+  auth.onAuthStateChanged(function(user) {
+    if (user && !user.isAnonymous) {
+      closeAuthModal();
+      // If they just signed in/up after clicking "Start free trial", proceed to checkout
+      if (_pendingCheckout) {
+        _pendingCheckout = false;
+        startCheckout();
       }
     }
+  });
 
-    function toggleModalReset() {
-      document.getElementById('auth-panel-providers').style.display = 'none';
-      document.getElementById('auth-panel-reset').style.display = '';
-      document.getElementById('modal-reset-email').value = document.getElementById('modal-email').value;
-      document.getElementById('modal-reset-error').textContent = '';
+  // ── Auth modal ──
+  function openAuthModal(mode) {
+    _modalMode = mode || 'signin';
+    applyModalMode();
+    document.getElementById('auth-overlay').classList.add('open');
+    document.getElementById('auth-panel-providers').style.display = '';
+    document.getElementById('auth-panel-reset').style.display = 'none';
+    document.getElementById('modal-email').value = '';
+    document.getElementById('modal-password').value = '';
+    document.getElementById('modal-password-confirm').value = '';
+    document.getElementById('modal-error').textContent = '';
+    setTimeout(function() { document.getElementById('modal-email').focus(); }, 100);
+  }
+
+  function closeAuthModal() {
+    document.getElementById('auth-overlay').classList.remove('open');
+  }
+
+  function switchAuthMode(mode) {
+    _modalMode = mode;
+    applyModalMode();
+    document.getElementById('auth-panel-providers').style.display = '';
+    document.getElementById('auth-panel-reset').style.display = 'none';
+    document.getElementById('modal-error').textContent = '';
+  }
+
+  function applyModalMode() {
+    var title   = document.getElementById('auth-modal-title');
+    var sub     = document.getElementById('auth-modal-sub');
+    var btn     = document.getElementById('modal-submit-btn');
+    var confirm = document.getElementById('modal-password-confirm');
+    var toggle  = document.getElementById('modal-toggle');
+    var resetLnk = document.getElementById('modal-reset-link');
+    var pwField = document.getElementById('modal-password');
+
+    if (_modalMode === 'signup') {
+      title.textContent   = 'Create an account';
+      sub.textContent     = 'Sign up to start building lineups for your team.';
+      btn.textContent     = 'Create account';
+      confirm.style.display = '';
+      pwField.style.display = '';
+      pwField.autocomplete  = 'new-password';
+      resetLnk.style.display = 'none';
+      toggle.innerHTML    = 'Already have an account? <a onclick="switchAuthMode(\'signin\')">Sign in</a>';
+    } else {
+      title.textContent   = 'Sign in';
+      sub.textContent     = 'Welcome back. Sign in to your account.';
+      btn.textContent     = 'Sign in';
+      confirm.style.display = 'none';
+      pwField.style.display = '';
+      pwField.autocomplete  = 'current-password';
+      resetLnk.style.display = '';
+      toggle.innerHTML    = 'Don\'t have an account? <a onclick="switchAuthMode(\'signup\')">Sign up free</a>';
+    }
+  }
+
+  function toggleModalReset() {
+    document.getElementById('auth-panel-providers').style.display = 'none';
+    document.getElementById('auth-panel-reset').style.display = '';
+    document.getElementById('modal-reset-email').value = document.getElementById('modal-email').value;
+    document.getElementById('modal-reset-error').textContent = '';
+  }
+
+  function showModalError(msg) { document.getElementById('modal-error').textContent = msg; }
+
+  function friendlyError(e) {
+    var map = {
+      'auth/user-not-found':         'No account found with that email.',
+      'auth/wrong-password':         'Incorrect password.',
+      'auth/invalid-credential':     'Incorrect email or password.',
+      'auth/email-already-in-use':   'An account with that email already exists. Try signing in.',
+      'auth/weak-password':          'Password must be at least 6 characters.',
+      'auth/invalid-email':          'Please enter a valid email address.',
+      'auth/popup-closed-by-user':   'Sign-in cancelled.',
+      'auth/network-request-failed': 'Network error. Check your connection.',
+      'auth/too-many-requests':      'Too many attempts. Please wait a moment.',
+    };
+    return map[e.code] || e.message || 'Something went wrong. Please try again.';
+  }
+
+  // ── Email auth ──
+  function submitModalAuth() {
+    if (_modalMode === 'signup') doEmailSignUp(); else doEmailSignIn();
+  }
+
+  function doEmailSignIn() {
+    var email = document.getElementById('modal-email').value.trim();
+    var pw    = document.getElementById('modal-password').value;
+    if (!email || !pw) { showModalError('Please enter your email and password.'); return; }
+    var btn = document.getElementById('modal-submit-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    auth.signInWithEmailAndPassword(email, pw).catch(function(e) {
+      showModalError(friendlyError(e));
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Sign in'; });
+  }
+
+  function doEmailSignUp() {
+    var email   = document.getElementById('modal-email').value.trim();
+    var pw      = document.getElementById('modal-password').value;
+    var confirm = document.getElementById('modal-password-confirm').value;
+    if (!email || !pw) { showModalError('Please enter your email and password.'); return; }
+    if (pw.length < 6) { showModalError('Password must be at least 6 characters.'); return; }
+    if (pw !== confirm) { showModalError('Passwords don\'t match.'); return; }
+    var btn = document.getElementById('modal-submit-btn');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+    auth.createUserWithEmailAndPassword(email, pw).catch(function(e) {
+      showModalError(friendlyError(e));
+    }).finally(function() { btn.disabled = false; btn.textContent = 'Create account'; });
+  }
+
+  // ── Social auth ──
+  function authGoogle() {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(function(e) {
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') return;
+      showModalError(friendlyError(e));
+    });
+  }
+
+  function authApple() {
+    var provider = new firebase.auth.OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    auth.signInWithPopup(provider).catch(function(e) {
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
+        auth.signInWithRedirect(provider); return;
+      }
+      showModalError(friendlyError(e));
+    });
+  }
+
+  // ── Password reset ──
+  function sendModalReset() {
+    var email = document.getElementById('modal-reset-email').value.trim();
+    if (!email) { document.getElementById('modal-reset-error').textContent = 'Enter your email first.'; return; }
+    auth.sendPasswordResetEmail(email).then(function() {
+      var el = document.getElementById('modal-reset-error');
+      el.style.color = '#1F7A2A';
+      el.textContent = 'Reset email sent. Check your inbox.';
+    }).catch(function(e) {
+      document.getElementById('modal-reset-error').textContent = friendlyError(e);
+    });
+  }
+
+  function doSignOut() { auth.signOut(); }
+
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAuthModal(); });
+
+  // ═══════════════════════════════════════════════
+  // STRIPE CHECKOUT
+  // ═══════════════════════════════════════════════
+  async function startCheckout() {
+    var user = auth.currentUser;
+
+    // If not signed in, open sign-up modal and flag pending checkout
+    if (!user) {
+      _pendingCheckout = true;
+      openAuthModal('signup');
+      return;
     }
 
-    function showModalError(msg) { document.getElementById('modal-error').textContent = msg; }
+    var btn = document.getElementById('btn-start-trial');
+    var origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Loading…';
 
-    function friendlyError(e) {
-      var map = {
-        'auth/user-not-found':         'No account found with that email.',
-        'auth/wrong-password':         'Incorrect password.',
-        'auth/invalid-credential':     'Incorrect email or password.',
-        'auth/email-already-in-use':   'An account with that email already exists. Try signing in.',
-        'auth/weak-password':          'Password must be at least 6 characters.',
-        'auth/invalid-email':          'Please enter a valid email address.',
-        'auth/popup-closed-by-user':   'Sign-in cancelled.',
-        'auth/network-request-failed': 'Network error — check your connection.',
-        'auth/too-many-requests':      'Too many attempts. Please wait a moment.',
-      };
-      return map[e.code] || e.message || 'Something went wrong. Please try again.';
-    }
-
-    // ── Email auth ──
-    function submitModalAuth() {
-      if (_modalMode === 'signup') doEmailSignUp(); else doEmailSignIn();
-    }
-
-    function doEmailSignIn() {
-      var email = document.getElementById('modal-email').value.trim();
-      var pw    = document.getElementById('modal-password').value;
-      if (!email || !pw) { showModalError('Please enter your email and password.'); return; }
-      var btn = document.getElementById('modal-submit-btn');
-      btn.disabled = true; btn.textContent = 'Signing in…';
-      auth.signInWithEmailAndPassword(email, pw).catch(function(e) {
-        showModalError(friendlyError(e));
-      }).finally(function() { btn.disabled = false; btn.textContent = 'Sign In'; });
-    }
-
-    function doEmailSignUp() {
-      var email   = document.getElementById('modal-email').value.trim();
-      var pw      = document.getElementById('modal-password').value;
-      var confirm = document.getElementById('modal-password-confirm').value;
-      if (!email || !pw) { showModalError('Please enter your email and password.'); return; }
-      if (pw.length < 6) { showModalError('Password must be at least 6 characters.'); return; }
-      if (pw !== confirm) { showModalError('Passwords don\'t match.'); return; }
-      var btn = document.getElementById('modal-submit-btn');
-      btn.disabled = true; btn.textContent = 'Creating account…';
-      auth.createUserWithEmailAndPassword(email, pw).catch(function(e) {
-        showModalError(friendlyError(e));
-      }).finally(function() { btn.disabled = false; btn.textContent = 'Create Account'; });
-    }
-
-    // ── Social auth ──
-    function authGoogle() {
-      var provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(function(e) {
-        if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') return;
-        showModalError(friendlyError(e));
+    try {
+      var res = await fetch('/.netlify/functions/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: _selectedPlan,
+          firebaseUid: user.uid,
+          email: user.email,
+        }),
       });
+
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create checkout session');
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Checkout error: ' + err.message);
+      btn.disabled = false;
+      btn.textContent = origText;
     }
+  }
 
-    function authApple() {
-      var provider = new firebase.auth.OAuthProvider('apple.com');
-      provider.addScope('email');
-      provider.addScope('name');
-      auth.signInWithPopup(provider).catch(function(e) {
-        if (e.code === 'auth/popup-blocked' || e.code === 'auth/popup-closed-by-user') {
-          auth.signInWithRedirect(provider); return;
-        }
-        showModalError(friendlyError(e));
-      });
+  // ── Check for cancelled checkout return ──
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('cancelled') === 'true') {
+      history.replaceState(null, '', '/pricing');
     }
-
-    // ── Password reset ──
-    function sendModalReset() {
-      var email = document.getElementById('modal-reset-email').value.trim();
-      if (!email) { document.getElementById('modal-reset-error').textContent = 'Enter your email first.'; return; }
-      auth.sendPasswordResetEmail(email).then(function() {
-        var el = document.getElementById('modal-reset-error');
-        el.style.color = '#16a34a';
-        el.textContent = '✓ Reset email sent — check your inbox.';
-      }).catch(function(e) {
-        document.getElementById('modal-reset-error').textContent = friendlyError(e);
-      });
-    }
-
-    function doSignOut() { auth.signOut(); }
-
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeAuthModal(); });
-
-    // ═══════════════════════════════════════════════
-    // STRIPE CHECKOUT
-    // ═══════════════════════════════════════════════
-    async function startCheckout() {
-      var user = auth.currentUser;
-
-      // If not signed in, open sign-up modal and flag pending checkout
-      if (!user) {
-        _pendingCheckout = true;
-        openAuthModal('signup');
-        return;
-      }
-
-      var btn = document.getElementById('btn-start-trial');
-      var origText = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Loading…';
-
-      try {
-        var res = await fetch('/.netlify/functions/create-checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            plan: _selectedPlan,
-            firebaseUid: user.uid,
-            email: user.email,
-          }),
-        });
-
-        var data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Failed to create checkout session');
-
-        window.location.href = data.url;
-      } catch (err) {
-        console.error('Checkout error:', err);
-        alert('Checkout error: ' + err.message);
-        btn.disabled = false;
-        btn.textContent = origText;
-      }
-    }
-
-    // ── Check for cancelled checkout return ──
-    (function() {
-      var params = new URLSearchParams(window.location.search);
-      if (params.get('cancelled') === 'true') {
-        history.replaceState(null, '', '/pricing');
-      }
-    })();
-  </script>
+  })();
+</script>
 
 </body>
 </html>
