@@ -5,7 +5,7 @@
 //   STRIPE_SECRET_KEY — your Stripe secret key (sk_live_... or sk_test_...)
 //   STRIPE_MONTHLY_PRICE_ID — Stripe Price ID for the $2/mo plan
 //   STRIPE_YEARLY_PRICE_ID  — Stripe Price ID for the $18/yr plan
-//   SITE_URL — e.g. https://lineupcard.app
+//   SITE_URL — fallback origin when the request has no Origin header (e.g. https://app.getleadoff.com)
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -64,7 +64,14 @@ exports.handler = async function (event) {
     };
   }
 
-  const siteUrl = process.env.SITE_URL || 'https://lineupcard.app';
+  // Return the customer to the SAME origin the checkout started on.
+  // Firebase auth state is per-origin, so bouncing lineupcard.app users to
+  // app.getleadoff.com (or vice versa) would land them signed out.
+  const ALLOWED_ORIGINS = ['https://app.getleadoff.com', 'https://lineupcard.app', 'https://www.lineupcard.app'];
+  const reqOrigin = (event.headers && (event.headers.origin || event.headers.Origin)) || '';
+  const siteUrl = ALLOWED_ORIGINS.includes(reqOrigin)
+    ? reqOrigin
+    : (process.env.SITE_URL || 'https://app.getleadoff.com');
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -77,8 +84,8 @@ exports.handler = async function (event) {
         metadata: { firebaseUid },
       },
       metadata: { firebaseUid },
-      success_url: `${siteUrl}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/pricing.html?cancelled=true`,
+      success_url: `${siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/pricing?cancelled=true`,
       allow_promotion_codes: true,
     });
 
