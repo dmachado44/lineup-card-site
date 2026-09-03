@@ -17,7 +17,7 @@
   <title>Leadoff — the coach web app</title>
   <meta name="description" content="Free baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and share with your team. Built for coaches and parents." />
   <meta name="keywords" content="youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation tool, coach pitch lineup, youth sports lineup card, baseball lineup auto assign positions" />
-  <link rel="canonical" href="https://lineupcard.app/app" />
+  <link rel="canonical" href="https://app.getleadoff.com/app" />
 
   <!-- ── Favicon (Leadoff L-tile) ── -->
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
@@ -32,7 +32,7 @@
   <!-- ── Open Graph ── -->
   <meta property="og:title" content="Leadoff — Build a fair lineup in your browser" />
   <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Leadoff account." />
-  <meta property="og:url" content="https://lineupcard.app/app" />
+  <meta property="og:url" content="https://app.getleadoff.com/app" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://getleadoff.com/og.png" />
   <meta property="og:site_name" content="Leadoff" />
@@ -49,7 +49,7 @@
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "name": "Leadoff — Baseball & Softball Lineup Builder",
-    "url": "https://lineupcard.app",
+    "url": "https://app.getleadoff.com/app",
     "description": "A free online lineup builder for youth baseball and softball teams. Auto-assign fielding positions, generate batting orders, save past game lineups, and share with your team.",
     "applicationCategory": "SportsApplication",
     "operatingSystem": "Web, iOS",
@@ -3000,8 +3000,8 @@
         padding-bottom: 2px;
       }
       .print-logo {
-        width: 56px;
-        height: 56px;
+        width: 120px;
+        height: 36px;
         flex-shrink: 0;
         margin-left: 24px;
       }
@@ -3584,7 +3584,7 @@
       <p class="upgrade-note">Cancel anytime. No charge for 7 days.</p>
 
       <div class="upgrade-footer">
-        Already a Lineup DJ subscriber? <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign in with that account</a>
+        Already subscribed to Leadoff on iOS? <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign in with that account</a>
       </div>
     </div>
   </div>
@@ -3611,7 +3611,7 @@
     </div>
     <div class="card card--emph">
       <div class="card-title">Invite code</div>
-      <div class="card-sub">Codes are 8 characters — find yours in the team's settings on the Lineup DJ app or this site.</div>
+      <div class="card-sub">Codes are 8 characters — find yours in the team's settings in the Leadoff iOS app or this site.</div>
       <div class="add-player-row">
         <input type="text" id="join-code-input" placeholder="e.g. K7KMHXWN" autocomplete="off" autocapitalize="characters"
           style="text-transform:uppercase;letter-spacing:0.15em;font-weight:700;"
@@ -3777,7 +3777,7 @@
     <div id="step-1" class="step-panel" style="display:none;">
       <div class="card">
         <div class="card-title">Team Information</div>
-        <div class="card-sub">Create a new team or import an existing one from your Lineup DJ account.</div>
+        <div class="card-sub">Create a new team or import an existing one from your Leadoff account.</div>
         <div class="form-grid">
           <div class="field">
             <label>Team Name</label>
@@ -3849,7 +3849,7 @@
       <!-- Members & Invite (settings mode only; rendered by renderMembersCard) -->
       <div class="card" id="settings-members-card">
         <div class="section-label">Members &amp; invite</div>
-        <div class="card-sub">Share the invite code so parents and coaches can join this team from the Lineup DJ app or this site.</div>
+        <div class="card-sub">Share the invite code so parents and coaches can join this team from the Leadoff iOS app or this site.</div>
         <div id="invite-code-block"></div>
         <div id="members-list-block"></div>
       </div>
@@ -4688,7 +4688,7 @@ function showAuthError(msg) {
 
 function friendlyAuthError(e) {
   const map = {
-    'auth/user-not-found':       'No account found with that email. Make sure you\'re using the email from your Lineup DJ account.',
+    'auth/user-not-found':       'No account found with that email. Make sure you\'re using the email from your Leadoff account.',
     'auth/wrong-password':       'Incorrect password. Try again or use "Forgot password?" below.',
     'auth/invalid-credential':   'Incorrect email or password. Try again or use "Forgot password?" below.',
     'auth/email-already-in-use': 'An account with that email already exists. Try signing in instead.',
@@ -7120,7 +7120,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 4000);
     })
     .catch(function() {
-      alert('Something went wrong. Please try again or email hello@lineupdj.app directly.');
+      alert('Something went wrong. Please try again or email hello@getleadoff.com directly.');
     })
     .finally(function() {
       btn.disabled = false; btn.textContent = 'Send Message →';
@@ -7930,7 +7930,7 @@ function renderLineupImageToCanvas(preset) {
   ctx.font = FOOTER_FONT + 'px ' + fontStack;
   ctx.textAlign = 'right';
   const footerY = H - PAD / 2 - FOOTER_FONT / 2;
-  ctx.fillText('lineupcard.app', W - PAD, footerY);
+  ctx.fillText('getleadoff.com', W - PAD, footerY);
   ctx.textAlign = 'left';
   ctx.fillText(rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' · ' + innings + ' innings', PAD, footerY);
 
@@ -8254,7 +8254,7 @@ function populatePrintAllInnings() {
         '</div>' +
       '</div>' +
       '<div class="print-logo">' +
-        '<img src="assets/icon.png" alt="Lineup Card" />' +
+        '<img src="assets/leadoff-logo-ink.svg" alt="Leadoff" />' +
       '</div>' +
     '</div>' +
     '<div class="print-allinnings-body">' +
@@ -10835,7 +10835,7 @@ async function importTeamByCode_REMOVED() {
 
     if (snap.empty) {
       statusEl.className = 'import-status error';
-      statusEl.textContent = `No team found for code "${code}". Double-check the code in your Lineup DJ app.`;
+      statusEl.textContent = `No team found for code "${code}". Double-check the code in the Leadoff iOS app.`;
       return;
     }
 
@@ -10993,7 +10993,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </div>
     <div class="print-logo">
-      <img src="assets/icon.png" alt="Lineup Card" />
+      <img src="assets/leadoff-logo-ink.svg" alt="Leadoff" />
     </div>
   </div>
   <table class="print-table">
@@ -11018,7 +11018,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="modal-title" id="share-team-title">Share Team</div>
           <button class="modal-close" type="button" onclick="closeShareTeamModal()" aria-label="Close">×</button>
         </div>
-        <div class="modal-sub" id="share-team-sub">Anyone with this link or code can join the team from the Lineup DJ app or this site.</div>
+        <div class="modal-sub" id="share-team-sub">Anyone with this link or code can join the team from the Leadoff iOS app or this site.</div>
         <div class="modal-body" id="share-team-body"></div>
       </div>
     </div>

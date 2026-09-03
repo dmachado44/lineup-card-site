@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /for-leagues
 
-Sitemap: https://lineupcard.app/sitemap.xml
+Sitemap: https://app.getleadoff.com/sitemap.xml
