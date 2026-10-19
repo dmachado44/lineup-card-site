@@ -6746,10 +6746,13 @@ function loadSavedLineupIntoBuilder(lineup) {
     playerId:  resolveLocalPlayerId(p.playerId, p.name) || p.playerId,
     positions: Array.isArray(p.positions) ? p.positions.slice() : []
   }));
-  // Mark all listed players as attending — anyone not in the saved lineup
-  // wasn't there for that game.
+  // Attendance = exactly the saved players. Write an explicit false for
+  // everyone else on the roster: goToStep4 defaults UNDEFINED entries to
+  // attending (so kids added to the roster after a save show up), and that
+  // was silently flipping the absent kids back on when editing (Dan, Oct 2026).
+  const saved = new Set(state.lineup.map(r => r.playerId));
   state.attendance = {};
-  state.lineup.forEach(r => { state.attendance[r.playerId] = true; });
+  state.players.forEach(p => { state.attendance[p.id] = saved.has(p.id); });
   syncBuilderFormFromState();
 }
 
@@ -7627,9 +7630,11 @@ function applyImportFromPrevious(lineupId) {
 
   // Reset attendance to the imported players — they were the ones
   // playing in the previous game, so they're the natural starting set.
-  // Anyone else can be toggled on manually.
+  // Anyone else can be toggled on manually. Explicit false (not undefined)
+  // so a trip back through goToStep4 doesn't default them to attending.
+  const imported = new Set(importedRows.map(p => p.playerId));
   state.attendance = {};
-  importedRows.forEach(p => { state.attendance[p.playerId] = true; });
+  state.players.forEach(p => { state.attendance[p.id] = imported.has(p.id); });
 
   // Re-render the entire lineup view
   if (typeof renderAttendance === 'function')      renderAttendance();
