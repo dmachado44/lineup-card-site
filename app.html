@@ -9541,10 +9541,23 @@ function setStep(n) {
 // ═══════════════════════════════════════════════════
 function toggleAttendance(id) {
   state.attendance[id] = !state.attendance[id];
+  // Mirrors iOS BuilderSession.orderedAttendingIds (Oct 2026): attendance
+  // is the source of truth and the order is reconciled against it, never
+  // regenerated. Toggling a kid OFF drops them from the grid and the save
+  // (their row stays, so toggling back ON restores their positions);
+  // toggling ON appends them to the END of the order with NO positions —
+  // the coach fills them in by hand or re-shuffles. We used to call
+  // shuffleFielding() here, which silently threw away every hand-set
+  // position on the whole team for one late arrival.
+  if (state.attendance[id] && !state.lineup.some(r => r.playerId === id)) {
+    // Self-heal: goToStep4 gives every roster player a row, but Import
+    // from Previous replaces state.lineup with only the imported players.
+    state.lineup.push({ playerId: id, positions: Array(state.innings).fill('') });
+  }
   renderAttendance();
-  // Re-assign positions whenever attendance changes to avoid
-  // duplicate slots or gaps (shuffleFielding handles render + save)
-  shuffleFielding();
+  renderLineupGrid();          // also re-checks conflicts + mirrors field view
+  renderPlayingTimeSummary();
+  save();
 }
 
 function renderAttendance() {
