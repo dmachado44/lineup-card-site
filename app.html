@@ -6612,7 +6612,7 @@ async function openSchedule(teamId) {
     // Netlify functions) must not blank the saved lineups — it degrades to
     // a sync-bar warning and the Firestore half still renders.
     let calError = null;
-    const [icsText, lineupSnap, rosterSnap] = await Promise.all([
+    const [icsText, lineupSnap, , rosterSnap] = await Promise.all([
       calUrl ? fetchSchedule(calUrl).catch(e => { calError = e; return null; }) : Promise.resolve(null),
       fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null),
       loadCoachNotes(teamId),   // Game Notes (coach only; members resolve to {})
