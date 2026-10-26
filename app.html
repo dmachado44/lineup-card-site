@@ -3486,7 +3486,10 @@
     .gn-ledger-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; }
     .gn-ledger-head .count { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--muted); }
     .gn-ledger-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .gn-ledger-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: 12px; font-weight: 700; color: var(--muted); }
+    .gn-ledger-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: 12px; font-weight: 700; color: var(--muted); background: transparent; font-family: inherit; min-height: 32px; }
+    button.gn-ledger-chip { cursor: pointer; }
+    button.gn-ledger-chip:hover { border-color: var(--ink); color: var(--text); }
+    .gn-ledger-hint { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 4px; }
     .gn-ledger-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
 
   </style>
@@ -6957,6 +6960,11 @@ const GN_RECENT_GAMES = 3;
 // teamId → { lineupId → notes }. Loaded once per team visit (schedule,
 // lineup detail, builder); refreshed in place after a save.
 const _coachNotes = {};
+// teamId → { playerId → n }: game balls handed out from the Schedule tab's
+// ledger without a game attached (Dan, Oct 26). Lives in the same
+// coach-only collection as one doc, coachNotes/_season.
+const _gnTally = {};
+const GN_SEASON_DOC = '_season';
 
 function gnDecodeDoc(id, data) {
   const notes = { id, gameDate: data.gameDate || '', teamNote: data.teamNote || '', players: {}, gameBallPlayerId: data.gameBallPlayerId || null };
@@ -6982,12 +6990,17 @@ async function loadCoachNotes(teamId) {
   try {
     const snap = await fb.db.collection('teams').doc(teamId).collection('coachNotes').get();
     const byLineup = {};
-    snap.docs.forEach(d => { byLineup[d.id] = gnDecodeDoc(d.id, d.data()); });
+    _gnTally[teamId] = {};
+    snap.docs.forEach(d => {
+      if (d.id === GN_SEASON_DOC) { _gnTally[teamId] = (d.data() || {}).gameBallTally || {}; return; }
+      byLineup[d.id] = gnDecodeDoc(d.id, d.data());
+    });
     _coachNotes[teamId] = byLineup;
   } catch (e) {
     // permission-denied (rules not deployed / not a coach) reads as empty
     console.warn('Game notes unavailable:', e && e.code ? e.code : e);
     _coachNotes[teamId] = {};
+    _gnTally[teamId] = {};
   }
   return _coachNotes[teamId];
 }
@@ -7062,24 +7075,65 @@ function gnTagsHtml(tags, hadBall) {
 // Season ledger: who has a ball, who is still waiting. Coach only.
 function gnLedgerHtml(teamId, players) {
   const all = Object.values(_coachNotes[teamId] || {});
-  if (!all.some(n => n.gameBallPlayerId)) return '';
+  const tally = _gnTally[teamId] || {};
+  // Coaches always get the card (it's how balls are handed out); members
+  // only see it once a ball exists.
+  if (!_scheduleCanCoach && !all.some(n => n.gameBallPlayerId) && !Object.keys(tally).length) return '';
   // Notes are keyed by bare roster doc ids (iOS writes them that way);
   // the web builder's in-memory roster uses imp_/p_ prefixed ids, so
   // every comparison goes through rosterDocIdFor().
   const counts = {};
   all.forEach(n => { if (n.gameBallPlayerId) { const k = rosterDocIdFor(n.gameBallPlayerId); counts[k] = (counts[k] || 0) + 1; } });
+  Object.keys(tally).forEach(k => { const n = Number(tally[k]) || 0; if (n > 0) counts[rosterDocIdFor(k)] = (counts[rosterDocIdFor(k)] || 0) + n; });
   const firsts = {};
   players.forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
   const entries = players
     .filter(p => p.name)
-    .map(p => ({ name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[rosterDocIdFor(p.id)] || 0 }))
+    .map(p => ({ id: rosterDocIdFor(p.id), name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[rosterDocIdFor(p.id)] || 0 }))
     .sort((a, b) => ((a.count === 0) !== (b.count === 0)) ? (a.count === 0 ? -1 : 1) : a.name.localeCompare(b.name));
   const waiting = entries.filter(e => e.count === 0).length;
+  const chip = e => {
+    const label = `${e.count ? '⚾ ' : ''}${escHtml(e.name)}${e.count > 1 ? ' ×' + e.count : ''}`;
+    if (!_scheduleCanCoach) return `<span class="gn-ledger-chip ${e.count ? 'has' : ''}">${label}</span>`;
+    const hasTally = (Number(tally[e.id]) || 0) > 0;
+    const tip = hasTally ? 'Tap to take this ball back' : 'Tap to hand out a game ball';
+    return `<button type="button" class="gn-ledger-chip ${e.count ? 'has' : ''}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}')">${label}</button>`;
+  };
   return `<div class="gn-ledger">
-    <div class="gn-ledger-head">⚾ Game Balls <span class="count">${waiting} still waiting</span></div>
-    <div class="gn-ledger-chips">${entries.map(e =>
-      `<span class="gn-ledger-chip ${e.count ? 'has' : ''}">${e.count ? '⚾ ' : ''}${escHtml(e.name)}${e.count > 1 ? ' ×' + e.count : ''}</span>`).join('')}</div>
+    <div class="gn-ledger-head">⚾ Game Balls <span class="gn-ledger-hint">${_scheduleCanCoach ? 'Tap a kid to hand out a ball' : ''}</span><span class="count">${waiting} still waiting</span></div>
+    <div class="gn-ledger-chips">${entries.map(chip).join('')}</div>
   </div>`;
+}
+
+// One tap = +1 ball for the season, a second tap takes that ball back.
+// Balls recorded on a specific game (Game Notes) are never touched here.
+let _gnTallyBusy = false;
+async function gnToggleTallyBall(playerId) {
+  const teamId = _scheduleTeamId;
+  const fb = initFirebase();
+  if (!fb || !teamId || !_scheduleCanCoach || _gnTallyBusy) return;
+  const tally = Object.assign({}, _gnTally[teamId] || {});
+  const n = Number(tally[playerId]) || 0;
+  if (n > 0) { if (n === 1) delete tally[playerId]; else tally[playerId] = n - 1; }
+  else tally[playerId] = 1;
+  _gnTallyBusy = true;
+  const prev = _gnTally[teamId];
+  _gnTally[teamId] = tally;          // optimistic
+  renderSchedule();
+  try {
+    await fb.db.collection('teams').doc(teamId).collection('coachNotes').doc(GN_SEASON_DOC).set({
+      kind: 'season',
+      gameBallTally: tally,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: currentUid(),
+    }, { mergeFields: ['kind', 'gameBallTally', 'updatedAt', 'updatedBy'] });
+  } catch (e) {
+    console.error('Game ball tally save failed:', e);
+    _gnTally[teamId] = prev;
+    renderSchedule();
+  } finally {
+    _gnTallyBusy = false;
+  }
 }
 
 // ── Editor modal ──
@@ -7313,6 +7367,7 @@ function gnComputeSuggestions(teamId, players, gameDate, excludeLineupId) {
   if (!all.length) return [];
   const latestId = all[0].id;
   const balls = new Set(all.filter(n => n.gameBallPlayerId).map(n => rosterDocIdFor(n.gameBallPlayerId)));
+  Object.keys(_gnTally[teamId] || {}).forEach(k => { if ((Number((_gnTally[teamId] || {})[k]) || 0) > 0) balls.add(rosterDocIdFor(k)); });
   const firsts = {};
   players.forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
   const first = n => (firsts[gnFirstName(n)] > 1 ? n : gnFirstName(n));
