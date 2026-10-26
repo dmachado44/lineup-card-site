@@ -6554,8 +6554,12 @@ async function openSchedule(teamId) {
   try {
     const fb = initFirebase();
     // Load ICS (if a calendar is linked) + saved lineups in parallel
+    // A calendar failure (bad link, offline, or a local preview with no
+    // Netlify functions) must not blank the saved lineups — it degrades to
+    // a sync-bar warning and the Firestore half still renders.
+    let calError = null;
     const [icsText, lineupSnap] = await Promise.all([
-      calUrl ? fetchSchedule(calUrl) : Promise.resolve(null),
+      calUrl ? fetchSchedule(calUrl).catch(e => { calError = e; return null; }) : Promise.resolve(null),
       fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null),
       loadCoachNotes(teamId)   // Game Notes (coach only; members resolve to {})
     ]);
@@ -6568,7 +6572,12 @@ async function openSchedule(teamId) {
       ? lineupSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       : [];
 
-    if (calUrl) {
+    if (calUrl && calError) {
+      syncBar.innerHTML = `
+        <div class="schedule-sync-bar" style="color:var(--attention);">
+          Couldn't sync the calendar (${escHtml(calError.message || 'fetch failed')}). Showing saved lineups only.
+        </div>`;
+    } else if (calUrl) {
       syncBar.innerHTML = `
         <div class="schedule-sync-bar">
           <span class="sync-dot"></span>
@@ -6768,7 +6777,7 @@ function renderSchedule() {
 // this team: every player id/name seen across saved lineups.
 function gnRosterFromLineups(lineups) {
   const seen = {};
-  (lineups || []).forEach(l => (l.players || []).forEach(p => { if (p.playerId && !seen[p.playerId]) seen[p.playerId] = { id: p.playerId, name: p.name || '' }; }));
+  (lineups || []).forEach(l => (l.players || []).forEach(p => { const k = rosterDocIdFor(p.playerId); if (k && !seen[k]) seen[k] = { id: k, name: p.name || '' }; }));
   return Object.values(seen);
 }
 
@@ -6940,7 +6949,8 @@ function gnFirstName(name) { return String(name || '').split(' ')[0] || name || 
 
 function gnGameBallName(notes, lineup) {
   if (!notes || !notes.gameBallPlayerId || !lineup) return null;
-  const entry = (lineup.players || []).find(p => p.playerId === notes.gameBallPlayerId);
+  const key = rosterDocIdFor(notes.gameBallPlayerId);
+  const entry = (lineup.players || []).find(p => rosterDocIdFor(p.playerId) === key);
   return entry ? gnFirstName(entry.name) : null;
 }
 
@@ -6955,10 +6965,17 @@ function gnRecentNotes(teamId, gameDate, excludeLineupId) {
 }
 
 // Latest sentiment per area for a player across recent games (newest wins).
+function gnPlayerEntry(notes, playerId) {
+  const key = rosterDocIdFor(playerId);
+  if (notes.players[key]) return notes.players[key];
+  const hit = Object.keys(notes.players).find(k => rosterDocIdFor(k) === key);
+  return hit ? notes.players[hit] : null;
+}
+
 function gnLatestTags(recent, playerId) {
   const seen = {};
   recent.forEach(n => {
-    const note = n.players[playerId];
+    const note = gnPlayerEntry(n, playerId);
     if (!note) return;
     note.tags.forEach(t => { if (!(t.area in seen)) seen[t.area] = t.sentiment; });
   });
@@ -6967,7 +6984,7 @@ function gnLatestTags(recent, playerId) {
 
 function gnLatestNoteText(recent, playerId) {
   for (const n of recent) {
-    const note = n.players[playerId];
+    const note = gnPlayerEntry(n, playerId);
     if (note && note.text.trim()) return note.text.trim();
   }
   return '';
@@ -6985,13 +7002,16 @@ function gnTagsHtml(tags, hadBall) {
 function gnLedgerHtml(teamId, players) {
   const all = Object.values(_coachNotes[teamId] || {});
   if (!all.some(n => n.gameBallPlayerId)) return '';
+  // Notes are keyed by bare roster doc ids (iOS writes them that way);
+  // the web builder's in-memory roster uses imp_/p_ prefixed ids, so
+  // every comparison goes through rosterDocIdFor().
   const counts = {};
-  all.forEach(n => { if (n.gameBallPlayerId) counts[n.gameBallPlayerId] = (counts[n.gameBallPlayerId] || 0) + 1; });
+  all.forEach(n => { if (n.gameBallPlayerId) { const k = rosterDocIdFor(n.gameBallPlayerId); counts[k] = (counts[k] || 0) + 1; } });
   const firsts = {};
   players.forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
   const entries = players
     .filter(p => p.name)
-    .map(p => ({ name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[p.id] || 0 }))
+    .map(p => ({ name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[rosterDocIdFor(p.id)] || 0 }))
     .sort((a, b) => ((a.count === 0) !== (b.count === 0)) ? (a.count === 0 ? -1 : 1) : a.name.localeCompare(b.name));
   const waiting = entries.filter(e => e.count === 0).length;
   return `<div class="gn-ledger">
@@ -7054,7 +7074,7 @@ function renderGameNotesModal() {
 }
 
 function gnPlayerCardHtml(entry) {
-  const pid = entry.playerId;
+  const pid = rosterDocIdFor(entry.playerId);
   const note = _gnNotes.players[pid] || { text: '', tags: [] };
   const hasBall = _gnNotes.gameBallPlayerId === pid;
   return `<div class="gn-card" id="gn-card-${escHtml(pid)}">
@@ -7072,7 +7092,7 @@ function gnPlayerCardHtml(entry) {
 }
 
 function gnRerenderPlayer(pid) {
-  const entry = (_gnLineup.players || []).find(p => p.playerId === pid);
+  const entry = (_gnLineup.players || []).find(p => rosterDocIdFor(p.playerId) === pid);
   const el = document.getElementById('gn-card-' + pid);
   if (!entry || !el) return;
   // Preserve the textarea's in-progress text (it lives in state already).
@@ -10018,7 +10038,7 @@ function renderAttendance() {
   const recent = _activeTeamId ? gnRecentNotes(_activeTeamId, state.gameDate || '', state.editingLineupDocId || null) : [];
   grid.innerHTML = state.players.map(p => {
     const tags = recent.length ? gnLatestTags(recent, p.id) : [];
-    const ball = recent.some(n => n.gameBallPlayerId === p.id);
+    const ball = recent.some(n => n.gameBallPlayerId && rosterDocIdFor(n.gameBallPlayerId) === rosterDocIdFor(p.id));
     const note = recent.length ? gnLatestNoteText(recent, p.id) : '';
     const hasNotes = !!(tags.length || ball || note);
     return `
