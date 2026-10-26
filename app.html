@@ -2362,7 +2362,7 @@
     /* strategy uses standard .card padding */
     .strategy-row { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
     .strategy-icon { font-size: 20px; flex-shrink: 0; color: var(--muted); display: flex; align-items: center; position: relative; z-index: 0; pointer-events: none; }
-    .strategy-slider-wrap { flex: 1; display: flex; flex-direction: column; gap: 4px; position: relative; z-index: 2; }
+    .strategy-slider-wrap { flex: 1; display: flex; flex-direction: column; gap: 18px; position: relative; z-index: 2; padding-top: 10px; }
     .strategy-slider {
       -webkit-appearance: none; appearance: none;
       width: 100%; height: 10px; border-radius: 5px;
@@ -2396,7 +2396,7 @@
     .strategy-labels { display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; position: relative; z-index: 0; pointer-events: none; }
     .strategy-label-left { color: var(--muted); }
     .strategy-label-right { color: var(--accent); }
-    .strategy-desc { font-size: 13px; color: var(--muted); text-align: center; margin-top: 8px; min-height: 18px; }
+    .strategy-desc { font-size: 13px; color: var(--muted); text-align: center; margin-top: 16px; min-height: 18px; line-height: 1.4; }
     /* Lineup Strategy card as three columns (Oct 2026): slider | momentum | suggestions.
        The two insight columns only render for coaches with game notes; without
        them the slider column keeps the whole card, byte-identical to before. */
@@ -3477,14 +3477,6 @@
     .gn-tag.ball { background: var(--accent); color: var(--on-accent); }
     .gn-ball-line { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-down); font-weight: 700; font-size: 12px; margin-top: 2px; }
     .gn-notes-flag { color: var(--accent-down); font-size: 13px; margin-right: 6px; }
-    .attendance-grid:has(.att-pill.has-notes) { align-items: flex-start; }
-    .att-pill.has-notes { flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; border-radius: 14px; padding: 10px 14px; }
-    .att-pill .gn-tags { margin-top: 2px; }
-    .att-pill .gn-note { display: block; font-size: 11px; font-weight: 400; opacity: 0.85; max-width: 240px; white-space: normal; line-height: 1.3; }
-    /* on the green "in" face the wash chips need their own contrast */
-    .att-pill.in .gn-tag.up { background: rgba(255,255,255,0.88); color: var(--accent-down); }
-    .att-pill.in .gn-tag.down { background: rgba(0,0,0,0.18); color: var(--on-accent); }
-    .att-pill.in .gn-tag.ball { background: var(--on-accent); color: #fff; }
     /* season ledger card */
     .gn-ledger { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); padding: 12px 14px; margin: 0 0 14px; }
     .gn-ledger-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; }
@@ -10270,19 +10262,14 @@ function renderAttendance() {
   const countEl = document.getElementById('att-count');
   const attending = state.players.filter(p => state.attendance[p.id]);
   countEl.textContent = `${attending.length} / ${state.players.length} players attending`;
-  // Game Notes context (coach only): just the game-ball badge from the last
-  // few games. Trends and suggestions live on the Lineup Strategy card now
-  // (Dan, Oct 26) — the pills stay quick to scan.
-  const recent = _activeTeamId ? gnRecentNotes(_activeTeamId, state.gameDate || '', state.editingLineupDocId || null) : [];
-  grid.innerHTML = state.players.map(p => {
-    const ball = recent.some(n => n.gameBallPlayerId && rosterDocIdFor(n.gameBallPlayerId) === rosterDocIdFor(p.id));
-    return `
-    <div class="att-pill ${state.attendance[p.id] ? 'in' : 'out'} ${ball ? 'has-notes' : ''}"
+  // Pills stay plain (Dan, Oct 26): game balls live on the Schedule tab and
+  // trends on the Lineup Strategy card below, which re-renders alongside.
+  grid.innerHTML = state.players.map(p => `
+    <div class="att-pill ${state.attendance[p.id] ? 'in' : 'out'}"
          onclick="toggleAttendance('${p.id}')">
-      <span>${escHtml(p.name)}</span>
-      ${ball ? gnTagsHtml([], true) : ''}
-    </div>`;
-  }).join('');
+      ${escHtml(p.name)}
+    </div>
+  `).join('');
   if (typeof renderStrategyInsights === 'function') renderStrategyInsights();
 }
 
