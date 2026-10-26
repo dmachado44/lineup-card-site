@@ -3412,6 +3412,56 @@
         transition-duration: 0.01ms !important;
       }
     }
+    /* ══════════ GAME NOTES (post-game coach notes, Oct 2026) ══════════
+       Mirrors iOS GameNotesView: team note + one card per player with a
+       note, four tag chips (off → up → down → off) and a game-ball pill.
+       Quiet hairline chrome; accent wash = up, grey = down. */
+    .gn-modal { max-width: 640px; }
+    .gn-game { font-weight: 700; font-size: 17px; color: var(--text); }
+    .gn-game-meta { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+    .gn-card { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; background: var(--card); }
+    .gn-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+    .gn-card-title { font-weight: 700; font-size: 15px; color: var(--text); }
+    .gn-textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 11px; font: inherit; font-size: 15px; color: var(--text); background: var(--bg-secondary); resize: vertical; min-height: 40px; }
+    .gn-textarea:focus { outline: 2px solid var(--accent-wash); border-color: var(--accent-down); }
+    .gn-team-textarea { min-height: 88px; }
+    .gn-chips { display: flex; gap: 6px; margin-top: 8px; }
+    .gn-chip { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .gn-chip:hover { background: var(--bg-secondary); }
+    .gn-chip.up { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
+    .gn-chip.down { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); border-color: transparent; color: var(--text); }
+    .gn-ball { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .gn-ball.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+    .gn-mic { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--accent-wash); color: var(--accent-down); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+    .gn-mic.on { background: var(--accent); color: var(--on-accent); }
+    .gn-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .gn-hint.listening { color: var(--accent-down); }
+    .gn-error { font-size: 13px; color: var(--alert-ink); margin-top: 8px; }
+    .gn-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 12px 20px 18px; border-top: 1px solid var(--border); }
+    /* read-only chips (schedule rows, builder attendance) */
+    .gn-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+    .gn-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 700; line-height: 1.4; }
+    .gn-tag.up { background: var(--accent-wash); color: var(--accent-down); }
+    .gn-tag.down { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); color: var(--text); }
+    .gn-tag.ball { background: var(--accent); color: var(--on-accent); }
+    .gn-ball-line { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-down); font-weight: 700; font-size: 12px; margin-top: 2px; }
+    .gn-notes-flag { color: var(--accent-down); font-size: 13px; margin-right: 6px; }
+    .attendance-grid:has(.att-pill.has-notes) { align-items: flex-start; }
+    .att-pill.has-notes { flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; border-radius: 14px; padding: 10px 14px; }
+    .att-pill .gn-tags { margin-top: 2px; }
+    .att-pill .gn-note { display: block; font-size: 11px; font-weight: 400; opacity: 0.85; max-width: 240px; white-space: normal; line-height: 1.3; }
+    /* on the green "in" face the wash chips need their own contrast */
+    .att-pill.in .gn-tag.up { background: rgba(255,255,255,0.88); color: var(--accent-down); }
+    .att-pill.in .gn-tag.down { background: rgba(0,0,0,0.18); color: var(--on-accent); }
+    .att-pill.in .gn-tag.ball { background: var(--on-accent); color: #fff; }
+    /* season ledger card */
+    .gn-ledger { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); padding: 12px 14px; margin: 0 0 14px; }
+    .gn-ledger-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; }
+    .gn-ledger-head .count { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--muted); }
+    .gn-ledger-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .gn-ledger-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: 12px; font-weight: 700; color: var(--muted); }
+    .gn-ledger-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
+
   </style>
 </head>
 <body>
@@ -3656,6 +3706,7 @@
           </div>
           <div class="flex-row gap-sm flex-wrap">
             <button class="btn btn-ghost btn-sm" onclick="printLineupDetail()">🖨 Print</button>
+            <button class="btn btn-ghost btn-sm" id="detail-notes-btn" style="display:none;" onclick="openGameNotes(_viewingLineupId)">Game Notes</button>
             <button class="btn btn-primary btn-sm" onclick="editCurrentLineupDetail()">✏️ Edit Lineup</button>
           </div>
         </div>
@@ -4281,9 +4332,24 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
 
   </div>
 </div>
+
+<!-- ══════════════ MODAL: GAME NOTES (coach only) ══════════════ -->
+<div id="game-notes-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="game-notes-title" onclick="closeGameNotesModal()">
+      <div class="modal gn-modal" onclick="event.stopPropagation();">
+        <div class="modal-header">
+          <div class="modal-title" id="game-notes-title">Game Notes</div>
+          <button class="modal-close" type="button" onclick="closeGameNotesModal()" aria-label="Close">×</button>
+        </div>
+        <div class="modal-body" id="game-notes-body"></div>
+        <div class="gn-footer">
+          <div id="game-notes-error" class="gn-error" style="display:none;margin:0 auto 0 0;"></div>
+          <button class="btn btn-primary btn-sm" id="game-notes-save" onclick="saveGameNotes()">Done</button>
+        </div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -5558,6 +5624,10 @@ async function enterBuilder(teamId, mode, startStep) {
     // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
     // back if the user is genuinely editing an existing lineup.
     if (mode === 'lineup') state.editingLineupDocId = null;
+    // Game Notes for the attendance step (coach only; one read per team).
+    if (mode === 'lineup' && teamId && !_coachNotes[teamId]) {
+      loadCoachNotes(teamId).then(() => { if (_activeTeamId === teamId && typeof renderAttendance === 'function' && document.getElementById('attendance-grid')) renderAttendance(); });
+    }
     setStep(startStep);
   }
 
@@ -6134,6 +6204,12 @@ function viewLineupDetail(lineupId) {
   hRow += '</tr>';
   thead.innerHTML = hRow;
 
+  // Game Notes action (coach, played game). Notes may still be loading on
+  // a deep link; the button text settles when they arrive.
+  gnUpdateDetailButton();
+  const _gnTeam = _lineupsTeamId || _scheduleTeamId || _activeTeamId;
+  if (_gnTeam && !_coachNotes[_gnTeam]) loadCoachNotes(_gnTeam).then(gnUpdateDetailButton);
+
   const players = lineup.players || [];
   tbody.innerHTML = players.map(p => {
     let cells = '<td><div style="display:flex;align-items:center;gap:8px;"><div class="bat-order">' + p.batOrder + '</div><span>' + escHtml(p.name) + '</span></div></td>';
@@ -6480,7 +6556,8 @@ async function openSchedule(teamId) {
     // Load ICS (if a calendar is linked) + saved lineups in parallel
     const [icsText, lineupSnap] = await Promise.all([
       calUrl ? fetchSchedule(calUrl) : Promise.resolve(null),
-      fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null)
+      fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null),
+      loadCoachNotes(teamId)   // Game Notes (coach only; members resolve to {})
     ]);
     _scheduleGames = icsText
       ? filterGames(parseICS(icsText), getCalendarName(icsText))
@@ -6578,8 +6655,9 @@ function renderSchedule() {
         <div class="schedule-item-info">
           <div class="schedule-item-title">${escHtml(entry._title)}</div>
           <div class="schedule-item-meta">${escHtml(meta)}</div>
+          ${gnScheduleBallLine(entry._lineup)}
         </div>
-        <div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>
+        <div class="schedule-item-action">${gnScheduleFlag(entry._lineup)}<span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>
       </div>`;
   }
 
@@ -6640,9 +6718,19 @@ function renderSchedule() {
             vs ${escHtml(game.opponent)}
           </div>
           <div class="schedule-item-meta">${escHtml(meta)}</div>
+          ${matchedLineup ? gnScheduleBallLine(matchedLineup) : ''}
         </div>
         ${actionHtml}
       </div>`;
+  }
+
+  // Game Notes decorations (coach only — members never have notes loaded).
+  function gnScheduleBallLine(lineup) {
+    const name = gnGameBallName(gnNotesFor(_scheduleTeamId, lineup.id), lineup);
+    return name ? `<div class="gn-ball-line">⚾ Game ball · ${escHtml(name)}</div>` : '';
+  }
+  function gnScheduleFlag(lineup) {
+    return gnNotesFor(_scheduleTeamId, lineup.id) ? '<span class="gn-notes-flag" title="Has game notes">📝</span>' : '';
   }
 
   function renderSection(label, games, isPast) {
@@ -6667,9 +6755,21 @@ function renderSchedule() {
 
   let html = '<div class="schedule-list">';
   html += renderSection('Upcoming games', upcoming, false);
+  if (_scheduleCanCoach) {
+    const roster = (_activeTeamId === _scheduleTeamId && state && state.players) ? state.players : [];
+    html += gnLedgerHtml(_scheduleTeamId, roster.length ? roster : gnRosterFromLineups(_scheduleLineups));
+  }
   html += renderSection('Past games', past, true);
   html += '</div>';
   container.innerHTML = html;
+}
+
+// Roster fallback for the ledger when the builder's state isn't loaded for
+// this team: every player id/name seen across saved lineups.
+function gnRosterFromLineups(lineups) {
+  const seen = {};
+  (lineups || []).forEach(l => (l.players || []).forEach(p => { if (p.playerId && !seen[p.playerId]) seen[p.playerId] = { id: p.playerId, name: p.name || '' }; }));
+  return Object.values(seen);
 }
 
 // Auto-fill game details from a schedule game and jump into lineup builder.
@@ -6760,6 +6860,348 @@ function loadSavedLineupIntoBuilder(lineup) {
 // so it gets its own history entry (Back returns to the schedule).
 function viewScheduleLineup(lineupId) {
   navigate('#/team/' + _scheduleTeamId + '/lineups/' + lineupId);
+}
+
+// ═══════════════════════════════════════════════════
+// GAME NOTES — post-game coach notes (Oct 2026, iOS parity)
+// ═══════════════════════════════════════════════════
+// One doc per played game at teams/{id}/coachNotes/{lineupId}:
+//   { gameDate, teamNote, players: { pid: { text, tags: ['hitting:up', …] } },
+//     gameBallPlayerId, updatedAt, updatedBy }
+// Coach-eyes-only: firestore.rules allow owner/coach read+write; members get
+// permission-denied, which every reader here treats as "no notes".
+//
+// Write contract: set(..., { mergeFields: [...] }) — a merge that leaves
+// unknown fields alone (same spirit as { merge: true }) but REPLACES the
+// listed fields whole, so a note the coach cleared actually disappears.
+// Never touches lineup, player, or team docs.
+
+const GN_AREAS = [
+  { key: 'hitting',  label: 'Hitting'  },
+  { key: 'pitching', label: 'Pitching' },
+  { key: 'fielding', label: 'Fielding' },
+  { key: 'focus',    label: 'Focus'    },
+];
+const GN_RECENT_GAMES = 3;
+
+// teamId → { lineupId → notes }. Loaded once per team visit (schedule,
+// lineup detail, builder); refreshed in place after a save.
+const _coachNotes = {};
+
+function gnDecodeDoc(id, data) {
+  const notes = { id, gameDate: data.gameDate || '', teamNote: data.teamNote || '', players: {}, gameBallPlayerId: data.gameBallPlayerId || null };
+  const players = data.players || {};
+  Object.keys(players).forEach(pid => {
+    const raw = players[pid] || {};
+    const tags = (raw.tags || []).map(t => {
+      const [area, sentiment] = String(t).split(':');
+      const key = area === 'ready' ? 'focus' : area;   // legacy tag name
+      return GN_AREAS.some(a => a.key === key) && (sentiment === 'up' || sentiment === 'down') ? { area: key, sentiment } : null;
+    }).filter(Boolean);
+    const text = raw.text || '';
+    if (text.trim() || tags.length) notes.players[pid] = { text, tags };
+  });
+  return notes;
+}
+
+async function loadCoachNotes(teamId) {
+  const team = _userTeams.find(t => t.id === teamId);
+  if (!team || !isCoachRole(team)) { _coachNotes[teamId] = {}; return _coachNotes[teamId]; }
+  const fb = initFirebase();
+  if (!fb) return {};
+  try {
+    const snap = await fb.db.collection('teams').doc(teamId).collection('coachNotes').get();
+    const byLineup = {};
+    snap.docs.forEach(d => { byLineup[d.id] = gnDecodeDoc(d.id, d.data()); });
+    _coachNotes[teamId] = byLineup;
+  } catch (e) {
+    // permission-denied (rules not deployed / not a coach) reads as empty
+    console.warn('Game notes unavailable:', e && e.code ? e.code : e);
+    _coachNotes[teamId] = {};
+  }
+  return _coachNotes[teamId];
+}
+
+function gnNotesFor(teamId, lineupId) {
+  return (_coachNotes[teamId] || {})[lineupId] || null;
+}
+
+// Dated today or earlier (the write-up happens on the drive home), or
+// undated. Future games get no notes action.
+function gnCanTakeNotes(lineup) {
+  if (!lineup || !lineup.gameDate) return true;
+  const d = new Date(lineup.gameDate + 'T00:00:00');
+  if (isNaN(d)) return true;
+  const tomorrow = new Date(); tomorrow.setHours(0, 0, 0, 0); tomorrow.setDate(tomorrow.getDate() + 1);
+  return d < tomorrow;
+}
+
+function gnFirstName(name) { return String(name || '').split(' ')[0] || name || ''; }
+
+function gnGameBallName(notes, lineup) {
+  if (!notes || !notes.gameBallPlayerId || !lineup) return null;
+  const entry = (lineup.players || []).find(p => p.playerId === notes.gameBallPlayerId);
+  return entry ? gnFirstName(entry.name) : null;
+}
+
+// The last N games' notes strictly before `gameDate` ('' = all), newest first.
+function gnRecentNotes(teamId, gameDate, excludeLineupId) {
+  const all = Object.values(_coachNotes[teamId] || {});
+  const cutoff = gameDate || '9999-99-99';
+  return all
+    .filter(n => n.id !== excludeLineupId && n.gameDate && n.gameDate < cutoff)
+    .sort((a, b) => (a.gameDate < b.gameDate ? 1 : -1))
+    .slice(0, GN_RECENT_GAMES);
+}
+
+// Latest sentiment per area for a player across recent games (newest wins).
+function gnLatestTags(recent, playerId) {
+  const seen = {};
+  recent.forEach(n => {
+    const note = n.players[playerId];
+    if (!note) return;
+    note.tags.forEach(t => { if (!(t.area in seen)) seen[t.area] = t.sentiment; });
+  });
+  return GN_AREAS.filter(a => a.key in seen).map(a => ({ area: a.key, label: a.label, sentiment: seen[a.key] }));
+}
+
+function gnLatestNoteText(recent, playerId) {
+  for (const n of recent) {
+    const note = n.players[playerId];
+    if (note && note.text.trim()) return note.text.trim();
+  }
+  return '';
+}
+
+// Read-only chip row (schedule rows + builder attendance).
+function gnTagsHtml(tags, hadBall) {
+  const parts = [];
+  if (hadBall) parts.push('<span class="gn-tag ball">⚾ Game ball</span>');
+  tags.forEach(t => parts.push(`<span class="gn-tag ${t.sentiment}">${escHtml(t.label)} ${t.sentiment === 'up' ? '↑' : '↓'}</span>`));
+  return parts.length ? `<span class="gn-tags">${parts.join('')}</span>` : '';
+}
+
+// Season ledger: who has a ball, who is still waiting. Coach only.
+function gnLedgerHtml(teamId, players) {
+  const all = Object.values(_coachNotes[teamId] || {});
+  if (!all.some(n => n.gameBallPlayerId)) return '';
+  const counts = {};
+  all.forEach(n => { if (n.gameBallPlayerId) counts[n.gameBallPlayerId] = (counts[n.gameBallPlayerId] || 0) + 1; });
+  const firsts = {};
+  players.forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
+  const entries = players
+    .filter(p => p.name)
+    .map(p => ({ name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[p.id] || 0 }))
+    .sort((a, b) => ((a.count === 0) !== (b.count === 0)) ? (a.count === 0 ? -1 : 1) : a.name.localeCompare(b.name));
+  const waiting = entries.filter(e => e.count === 0).length;
+  return `<div class="gn-ledger">
+    <div class="gn-ledger-head">⚾ Game Balls <span class="count">${waiting} still waiting</span></div>
+    <div class="gn-ledger-chips">${entries.map(e =>
+      `<span class="gn-ledger-chip ${e.count ? 'has' : ''}">${e.count ? '⚾ ' : ''}${escHtml(e.name)}${e.count > 1 ? ' ×' + e.count : ''}</span>`).join('')}</div>
+  </div>`;
+}
+
+// ── Editor modal ──
+let _gnTeamId = null, _gnLineup = null, _gnNotes = null, _gnOriginal = null;
+
+function gnEmpty(lineup) { return { id: lineup.id, gameDate: lineup.gameDate || '', teamNote: '', players: {}, gameBallPlayerId: null }; }
+function gnClone(n) { return JSON.parse(JSON.stringify(n)); }
+function gnPlayerNote(pid) { if (!_gnNotes.players[pid]) _gnNotes.players[pid] = { text: '', tags: [] }; return _gnNotes.players[pid]; }
+function gnIsDirty() { return JSON.stringify(_gnNotes) !== JSON.stringify(_gnOriginal); }
+
+function openGameNotes(lineupId) {
+  const teamId = _lineupsTeamId || _scheduleTeamId || _activeTeamId;
+  const lineup = (_pastLineups || []).find(l => l.id === lineupId) || (_scheduleLineups || []).find(l => l.id === lineupId);
+  if (!teamId || !lineup) return;
+  _gnTeamId = teamId;
+  _gnLineup = lineup;
+  _gnNotes = gnClone(gnNotesFor(teamId, lineupId) || gnEmpty(lineup));
+  _gnOriginal = gnClone(_gnNotes);
+  renderGameNotesModal();
+  const modal = document.getElementById('game-notes-modal');
+  modal.style.display = '';
+  document.getElementById('game-notes-error').style.display = 'none';
+  (async () => { if (!_coachNotes[teamId]) { await loadCoachNotes(teamId); } })();
+}
+
+function closeGameNotesModal() {
+  gnStopDictation();
+  if (gnIsDirty()) { saveGameNotes(); return; }   // a notebook has no cancel
+  document.getElementById('game-notes-modal').style.display = 'none';
+}
+
+function renderGameNotesModal() {
+  const body = document.getElementById('game-notes-body');
+  const l = _gnLineup;
+  const title = l.gameName || (l.opponent ? 'vs ' + l.opponent : 'Game');
+  const meta = [l.gameDate ? formatDate(l.gameDate) : '', l.gameLocation].filter(Boolean).join(' · ');
+  const entries = (l.players || []).slice().sort((a, b) => (a.batOrder || 0) - (b.batOrder || 0));
+  const dictation = ('SpeechRecognition' in window) || ('webkitSpeechRecognition' in window);
+  body.innerHTML = `
+    <div class="gn-game">${escHtml(title)}</div>
+    <div class="gn-game-meta">${escHtml(meta)}</div>
+    <div class="gn-card">
+      <div class="gn-card-head">
+        <div class="gn-card-title">How did the game go?</div>
+        ${dictation ? `<button type="button" class="gn-mic" id="gn-mic" onclick="gnToggleDictation()" aria-label="Dictate">🎤</button>` : ''}
+      </div>
+      <textarea class="gn-textarea gn-team-textarea" id="gn-team-note" placeholder="Big moments, what to work on, anything you want to remember." oninput="_gnNotes.teamNote = this.value">${escHtml(_gnNotes.teamNote)}</textarea>
+      <div class="gn-hint" id="gn-mic-hint" style="display:none;"></div>
+    </div>
+    <div class="section-label" style="margin:12px 0 8px;font-weight:700;color:var(--muted);">Players</div>
+    ${entries.map(e => gnPlayerCardHtml(e)).join('')}
+  `;
+}
+
+function gnPlayerCardHtml(entry) {
+  const pid = entry.playerId;
+  const note = _gnNotes.players[pid] || { text: '', tags: [] };
+  const hasBall = _gnNotes.gameBallPlayerId === pid;
+  return `<div class="gn-card" id="gn-card-${escHtml(pid)}">
+    <div class="gn-card-head">
+      <div class="gn-card-title">${escHtml(entry.name)}</div>
+      <button type="button" class="gn-ball ${hasBall ? 'on' : ''}" onclick="gnToggleBall('${escHtml(pid)}')" aria-pressed="${hasBall}">⚾ Game ball</button>
+    </div>
+    <textarea class="gn-textarea" rows="1" placeholder="Add a note" oninput="gnPlayerNote('${escHtml(pid)}').text = this.value">${escHtml(note.text)}</textarea>
+    <div class="gn-chips">${GN_AREAS.map(a => {
+      const tag = note.tags.find(t => t.area === a.key);
+      const cls = tag ? tag.sentiment : '';
+      return `<button type="button" class="gn-chip ${cls}" onclick="gnCycleTag('${escHtml(pid)}','${a.key}')">${a.label}${tag ? (tag.sentiment === 'up' ? ' ↑' : ' ↓') : ''}</button>`;
+    }).join('')}</div>
+  </div>`;
+}
+
+function gnRerenderPlayer(pid) {
+  const entry = (_gnLineup.players || []).find(p => p.playerId === pid);
+  const el = document.getElementById('gn-card-' + pid);
+  if (!entry || !el) return;
+  // Preserve the textarea's in-progress text (it lives in state already).
+  el.outerHTML = gnPlayerCardHtml(entry);
+}
+
+// Off → up → down → off. One tag per area.
+function gnCycleTag(pid, area) {
+  const note = gnPlayerNote(pid);
+  const current = note.tags.find(t => t.area === area);
+  note.tags = note.tags.filter(t => t.area !== area);
+  if (!current) note.tags.push({ area, sentiment: 'up' });
+  else if (current.sentiment === 'up') note.tags.push({ area, sentiment: 'down' });
+  gnRerenderPlayer(pid);
+}
+
+// One ball per game: tapping a second player moves it; tapping the holder hands it back.
+function gnToggleBall(pid) {
+  const prev = _gnNotes.gameBallPlayerId;
+  _gnNotes.gameBallPlayerId = prev === pid ? null : pid;
+  if (prev && prev !== pid) gnRerenderPlayer(prev);
+  gnRerenderPlayer(pid);
+}
+
+function gnIsEmpty(n) {
+  return !n.teamNote.trim() && !n.gameBallPlayerId &&
+    Object.values(n.players).every(p => !p.text.trim() && !p.tags.length);
+}
+
+async function saveGameNotes() {
+  gnStopDictation();
+  const fb = initFirebase();
+  const errEl = document.getElementById('game-notes-error');
+  const btn = document.getElementById('game-notes-save');
+  if (!fb || !_gnTeamId || !_gnNotes) return;
+  if (!gnIsDirty()) { document.getElementById('game-notes-modal').style.display = 'none'; return; }
+  btn.disabled = true; btn.textContent = 'Saving…';
+  errEl.style.display = 'none';
+  const ref = fb.db.collection('teams').doc(_gnTeamId).collection('coachNotes').doc(_gnNotes.id);
+  try {
+    if (gnIsEmpty(_gnNotes)) {
+      await ref.delete();
+      if (_coachNotes[_gnTeamId]) delete _coachNotes[_gnTeamId][_gnNotes.id];
+    } else {
+      const players = {};
+      Object.keys(_gnNotes.players).forEach(pid => {
+        const n = _gnNotes.players[pid];
+        if (!n.text.trim() && !n.tags.length) return;
+        players[pid] = { text: n.text.trim(), tags: n.tags.map(t => t.area + ':' + t.sentiment) };
+      });
+      await ref.set({
+        gameDate: _gnNotes.gameDate,
+        teamNote: _gnNotes.teamNote.trim(),
+        players,
+        gameBallPlayerId: _gnNotes.gameBallPlayerId || '',   // '' clears a handed-back ball
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedBy: currentUid(),
+      }, { mergeFields: ['gameDate', 'teamNote', 'players', 'gameBallPlayerId', 'updatedAt', 'updatedBy'] });
+      if (!_coachNotes[_gnTeamId]) _coachNotes[_gnTeamId] = {};
+      _coachNotes[_gnTeamId][_gnNotes.id] = gnClone(_gnNotes);
+    }
+    _gnOriginal = gnClone(_gnNotes);
+    document.getElementById('game-notes-modal').style.display = 'none';
+    // Refresh whichever surface is showing
+    if (document.getElementById('view-schedule').classList.contains('active') && _scheduleTeamId === _gnTeamId) renderSchedule();
+    if (_viewingLineupId === _gnNotes.id) gnUpdateDetailButton();
+  } catch (e) {
+    console.error('Game notes save failed:', e);
+    errEl.textContent = (e && e.code === 'permission-denied')
+      ? 'Only the team owner or a coach can save game notes.'
+      : "Couldn't save notes. Check your connection and try again.";
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Done';
+  }
+}
+
+function gnUpdateDetailButton() {
+  const btn = document.getElementById('detail-notes-btn');
+  if (!btn) return;
+  const teamId = _lineupsTeamId || _scheduleTeamId || _activeTeamId;
+  const team = _userTeams.find(t => t.id === teamId);
+  const lineup = (_pastLineups || []).find(l => l.id === _viewingLineupId);
+  const show = !!(team && isCoachRole(team) && lineup && gnCanTakeNotes(lineup));
+  btn.style.display = show ? '' : 'none';
+  if (show) btn.textContent = gnNotesFor(teamId, _viewingLineupId) ? '📝 Game notes' : '📝 Add game notes';
+}
+
+// ── Dictation (Web Speech API; Chrome + Safari) ──
+let _gnRecognizer = null, _gnDictBase = '';
+
+function gnToggleDictation() {
+  if (_gnRecognizer) { gnStopDictation(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  const ta = document.getElementById('gn-team-note');
+  const hint = document.getElementById('gn-mic-hint');
+  const mic = document.getElementById('gn-mic');
+  _gnDictBase = ta.value;
+  const rec = new SR();
+  rec.lang = navigator.language || 'en-US';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.onresult = (ev) => {
+    let transcript = '';
+    for (let i = 0; i < ev.results.length; i++) transcript += ev.results[i][0].transcript;
+    const joiner = !_gnDictBase || /\s$/.test(_gnDictBase) ? '' : ' ';
+    ta.value = _gnDictBase + joiner + transcript.trim();
+    _gnNotes.teamNote = ta.value;
+  };
+  rec.onerror = (ev) => {
+    if (hint) { hint.style.display = ''; hint.className = 'gn-hint'; hint.textContent = ev.error === 'not-allowed' ? 'Allow microphone access in your browser to dictate.' : "Dictation isn't available right now."; }
+    gnStopDictation(true);
+  };
+  rec.onend = () => { if (_gnRecognizer) gnStopDictation(); };
+  try { rec.start(); } catch (e) { return; }
+  _gnRecognizer = rec;
+  if (mic) mic.classList.add('on');
+  if (hint) { hint.style.display = ''; hint.className = 'gn-hint listening'; hint.textContent = 'Listening. Click the mic again when you’re done.'; }
+}
+
+function gnStopDictation(keepHint) {
+  const rec = _gnRecognizer;
+  _gnRecognizer = null;
+  if (rec) { try { rec.stop(); } catch (e) {} }
+  const mic = document.getElementById('gn-mic');
+  const hint = document.getElementById('gn-mic-hint');
+  if (mic) mic.classList.remove('on');
+  if (hint && !keepHint) hint.style.display = 'none';
 }
 
 // ═══════════════════════════════════════════════════
@@ -9570,12 +10012,23 @@ function renderAttendance() {
   const countEl = document.getElementById('att-count');
   const attending = state.players.filter(p => state.attendance[p.id]);
   countEl.textContent = `${attending.length} / ${state.players.length} players attending`;
-  grid.innerHTML = state.players.map(p => `
-    <div class="att-pill ${state.attendance[p.id] ? 'in' : 'out'}"
+  // Game Notes context (coach only): latest tag per area + the most recent
+  // note line from the last few games. Context for the coach's eyes — the
+  // engine never reads it.
+  const recent = _activeTeamId ? gnRecentNotes(_activeTeamId, state.gameDate || '', state.editingLineupDocId || null) : [];
+  grid.innerHTML = state.players.map(p => {
+    const tags = recent.length ? gnLatestTags(recent, p.id) : [];
+    const ball = recent.some(n => n.gameBallPlayerId === p.id);
+    const note = recent.length ? gnLatestNoteText(recent, p.id) : '';
+    const hasNotes = !!(tags.length || ball || note);
+    return `
+    <div class="att-pill ${state.attendance[p.id] ? 'in' : 'out'} ${hasNotes ? 'has-notes' : ''}"
          onclick="toggleAttendance('${p.id}')">
-      ${escHtml(p.name)}
-    </div>
-  `).join('');
+      <span>${escHtml(p.name)}</span>
+      ${(tags.length || ball) ? gnTagsHtml(tags, ball) : ''}
+      ${note ? `<span class="gn-note">${escHtml(note)}</span>` : ''}
+    </div>`;
+  }).join('');
 }
 
 // ── Game Positions (per-game override) ──
