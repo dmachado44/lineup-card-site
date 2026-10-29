@@ -67,6 +67,7 @@
   }
   </script>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.6/Sortable.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <!-- Firebase (compat SDK) -->
   <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -2597,6 +2598,41 @@
     #settings-members-card { display: none; }
     .settings-mode #settings-members-card { display: block; }
     .invite-code-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+
+    /* Share Team card — mirrors iOS ShareTeamCard (Oct 29, 2026): green
+       stage, one sticker card, logo riding the top edge, join QR on a white
+       chip, tap-to-copy code under it. The card is the modal's one slab. */
+    .share-stage { background: var(--accent); border-radius: 16px; padding: 56px 20px 20px; }
+    .share-card {
+      position: relative; background: var(--panel); color: var(--ink);
+      border: 2px solid var(--sticker-ink); border-radius: 20px; box-shadow: 4px 4px 0 var(--sticker-ink);
+      padding: 60px 18px 18px; display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .share-card-logo {
+      position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+      width: 96px; height: 96px; border-radius: 50%; background: var(--panel);
+      border: 2px solid var(--sticker-ink); padding: 4px;
+    }
+    .share-card-logo span { width: 100%; height: 100%; border-radius: 50%; }
+    .share-card-logo img { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); border-radius: 50%; display: block; object-fit: cover; }
+    .share-card-logo span {
+      display: grid; place-items: center; background: var(--accent); color: var(--on-accent);
+      font-family: var(--font-display); font-weight: 900; font-size: 48px; line-height: 1;
+    }
+    .share-card-name { font-size: 22px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+    .share-card-qr { margin-top: 12px; background: #fff; border-radius: 10px; padding: 8px; line-height: 0; }
+    .share-card-qr svg { display: block; width: 176px; height: 176px; }
+    .share-card-kicker { margin-top: 8px; font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    .share-card-code {
+      margin-top: 12px; width: 100%; padding: 8px 12px 6px; border: 0; background: none; border-radius: var(--radius-btn);
+      display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; color: inherit; font: inherit;
+    }
+    .share-card-code:hover { background: var(--bg-secondary); }
+    .share-card-code:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
+    .share-card-code .code { font-family: var(--font-display); font-weight: 900; font-size: 42px; line-height: 1; letter-spacing: .1em; color: var(--ink); }
+    .share-card-code .tap { margin-top: 4px; font-size: 12px; color: var(--muted); min-height: 16px; }
+    .share-card-code.copied .tap { color: var(--accent-down); font-weight: 600; }
+    .share-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
     .invite-code-value {
       font-family: var(--font-display);
       font-weight: 900;
@@ -4404,6 +4440,8 @@
           <div id="game-notes-error" class="gn-error" style="display:none;margin:0 auto 0 0;"></div>
           <button class="btn btn-primary btn-sm" id="game-notes-save" onclick="saveGameNotes()">Done</button>
         </div>
+      </div>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════
@@ -4871,17 +4909,55 @@ async function openShareTeamModal(teamId) {
   }
   const link = joinLinkForCode(code);
   const canNativeShare = !!navigator.share;
+  const name = team.name || 'Team';
+  const attr = v => escHtml(v).replace(/"/g, '&quot;');
+  // Initial on green underneath; the logo (when there is one) sits on top
+  // and simply removes itself if it fails to load.
+  const logo = `<span>${escHtml(name.charAt(0).toUpperCase())}</span>`
+    + (team.logoURL ? `<img src="${attr(team.logoURL)}" alt="" onerror="this.remove()">` : '');
   body.innerHTML = `
-    <div class="invite-code-row" style="justify-content:center;margin:6px 0 14px;">
-      <span class="invite-code-value">${escHtml(code)}</span>
+    <div class="share-stage">
+      <div class="share-card">
+        <div class="share-card-logo">${logo}</div>
+        <div class="share-card-name">${escHtml(name)}</div>
+        <div class="share-card-qr" role="img" aria-label="Join QR for ${attr(name)}">${joinQrSvg(code, 176)}</div>
+        <div class="share-card-kicker">Scan to join</div>
+        <button class="share-card-code" id="share-copy-code-btn" type="button" onclick="copyShareText('code')" aria-label="Copy invite code ${attr(code)}">
+          <span class="share-card-kicker" style="margin-top:0">Invite code</span>
+          <span class="code">${escHtml(code)}</span>
+          <span class="tap">Tap code to copy</span>
+        </button>
+      </div>
     </div>
-    <div style="font-size:13px;color:var(--muted);text-align:center;word-break:break-all;margin-bottom:16px;">${escHtml(link)}</div>
-    <div class="flex-row gap-sm" style="justify-content:center;flex-wrap:wrap;">
+    <div class="share-actions">
       <button class="btn btn-primary btn-sm" id="share-copy-link-btn" onclick="copyShareText('link')">Copy Link</button>
-      <button class="btn btn-ghost btn-sm" id="share-copy-code-btn" onclick="copyShareText('code')">Copy Code</button>
       ${canNativeShare ? '<button class="btn btn-ghost btn-sm" onclick="nativeShareTeam()">Share…</button>' : ''}
     </div>`;
   _shareModalData = { code, link, teamName: team.name || 'our team' };
+}
+
+// The QR encodes the same universal link as the iOS share card and the
+// printout (PRINT_QR_SPEC): a phone camera opens Leadoff if installed,
+// otherwise the getleadoff.com/j/ page. Black on white in both themes.
+function joinQrUrl(code) { return 'https://getleadoff.com/j/' + code; }
+
+function joinQrSvg(code, size) {
+  try {
+    if (typeof qrcode !== 'function') throw new Error('qrcode lib not loaded');
+    const q = qrcode(0, 'M');
+    q.addData(joinQrUrl(code));
+    q.make();
+    const n = q.getModuleCount();
+    const cell = size / n;
+    let d = '';
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+      if (q.isDark(r, c)) d += `M${(c * cell).toFixed(2)} ${(r * cell).toFixed(2)}h${cell.toFixed(2)}v${cell.toFixed(2)}h-${cell.toFixed(2)}z`;
+    }
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#101613"/></svg>`;
+  } catch (e) {
+    console.error('joinQrSvg failed:', e);
+    return `<div style="width:${size}px;height:${size}px;display:grid;place-items:center;color:#6B6659;font-size:13px;">QR unavailable</div>`;
+  }
 }
 
 let _shareModalData = null;
@@ -4890,11 +4966,29 @@ function copyShareText(kind) {
   if (!_shareModalData) return;
   const text = kind === 'link' ? _shareModalData.link : _shareModalData.code;
   const btn = document.getElementById(kind === 'link' ? 'share-copy-link-btn' : 'share-copy-code-btn');
-  const label = btn ? btn.textContent : '';
+  const done = () => {
+    if (!btn) return;
+    if (kind === 'code') {
+      const tap = btn.querySelector('.tap');
+      btn.classList.add('copied');
+      if (tap) tap.textContent = '✓ Code copied';
+      clearTimeout(btn._t);
+      btn._t = setTimeout(() => { btn.classList.remove('copied'); if (tap) tap.textContent = 'Tap code to copy'; }, 2000);
+    } else {
+      const label = 'Copy Link';
+      btn.textContent = 'Copied ✓';
+      clearTimeout(btn._t);
+      btn._t = setTimeout(() => { btn.textContent = label; }, 1600);
+    }
+  };
+  const fallback = () => {
+    const el = kind === 'code' && btn ? btn.querySelector('.code') : null;
+    if (el) { const r = document.createRange(); r.selectNodeContents(el); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); }
+  };
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      if (btn) { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = label; }, 1600); }
-    }).catch(() => {});
+    navigator.clipboard.writeText(text).then(done).catch(fallback);
+  } else {
+    fallback();
   }
 }
 
@@ -11807,7 +11901,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="modal-title" id="share-team-title">Share Team</div>
           <button class="modal-close" type="button" onclick="closeShareTeamModal()" aria-label="Close">×</button>
         </div>
-        <div class="modal-sub" id="share-team-sub">Anyone with this link or code can join the team from the Leadoff iOS app or this site.</div>
+        <div class="modal-sub" id="share-team-sub">Parents scan the QR with their phone camera to open the team in Leadoff. Or send the link or code.</div>
         <div class="modal-body" id="share-team-body"></div>
       </div>
     </div>
