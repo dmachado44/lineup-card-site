@@ -3528,6 +3528,428 @@
     .gn-ledger-hint { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 4px; }
     .gn-ledger-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
 
+    /* ══════════════════════════════════════════════════════════════════
+       SHELL v2 (Oct 30 2026) — from the web audit board.
+       Nav B (team switcher + collapsible rail) · anchored action bars ·
+       builder tools pane · who's-here chips · save bar on change.
+       Motion uses the three web curves that stand in for the iOS springs.
+       ══════════════════════════════════════════════════════════════════ */
+    :root {
+      --lc-spring: cubic-bezier(.32, 1.25, .5, 1);  /* things that land: bars, popovers, cards · 380ms */
+      --lc-glide:  cubic-bezier(.3, .9, .3, 1);     /* things that resize: rail, panel, progress · 320ms */
+      --lc-pop:    cubic-bezier(.3, 1.6, .5, 1);    /* checks, counts, chips · 300ms */
+      --sidebar-w: 0px;
+      --tools-w:   0px;
+      --wizard-h:  64px;
+    }
+    @media (min-width: 980px) {
+      body.signed-in { --sidebar-w: 256px; padding-left: var(--sidebar-w); }
+      body.signed-in.sb-ready { transition: padding-left .32s var(--lc-glide); }
+      body.signed-in.sidebar-rail { --sidebar-w: 76px; }
+      body.tools-visible { --tools-w: 360px; }
+    }
+
+    /* Per-view top bars retire once signed in: brand, team and account live
+       in the sidebar (desktop) or the one phone top bar (below 980px). */
+    body.signed-in .topbar { display: none; }
+    .sidebar-hamburger, body.signed-in .sidebar-hamburger { display: none !important; }
+    body.signed-in .feedback-tab { display: none; }
+    /* The closed feedback panel parks below the fold; its shadow used to peek over the bottom edge. */
+    .feedback-panel:not(.open):not(.closing) { visibility: hidden; }
+
+    /* ── Sidebar shell ── */
+    .sidebar { width: 256px; border-right: none; box-shadow: 1px 0 0 var(--hairline); }
+    @media (min-width: 980px) {
+      .sidebar { overflow: visible; transition: width .32s var(--lc-glide); }
+      body.sidebar-rail .sidebar { width: 76px; }
+    }
+    .sidebar-head { height: 64px; padding: 0 12px 0 20px; position: relative; }
+    .sidebar-brand { transition: opacity .14s .16s; }
+    .sidebar-nav { padding: 2px 0 12px; gap: 2px; overflow: visible; }
+    .sidebar-foot { margin-top: auto; padding: 12px 0 16px; display: flex; flex-direction: column; gap: 4px; font-size: inherit; color: inherit; }
+    .sb-toggle {
+      position: relative; flex: none; width: 40px; height: 40px; padding: 0;
+      border: none; border-radius: 10px; background: transparent; color: var(--ink-secondary);
+      display: none; place-items: center; cursor: pointer;
+    }
+    @media (min-width: 980px) { .sb-toggle { display: grid; } }
+    .sb-toggle:hover { background: var(--bg-secondary); color: var(--ink); }
+    .sb-toggle .sb-ltile { position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; opacity: 0; transition: opacity .15s; }
+    .sb-toggle .sb-pico { transition: opacity .15s, transform .32s var(--lc-glide); }
+    .sidebar :focus-visible, .m-topbar :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+
+    /* Tooltips (rail only, plus the toggle) */
+    .sb-tip {
+      position: absolute; left: calc(100% + 12px); top: 50%; z-index: 90;
+      transform: translate(-4px, -50%); opacity: 0; pointer-events: none;
+      background: var(--ink); color: var(--panel); font-size: 13px; font-weight: 600; line-height: 1;
+      padding: 7px 9px; border-radius: 8px; white-space: nowrap;
+      transition: opacity .12s, transform .12s;
+    }
+    .sb-toggle:hover .sb-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .35s; }
+
+    /* Team switcher */
+    .sb-switch { position: relative; margin: 2px 12px 0; flex: none; }
+    .sb-team {
+      width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px;
+      border: none; border-radius: 14px; background: var(--bg-secondary); color: var(--ink);
+      font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: background .15s;
+    }
+    .sb-team:hover { background: var(--gray-5); }
+    .sb-badge {
+      flex: none; width: 36px; height: 36px; border-radius: 10px; overflow: hidden;
+      display: grid; place-items: center; background: var(--accent-wash); color: var(--ink);
+      font-family: var(--font-display); font-weight: 900; font-size: 16px; letter-spacing: .02em; line-height: 1;
+    }
+    .sb-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .sb-team-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; transition: opacity .14s .16s; }
+    .sb-team-name { font-size: 16px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-team-sub { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-chev { flex: none; color: var(--ink-secondary); transition: opacity .14s .16s; }
+    .sb-pop {
+      position: absolute; left: 0; top: calc(100% + 8px); width: 300px; max-height: min(520px, calc(100vh - 140px)); overflow-y: auto;
+      background: var(--panel); border-radius: 16px; padding: 8px; z-index: 95;
+      box-shadow: 0 14px 40px rgba(16,22,19,.18), 0 0 0 1px var(--hairline);
+      opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top left; pointer-events: none; visibility: hidden;
+      transition: opacity .14s, transform .22s var(--lc-spring), visibility 0s linear .22s;
+    }
+    .sb-switch.open .sb-pop { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--lc-spring); }
+    .sb-pop-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); padding: 8px 10px 4px; }
+    .sb-trow {
+      width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: none; border-radius: 10px;
+      background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+    }
+    .sb-trow:hover { background: var(--bg-secondary); }
+    .sb-trow.cur { background: var(--gray-5); }
+    .sb-trow .sb-badge { width: 30px; height: 30px; border-radius: 8px; font-size: 13px; }
+    .sb-trow-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    .sb-trow-txt b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-trow-txt span { font-size: 12.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-pop-div { height: 1px; background: var(--hairline); margin: 6px 4px; }
+    .sb-plink {
+      display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: 10px;
+      font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer;
+    }
+    .sb-plink:hover { background: var(--bg-secondary); }
+    .sb-pop-anim .sb-trow { animation: sbRowIn .3s var(--lc-spring) both; }
+
+    /* Build lineup action + sections */
+    .sb-build {
+      position: relative; display: flex; align-items: center; gap: 12px; height: 46px; margin: 14px 12px 10px; padding: 0 10px;
+      border-radius: 12px; color: var(--ink); font-size: 16px; font-weight: 700; white-space: nowrap; cursor: pointer;
+    }
+    .sb-build:hover { background: var(--bg-secondary); }
+    .sb-plus {
+      flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+      background: var(--accent); color: var(--on-accent); border: 2px solid var(--sticker-ink);
+      transition: transform .2s var(--lc-pop);
+    }
+    .sb-build:hover .sb-plus { transform: rotate(90deg); }
+    .sb-item {
+      position: relative; display: flex; align-items: center; gap: 12px; height: 42px; margin: 0 12px; padding: 0 16px;
+      border-radius: 11px; color: var(--ink-secondary); font-size: 15.5px; font-weight: 600; white-space: nowrap; cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    .sb-item svg { flex: none; }
+    .sb-item:hover { background: var(--bg-secondary); color: var(--ink); }
+    .sb-item.active { background: var(--gray-5); color: var(--ink); font-weight: 700; }
+    .sb-share { box-shadow: inset 0 0 0 1.5px var(--hairline); }
+    .sb-lbl { transition: opacity .14s .16s; }
+    .sb-empty { font-size: 14px; color: var(--ink-secondary); padding: 12px 24px; }
+
+    /* Account */
+    .sb-me-wrap { position: relative; margin: 6px 12px 0; }
+    .sb-me {
+      width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: none; border-radius: 12px;
+      background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; overflow: hidden; white-space: nowrap;
+    }
+    .sb-me:hover { background: var(--bg-secondary); }
+    .sb-av {
+      flex: none; width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: grid; place-items: center;
+      background: var(--ink); color: var(--panel); font-weight: 700; font-size: 14px;
+    }
+    .sb-av img { width: 100%; height: 100%; object-fit: cover; }
+    .sb-me-txt { display: flex; flex-direction: column; min-width: 0; transition: opacity .14s .16s; }
+    .sb-me-txt b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+    .sb-me-txt span { font-size: 13px; color: var(--ink-secondary); }
+    .sb-menu {
+      position: absolute; left: 0; bottom: calc(100% + 8px); width: 260px; padding: 6px; border-radius: 14px; z-index: 95;
+      background: var(--panel); box-shadow: 0 14px 40px rgba(16,22,19,.18), 0 0 0 1px var(--hairline);
+      opacity: 0; transform: scale(.96) translateY(4px); transform-origin: bottom left; pointer-events: none; visibility: hidden;
+      transition: opacity .14s, transform .22s var(--lc-spring), visibility 0s linear .22s;
+    }
+    .sb-me-wrap.open .sb-menu { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--lc-spring); }
+    .sb-menu-head { padding: 8px 10px 10px; border-bottom: 1px solid var(--hairline); margin-bottom: 6px; }
+    .sb-menu-head b { display: block; font-size: 15px; }
+    .sb-menu-head span { font-size: 13px; color: var(--ink-secondary); word-break: break-all; }
+    .sb-menu-item {
+      width: 100%; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border: none; border-radius: 9px;
+      background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
+    }
+    .sb-menu-item:hover { background: var(--bg-secondary); }
+    .sb-menu-item.danger { color: var(--alert-ink); }
+    .sidebar-foot .sb-menu-item { color: var(--ink); }
+    .sidebar-foot .sb-menu-item:hover { color: var(--ink); }
+    .sidebar-foot .sb-menu-item.danger { color: var(--alert-ink); }
+    .sidebar-foot .sb-item { color: var(--ink-secondary); font-weight: 600; }
+    .sidebar-foot .sb-item:hover { color: var(--ink); }
+
+    /* Click-to-collapse edge (Slite) */
+    .sb-edge { display: none; }
+    @media (min-width: 980px) {
+      .sb-edge {
+        display: block; position: absolute; top: 0; right: -5px; width: 10px; height: 100%; z-index: 8;
+        border: none; padding: 0; background: transparent; cursor: pointer;
+      }
+      .sb-edge::after { content: ""; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: 0; transition: opacity .15s; }
+      .sb-edge:hover::after { opacity: .18; }
+      .sb-edge:hover .sb-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .5s; }
+
+      /* ── Rail mode ── */
+      body.sidebar-rail .sidebar-head { padding: 0 18px; justify-content: flex-end; }
+      body.sidebar-rail .sidebar-brand { opacity: 0; pointer-events: none; position: absolute; left: 20px; transition: opacity .06s; }
+      body.sidebar-rail .sb-toggle .sb-ltile { opacity: 1; }
+      body.sidebar-rail .sb-toggle .sb-pico { opacity: 0; transform: scaleX(-1); }
+      body.sidebar-rail .sb-toggle:hover .sb-ltile { opacity: 0; }
+      body.sidebar-rail .sb-toggle:hover .sb-pico { opacity: 1; }
+      body.sidebar-rail .sb-lbl,
+      body.sidebar-rail .sb-team-txt,
+      body.sidebar-rail .sb-chev,
+      body.sidebar-rail .sb-me-txt { opacity: 0; pointer-events: none; transition: opacity .06s; }
+      body.sidebar-rail .sb-item:hover .sb-tip,
+      body.sidebar-rail .sb-build:hover .sb-tip,
+      body.sidebar-rail .sb-switch:hover > .sb-tip,
+      body.sidebar-rail .sb-me-wrap:hover > .sb-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .25s; }
+      body.sidebar-rail .sb-switch.open > .sb-tip,
+      body.sidebar-rail .sb-me-wrap.open > .sb-tip { opacity: 0 !important; }
+      body.sidebar-rail .sb-pop { left: calc(100% + 14px); top: -8px; }
+      body.sidebar-rail .sb-menu { left: calc(100% + 14px); bottom: 0; transform-origin: bottom left; }
+    }
+
+    /* ── Phone top bar (below 980px) ── */
+    .m-topbar { display: none; }
+    @media (max-width: 979px) {
+      body.signed-in { padding-top: 56px; }
+      body.signed-in .m-topbar {
+        display: flex; align-items: center; gap: 6px; position: fixed; top: 0; left: 0; right: 0; z-index: 55;
+        height: 56px; padding: 0 10px; background: var(--panel); box-shadow: 0 1px 0 var(--hairline);
+      }
+      .m-burger { flex: none; width: 44px; height: 44px; border: none; border-radius: 12px; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+      .m-team { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; height: 44px; padding: 0 8px; border: none; border-radius: 12px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; text-align: left; }
+      .m-team .sb-badge { width: 30px; height: 30px; border-radius: 9px; font-size: 13px; }
+      .m-team b { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sidebar { z-index: 60; }
+      .sb-pop { width: auto; right: 0; }
+    }
+
+    /* ── Page crumb + display-caps titles (matches onboarding) ── */
+    .page-crumb { display: flex; align-items: center; gap: 10px; min-height: 24px; margin-bottom: 12px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .page-crumb:empty { display: none; }
+    .page-crumb .sb-badge { width: 24px; height: 24px; border-radius: 7px; font-size: 11px; letter-spacing: .02em; }
+    .dashboard-header-left h1, .players-header-info h1, .settings-header h1 {
+      font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
+      font-size: 60px; line-height: .9; letter-spacing: .005em; margin-bottom: 10px;
+    }
+    @media (max-width: 768px) {
+      .dashboard-header-left h1, .players-header-info h1, .settings-header h1 { font-size: 44px; }
+    }
+
+    /* ── Builder: step row with progress + exit ── */
+    body.signed-in .wizard-bar { position: sticky; top: 0; z-index: 40; }
+    @media (max-width: 979px) { body.signed-in .wizard-bar { top: 56px; } }
+    .wizard-bar { display: flex; align-items: center; gap: 20px; height: var(--wizard-h); padding: 0 32px; background: var(--panel); border-bottom: none; box-shadow: 0 1px 0 var(--hairline); }
+    .wizard-ctx { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; }
+    .wizard-ctx span { overflow: hidden; text-overflow: ellipsis; }
+    .wizard-ctx .sep { color: var(--gray-3); flex: none; }
+    .wizard-bar .wizard-steps { flex: 0 1 380px; height: auto; margin: 0; gap: 6px; justify-content: stretch; }
+    .wizard-bar .wstep { position: relative; flex: 1 1 0; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; font-size: 12.5px; font-weight: 700; color: var(--ink-secondary); }
+    .wizard-bar .wstep::before { content: ""; display: block; height: 6px; border-radius: 3px; background: var(--hairline-strong); }
+    .wizard-bar .wstep::after { content: ""; position: absolute; left: 0; top: 0; height: 6px; width: 0; border-radius: 3px; background: var(--ink); transition: width .5s var(--lc-glide); }
+    .wizard-bar .wstep.done::after { width: 100%; }
+    .wizard-bar .wstep.active::after { width: 50%; }
+    .wizard-bar .wstep.active, .wizard-bar .wstep.done { color: var(--ink); }
+    .wizard-bar .wstep.clickable:hover { color: var(--ink); text-decoration: underline; }
+    .wizard-bar .wstep-num, .wizard-bar .wstep-arrow { display: none; }
+    .wizard-end { flex: 1 1 0; display: flex; justify-content: flex-end; }
+    .wizard-exit {
+      display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: none; border-radius: 10px;
+      background: transparent; color: var(--ink-secondary); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; white-space: nowrap;
+    }
+    .wizard-exit:hover { background: var(--bg-secondary); color: var(--ink); }
+    @media (max-width: 768px) {
+      .wizard-bar { padding: 0 12px; gap: 10px; }
+      .wizard-ctx { display: none; }
+      .wizard-bar .wizard-steps { flex: 1 1 auto; overflow: visible; }
+      .wizard-end { flex: none; }
+      .wizard-exit .wx-lbl { display: none; }
+    }
+
+    /* ── Builder: one anchored action bar ── */
+    #view-builder:not(.settings-mode) .page { padding-bottom: 140px; transition: padding-right .32s var(--lc-glide); }
+    body.tools-visible #view-builder .page { padding-right: calc(40px + var(--tools-w)); }
+    #view-builder:not(.settings-mode) .step-actions {
+      position: fixed; left: var(--sidebar-w); right: var(--tools-w); bottom: 0; z-index: 45;
+      display: flex; align-items: center; justify-content: flex-end; gap: 12px; flex-wrap: wrap;
+      min-height: 80px; padding: 12px 32px calc(12px + env(safe-area-inset-bottom, 0px));
+      background: var(--panel); box-shadow: 0 -1px 0 var(--hairline), 0 -10px 30px rgba(16,22,19,.05);
+      transition: left .32s var(--lc-glide), right .32s var(--lc-glide);
+      animation: barUp .4s var(--lc-spring) both;
+    }
+    .step-actions .draft-status, .step-actions .text-muted { text-align: left; min-width: 0; font-size: 15px; font-style: normal; display: flex; align-items: center; gap: 8px; }
+    .step-actions .draft-status { margin-right: auto; }
+    .step-actions .text-muted { margin-right: 20px; }
+    .step-actions .draft-status:empty, .step-actions .text-muted:empty { display: none; }
+    .step-actions .draft-status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+    .step-actions .draft-status.draft-status-saving { color: var(--ink-secondary); font-style: normal; }
+    .step-actions .draft-status.draft-status-saving::before { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
+    .step-actions .draft-status.draft-status-saved { color: var(--ink-secondary); }
+    #step3-save-draft, #step4-save-draft { display: none !important; }
+    .step-footer { margin-bottom: 20px; }
+    @media (max-width: 768px) {
+      #view-builder:not(.settings-mode) .step-actions { padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px)); }
+      #view-builder:not(.settings-mode) .step-actions .btn-lg { flex: 1; }
+      .step-actions .draft-status { flex-basis: 100%; }
+    }
+
+    /* ── Builder: who's here chips ── */
+    .att-pos-row { display: block; }
+    .att-chip {
+      display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px 0 10px; border-radius: 19px;
+      border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
+      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, background-color .2s, border-color .2s, color .2s, transform .12s;
+    }
+    .att-chip:active { transform: scale(.96); }
+    .att-chip .att-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; flex: none; transition: background-color .2s; }
+    .att-chip.out { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); opacity: .6; }
+    .att-chip.out .att-check { background: var(--hairline-strong); }
+    .att-chip.pop { animation: lcPopScale .3s var(--lc-pop); }
+    .att-chip:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .att-count { margin-bottom: 14px; font-size: 15px; color: var(--ink-secondary); }
+    .att-num { display: inline-block; font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1; color: var(--ink); animation: lcTick .35s var(--lc-pop); }
+
+    /* ── Builder: lineup toolbar (Auto-fill · More · Tools) ── */
+    .lineup-toolbar .lt-more-wrap { position: relative; }
+    .lt-menu {
+      position: absolute; right: 0; top: calc(100% + 8px); width: 250px; padding: 6px; border-radius: 14px; z-index: 30;
+      background: var(--panel); box-shadow: 0 14px 40px rgba(16,22,19,.18), 0 0 0 1px var(--hairline);
+      opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top right; pointer-events: none; visibility: hidden;
+      transition: opacity .14s, transform .2s var(--lc-spring), visibility 0s linear .2s;
+    }
+    .lt-more-wrap.open .lt-menu { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .2s var(--lc-spring); }
+    .lt-menu .sb-menu-item { font-size: 14.5px; }
+    .bt-toggle { position: relative; }
+    .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
+    .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
+    .bt-dot:empty { display: none; }
+    .view-mode-icon svg { display: block; }
+
+    /* ── Builder: tools pane (strategy · positions · playing time) ── */
+    .builder-tools { display: none; }
+    #view-builder.tools-on .builder-tools {
+      display: flex; flex-direction: column; position: fixed; right: 0; bottom: 0; top: var(--wizard-h); z-index: 44;
+      width: 360px; background: var(--panel); box-shadow: -1px 0 0 var(--hairline);
+      transform: translateX(105%); visibility: hidden; transition: transform .32s var(--lc-glide), visibility 0s linear .32s;
+    }
+    body.tools-visible #view-builder.tools-on .builder-tools { transform: none; visibility: visible; transition: transform .32s var(--lc-glide); }
+    .bt-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 12px 24px; }
+    .bt-title { font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1; text-transform: uppercase; }
+    .bt-sub { font-size: 14px; color: var(--ink-secondary); margin-top: 4px; }
+    .bt-close { flex: none; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--bg-secondary); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+    .bt-close:hover { background: var(--gray-5); }
+    .bt-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 26px; }
+    .bt-sec { display: flex; flex-direction: column; gap: 10px; }
+    .bt-sec-title { font-size: 17px; font-weight: 700; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .bt-sec-title span { font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+    .builder-tools .card-title { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .builder-tools .strategy-grid { flex-direction: column; flex-wrap: nowrap; gap: 22px; }
+    .builder-tools .strategy-col,
+    .builder-tools .strategy-grid.has-insights .strategy-col-slider { flex: none; padding: 0; border: none; }
+    .builder-tools .strategy-col-mom, .builder-tools .strategy-col-sug { padding-top: 18px; border-top: 1px solid var(--hairline); }
+    .builder-tools .strategy-desc { text-align: left; }
+    .builder-tools .game-pos-count { margin-bottom: 0; }
+    .pt-list { display: flex; flex-direction: column; }
+    .pt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--hairline); font-size: 14.5px; }
+    .pt-row:first-child { border-top: none; }
+    .pt-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pt-cells { display: flex; gap: 3px; }
+    .pt-cells i { width: 8px; height: 16px; border-radius: 2px; background: var(--accent); display: block; }
+    .pt-cells i.b { background: var(--hairline-strong); }
+    .pt-cells i.e { background: transparent; box-shadow: inset 0 0 0 1.5px var(--hairline-strong); }
+    .pt-stat { text-align: right; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
+    .pt-row.low .pt-stat { color: var(--attention); font-weight: 700; }
+    @media (max-width: 979px) {
+      #view-builder.tools-on .builder-tools { top: 56px; width: 100%; z-index: 58; }
+    }
+
+    /* ── Settings: save bar that rises on change ── */
+    .save-bar { display: none; }
+    #view-builder.settings-mode .save-bar {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      position: fixed; z-index: 45; left: var(--sidebar-w); right: 0; bottom: 24px; margin: 0 auto;
+      width: min(760px, calc(100vw - var(--sidebar-w) - 48px));
+      padding: 12px 12px 12px 22px; border-radius: 18px; background: var(--panel);
+      box-shadow: 0 14px 40px rgba(16,22,19,.16), 0 0 0 1px var(--hairline);
+      transform: translateY(170%); visibility: hidden;
+      transition: transform .38s var(--lc-spring), visibility 0s linear .38s, left .32s var(--lc-glide), width .32s var(--lc-glide);
+    }
+    #view-builder.settings-mode .save-bar.show { transform: none; visibility: visible; transition: transform .38s var(--lc-spring), left .32s var(--lc-glide), width .32s var(--lc-glide); }
+    .sbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 16px; font-weight: 700; white-space: nowrap; }
+    .sbar-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--attention); flex: none; }
+    .save-bar.is-done .sbar-dot { background: var(--accent); }
+    .save-bar.is-error .sbar-dot { background: var(--alert-ink); }
+    .sbar-reset { border: none; background: none; padding: 6px 2px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
+    .sbar-reset:hover { color: var(--ink); }
+    .save-bar.is-work .sbar-reset, .save-bar.is-done .sbar-reset { visibility: hidden; }
+    .settings-save-btn { display: none !important; }
+    #view-builder.settings-mode .page { padding-bottom: 140px; }
+    @media (max-width: 768px) {
+      #view-builder.settings-mode .save-bar { bottom: 0; width: 100%; border-radius: 18px 18px 0 0; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+    }
+
+    /* Stateful sticker label: rest → working dots → done check (onboarding Continue states) */
+    .lc-stateful { position: relative; }
+    .lc-stateful .s-work, .lc-stateful .s-done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 7px; opacity: 0; pointer-events: none; }
+    .lc-stateful.is-work .s-rest, .lc-stateful.is-done .s-rest { opacity: 0; }
+    .lc-stateful.is-work .s-work { opacity: 1; }
+    .lc-stateful.is-done .s-done { opacity: 1; animation: lcPopScale .35s var(--lc-pop); }
+    .lc-stateful .s-work i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; display: block; animation: lcBounce .6s ease-in-out infinite; }
+    .lc-stateful .s-work i:nth-child(2) { animation-delay: .12s; }
+    .lc-stateful .s-work i:nth-child(3) { animation-delay: .24s; }
+
+    /* ── Share card: invite code ripple + green wash (iOS ShareTeamCard, Oct 29) ── */
+    .share-card-code .code { position: relative; z-index: 0; display: inline-block; padding: 2px 8px 2px 12px; border-radius: 12px; }
+    .share-card-code .code::before {
+      content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 12px; background: var(--accent-wash);
+      transform: scale(.9); opacity: 0; transition: transform .3s var(--lc-pop), opacity .2s;
+    }
+    .share-card-code.copied .code::before { transform: none; opacity: 1; }
+    .share-card-code .cl { display: inline-block; }
+    .share-card-code.ripple .cl { animation: codeHop .47s calc(var(--i) * 40ms) both; }
+    .share-card-code .tap { display: inline-flex; align-items: center; gap: 6px; }
+    .share-card-code.copied .tap { color: var(--ink); font-weight: 700; animation: lcRise .25s var(--lc-spring); }
+    .tap-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; animation: lcPopScale .3s var(--lc-pop); }
+
+    @keyframes codeHop {
+      0%   { transform: none; animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+      26%  { transform: translateY(-8px) scale(1.12); animation-timing-function: cubic-bezier(.3, 1.6, .5, 1); }
+      100% { transform: none; }
+    }
+    @keyframes barUp { from { transform: translateY(100%); } to { transform: none; } }
+    @keyframes sbRowIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+    @keyframes lcPopScale { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+    @keyframes lcTick { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes lcRise { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+    @keyframes lcPulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+    @keyframes lcBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+    @media (prefers-reduced-motion: reduce) {
+      body.signed-in, .sidebar, .sidebar *, .m-topbar *, .wizard-bar *, .step-actions, .builder-tools, .save-bar,
+      .att-chip, .att-num, .lt-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
+        animation: none !important; transition: none !important;
+      }
+      .share-card-code .code::before { transition: opacity .15s !important; }
+    }
   </style>
 </head>
 <body>
@@ -3537,17 +3959,31 @@
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebarDrawer()"></div>
 <aside class="sidebar" id="sidebar" aria-label="Team navigation">
   <div class="sidebar-head">
-    <a class="sidebar-brand" href="#/" onclick="navigate('#/'); return false;" aria-label="Leadoff — home">
+    <a class="sidebar-brand" href="#/" onclick="navigate('#/'); return false;" aria-label="Leadoff, all teams">
       <picture>
         <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
         <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
       </picture>
     </a>
+    <button class="sb-toggle" id="sb-toggle" type="button" onclick="toggleSidebarRail()" aria-label="Collapse sidebar" aria-expanded="true">
+      <img class="sb-ltile" src="assets/favicon.svg" alt="">
+      <svg class="sb-pico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/><path d="M15.5 10l-2 2 2 2"/></svg>
+      <span class="sb-tip" id="sb-toggle-tip">Collapse sidebar <kbd style="font:inherit;opacity:.6">[</kbd></span>
+    </button>
     <button class="sidebar-close" onclick="closeSidebarDrawer()" aria-label="Close navigation">✕</button>
   </div>
   <nav class="sidebar-nav" id="sidebar-nav"><!-- rendered by renderSidebar() --></nav>
-  <div class="sidebar-foot">A <strong>Leadoff</strong> app · <a href="https://getleadoff.com" target="_blank" rel="noopener">getleadoff.com</a></div>
+  <div class="sidebar-foot" id="sidebar-foot"><!-- rendered by renderSidebar() --></div>
+  <button class="sb-edge" type="button" onclick="toggleSidebarRail()" aria-label="Collapse or expand sidebar" tabindex="-1"><span class="sb-tip" id="sb-edge-tip">Click to collapse</span></button>
 </aside>
+
+<!-- Phone top bar: the team you're on, and the drawer -->
+<header class="m-topbar" id="m-topbar">
+  <button class="m-burger" type="button" onclick="toggleSidebarDrawer()" aria-label="Open navigation">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <button class="m-team" id="m-team" type="button" onclick="toggleSidebarDrawer()" aria-label="Open navigation"></button>
+</header>
 
 <!-- ══════════════ VIEW 1: AUTH ══════════════ -->
 <div id="view-auth">
@@ -3647,7 +4083,7 @@
   <div class="dashboard-page">
     <div class="dashboard-header">
       <div class="dashboard-header-left">
-        <h1>Your Teams</h1>
+        <h1>All teams</h1>
         <p class="dashboard-sub">Select a team to build a game-day lineup.</p>
       </div>
       <div class="flex-row gap-sm">
@@ -3756,6 +4192,7 @@
   <div class="dashboard-page">
     <div class="dashboard-header">
       <div class="dashboard-header-left">
+        <div class="page-crumb"></div>
         <h1 id="lineups-team-name">Past Lineups</h1>
         <p class="dashboard-sub" id="lineups-team-sub">View saved game lineups</p>
       </div>
@@ -3804,6 +4241,7 @@
   <div class="dashboard-page">
     <div class="dashboard-header">
       <div class="dashboard-header-left">
+        <div class="page-crumb"></div>
         <h1 id="schedule-team-name">Schedule</h1>
         <p class="dashboard-sub" id="schedule-team-sub">Synced from GameChanger</p>
       </div>
@@ -3831,6 +4269,7 @@
   <div class="players-page">
     <div class="players-header">
       <div class="players-header-info">
+        <div class="page-crumb"></div>
         <h1 id="players-team-name">Players</h1>
         <p class="dashboard-sub" id="players-team-sub">Manage your roster</p>
         <span id="roster-save-status" class="roster-save-status" aria-live="polite"></span>
@@ -3874,8 +4313,16 @@
   </div>
 
   <div class="wizard-bar">
+    <div class="wizard-ctx" id="wizard-ctx"></div>
     <div class="wizard-steps" id="wizard-steps">
       <!-- Dynamically rendered by renderWizardBar() -->
+    </div>
+    <div class="wizard-end">
+      <!-- The screen-level exit lives up here, never beside the primary (Oct 2026) -->
+      <button class="wizard-exit" id="wizard-exit" type="button" onclick="saveDraftAndExit()" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>
+        <span class="wx-lbl">Save draft &amp; exit</span>
+      </button>
     </div>
   </div>
 
@@ -3884,6 +4331,7 @@
     <!-- Page title with the Save action inline on the right -->
     <div class="settings-header" id="settings-header" style="display:none;">
       <div class="dashboard-header-left">
+        <div class="page-crumb"></div>
         <h1>Team / League Settings</h1>
         <p class="dashboard-sub">Set field positions, game rules, and roster defaults.</p>
       </div>
@@ -3894,7 +4342,7 @@
     <div id="step-1" class="step-panel" style="display:none;">
       <div class="card">
         <div class="card-title">Team Information</div>
-        <div class="card-sub">Create a new team or import an existing one from your Leadoff account.</div>
+        <div class="card-sub" id="team-info-sub">Create a new team or import an existing one from your Leadoff account.</div>
         <div class="form-grid">
           <div class="field">
             <label>Team Name</label>
@@ -3973,7 +4421,9 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <button id="step1-continue" class="btn btn-primary btn-lg" onclick="goToStep2()">Continue to League Rules →</button>
+        <div class="step-actions">
+          <button id="step1-continue" class="btn btn-primary btn-lg" onclick="goToStep2()">Continue to League Rules →</button>
+        </div>
       </div>
     </div>
 
@@ -4095,7 +4545,9 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <button class="btn btn-primary btn-lg" onclick="goToStep3()">Continue to Roster →</button>
+        <div class="step-actions">
+          <button class="btn btn-primary btn-lg" onclick="goToStep3()">Continue to Roster →</button>
+        </div>
       </div>
     </div>
 
@@ -4160,7 +4612,7 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <div class="flex-row gap-md">
+        <div class="step-actions">
           <div class="text-muted" id="step2-status"></div>
           <div class="draft-status" id="draft-saved-status-step3"></div>
           <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
@@ -4180,100 +4632,59 @@
 
       <div class="att-pos-row">
         <div class="card">
-          <div class="card-title">Attendance</div>
-          <div class="att-count" id="att-count">Select players attending today</div>
+          <div class="card-title">Who's here</div>
+          <div class="att-count" id="att-count">Tap a kid who can't make it</div>
           <div class="attendance-grid" id="attendance-grid"></div>
         </div>
-        <div class="card">
-          <div class="card-title">Positions for This Game</div>
-          <div class="game-pos-count" id="game-pos-count">9 positions active</div>
-          <div class="game-pos-grid" id="game-pos-grid"></div>
-        </div>
-      </div>
-
-      <div class="card">
-       <div class="strategy-grid" id="strategy-grid">
-       <div class="strategy-col strategy-col-slider">
-        <div class="card-title">Lineup Strategy</div>
-        <div class="strategy-row">
-          <div class="strategy-icon" title="Balanced">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M2 12h4l2-4 2 4h4l2-4 2 4h4"/><circle cx="12" cy="3" r="1"/></svg>
-          </div>
-          <div class="strategy-slider-wrap">
-            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); shuffleFielding(); shuffleBatting();" />
-            <div class="strategy-labels">
-              <span class="strategy-label-left">Balanced</span>
-              <span class="strategy-label-right">Competitive</span>
-            </div>
-          </div>
-          <div class="strategy-icon" title="Competitive" style="color:var(--accent);">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          </div>
-        </div>
-        <div class="strategy-desc" id="strategy-desc">Equal playing time with some preference weighting</div>
-       </div>
-       <div class="strategy-col strategy-col-mom" id="gn-momentum-col" style="display:none;">
-         <div class="gn-col-head">
-           <div class="gn-col-title">Momentum vs. your rating</div>
-           <div class="gn-col-sub">Last 3 games</div>
-         </div>
-         <div class="gn-mom-wrap">
-           <div class="gn-mom-axis">Rating</div>
-           <div class="gn-mom-box" id="gn-momentum-box"></div>
-         </div>
-         <div class="gn-mom-foot"><span>← Down</span><span>Ups minus downs in your notes</span><span>Up →</span></div>
-         <div class="gn-mom-line" id="gn-momentum-line">Tap a kid. Bottom-right = trending up but rated low.</div>
-       </div>
-       <div class="strategy-col strategy-col-sug" id="gn-suggest-col" style="display:none;">
-         <div class="gn-col-head" style="justify-content:flex-start;">
-           <div class="gn-col-title">Suggestions</div>
-           <span class="gn-count" id="gn-suggest-count">0 new</span>
-           <span class="gn-col-sub" style="margin-left:auto;">From your game notes</span>
-         </div>
-         <div id="gn-suggest-list"></div>
-       </div>
-       </div>
       </div>
 
       <div class="card">
         <div class="lineup-toolbar">
           <div>
-            <div class="card-title mb-0">Batting Order & Fielding Positions</div>
+            <div class="card-title mb-0">Batting order &amp; positions</div>
             <div class="text-muted-sm">Drag rows or innings to reorder · Tap an inning header to copy or clear</div>
           </div>
           <div class="toolbar-spacer"></div>
-          <button class="btn btn-ghost btn-sm" onclick="openImportPreviousModal()" title="Use a past lineup as a starting point">
-            📥 Import from Previous
+          <button class="btn btn-ghost btn-sm" type="button" onclick="autoFillLineup()" title="Fill positions and the batting order using your strategy and league rules">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l10-10M14 4v3M18.5 5.5l-2 2M20 10h-3M12 4.5l1 1"/></svg>
+            Auto-fill
           </button>
-          <button class="btn btn-ghost btn-sm" onclick="openImageExportModal()" title="Save the lineup as an image to share with a coach">
-            🖼 Save as Image
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="shuffleBatting()" title="Re-generate batting order using your current strategy and player skills">
-            Generate Batting Order
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="shuffleFielding()" title="Re-randomize position assignments across all innings">
-            Rearrange Positions
-          </button>
-          <button class="btn btn-ghost btn-sm" onclick="clearFielding()">
-            Clear
+          <div class="lt-more-wrap" id="lt-more-wrap">
+            <button class="btn btn-ghost btn-sm" type="button" onclick="toggleLineupMore(event)" aria-haspopup="menu" aria-expanded="false" id="lt-more-btn">
+              More
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="lt-menu" role="menu">
+              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleBatting()">Generate batting order</button>
+              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleFielding()">Rearrange positions</button>
+              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImportPreviousModal()">Import from a past game</button>
+              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImageExportModal()">Save as image</button>
+              <div class="sb-pop-div"></div>
+              <button class="sb-menu-item danger" type="button" role="menuitem" onclick="closeLineupMore(); clearFielding()">Clear positions</button>
+            </div>
+          </div>
+          <button class="btn btn-ghost btn-sm bt-toggle" id="bt-toggle" type="button" onclick="toggleBuilderTools()" aria-pressed="false" aria-controls="builder-tools" title="Strategy, positions, playing time and suggestions">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            Tools
+            <span class="bt-dot" id="bt-dot"></span>
           </button>
         </div>
 
         <div class="view-mode-row">
           <div class="view-mode-toggle" role="tablist" aria-label="Lineup view mode">
             <button id="view-mode-list" class="view-mode-btn active" role="tab" aria-selected="true" onclick="setLineupViewMode('list')">
-              <span class="view-mode-icon" aria-hidden="true">📋</span> List
+              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span> List
             </button>
             <button id="view-mode-field" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('field')">
-              <span class="view-mode-icon" aria-hidden="true">⚾</span> Field
+              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 9-9 9-9-9z"/></svg></span> Field
             </button>
             <button id="view-mode-allinnings" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('allinnings')">
-              <span class="view-mode-icon" aria-hidden="true">🗂</span> All Innings
+              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></span> All innings
             </button>
           </div>
           <div class="view-mode-spacer"></div>
           <button id="view-mode-print-allinnings" class="btn btn-ghost btn-sm" style="display:none;" onclick="window.print()" title="Print this layout">
-            🖨 Print
+            Print
           </button>
         </div>
 
@@ -4336,15 +4747,9 @@
 
       </div>
 
-      <div class="card">
-        <div class="card-title">Playing Time Summary</div>
-        <div class="card-sub">Shows innings played vs benched per player</div>
-        <div class="summary-grid" id="pt-summary"></div>
-      </div>
-
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <div class="flex-row gap-md">
+        <div class="step-actions">
           <div class="draft-status" id="draft-saved-status"></div>
           <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
@@ -4362,8 +4767,8 @@
             <div class="export-meta" id="export-meta"></div>
           </div>
           <div class="flex-row gap-sm flex-wrap no-print">
-            <button class="btn btn-ghost btn-sm" onclick="printExport()">🖨 Print</button>
-            <button class="btn btn-primary btn-sm" onclick="copyLineup()">📋 Copy</button>
+            <button class="btn btn-ghost btn-sm" onclick="printExport()">Print</button>
+            <button class="btn btn-primary btn-sm" onclick="copyLineup(this)">Copy lineup</button>
           </div>
         </div>
 
@@ -4379,8 +4784,94 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <button class="btn btn-outline" onclick="goToStep1()">🏠 New Lineup</button>
+        <div class="step-actions">
+          <button class="btn btn-outline btn-lg" onclick="goToStep1()">New lineup</button>
+        </div>
       </div>
+    </div>
+
+    <!-- ══════════════ BUILDER TOOLS PANE (Oct 30 2026) ══════════════
+         Everything that shapes the lineup without being the lineup:
+         strategy (+ game-notes momentum and suggestions), positions for
+         this game, and playing time. Slides in from the right on Edit
+         Lineup; open/closed is remembered per device. -->
+    <aside class="builder-tools" id="builder-tools" aria-label="Lineup tools">
+      <div class="bt-head">
+        <div>
+          <div class="bt-title">Lineup tools</div>
+          <div class="bt-sub">Changes here re-fill the lineup</div>
+        </div>
+        <button class="bt-close" type="button" onclick="toggleBuilderTools(false)" aria-label="Close lineup tools">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div class="bt-body">
+        <section class="bt-sec" aria-label="Lineup strategy">
+       <div class="strategy-grid" id="strategy-grid">
+       <div class="strategy-col strategy-col-slider">
+        <div class="card-title">Lineup strategy</div>
+        <div class="strategy-row">
+          <div class="strategy-icon" title="Balanced">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M2 12h4l2-4 2 4h4l2-4 2 4h4"/><circle cx="12" cy="3" r="1"/></svg>
+          </div>
+          <div class="strategy-slider-wrap">
+            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); shuffleFielding(); shuffleBatting();" />
+            <div class="strategy-labels">
+              <span class="strategy-label-left">Balanced</span>
+              <span class="strategy-label-right">Competitive</span>
+            </div>
+          </div>
+          <div class="strategy-icon" title="Competitive" style="color:var(--accent);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+          </div>
+        </div>
+        <div class="strategy-desc" id="strategy-desc">Equal playing time with some preference weighting</div>
+       </div>
+       <div class="strategy-col strategy-col-mom" id="gn-momentum-col" style="display:none;">
+         <div class="gn-col-head">
+           <div class="gn-col-title">Momentum vs. your rating</div>
+           <div class="gn-col-sub">Last 3 games</div>
+         </div>
+         <div class="gn-mom-wrap">
+           <div class="gn-mom-axis">Rating</div>
+           <div class="gn-mom-box" id="gn-momentum-box"></div>
+         </div>
+         <div class="gn-mom-foot"><span>← Down</span><span>Ups minus downs in your notes</span><span>Up →</span></div>
+         <div class="gn-mom-line" id="gn-momentum-line">Tap a kid. Bottom-right = trending up but rated low.</div>
+       </div>
+       <div class="strategy-col strategy-col-sug" id="gn-suggest-col" style="display:none;">
+         <div class="gn-col-head" style="justify-content:flex-start;">
+           <div class="gn-col-title">Suggestions</div>
+           <span class="gn-count" id="gn-suggest-count">0 new</span>
+           <span class="gn-col-sub" style="margin-left:auto;">From your game notes</span>
+         </div>
+         <div id="gn-suggest-list"></div>
+       </div>
+       </div>
+        </section>
+        <section class="bt-sec" aria-label="Positions for this game">
+          <div class="bt-sec-title">Positions for this game <span class="game-pos-count" id="game-pos-count">9 active</span></div>
+          <div class="game-pos-grid" id="game-pos-grid"></div>
+        </section>
+        <section class="bt-sec" aria-label="Playing time">
+          <div class="bt-sec-title">Playing time <span>innings in the field</span></div>
+          <div class="pt-list" id="pt-summary"></div>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Settings save bar: nothing until something changes (Oct 30 2026) -->
+    <div class="save-bar" id="settings-save-bar" role="region" aria-label="Unsaved changes" aria-live="polite">
+      <div class="sbar-left">
+        <i class="sbar-dot"></i>
+        <span id="sbar-text">Unsaved changes</span>
+        <button class="sbar-reset" type="button" onclick="discardSettingsChanges()">Reset</button>
+      </div>
+      <button class="btn btn-primary lc-stateful" id="sbar-save" type="button" onclick="settingsSave()">
+        <span class="s-rest">Save changes</span>
+        <span class="s-work" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="s-done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved</span>
+      </button>
     </div>
 
     <!-- ══════════════ MODAL: IMPORT FROM PREVIOUS ══════════════ -->
@@ -4924,8 +5415,8 @@ async function openShareTeamModal(teamId) {
         <div class="share-card-kicker">Scan to join</div>
         <button class="share-card-code" id="share-copy-code-btn" type="button" onclick="copyShareText('code')" aria-label="Copy invite code ${attr(code)}">
           <span class="share-card-kicker" style="margin-top:0">Invite code</span>
-          <span class="code">${escHtml(code)}</span>
-          <span class="tap">Tap code to copy</span>
+          <span class="code">${String(code).trim().split('').map((ch, i) => `<span class="cl" style="--i:${i}">${escHtml(ch)}</span>`).join('')}</span>
+          <span class="tap" aria-live="polite">Tap code to copy</span>
         </button>
       </div>
     </div>
@@ -4969,11 +5460,16 @@ function copyShareText(kind) {
   const done = () => {
     if (!btn) return;
     if (kind === 'code') {
+      // iOS ShareTeamCard pattern (Oct 29 2026): the letters ripple left to
+      // right (each hops 8px, 40ms apart), a green wash pops in behind the
+      // code, and the helper line swaps to the ink check + "Code Copied!".
+      // Everything settles after 2s; a second tap restarts the window.
       const tap = btn.querySelector('.tap');
+      btn.classList.remove('ripple'); void btn.offsetWidth; btn.classList.add('ripple');
       btn.classList.add('copied');
-      if (tap) tap.textContent = '✓ Code copied';
+      if (tap) tap.innerHTML = '<span class="tap-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Code Copied!';
       clearTimeout(btn._t);
-      btn._t = setTimeout(() => { btn.classList.remove('copied'); if (tap) tap.textContent = 'Tap code to copy'; }, 2000);
+      btn._t = setTimeout(() => { btn.classList.remove('copied', 'ripple'); if (tap) tap.textContent = 'Tap code to copy'; }, 2000);
     } else {
       const label = 'Copy Link';
       btn.textContent = 'Copied ✓';
@@ -5467,7 +5963,7 @@ async function selectTeam(teamId, closeDropdown = true) {
     // Clear game-specific fields so they don't bleed across teams
     state.gameName     = '';
     state.opponent     = '';
-    state.gameDate     = new Date().toISOString().split('T')[0];
+    state.gameDate     = localISODate();
     state.gameTime     = '';
     state.gameLocation = '';
     state.gameNotes    = '';
@@ -5518,6 +6014,7 @@ function showView(view) {
   if (view === 'lineups') document.getElementById('view-lineups').classList.add('active');
   if (view === 'schedule') document.getElementById('view-schedule').classList.add('active');
   if (view === 'players') document.getElementById('view-players').classList.add('active');
+  syncBuilderTools();
 }
 
 // ═══════════════════════════════════════════════════
@@ -5605,7 +6102,7 @@ async function handleRoute() {
   _builderOpen = false;
 
   // Auto-expand the team you're navigating into.
-  if (m.teamId) _sidebarExpandedTeam = m.teamId;
+  if (m.teamId) { _sidebarExpandedTeam = m.teamId; lsSet(LS_LAST_TEAM, m.teamId); }
 
   // Team routes need the user's teams loaded first (for names, calendar URLs).
   if (_teamsReady) { try { await _teamsReady; } catch (e) {} }
@@ -5642,71 +6139,338 @@ window.addEventListener('hashchange', handleRoute);
 // signed-in screen (rail on desktop, drawer on mobile). Pure navigation —
 // reuses navigate()/enterBuilder(), no Firestore writes.
 // ═══════════════════════════════════════════════════
-let _sidebarExpandedTeam = null;
+let _sidebarExpandedTeam = null;   // the team the router last landed on
+
+// ── Nav B (Oct 30 2026): one team's sections behind a team switcher, ──
+// collapsible to a 76px icon rail. Pure navigation: no Firestore writes.
+// Collapsed/open, the last team, and the builder tools pane are per-device
+// conveniences in localStorage (wrapped: storage can throw or be blocked).
+var LS_LAST_TEAM = 'leadoff_lastTeam_v1';
+var LS_RAIL      = 'leadoff_sidebarRail_v1';
+var LS_TOOLS     = 'leadoff_builderTools_v1';
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+function sbAttr(v) { return escHtml(v == null ? '' : String(v)).replace(/"/g, '&quot;'); }
+
+var SB_ICONS = {
+  schedule: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  players:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.8 20c.9-3.4 3.3-5.2 6.2-5.2s5.3 1.8 6.2 5.2"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.9c1.8.6 3 2.2 3.6 5.1"/></svg>',
+  rules:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+  settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>',
+  share:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5M20 14v.5M17 20h3v-3M14 18v2"/></svg>',
+  grid:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
+  plus:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  plusBold: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  join:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l4 4-4 4M14 12H4"/></svg>',
+  chev:     '<svg class="sb-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4"/></svg>',
+  check:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  feedback: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18l-1.5 3 4-1.5H18a2.5 2.5 0 0 0 2.5-2.5V7A2.5 2.5 0 0 0 18 4.5H6A2.5 2.5 0 0 0 3.5 7v8.5"/></svg>',
+  link:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>',
+  signout:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>'
+};
+
+function teamInitials(name) {
+  const words = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
+  return (words[0] || '?').substring(0, 2).toUpperCase();
+}
+
+// Team badge: the logo when there is one, else initials on a tint of the
+// team color (emblem use only; never the accent).
+function teamBadgeHtml(team) {
+  const ini = escHtml(teamInitials(team && team.name));
+  const color = team && team.primaryColor;
+  const bg = color ? `background:color-mix(in srgb, ${sbAttr(color)} 26%, var(--panel));` : '';
+  const logo = team && team.logoURL ? `<img src="${sbAttr(team.logoURL)}" alt="" style="position:absolute;inset:0" onerror="this.remove()">` : '';
+  return `<span class="sb-badge" style="position:relative;${bg}" aria-hidden="true">${ini}${logo}</span>`;
+}
+
+function teamSubLine(team) {
+  if (!team) return '';
+  const role = teamRole(team);
+  return [
+    [team.season, team.year].filter(Boolean).join(' '),
+    team.level || '',
+    role === 'coach' ? 'Coach' : role === 'member' ? 'Member' : ''
+  ].filter(Boolean).join(' · ');
+}
+
+// The team the sidebar is about: the route's team, the builder's team, or
+// the last one you opened on this device.
+function sidebarTeam() {
+  const route = parseHash(location.hash);
+  const builder = document.getElementById('view-builder');
+  const inBuilder = _builderOpen || (builder && builder.classList.contains('active'));
+  const id = route.teamId || (inBuilder ? _activeTeamId : null) || lsGet(LS_LAST_TEAM) || _activeTeamId;
+  return _userTeams.find(t => t.id === id) || _userTeams[0] || null;
+}
+
+function sbItem(onclick, icon, label, active, extraCls) {
+  return `<a class="sb-item ${extraCls || ''} ${active ? 'active' : ''}" href="#" onclick="${onclick}; return false;"${active ? ' aria-current="page"' : ''}>${icon}<span class="sb-lbl">${label}</span><span class="sb-tip">${label}</span></a>`;
+}
 
 function renderSidebar() {
   const nav = document.getElementById('sidebar-nav');
   if (!nav) return;
+  const foot = document.getElementById('sidebar-foot');
   const route = parseHash(location.hash);
-  const activeTeam = route.teamId || (_builderOpen ? _activeTeamId : null);
   const section = route.name;
+  const team = sidebarTeam();
+  const builder = document.getElementById('view-builder');
+  const inLineupBuilder = _builderOpen && builder && builder.classList.contains('active') && !builder.classList.contains('settings-mode');
+  const onTeam = !!team && route.teamId === team.id;
 
-  let html = `
-    <a class="sidebar-link ${section === 'dashboard' ? 'active' : ''}" onclick="navigate('#/')">
-      <span class="sidebar-ico" aria-hidden="true">▦</span> All Teams
-    </a>
-    <div class="sidebar-section-label">Teams</div>`;
-
-  if (!_userTeams.length) {
-    html += `<div class="sidebar-empty">No teams yet — create one from All Teams.</div>`;
-  }
-
-  _userTeams.forEach(team => {
-    const expanded = _sidebarExpandedTeam === team.id;
-    const isCurrent = activeTeam === team.id;
-    const logo = team.logoURL
-      ? `<img class="sidebar-team-logo" src="${team.logoURL}" alt="">`
-      : `<div class="sidebar-team-logo" style="background:${team.primaryColor ? team.primaryColor + '22' : 'var(--gray-5)'};color:${team.primaryColor || 'var(--text)'};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">${escHtml((team.name || '?').substring(0, 2).toUpperCase())}</div>`;
-    const sub = (sec, label) =>
-      `<a class="sidebar-sublink ${isCurrent && section === sec ? 'active' : ''}" onclick="navigate('#/team/${team.id}/${sec === 'lineups' ? 'lineups' : sec}')">${label}</a>`;
+  let html = '';
+  if (team) {
+    const rows = _userTeams.map(t => `
+          <button class="sb-trow ${t.id === team.id ? 'cur' : ''}" type="button" role="menuitem" onclick="switchToTeam('${sbAttr(t.id)}')">
+            ${teamBadgeHtml(t)}
+            <span class="sb-trow-txt"><b>${escHtml(t.name || 'Team')}</b><span>${escHtml(teamSubLine(t))}</span></span>
+            ${t.id === team.id ? SB_ICONS.check : ''}
+          </button>`).join('');
     html += `
-      <div class="sidebar-team ${expanded ? 'expanded' : ''} ${isCurrent ? 'current' : ''}">
-        <button class="sidebar-team-head" onclick="toggleSidebarTeam('${team.id}')">
-          ${logo}
-          <span class="sidebar-team-name">${escHtml(team.name || 'Team')}</span>
-          <span class="sidebar-team-chev" aria-hidden="true">›</span>
+      <div class="sb-switch" id="sb-switch">
+        <button class="sb-team" type="button" onclick="toggleTeamSwitcher(event)" aria-haspopup="menu" aria-expanded="false" aria-label="Switch team. Current team: ${sbAttr(team.name)}">
+          ${teamBadgeHtml(team)}
+          <span class="sb-team-txt"><span class="sb-team-name">${escHtml(team.name || 'Team')}</span><span class="sb-team-sub">${escHtml(teamSubLine(team))}</span></span>
+          ${SB_ICONS.chev}
         </button>
-        <div class="sidebar-team-sections">
-          ${isCoachRole(team) ? `<a class="sidebar-sublink new-lineup" onclick="sidebarNewLineup('${team.id}')">＋ Build Lineup</a>` : ''}
-          <a class="sidebar-sublink ${isCurrent && (section === 'schedule' || section === 'lineupDetail') ? 'active' : ''}" onclick="navigate('#/team/${team.id}/schedule')">Schedule</a>
-          <a class="sidebar-sublink ${isCurrent && section === 'players' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/players')">Players</a>
-          ${isCoachRole(team) ? `<a class="sidebar-sublink ${isCurrent && section === 'rules' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/rules')">League Rules</a>` : ''}
-          ${teamRole(team) === 'owner' ? `<a class="sidebar-sublink ${isCurrent && section === 'settings' ? 'active' : ''}" onclick="navigate('#/team/${team.id}/settings')">Team Settings</a>` : ''}
-          <a class="sidebar-sublink" onclick="openShareTeamModal('${team.id}')">Share Team</a>
+        <span class="sb-tip">${escHtml(team.name || 'Team')}</span>
+        <div class="sb-pop" role="menu" aria-label="Switch team">
+          <div class="sb-pop-label">Your teams</div>
+          ${rows}
+          <div class="sb-pop-div"></div>
+          <a class="sb-plink" href="#" onclick="closeTeamSwitcher(); navigate('#/'); return false;">${SB_ICONS.grid}All teams</a>
+          ${ALLOW_TEAM_CREATION ? `<a class="sb-plink" href="#" onclick="closeTeamSwitcher(); closeSidebarDrawer(); enterBuilder(null, 'setup', 1); return false;">${SB_ICONS.plus}New team</a>` : ''}
+          <a class="sb-plink" href="#" onclick="closeTeamSwitcher(); navigate('#/join'); return false;">${SB_ICONS.join}Join with a code</a>
         </div>
       </div>`;
-  });
-
-  html += `
-    <a class="sidebar-link ${section === 'join' ? 'active' : ''}" onclick="navigate('#/join')">
-      <span class="sidebar-ico" aria-hidden="true">＋</span> Join a Team
-    </a>`;
-
+    html += isCoachRole(team)
+      ? `<a class="sb-build ${inLineupBuilder ? 'active' : ''}" href="#" onclick="sidebarNewLineup('${sbAttr(team.id)}'); return false;"><span class="sb-plus">${SB_ICONS.plusBold}</span><span class="sb-lbl">Build lineup</span><span class="sb-tip">Build lineup</span></a>`
+      : `<div style="height:14px"></div>`;
+    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/schedule')`, SB_ICONS.schedule, 'Schedule', onTeam && (section === 'schedule' || section === 'lineupDetail'));
+    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/players')`, SB_ICONS.players, 'Players', onTeam && section === 'players');
+    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/rules')`, SB_ICONS.rules, 'League rules', onTeam && section === 'rules');
+    if (teamRole(team) === 'owner') html += sbItem(`navigate('#/team/${sbAttr(team.id)}/settings')`, SB_ICONS.settings, 'Team settings', onTeam && section === 'settings');
+  } else {
+    html += `<div class="sb-empty">No teams yet.</div>`;
+    if (ALLOW_TEAM_CREATION) html += sbItem(`closeSidebarDrawer(); enterBuilder(null, 'setup', 1)`, SB_ICONS.plus, 'New team', false);
+    html += sbItem(`navigate('#/join')`, SB_ICONS.join, 'Join with a code', section === 'join');
+  }
   nav.innerHTML = html;
+
+  if (foot) {
+    const user = _auth && _auth.currentUser;
+    const name = user ? (user.displayName || user.email || 'Signed in') : '';
+    const email = (user && user.email) || '';
+    const av = user && user.photoURL
+      ? `<img src="${sbAttr(user.photoURL)}" alt="">`
+      : escHtml((name || '?').charAt(0).toUpperCase());
+    foot.innerHTML =
+      (team ? sbItem(`openShareTeamModal('${sbAttr(team.id)}')`, SB_ICONS.share, 'Share team', false, 'sb-share') : '') +
+      `<div class="sb-me-wrap" id="sb-me-wrap">
+        <button class="sb-me" type="button" onclick="toggleSbMenu(event)" aria-haspopup="menu" aria-expanded="false">
+          <span class="sb-av">${av}</span>
+          <span class="sb-me-txt"><b>${escHtml(name)}</b><span>Account, help, feedback</span></span>
+        </button>
+        <span class="sb-tip">Account</span>
+        <div class="sb-menu" role="menu">
+          <div class="sb-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
+          <button class="sb-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${SB_ICONS.feedback}Send feedback</button>
+          <a class="sb-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${SB_ICONS.link}getleadoff.com</a>
+          <button class="sb-menu-item danger" type="button" role="menuitem" onclick="signOut()">${SB_ICONS.signout}Sign out</button>
+        </div>
+      </div>`;
+  }
+
+  const mTeam = document.getElementById('m-team');
+  if (mTeam) {
+    mTeam.innerHTML = team ? `${teamBadgeHtml(team)}<b>${escHtml(team.name || 'Team')}</b>` : '<b>Leadoff</b>';
+    mTeam.setAttribute('aria-label', team ? `Open navigation. Current team: ${team.name}` : 'Open navigation');
+  }
+  renderTeamCrumbs();
+  syncRailUi();
+  // Transitions only after the first paint, so sign-in doesn't animate the shell in.
+  if (!document.body.classList.contains('sb-ready')) setTimeout(() => document.body.classList.add('sb-ready'), 400);
 }
 
-function toggleSidebarTeam(teamId) {
-  _sidebarExpandedTeam = (_sidebarExpandedTeam === teamId) ? null : teamId;
-  renderSidebar();
+// Team badge + name above each team page title, so the page says where you are.
+function renderTeamCrumbs() {
+  const route = parseHash(location.hash);
+  const builder = document.getElementById('view-builder');
+  const inSettings = builder && builder.classList.contains('settings-mode');
+  const id = route.teamId || (inSettings ? _activeTeamId : null);
+  const t = id ? _userTeams.find(x => x.id === id) : null;
+  const html = t
+    ? `${teamBadgeHtml(t)}<span>${escHtml(t.name || 'Team')}${t.season ? ' · ' + escHtml([t.season, t.year].filter(Boolean).join(' ')) : ''}</span>`
+    : '';
+  document.querySelectorAll('.page-crumb').forEach(el => { el.innerHTML = html; });
 }
+
+// Switching teams keeps you on the same kind of page when the new team has it.
+function switchToTeam(id) {
+  closeTeamSwitcher();
+  const team = _userTeams.find(t => t.id === id);
+  if (!team) return;
+  lsSet(LS_LAST_TEAM, id);
+  const r = parseHash(location.hash);
+  let sec = ['players', 'schedule', 'rules', 'settings'].includes(r.name) ? r.name : 'schedule';
+  if (sec === 'rules' && !isCoachRole(team)) sec = 'schedule';
+  if (sec === 'settings' && teamRole(team) !== 'owner') sec = 'schedule';
+  navigate('#/team/' + id + '/' + sec);
+}
+
+function toggleTeamSwitcher(e) {
+  if (e) e.stopPropagation();
+  const sw = document.getElementById('sb-switch');
+  if (!sw) return;
+  const open = !sw.classList.contains('open');
+  closeSbMenu();
+  sw.classList.toggle('open', open);
+  const btn = sw.querySelector('.sb-team');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (open) {
+    const pop = sw.querySelector('.sb-pop');
+    pop.querySelectorAll('.sb-trow').forEach((r, i) => { r.style.animationDelay = (i * 30) + 'ms'; });
+    pop.classList.remove('sb-pop-anim'); void pop.offsetWidth; pop.classList.add('sb-pop-anim');
+    const cur = pop.querySelector('.sb-trow.cur') || pop.querySelector('.sb-trow');
+    if (cur) cur.focus({ preventScroll: true });
+  }
+}
+function closeTeamSwitcher() {
+  const sw = document.getElementById('sb-switch');
+  if (!sw || !sw.classList.contains('open')) return;
+  sw.classList.remove('open');
+  const btn = sw.querySelector('.sb-team');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+function toggleSbMenu(e) {
+  if (e) e.stopPropagation();
+  const w = document.getElementById('sb-me-wrap');
+  if (!w) return;
+  const open = !w.classList.contains('open');
+  closeTeamSwitcher();
+  w.classList.toggle('open', open);
+  const btn = w.querySelector('.sb-me');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeSbMenu() {
+  const w = document.getElementById('sb-me-wrap');
+  if (!w || !w.classList.contains('open')) return;
+  w.classList.remove('open');
+  const btn = w.querySelector('.sb-me');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+// Rail: 256px ↔ 76px. Labels fade first, then the width glides (CSS).
+function toggleSidebarRail(force) {
+  _railAuto = false;   // a hand toggle always wins over the builder's auto-fold
+  const on = typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-rail');
+  document.body.classList.toggle('sidebar-rail', on);
+  lsSet(LS_RAIL, on ? '1' : '0');
+  closeTeamSwitcher();
+  closeSbMenu();
+  syncRailUi();
+}
+function syncRailUi() {
+  const on = document.body.classList.contains('sidebar-rail');
+  const label = on ? 'Expand sidebar' : 'Collapse sidebar';
+  const t = document.getElementById('sb-toggle');
+  if (t) { t.setAttribute('aria-label', label); t.setAttribute('aria-expanded', on ? 'false' : 'true'); }
+  const tip = document.getElementById('sb-toggle-tip');
+  if (tip) tip.innerHTML = label + ' <kbd style="font:inherit;opacity:.6">[</kbd>';
+  const et = document.getElementById('sb-edge-tip');
+  if (et) et.textContent = on ? 'Click to expand' : 'Click to collapse';
+}
+if (lsGet(LS_RAIL) === '1') document.body.classList.add('sidebar-rail');
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#sb-switch')) closeTeamSwitcher();
+  if (!e.target.closest('#sb-me-wrap')) closeSbMenu();
+  if (!e.target.closest('#lt-more-wrap')) closeLineupMore();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeTeamSwitcher(); closeSbMenu(); closeLineupMore(); return; }
+  if (!document.body.classList.contains('signed-in')) return;
+  const t = e.target;
+  const typing = t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  const railKey = (e.key === '[' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey)
+               || (e.key === '\\' && (e.metaKey || e.ctrlKey));
+  if (railKey && window.matchMedia('(min-width: 980px)').matches) { e.preventDefault(); toggleSidebarRail(); return; }
+  // ⌘S / Ctrl+S saves League Rules or Team Settings when there's something to save.
+  if ((e.metaKey || e.ctrlKey) && (e.key === 's' || e.key === 'S')) {
+    const b = document.getElementById('view-builder');
+    if (b && b.classList.contains('active') && b.classList.contains('settings-mode') && _settingsDirty) {
+      e.preventDefault();
+      settingsSave();
+    }
+  }
+});
 
 function sidebarNewLineup(teamId) {
   closeSidebarDrawer();
   enterBuilder(teamId, 'lineup', 3);
 }
 
-function toggleSidebarDrawer() { document.body.classList.toggle('sidebar-open'); }
+function toggleSidebarDrawer() { closeTeamSwitcher(); closeSbMenu(); document.body.classList.toggle('sidebar-open'); }
 function closeSidebarDrawer() { document.body.classList.remove('sidebar-open'); }
+
+// ── Builder tools pane (strategy · positions · playing time) ──
+var _builderToolsOpen = (function () {
+  try { if (!window.matchMedia('(min-width: 980px)').matches) return false; } catch (e) {}
+  const v = lsGet(LS_TOOLS);
+  return v === null ? window.innerWidth >= 1280 : v === '1';
+})();
+function toggleBuilderTools(force) {
+  _builderToolsOpen = typeof force === 'boolean' ? force : !_builderToolsOpen;
+  try { if (window.matchMedia('(min-width: 980px)').matches) lsSet(LS_TOOLS, _builderToolsOpen ? '1' : '0'); } catch (e) {}
+  syncBuilderTools();
+}
+var _railAuto = false;   // true while the builder has folded the sidebar for room
+function syncBuilderTools() {
+  const b = document.getElementById('view-builder');
+  if (!b) return;
+  // The lineup builder folds the sidebar to the rail so the grid and the
+  // tools pane both fit; your own setting comes back when you leave.
+  const inLineup = b.classList.contains('active') && !b.classList.contains('settings-mode') && _appMode === 'lineup';
+  if (inLineup && !_railAuto && !document.body.classList.contains('sidebar-rail')) {
+    document.body.classList.add('sidebar-rail'); _railAuto = true; syncRailUi();
+  } else if (!inLineup && _railAuto) {
+    document.body.classList.remove('sidebar-rail'); _railAuto = false; syncRailUi();
+  }
+  const on = inLineup && _currentStep === 4;
+  b.classList.toggle('tools-on', on);
+  document.body.classList.toggle('tools-visible', on && _builderToolsOpen);
+  const btn = document.getElementById('bt-toggle');
+  if (btn) btn.setAttribute('aria-pressed', (on && _builderToolsOpen) ? 'true' : 'false');
+  updateToolsBadge();
+}
+// New suggestions from game notes show as a count on the Tools button.
+function updateToolsBadge() {
+  const dot = document.getElementById('bt-dot');
+  if (!dot) return;
+  const col = document.getElementById('gn-suggest-col');
+  const c = document.getElementById('gn-suggest-count');
+  const n = (col && col.style.display !== 'none' && c) ? (parseInt(c.textContent, 10) || 0) : 0;
+  dot.textContent = n > 0 ? String(n) : '';
+}
+function autoFillLineup() { shuffleFielding(); shuffleBatting(); }
+function toggleLineupMore(e) {
+  if (e) e.stopPropagation();
+  const w = document.getElementById('lt-more-wrap');
+  if (!w) return;
+  const open = !w.classList.contains('open');
+  w.classList.toggle('open', open);
+  const btn = document.getElementById('lt-more-btn');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeLineupMore() {
+  const w = document.getElementById('lt-more-wrap');
+  if (!w || !w.classList.contains('open')) return;
+  w.classList.remove('open');
+  const btn = document.getElementById('lt-more-btn');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
 
 async function enterBuilder(teamId, mode, startStep) {
   // Gate at the door (iOS decision): the whole lineup builder sits behind
@@ -5724,8 +6488,10 @@ async function enterBuilder(teamId, mode, startStep) {
   if (mode !== 'settings') {
     _builderOpen = true;
     if (location.hash !== '#/build') history.pushState(null, '', '#/build');
+    // pushState fires no hashchange, so the router never retitles the tab here.
+    setDocTitle(mode === 'lineup' ? 'Build lineup' : 'New team');
   }
-  if (teamId) _sidebarExpandedTeam = teamId;
+  if (teamId) { _sidebarExpandedTeam = teamId; lsSet(LS_LAST_TEAM, teamId); }
   const builderEl = document.getElementById('view-builder');
 
   if (mode === 'settings') {
@@ -5799,7 +6565,7 @@ function resetForNewTeam() {
   state.teamNotes = '';
   state.gameName = '';
   state.opponent = '';
-  state.gameDate = new Date().toISOString().split('T')[0];
+  state.gameDate = localISODate();
   state.gameTime = '';
   state.gameLocation = '';
   state.gameNotes = '';
@@ -5871,6 +6637,25 @@ function renderWizardBar() {
       <span>${item.label}</span>
     </div>`;
   }).join('');
+
+  // Context on the left (team / game), the screen-level exit on the right.
+  const ctx = document.getElementById('wizard-ctx');
+  if (ctx) {
+    const team = _userTeams.find(t => t.id === _activeTeamId);
+    const teamName = state.teamName || (team && team.name) || '';
+    let game = '';
+    if (_appMode === 'lineup') {
+      const who = state.opponent ? 'vs ' + state.opponent : (state.gameName || 'New game');
+      const when = state.gameDate ? formatDate(state.gameDate) : '';
+      game = [who, when].filter(Boolean).join(' · ');
+    } else if (_appMode === 'setup') {
+      game = 'New team';
+    }
+    const parts = _appMode === 'setup' ? [game] : [teamName, game];   // a new team has no team yet
+    ctx.innerHTML = parts.filter(Boolean).map(t => `<span>${escHtml(t)}</span>`).join('<span class="sep">/</span>');
+  }
+  const exit = document.getElementById('wizard-exit');
+  if (exit) exit.style.display = (_appMode === 'lineup' && (_currentStep === 3 || _currentStep === 4)) ? '' : 'none';
 }
 
 // Jump to a builder step from the wizard pills. Only completed (earlier) steps
@@ -7628,40 +8413,84 @@ function gnStopDictation(keepHint) {
 // SETTINGS DIRTY-STATE TRACKING
 // ═══════════════════════════════════════════════════
 let _settingsDirty = false;
+var _settingsSaving = false;
+var _settingsRev = 0;   // bumps on every change, so a save can tell if more came in meanwhile
+
+// Save bar (Oct 30 2026): nothing at the bottom until something changes,
+// then it rises with Reset (far left) and Save (far right). Save carries its
+// own state: dots while Firestore writes, a check when it lands.
+function setSaveBar(phase) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'error'
+  const bar = document.getElementById('settings-save-bar');
+  if (!bar) return;
+  const btn = document.getElementById('sbar-save');
+  const txt = document.getElementById('sbar-text');
+  bar.classList.toggle('show', phase !== 'hidden');
+  bar.classList.toggle('is-work', phase === 'work');
+  bar.classList.toggle('is-done', phase === 'done');
+  bar.classList.toggle('is-error', phase === 'error');
+  if (btn) {
+    btn.classList.toggle('is-work', phase === 'work');
+    btn.classList.toggle('is-done', phase === 'done');
+    btn.setAttribute('aria-busy', phase === 'work' ? 'true' : 'false');
+  }
+  if (txt) {
+    const t = _userTeams.find(x => x.id === _activeTeamId);
+    txt.textContent = phase === 'done' ? (t ? 'Saved to ' + t.name : 'Saved')
+      : phase === 'error' ? "Couldn't save. Check your connection and try again."
+      : 'Unsaved changes';
+  }
+}
 
 function markSettingsDirty() {
   _settingsDirty = true;
+  _settingsRev++;
   const btn = document.getElementById('settings-save-btn');
   if (btn) btn.classList.remove('inactive');
+  if (!_settingsSaving) setSaveBar('dirty');
 }
 
 function resetSettingsDirty() {
   _settingsDirty = false;
   const btn = document.getElementById('settings-save-btn');
   if (btn) btn.classList.add('inactive');
+  setSaveBar('hidden');
 }
 
 async function settingsSave() {
-  if (!_settingsDirty) return;
-  let ok;
-  if (_settingsSection === 'rules') {
-    // League Rules view: scoped rules-only write (coach-safe)
-    saveRules();
-    ok = await saveLeagueRulesToFirestore();
-  } else {
-    // Team Settings view: full owner-only core save
-    saveTeam();
-    ok = await saveTeamToFirestore();
-  }
-  if (ok) {
-    resetSettingsDirty();
-    // Brief visual feedback
-    const btn = document.getElementById('settings-save-btn');
-    if (btn) {
-      btn.textContent = 'Saved ✓';
-      setTimeout(() => { btn.textContent = 'Save Changes'; }, 1500);
+  if (!_settingsDirty || _settingsSaving) return;
+  _settingsSaving = true;
+  const rev = _settingsRev;
+  setSaveBar('work');
+  let ok = false;
+  try {
+    if (_settingsSection === 'rules') {
+      // League Rules view: scoped rules-only write (coach-safe)
+      saveRules();
+      ok = await saveLeagueRulesToFirestore();
+    } else {
+      // Team Settings view: full owner-only core save
+      saveTeam();
+      ok = await saveTeamToFirestore();
     }
+  } catch (e) {
+    console.error('settingsSave failed:', e);
+    ok = false;
   }
+  _settingsSaving = false;
+  if (!ok) { setSaveBar('error'); return; }
+  setSaveBar('done');
+  setTimeout(() => {
+    if (_settingsSaving) return;
+    if (_settingsRev === rev) resetSettingsDirty();
+    else setSaveBar('dirty');   // more changes landed while saving
+  }, 900);
+}
+
+// Reset = reload this team's saved settings (read-only .get(), no writes).
+async function discardSettingsChanges() {
+  if (_settingsSaving || !_activeTeamId) return;
+  resetSettingsDirty();
+  await enterBuilder(_activeTeamId, 'settings', 1);
 }
 
 function renderSettingsHeader() {
@@ -7674,13 +8503,20 @@ function renderSettingsHeader() {
     const h1 = header.querySelector('h1');
     const sub = header.querySelector('.dashboard-sub');
     if (_settingsSection === 'rules') {
-      if (h1) h1.textContent = 'League Rules';
-      if (sub) sub.textContent = 'Field positions, game rules, and pitching rules.';
+      if (h1) h1.textContent = 'League rules';
+      if (sub) sub.textContent = 'Used every time you build a lineup for this team.';
     } else {
-      if (h1) h1.textContent = 'Team Settings';
+      if (h1) h1.textContent = 'Team settings';
       if (sub) sub.textContent = 'Team info, members, and the invite code.';
     }
+  } else {
+    setSaveBar('hidden');
   }
+  // Team Information subtitle: the "create" wording only fits a new team.
+  const infoSub = document.getElementById('team-info-sub');
+  if (infoSub) infoSub.textContent = inSettings
+    ? 'Name, season, and schedule for this team.'
+    : 'Create a new team or import an existing one from your Leadoff account.';
 }
 
 // Scoped rules save — EXACTLY the pinned write-contract payload (WEB_HANDOFF
@@ -8036,7 +8872,7 @@ const state = {
 };
 
 function init() {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localISODate();
   document.getElementById('game-date').value = today;
 
   const saved = localStorage.getItem('lineupDJ_state');
@@ -10400,14 +11236,17 @@ function setStep(n) {
   renderWizardBar();
   updateStepFooters();
   updateDraftSavedIndicator();
+  syncBuilderTools();
   window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════════════════════════════
 // ATTENDANCE
 // ═══════════════════════════════════════════════════
+var _attPop = null;   // the chip that just changed: pops once on the next render
 function toggleAttendance(id) {
   state.attendance[id] = !state.attendance[id];
+  _attPop = id;
   // Mirrors iOS BuilderSession.orderedAttendingIds (Oct 2026): attendance
   // is the source of truth and the order is reconciled against it, never
   // regenerated. Toggling a kid OFF drops them from the grid and the save
@@ -10431,16 +11270,18 @@ function renderAttendance() {
   const grid = document.getElementById('attendance-grid');
   const countEl = document.getElementById('att-count');
   const attending = state.players.filter(p => state.attendance[p.id]);
-  countEl.textContent = `${attending.length} / ${state.players.length} players attending`;
-  // Pills stay plain (Dan, Oct 26): game balls live on the Schedule tab and
-  // trends on the Lineup Strategy card below, which re-renders alongside.
-  grid.innerHTML = state.players.map(p => `
-    <div class="att-pill ${state.attendance[p.id] ? 'in' : 'out'}"
-         onclick="toggleAttendance('${p.id}')">
-      ${escHtml(p.name)}
-    </div>
-  `).join('');
+  // Who's here chips (Oct 30 2026, from the audit board): wash + ink check
+  // when in, dimmed when out; the tapped chip pops and the count ticks.
+  countEl.innerHTML = `<strong class="att-num">${attending.length}</strong> of ${state.players.length} here · tap a kid who can't make it`;
+  const check = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  grid.innerHTML = state.players.map(p => {
+    const here = !!state.attendance[p.id];
+    return `<button type="button" class="att-chip ${here ? 'in' : 'out'}${_attPop === p.id ? ' pop' : ''}" aria-pressed="${here}"
+         onclick="toggleAttendance('${p.id}')"><i class="att-check">${check}</i>${escHtml(p.name)}</button>`;
+  }).join('');
+  _attPop = null;
   if (typeof renderStrategyInsights === 'function') renderStrategyInsights();
+  updateToolsBadge();
 }
 
 // ── Game Positions (per-game override) ──
@@ -11612,14 +12453,19 @@ function renderPlayingTimeSummary() {
     const row = state.lineup.find(r => r.playerId === player.id);
     const played = row ? row.positions.filter(p => p && p !== 'Bench').length : 0;
     const benched = row ? row.positions.filter(p => p === 'Bench').length : 0;
-    return `
-      <div class="summary-card">
-        <div class="summary-player-name">${escHtml(player.name)}</div>
-        <div class="summary-stat">Played: ${played}/${state.innings} innings</div>
-        <div class="summary-stat">Benched: ${benched}/${state.innings} innings</div>
-      </div>
-    `;
-  }).join('');
+    // One compact row per kid in the tools pane: a cell per inning
+    // (green = in the field, gray = bench, outline = not set yet).
+    const cells = Array.from({ length: state.innings }, (_, i) => {
+      const pos = row ? row.positions[i] : '';
+      return `<i class="${pos === 'Bench' ? 'b' : pos ? '' : 'e'}"></i>`;
+    }).join('');
+    const low = state.innings > 1 && played < Math.ceil(state.innings / 2);
+    return `<div class="pt-row${low ? ' low' : ''}" title="${escHtml(player.name)}: played ${played}, benched ${benched}">
+        <span class="pt-name">${escHtml(player.name)}</span>
+        <span class="pt-cells" aria-hidden="true">${cells}</span>
+        <span class="pt-stat">${played} of ${state.innings}</span>
+      </div>`;
+  }).join('') || '<div class="gn-sug-empty">Mark who\'s here to see playing time.</div>';
 }
 
 // ═══════════════════════════════════════════════════
@@ -11668,7 +12514,7 @@ function renderExport() {
   }).join('');
 }
 
-function copyLineup() {
+function copyLineup(btn) {
   const table = document.getElementById('export-table');
   const range = document.createRange();
   range.selectNodeContents(table);
@@ -11677,7 +12523,13 @@ function copyLineup() {
   sel.addRange(range);
   document.execCommand('copy');
   sel.removeAllRanges();
-  alert('Lineup copied to clipboard!');
+  // The button says it worked (no browser alert).
+  if (btn) {
+    if (!btn._label) btn._label = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    clearTimeout(btn._t);
+    btn._t = setTimeout(() => { btn.textContent = btn._label; }, 1600);
+  }
 }
 
 // ═══════════════════════════════════════════════════
@@ -11778,6 +12630,14 @@ function escHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// Today as YYYY-MM-DD in the coach's own time zone. toISOString() is UTC,
+// which rolled the builder's default date to tomorrow after 5 PM Pacific.
+function localISODate(d) {
+  d = d || new Date();
+  const z = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
 }
 
 function formatDate(d) {
