@@ -1459,22 +1459,9 @@
       flex-shrink: 0;
     }
     .player-name { font-weight: 500; font-size: 16px; }
-    .fp-bar {
-      display: flex;
-      gap: 2px;
-      flex-wrap: wrap;
-      max-width: 120px;
-      margin-left: auto;
-      flex-shrink: 0;
-    }
-    .fp-seg {
-      width: 6px;
-      height: 6px;
-      border-radius: 2px;
-      background: var(--gray-4);
-    }
-    .fp-seg.played { background: var(--black); }
-    .fp-seg.bench { background: var(--bench-border); }
+    /* Innings-in-the-field meter next to each name: the same cells as the
+       Playing time list in Lineup tools (.pt-cells, ptCellsHtml). */
+    .fp-bar { margin-left: auto; flex-shrink: 0; }
 
     .pos-select {
       padding: 9px 28px 9px 12px;
@@ -12532,9 +12519,7 @@ function renderLineupGrid() {
           <span class="drag-grip" title="Drag to reorder">⠿</span>
           <div class="bat-order">${rowIdx + 1}</div>
           <div class="player-name">${escHtml(player.name)}</div>
-          <div class="fp-bar">${lineupRow.positions.map(p =>
-            `<div class="fp-seg ${p === 'Bench' ? 'bench' : p ? 'played' : ''}"></div>`
-          ).join('')}</div>
+          ${ptCellsHtml(lineupRow, 'fp-bar')}
         </div>
       </td>`;
 
@@ -13584,6 +13569,17 @@ function clearFielding() {
   save();
 }
 
+// One cell per inning: green = in the field, gray = bench, outline = not
+// set yet. Shared by the lineup table and the Playing time list so the two
+// always read the same.
+function ptCellsHtml(row, extraClass) {
+  const cells = Array.from({ length: state.innings }, (_, i) => {
+    const pos = row ? row.positions[i] : '';
+    return `<i class="${pos === 'Bench' ? 'b' : pos ? '' : 'e'}"></i>`;
+  }).join('');
+  return `<span class="pt-cells${extraClass ? ' ' + extraClass : ''}" aria-hidden="true">${cells}</span>`;
+}
+
 function renderPlayingTimeSummary() {
   const grid = document.getElementById('pt-summary');
   const attending = state.players.filter(p => state.attendance[p.id]);
@@ -13591,16 +13587,10 @@ function renderPlayingTimeSummary() {
     const row = state.lineup.find(r => r.playerId === player.id);
     const played = row ? row.positions.filter(p => p && p !== 'Bench').length : 0;
     const benched = row ? row.positions.filter(p => p === 'Bench').length : 0;
-    // One compact row per kid in the tools pane: a cell per inning
-    // (green = in the field, gray = bench, outline = not set yet).
-    const cells = Array.from({ length: state.innings }, (_, i) => {
-      const pos = row ? row.positions[i] : '';
-      return `<i class="${pos === 'Bench' ? 'b' : pos ? '' : 'e'}"></i>`;
-    }).join('');
     const low = state.innings > 1 && played < Math.ceil(state.innings / 2);
     return `<div class="pt-row${low ? ' low' : ''}" title="${escHtml(player.name)}: played ${played}, benched ${benched}">
         <span class="pt-name">${escHtml(player.name)}</span>
-        <span class="pt-cells" aria-hidden="true">${cells}</span>
+        ${ptCellsHtml(row)}
         <span class="pt-stat">${played} of ${state.innings}</span>
       </div>`;
   }).join('') || '<div class="gn-sug-empty">Mark who\'s here to see playing time.</div>';
