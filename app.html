@@ -1400,111 +1400,6 @@
     }
     .allinnings-bench-wrap strong { color: var(--text); font-weight: 600; }
 
-    /* ── PRINT-ONLY ALL INNINGS SHEET ── */
-    #print-allinnings-sheet { display: none; }
-    @media print {
-      /* Default print behavior already shows #print-sheet via the rule
-         body > *:not(#print-sheet) below. When the user is printing the
-         All Innings layout, body.printing-allinnings swaps in our new sheet. */
-      body.printing-allinnings #print-sheet { display: none !important; }
-      body.printing-allinnings #print-allinnings-sheet {
-        display: block !important;
-        padding: 0;
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #1a1a1a;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-      /* Header markup is shared with the list-view print sheet — the
-         .print-top / .print-info / .print-logo styles already live in the
-         main @media print block farther down. */
-      .print-allinnings-body {
-        display: grid;
-        grid-template-columns: 200px 1fr;
-        gap: 14px;
-        align-items: start;
-      }
-      .print-batting-list {
-        font-size: 11px;
-        line-height: 1.4;
-      }
-      .print-batting-list .print-batting-title {
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #555;
-        margin-bottom: 4px;
-        letter-spacing: 0.4px;
-      }
-      .print-batting-list ol {
-        list-style: none;
-        margin: 0; padding: 0;
-        counter-reset: bat;
-      }
-      .print-batting-list li {
-        counter-increment: bat;
-        padding: 2px 0;
-        border-bottom: 1px dotted #ddd;
-      }
-      .print-batting-list li::before {
-        content: counter(bat) ".";
-        display: inline-block;
-        width: 22px;
-        font-weight: 700;
-        color: #1a1a1a;   /* B&W print — no accent color */
-      }
-      .print-allinnings-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-      .print-allinnings-grid .allinnings-card {
-        page-break-inside: avoid;
-        break-inside: avoid;
-        border: 1px solid #d4d4d4;
-        border-radius: 8px;
-        padding: 6px;
-        cursor: default;
-      }
-      .print-allinnings-grid .allinnings-card-header {
-        font-size: 10px;
-        margin-bottom: 4px;
-        color: #555;
-      }
-      .print-allinnings-grid .field-pos-bubble {
-        cursor: default;
-        box-shadow: none;
-        border-width: 1px;
-        /* Compact chips so 10-11 positions fit without overlapping:
-           smaller type, tighter padding, hard width cap. Still B&W. */
-        min-width: 0;
-        max-width: 64px;
-        padding: 1px 4px;
-        border-radius: 5px;
-        line-height: 1.1;
-      }
-      .print-allinnings-grid .field-pos-label {
-        font-size: 6.5px;
-        margin-bottom: 0;
-        letter-spacing: 0.2px;
-        color: #555;   /* B&W print — no accent color */
-      }
-      .print-allinnings-grid .field-pos-name {
-        font-size: 8.5px;
-        font-weight: 600;
-        max-width: 56px;
-      }
-      .print-allinnings-grid .field-utl-row { gap: 3px; margin-top: 4px; }
-      .print-allinnings-grid .allinnings-card-num { color: #1a1a1a; }
-      /* Save ink: drop the soft green outfield fill in print only.
-         The outfield is the only <path> in the SVG (diamond is polygon,
-         bases are rects, mound is circle), so this targets just that fill
-         and leaves the stroke outline intact. */
-      body.printing-allinnings .field-bg path { fill: #ffffff !important; }
-      @page { margin: 0.35in; size: landscape; }
-    }
-
     /* UTL positions appear below the diamond, since they don't have natural field locations */
     .field-utl-row {
       display: flex;
@@ -1939,7 +1834,7 @@
       opacity: 0.55;
       cursor: progress;
     }
-    .image-export-icon { font-size: 28px; line-height: 1; margin-bottom: 8px; }
+    .image-export-icon { line-height: 0; margin-bottom: 8px; color: var(--ink); }
     .image-export-label { font-weight: 600; font-size: 16px; margin-bottom: 4px; color: var(--text); }
     .image-export-desc { font-size: 12px; color: var(--muted); line-height: 1.4; }
     .image-export-status {
@@ -3022,120 +2917,17 @@
     .avatar-menu-item:hover { background: var(--bg-secondary); color: var(--black); }
     .avatar-menu-item.danger { color: var(--red); }
 
-    /* ── PRINT-ONLY SHEET ── */
+    /* ── PRINTOUTS ──
+       #print-sheet is filled right before printing from the shared print
+       templates (print-template*.html, see printLineupSheet), which also
+       bring their own CSS as <style id="lo-print-css" media="print">.
+       Only a lineup print hides the app; any other Cmd+P prints the page. */
     #print-sheet { display: none; }
-
     @media print {
-      /* Hide everything except the print sheet(s) — there are two: the
-         standard table-style #print-sheet and the All Innings-style
-         #print-allinnings-sheet. Body class chooses which one is visible. */
-      body > *:not(#print-sheet):not(#print-allinnings-sheet) { display: none !important; }
-      #print-sheet {
-        display: block !important;
-        padding: 0;
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        color: #1a1a1a;
-        font-size: 12px;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-      }
-
-      @page {
-        margin: 0.5in 0.5in 0.4in 0.5in;
-        size: landscape;
-      }
-
-      .print-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 16px;
-      }
-      .print-info { flex: 1; }
-      .print-info-row {
-        display: flex;
-        gap: 32px;
-        margin-bottom: 6px;
-      }
-      .print-info-label {
-        font-weight: 700;
-        font-size: 13px;
-        white-space: nowrap;
-      }
-      .print-info-value {
-        font-size: 13px;
-        border-bottom: 1px solid #999;
-        flex: 1;
-        min-width: 120px;
-        padding-bottom: 2px;
-      }
-      .print-logo {
-        width: 120px;
-        height: 36px;
-        flex-shrink: 0;
-        margin-left: 24px;
-      }
-      .print-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-      }
-
-      .print-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 4px;
-      }
-      .print-table th {
-        background: #2a2a2a !important;
-        color: #fff !important;
-        font-weight: 600;
-        font-size: 12px;
-        padding: 8px 10px;
-        text-align: center;
-        border: 1px solid #2a2a2a;
-      }
-      .print-table th:first-child,
-      .print-table th:nth-child(2) {
-        text-align: left;
-      }
-      .print-table td {
-        padding: 10px 10px;
-        text-align: center;
-        border: 1px solid #ddd;
-        font-size: 12px;
-      }
-      .print-table td:first-child {
-        text-align: center;
-        font-weight: 600;
-        width: 36px;
-      }
-      .print-table td:nth-child(2) {
-        text-align: left;
-        font-weight: 500;
-        min-width: 100px;
-      }
-      .print-table tbody tr:nth-child(even) {
-        background: var(--bg-secondary) !important;
-      }
-
-      .print-notes {
-        margin-top: 16px;
-      }
-      .print-notes-label {
-        font-weight: 700;
-        font-size: 12px;
-        margin-bottom: 6px;
-      }
-      .print-notes-lines {
-        border-top: 1px dashed #bbb;
-        padding-top: 8px;
-      }
-      .print-notes-line {
-        border-bottom: 1px dashed #bbb;
-        height: 22px;
-      }
+      @page { size: letter landscape; margin: .45in; }
+      body.lo-printing { padding: 0 !important; margin: 0 !important; background: #FFFFFF !important; transition: none !important; }
+      body.lo-printing > *:not(#print-sheet) { display: none !important; }
+      body.lo-printing #print-sheet { display: block !important; }
     }
 
     /* ── FEEDBACK WIDGET ── */
@@ -3353,9 +3145,9 @@
       .players-page { padding: 32px 20px; }
     }
 
-    /* ── CRATE FIELD (screen-only; the print sheets keep legacy styles) ──
-       Scoped under the two screen view containers so #print-allinnings-sheet
-       (which shares class names) is never affected. */
+    /* ── CRATE FIELD (screen-only) ──
+       Scoped under the two screen view containers so the printout in
+       #print-sheet (which shares class names) is never affected. */
     #lineup-field-view .field-stage,
     #lineup-allinnings-view .field-stage { aspect-ratio: 1.08; }
 
@@ -4452,9 +4244,9 @@
             <div class="export-meta" id="detail-meta"></div>
           </div>
           <div class="flex-row gap-sm flex-wrap">
-            <button class="btn btn-ghost btn-sm" onclick="printLineupDetail()">🖨 Print</button>
+            <button class="btn btn-ghost btn-sm" onclick="printLineupDetail()">Print</button>
             <button class="btn btn-ghost btn-sm" id="detail-notes-btn" style="display:none;" onclick="openGameNotes(_viewingLineupId)">Game Notes</button>
-            <button class="btn btn-primary btn-sm" onclick="editCurrentLineupDetail()">✏️ Edit Lineup</button>
+            <button class="btn btn-primary btn-sm" onclick="editCurrentLineupDetail()">Edit lineup</button>
           </div>
         </div>
         <div class="lineup-wrap mb-lg">
@@ -4935,7 +4727,7 @@
             </button>
           </div>
           <div class="view-mode-spacer"></div>
-          <button id="view-mode-print-allinnings" class="btn btn-ghost btn-sm" style="display:none;" onclick="window.print()" title="Print this layout">
+          <button id="view-mode-print-allinnings" class="btn btn-ghost btn-sm" style="display:none;" onclick="printLineupSheet('all', builderPrintData())" title="Print this layout">
             Print
           </button>
         </div>
@@ -5149,21 +4941,21 @@
     <div id="image-export-modal" class="modal-overlay" style="display:none;" role="dialog" aria-modal="true" aria-labelledby="image-export-title">
       <div class="modal" onclick="event.stopPropagation();">
         <div class="modal-header">
-          <div class="modal-title" id="image-export-title">Save Lineup as Image</div>
+          <div class="modal-title" id="image-export-title">Save lineup as image</div>
           <button class="modal-close" type="button" onclick="closeImageExportModal()" aria-label="Close">×</button>
         </div>
-        <div class="modal-sub">Pick a size. The image is read-only — no edit chevrons, no buttons. Just the batting order and fielding positions, ready to share.</div>
+        <div class="modal-sub">Pick a size. You get the batting order and every inning's positions on one Leadoff card, ready to send.</div>
         <div class="modal-body">
           <div class="image-export-options">
             <button class="image-export-option" type="button" onclick="exportLineupAsImage('mobile')">
-              <div class="image-export-icon">📱</div>
-              <div class="image-export-label">Mobile</div>
-              <div class="image-export-desc">Smaller file, sized for texting and viewing on a phone (720&nbsp;px wide).</div>
+              <div class="image-export-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div>
+              <div class="image-export-label">Phone</div>
+              <div class="image-export-desc">Sized for texts and group chats. Names show as first name and last initial.</div>
             </button>
             <button class="image-export-option" type="button" onclick="exportLineupAsImage('web')">
-              <div class="image-export-icon">💻</div>
-              <div class="image-export-label">Web</div>
-              <div class="image-export-desc">Crisper output for sharing in Slack, email, or full-screen viewing (1200&nbsp;px wide).</div>
+              <div class="image-export-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M2 19.5h20"/></svg></div>
+              <div class="image-export-label">Wide</div>
+              <div class="image-export-desc">Bigger and crisper, with full names. Good for email or a big screen.</div>
             </button>
           </div>
           <div id="image-export-status" class="image-export-status"></div>
@@ -7822,6 +7614,7 @@ function viewLineupDetail(lineupId) {
   const lineup = _pastLineups.find(l => l.id === lineupId);
   if (!lineup) return;
   _viewingLineupId = lineupId;
+  prefetchPrintTemplates();
 
   document.getElementById('lineups-list-container').style.display = 'none';
   document.getElementById('lineup-detail-container').style.display = '';
@@ -7896,73 +7689,229 @@ function editCurrentLineupDetail() {
   });
 }
 
-function printLineupDetail() {
-  // Populate print sheet from past lineup detail view
-  const lineup = _pastLineups.find(l => l.id === _viewingLineupId);
-  if (lineup) {
-    populatePrintSheet({
-      gameName: lineup.gameName,
-      opponent: lineup.opponent,
-      gameDate: lineup.gameDate,
-      gameLocation: lineup.gameLocation,
-      innings: lineup.innings || 6,
-      players: (lineup.players || []).map(p => ({
-        name: p.name,
-        positions: p.positions || []
-      }))
-    });
+// ═══════════════════════════════════════════════════
+// PRINTOUTS · one design with the iOS app
+// The site-root files print-template.html (Player List) and
+// print-template-allinnings.html (Field by Inning) are the single source:
+// the iOS app (LineupPrintService) fetches the same files for its print
+// and its share image. We fill their tokens exactly the way iOS does
+// (loFillList / loFillAllInnings mirror LineupPrintTemplate in Swift),
+// then lift the sheet, its CSS and its finisher script into #print-sheet.
+// Change the design in print-templates/ and run
+// `node print-templates/build.js`; never style the printout here.
+// ═══════════════════════════════════════════════════
+const LO_PRINT_URL = { list: '/print-template.html', all: '/print-template-allinnings.html' };
+const _loPrintRaw = {};      // fmt -> template text once loaded
+const _loPrintLoading = {};  // fmt -> in-flight Promise<string>
+
+function loadPrintTemplate(fmt) {
+  if (_loPrintRaw[fmt]) return Promise.resolve(_loPrintRaw[fmt]);
+  if (!_loPrintLoading[fmt]) {
+    _loPrintLoading[fmt] = fetch(LO_PRINT_URL[fmt], { cache: 'no-cache' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(text => {
+        if (text.indexOf('{{GAME}}') < 0) throw new Error('not a print template');
+        _loPrintRaw[fmt] = text;
+        return text;
+      })
+      .finally(() => { delete _loPrintLoading[fmt]; });
   }
-  window.print();
+  return _loPrintLoading[fmt];
 }
 
-function printExport() {
-  // Populate print sheet from current lineup builder state
-  const activeLineup = state.lineup.filter(r => {
-    const p = state.players.find(p => p.id === r.playerId);
-    return p && state.attendance[p.id];
-  });
-  populatePrintSheet({
-    gameName: state.gameName,
-    opponent: state.opponent,
-    gameDate: state.gameDate,
-    gameLocation: state.gameLocation,
+// Warm both templates where printing is one tap away, so Print (and a
+// Cmd+P or File > Print, which can't wait on the network) is instant.
+function prefetchPrintTemplates() {
+  loadPrintTemplate('list').catch(() => {});
+  loadPrintTemplate('all').catch(() => {});
+}
+
+// Lineup shape both fillers take (same as the iOS Lineup model):
+// { gameName, opponent, gameDate, gameLocation, innings, players: [{ name, positions[] }] }
+function builderPrintData() {
+  const lookup = {};
+  (state.players || []).forEach(p => { lookup[p.id] = p; });
+  return {
+    gameName: state.gameName, opponent: state.opponent,
+    gameDate: state.gameDate, gameLocation: state.gameLocation,
     innings: state.innings || 6,
-    players: activeLineup.map((row, idx) => {
-      const player = state.players.find(p => p.id === row.playerId);
-      return {
-        name: player ? player.name : 'Unknown',
-        positions: row.positions || []
-      };
-    })
-  });
-  window.print();
+    players: (state.lineup || [])
+      .filter(r => lookup[r.playerId] && state.attendance[r.playerId])
+      .map(r => ({ name: lookup[r.playerId].name || '', positions: r.positions || [] }))
+  };
 }
 
-function populatePrintSheet(data) {
-  document.getElementById('print-game').textContent = data.gameName || '';
-  document.getElementById('print-opponent').textContent = data.opponent || '';
-  document.getElementById('print-date').textContent = data.gameDate ? formatDate(data.gameDate) : '';
-  document.getElementById('print-field').textContent = data.gameLocation || '';
+function detailPrintData() {
+  const lineup = _pastLineups.find(l => l.id === _viewingLineupId);
+  if (!lineup) return null;
+  return {
+    gameName: lineup.gameName, opponent: lineup.opponent,
+    gameDate: lineup.gameDate, gameLocation: lineup.gameLocation,
+    innings: lineup.innings || 6,
+    players: (lineup.players || []).map(p => ({ name: p.name || '', positions: p.positions || [] }))
+  };
+}
 
-  const thead = document.getElementById('print-thead');
-  const tbody = document.getElementById('print-tbody');
+function printLineupDetail() { printLineupSheet('list', detailPrintData()); }
+function printExport() { printLineupSheet('list', builderPrintData()); }
 
-  let hRow = '<tr><th></th><th>Name</th>';
-  for (let i = 1; i <= data.innings; i++) hRow += '<th>Inn ' + i + '</th>';
-  hRow += '</tr>';
-  thead.innerHTML = hRow;
+// ── Token fillers: keep in step with LineupPrintTemplate (iOS) ──
+const LO_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const LO_FIELD_SPOTS = { P: [50, 65], C: [50, 90], '1B': [70, 65], '2B': [59, 55], SS: [41, 55], '3B': [30, 65],
+  LF: [18, 30], CF: [50, 20], RF: [82, 30], LCF: [33, 22], RCF: [67, 22] };   // iOS bubbleCoordinates; the template re-spots them
+const LO_FIELD_SVG = '<svg class="field-bg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+  '<path d="M 500 720 L 76 296 A 600 600 0 0 1 924 296 Z" fill="#ffffff" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>' +
+  '<polygon points="500,720 700,520 500,320 300,520" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
+  '<rect x="690" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+  '<rect x="490" y="310" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+  '<rect x="290" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
+  '<circle cx="500" cy="520" r="28" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
+  '<polygon points="488,712 512,712 512,728 500,738 488,728" fill="#9aa0a6"/>' +
+  '</svg>';
 
-  tbody.innerHTML = data.players.map((p, idx) => {
-    let cells = '<td>' + (idx + 1) + '</td>';
-    cells += '<td>' + escHtml(p.name) + '</td>';
-    for (let i = 0; i < data.innings; i++) {
-      const val = (p.positions && p.positions[i]) || '';
-      const display = val === 'Bench' ? 'OFF' : val;
-      cells += '<td>' + escHtml(display) + '</td>';
-    }
+function loEsc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+// "2026-05-07" -> "May 7, 2026" (iOS formattedDate)
+function loDate(d) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || '');
+  return m ? LO_MONTHS[+m[2] - 1] + ' ' + (+m[3]) + ', ' + m[1] : (d || '');
+}
+// "Benjamin Rodriguez Jr." -> "Benjamin R." (iOS shortenName)
+function loShortName(name) {
+  const parts = String(name || '').split(' ').filter(Boolean);
+  if (parts.length <= 1) return parts[0] || '';
+  const suffixes = ['jr', 'jr.', 'sr', 'sr.', 'ii', 'iii', 'iv', 'v'];
+  while (parts.length > 1 && suffixes.indexOf(parts[parts.length - 1].toLowerCase()) >= 0) parts.pop();
+  if (parts.length <= 1) return parts[0];
+  return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+}
+function loFill(tpl, d, extra) {
+  const map = Object.assign({
+    '{{GAME}}': loEsc(d.gameName), '{{OPPONENT}}': loEsc(d.opponent),
+    '{{DATE}}': loEsc(loDate(d.gameDate)), '{{FIELD}}': loEsc(d.gameLocation)
+  }, extra);
+  Object.keys(map).forEach(k => { tpl = tpl.split(k).join(map[k]); });
+  return tpl;
+}
+function loCell(v) { return v === 'Bench' ? 'OFF' : (v || ''); }
+
+function loFillList(tpl, d) {
+  const innings = Math.max(1, d.innings || 6);
+  let thead = '<tr><th></th><th>Name</th>';
+  for (let i = 1; i <= innings; i++) thead += '<th>Inn ' + i + '</th>';
+  thead += '</tr>';
+  const tbody = d.players.map((p, idx) => {
+    let cells = '<td>' + (idx + 1) + '</td><td>' + loEsc(p.name) + '</td>';
+    for (let i = 0; i < innings; i++) cells += '<td>' + loEsc(loCell((p.positions || [])[i])) + '</td>';
     return '<tr>' + cells + '</tr>';
   }).join('');
+  return loFill(tpl, d, { '{{THEAD}}': thead, '{{TBODY}}': tbody });
 }
+
+function loFillAllInnings(tpl, d) {
+  const innings = Math.max(1, d.innings || 6);
+  const batting = d.players.map(p => '<li>' + loEsc(p.name) + '</li>').join('');
+  const used = [];
+  d.players.forEach(p => (p.positions || []).forEach(v => { if (v && v !== 'Bench' && used.indexOf(v) < 0) used.push(v); }));
+  const onField = used.filter(v => LO_FIELD_SPOTS[v]);
+  const utility = used.filter(v => !LO_FIELD_SPOTS[v]);
+  let cards = '';
+  for (let inning = 0; inning < innings; inning++) {
+    const at = {};
+    d.players.forEach(p => {
+      const v = (p.positions || [])[inning];
+      if (v && v !== 'Bench') (at[v] = at[v] || []).push(p.name);
+    });
+    const bubble = (pos, positioned) => {
+      const names = at[pos] || [];
+      let cls = 'field-pos-bubble';
+      if (!names.length) cls += ' empty';
+      if (names.length > 1) cls += ' conflict';
+      const style = positioned ? ' style="left:' + LO_FIELD_SPOTS[pos][0] + '%;top:' + LO_FIELD_SPOTS[pos][1] + '%;"' : '';
+      return '<div class="' + cls + '"' + style + '>' +
+        '<div class="field-pos-label">' + loEsc(pos) + '</div>' +
+        '<div class="field-pos-name">' + loEsc(names.length ? loShortName(names[0]) : '— —') + '</div></div>';
+    };
+    const utl = utility.length ? '<div class="field-utl-row">' + utility.map(v => bubble(v, false)).join('') + '</div>' : '';
+    cards += '<div class="allinnings-card"><div class="allinnings-card-header">Inning ' + (inning + 1) + '</div>' +
+      '<div class="field-stage">' + LO_FIELD_SVG + '<div class="field-positions">' + onField.map(v => bubble(v, true)).join('') + '</div></div>' +
+      utl + '</div>';
+  }
+  return loFill(tpl, d, { '{{BATTING}}': batting, '{{CARDS}}': cards });
+}
+
+// Fill, then move the sheet + its CSS into this document and run the
+// template's finisher on it (bench shading, roster density, field spots).
+function renderPrintSheet(fmt, data, raw) {
+  const filled = fmt === 'all' ? loFillAllInnings(raw, data) : loFillList(raw, data);
+  const doc = new DOMParser().parseFromString(filled, 'text/html');
+  const css = doc.getElementById('lo-css');
+  const sheet = doc.querySelector('.lo-print');
+  const finisher = doc.getElementById('lo-finish');
+  if (!css || !sheet) throw new Error('print template is missing its sheet');
+  let style = document.getElementById('lo-print-css');
+  if (!style) {
+    style = document.createElement('style');
+    style.id = 'lo-print-css';
+    style.media = 'print';
+    document.head.appendChild(style);
+  }
+  style.textContent = css.textContent;
+  const host = document.getElementById('print-sheet');
+  host.replaceChildren(document.importNode(sheet, true));
+  if (finisher) {
+    try { new Function(finisher.textContent)(); } catch (e) { console.warn('Printout finisher failed:', e); }
+  }
+  document.body.classList.add('lo-printing');
+}
+
+async function printLineupSheet(fmt, data) {
+  if (!data) return;
+  let raw;
+  try { raw = await loadPrintTemplate(fmt); }
+  catch (e) {
+    console.error('Print template failed to load:', e);
+    showToast("Couldn't load the printout. Check your connection and try again.");
+    return;
+  }
+  try { renderPrintSheet(fmt, data, raw); }
+  catch (e) {
+    console.error('Printout failed:', e);
+    showToast("Couldn't build the printout. Try again.");
+    return;
+  }
+  try { gtag('event', 'lineup_printed', { format: fmt === 'all' ? 'field_by_inning' : 'list' }); } catch (e) {}
+  window.print();
+}
+
+// What Cmd+P should print right now: the builder's lineup (Field by
+// Inning when that view is open) or the saved lineup being viewed.
+function currentPrintJob() {
+  const builder = document.getElementById('view-builder');
+  if (builder && builder.classList.contains('active') && _appMode === 'lineup' && _currentStep >= 4) {
+    return { fmt: (_currentStep === 4 && _lineupViewMode === 'allinnings') ? 'all' : 'list', data: builderPrintData() };
+  }
+  const detail = document.getElementById('lineup-detail-container');
+  if (detail && detail.offsetParent !== null && _viewingLineupId) return { fmt: 'list', data: detailPrintData() };
+  return null;
+}
+
+document.addEventListener('keydown', (e) => {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey || String(e.key).toLowerCase() !== 'p') return;
+  const job = currentPrintJob();
+  if (!job || !job.data) return;
+  e.preventDefault();
+  printLineupSheet(job.fmt, job.data);
+});
+// File > Print can't wait for a fetch: use the warmed template if we have it.
+window.addEventListener('beforeprint', () => {
+  if (document.body.classList.contains('lo-printing')) return;
+  const job = currentPrintJob();
+  if (!job || !job.data || !_loPrintRaw[job.fmt]) return;
+  try { renderPrintSheet(job.fmt, job.data, _loPrintRaw[job.fmt]); } catch (e) { console.warn('Printout failed:', e); }
+});
+window.addEventListener('afterprint', () => { document.body.classList.remove('lo-printing'); });
 
 // ═══════════════════════════════════════════════════
 // GAMECHANGER CALENDAR / ICS INTEGRATION
@@ -10463,6 +10412,7 @@ async function exportLineupAsImage(preset) {
   if (status) status.textContent = 'Rendering image…';
 
   try {
+    await prepareLineupImageAssets();
     const canvas = renderLineupImageToCanvas(preset === 'mobile' ? 'mobile' : 'web');
 
     // Try both formats; serve whichever is smaller. JPEG quality 0.92
@@ -10502,199 +10452,238 @@ async function exportLineupAsImage(preset) {
     setTimeout(closeImageExportModal, 900);
   } catch (e) {
     console.error('Image export failed:', e);
-    if (status) status.textContent = 'Sorry — failed to render image. Please try again.';
+    if (status) status.textContent = "Couldn't make the image. Try again.";
     buttons.forEach(b => b.disabled = false);
   }
 }
 
-// Build the canvas containing the rendered lineup. Pure 2D drawing — no
-// external libraries — so the output is consistent across browsers.
+// The image matches the printout's share look (print-templates/, and the
+// iOS share image): cream mat, white sheet, Leadoff logo, display-face
+// title and positions, green header row, shaded bench innings. Pure 2D
+// canvas so it renders the same in every browser; fonts and the logo are
+// loaded first by prepareLineupImageAssets().
+let _lineupImageLogo = null;
+async function prepareLineupImageAssets() {
+  if (document.fonts && document.fonts.load) {
+    await Promise.all([
+      document.fonts.load('900 24px "Sofia Sans Extra Condensed"'),
+      document.fonts.load('700 16px "Barlow Semi Condensed"'),
+      document.fonts.load('600 16px "Barlow Semi Condensed"')
+    ]).catch(() => {});
+  }
+  if (_lineupImageLogo) return;
+  try {
+    // Firefox draws an SVG only when it has a width and height.
+    const svg = (await (await fetch('assets/leadoff-logo-ink.svg')).text())
+      .replace(/^<svg /, '<svg width="2059" height="556" ');
+    const img = new Image();
+    await new Promise((resolve, reject) => {
+      img.onload = resolve; img.onerror = reject;
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+    _lineupImageLogo = img;
+  } catch (e) { console.warn('Lineup image: logo unavailable', e); }
+}
+
 function renderLineupImageToCanvas(preset) {
+  const isMobile = preset === 'mobile';
   const innings = Math.max(1, state.innings || 6);
   const playerLookup = {};
   (state.players || []).forEach(p => { playerLookup[p.id] = p; });
-
-  // Mobile output condenses names to "Firstname L." to keep the player
-  // column narrow. Web keeps full names since horizontal space isn't tight.
-  const isMobile = preset === 'mobile';
-  const formatName = (n) => isMobile ? shortenPlayerName(n) : n;
-
-  // Build the rows we'll actually render: only attending players, in batting order
+  // Phones get "First L." names (the share-card privacy default) to keep
+  // the player column narrow; the wide image keeps full names.
   const rows = (state.lineup || [])
     .filter(r => playerLookup[r.playerId] && state.attendance[r.playerId])
-    .map((r, idx) => ({
-      batOrder: idx + 1,
-      name: formatName(playerLookup[r.playerId].name || '?'),
-      positions: Array.isArray(r.positions) ? r.positions.slice(0, innings) : []
-    }));
-  rows.forEach(r => {
-    while (r.positions.length < innings) r.positions.push('');
+    .map((r, idx) => {
+      const positions = Array.isArray(r.positions) ? r.positions.slice(0, innings) : [];
+      while (positions.length < innings) positions.push('');
+      const name = playerLookup[r.playerId].name || '?';
+      return { batOrder: idx + 1, name: isMobile ? shortenPlayerName(name) : name, positions };
+    });
+
+  const C = { page: '#FAF6EB', sheet: '#FFFFFF', ink: '#101613', ink2: '#6B6659', green: '#46CF51', onGreen: '#0B2410',
+              pennant: '#EC2146', onPennant: '#FFF8E6', rule: '#CFC9BB', ruleSoft: '#E4DFD3', bench: '#EFEBE1' };
+  const DISPLAY = '"Sofia Sans Extra Condensed", "Arial Narrow", sans-serif';
+  const BODY = '"Barlow Semi Condensed", "Arial Narrow", sans-serif';
+  const S = isMobile
+    ? { W: 640, mat: 14, padX: 22, padTop: 24, padBot: 16, kick: 12, title: 30, factK: 10, factV: 15, logoW: 116,
+        headH: 34, rowH: 40, numW: 34, nameW: 120, num: 18, name: 15, pos: 19, off: 10, hdr: 13, foot: 10.5, minInning: 40 }
+    : { W: 1200, mat: 22, padX: 34, padTop: 30, padBot: 20, kick: 14, title: 46, factK: 11, factV: 17, logoW: 200,
+        headH: 40, rowH: 50, numW: 54, nameW: 300, num: 22, name: 18, pos: 25, off: 12, hdr: 15, foot: 12, minInning: 64 };
+
+  // Spaced caps (canvas letterSpacing isn't everywhere yet)
+  const spaced = (ctx, text, x, y, em) => {
+    const gap = parseFloat(ctx.font.match(/(\d+(?:\.\d+)?)px/)[1]) * em;
+    for (const ch of text) { ctx.fillText(ch, x, y); x += ctx.measureText(ch).width + gap; }
+    return x - gap;
+  };
+  const spacedWidth = (ctx, text, em) => {
+    const gap = parseFloat(ctx.font.match(/(\d+(?:\.\d+)?)px/)[1]) * em;
+    let w = 0; for (const ch of text) w += ctx.measureText(ch).width + gap;
+    return w - gap;
+  };
+
+  // Facts under the title: skip the blank ones (an image isn't a form)
+  const title = (state.gameName || (state.opponent ? 'vs ' + state.opponent : 'Game lineup')).toUpperCase();
+  const when = [state.gameDate ? formatDate(state.gameDate) : '', state.gameTime ? formatTime(state.gameTime) : ''].filter(Boolean).join(' · ');
+  const facts = [['Opponent', state.opponent], ['Date', when], ['Field', state.gameLocation]].filter(f => f[1]);
+
+  const measure = document.createElement('canvas').getContext('2d');
+  const sheetW0 = S.W - S.mat * 2;
+  const innerW0 = sheetW0 - S.padX * 2;
+  let inningW = Math.floor((innerW0 - S.numW - S.nameW) / innings);
+  if (inningW < S.minInning) inningW = S.minInning;
+  const tableW = S.numW + S.nameW + inningW * innings;
+  const W = Math.max(S.W, tableW + S.padX * 2 + S.mat * 2);
+  const sheetW = W - S.mat * 2;
+  const innerW = sheetW - S.padX * 2;
+  const nameW = innerW - S.numW - inningW * innings;   // any spare width goes to names
+
+  // Title wraps to two lines at most, beside the logo
+  const logoH = S.logoW * 556 / 2059;
+  const titleMax = innerW - S.logoW - 24;
+  measure.font = '900 ' + S.title + 'px ' + DISPLAY;
+  const words = title.split(/\s+/);
+  const titleLines = [];
+  let line = '';
+  words.forEach(w => {
+    const t = line ? line + ' ' + w : w;
+    if (measure.measureText(t).width <= titleMax || !line) line = t;
+    else { titleLines.push(line); line = w; }
   });
+  if (line) titleLines.push(line);
+  if (titleLines.length > 2) { titleLines.length = 2; titleLines[1] = truncateToWidth(measure, titleLines[1] + '…', titleMax); }
 
-  // Layout constants per preset
-  const PAD          = isMobile ? 20 : 36;
-  const W_TARGET     = isMobile ? 580 : 1200;
-  const TITLE_SIZE   = isMobile ? 21 : 28;
-  const SUB_SIZE     = isMobile ? 13 : 15;
-  const HEADER_BOT   = isMobile ? 14 : 18;       // gap between subtitle and table
-  const HEADER_H     = TITLE_SIZE + (isMobile ? 12 : 16) + SUB_SIZE + HEADER_BOT;
-  const ROW_H        = isMobile ? 42 : 52;
-  const HDR_ROW_H    = isMobile ? 36 : 44;
-  const PLAYER_COL_W = isMobile ? 148 : 280;
-  const NAME_FONT    = isMobile ? 14 : 17;
-  const POS_FONT     = isMobile ? 14 : 17;
-  const HDR_FONT     = isMobile ? 12 : 14;
-  const FOOTER_FONT  = isMobile ? 11 : 13;
-  const FOOTER_H     = isMobile ? 26 : 36;
-  const RADIUS       = 14; // table corner radius
+  // Facts flow left to right, wrapping when they run out of room
+  const factGap = isMobile ? 20 : 30;
+  measure.font = '700 ' + S.factV + 'px ' + BODY;
+  const factRows = [[]];
+  let fx = 0;
+  facts.forEach(f => {
+    const w = Math.min(innerW, measure.measureText(f[1]).width);
+    if (fx > 0 && fx + w > innerW) { factRows.push([]); fx = 0; }
+    factRows[factRows.length - 1].push({ k: f[0], v: f[1], x: fx, w });
+    fx += w + factGap;
+  });
+  const factRowH = S.factK + 6 + S.factV + 4;
 
-  const fontStack = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+  const kickH = S.kick + 12;
+  const titleH = titleLines.length * S.title * 0.95;
+  const headerH = Math.max(kickH + 10 + titleH + (facts.length ? 12 + factRows.length * factRowH : 0), logoH);
+  const tableH = S.headH + S.rowH * rows.length;
+  const footH = S.foot + 4;
+  const sheetH = S.padTop + headerH + 18 + tableH + 16 + footH + S.padBot;
+  const H = sheetH + S.mat * 2;
 
-  // Compute inning column width: at least a sane minimum, otherwise stretch
-  // to fill the available width.
-  const minInningW = isMobile ? 48 : 70;
-  let inningColW = Math.floor((W_TARGET - PAD * 2 - PLAYER_COL_W) / innings);
-  if (inningColW < minInningW) inningColW = minInningW;
-
-  const tableW = PLAYER_COL_W + inningColW * innings;
-  const W = Math.max(W_TARGET, tableW + PAD * 2);
-
-  const tableTop = PAD + HEADER_H;
-  const tableBottom = tableTop + HDR_ROW_H + ROW_H * rows.length;
-  const H = tableBottom + FOOTER_H + PAD;
-
-  // High-DPI canvas
   const dpr = 2;
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(W * dpr);
   canvas.height = Math.round(H * dpr);
   const ctx = canvas.getContext('2d');
   ctx.scale(dpr, dpr);
-  ctx.textBaseline = 'middle';
-  ctx.imageSmoothingEnabled = true;
+  ctx.textBaseline = 'alphabetic';
   if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
 
-  // 1. Background
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
+  // Mat + sheet
+  ctx.fillStyle = C.page; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = C.sheet; roundRectPath(ctx, S.mat, S.mat, sheetW, sheetH, isMobile ? 18 : 22); ctx.fill();
+  const x0 = S.mat + S.padX;
+  let y = S.mat + S.padTop;
 
-  // 2. Header — title + subtitle
-  ctx.fillStyle = '#1c2128';
-  ctx.font = '700 ' + TITLE_SIZE + 'px ' + fontStack;
-  ctx.textAlign = 'left';
-  const title = state.gameName || (state.opponent ? 'vs ' + state.opponent : 'Game Lineup');
-  ctx.fillText(title, PAD, PAD + TITLE_SIZE / 2);
+  // Pennant kicker
+  ctx.font = '900 ' + S.kick + 'px ' + DISPLAY;
+  const kickText = 'LINEUP CARD';
+  const kickW = spacedWidth(ctx, kickText, 0.1) + 10 + 20;
+  ctx.fillStyle = C.pennant;
+  ctx.beginPath();
+  ctx.moveTo(x0, y); ctx.lineTo(x0 + kickW, y); ctx.lineTo(x0 + kickW - 10, y + kickH / 2);
+  ctx.lineTo(x0 + kickW, y + kickH); ctx.lineTo(x0, y + kickH); ctx.closePath(); ctx.fill();
+  ctx.fillStyle = C.onPennant;
+  spaced(ctx, kickText, x0 + 10, y + kickH / 2 + S.kick * 0.36, 0.1);
 
-  ctx.fillStyle = '#6b7280';
-  ctx.font = SUB_SIZE + 'px ' + fontStack;
-  const titleLower = title.toLowerCase();
-  const subParts = [];
-  if (state.opponent && !titleLower.includes(state.opponent.toLowerCase())) {
-    subParts.push('vs ' + state.opponent);
-  }
-  if (state.gameDate) subParts.push(formatDate(state.gameDate));
-  if (state.gameTime) subParts.push(formatTime(state.gameTime));
-  if (state.gameLocation) subParts.push(state.gameLocation);
-  const subY = PAD + TITLE_SIZE + (isMobile ? 12 : 16) + SUB_SIZE / 2;
-  if (subParts.length) ctx.fillText(subParts.join('  ·  '), PAD, subY);
+  // Logo, top right
+  if (_lineupImageLogo) ctx.drawImage(_lineupImageLogo, x0 + innerW - S.logoW, y, S.logoW, logoH);
 
-  // 3. Table — clipped rounded rect for the whole thing so the header bar
-  //    inherits the rounded corners cleanly.
-  const tableX = PAD;
-  const tableY = tableTop;
+  // Title
+  ctx.fillStyle = C.ink;
+  ctx.font = '900 ' + S.title + 'px ' + DISPLAY;
+  let ty = y + kickH + 10;
+  titleLines.forEach(l => { ty += S.title * 0.95; ctx.fillText(l, x0, ty - S.title * 0.14); });
+
+  // Facts
+  let fy = ty + 12;
+  factRows.forEach(r => {
+    r.forEach(f => {
+      ctx.fillStyle = C.ink2; ctx.font = '700 ' + S.factK + 'px ' + BODY;
+      spaced(ctx, f.k.toUpperCase(), x0 + f.x, fy + S.factK, 0.12);
+      ctx.fillStyle = C.ink; ctx.font = '700 ' + S.factV + 'px ' + BODY;
+      ctx.fillText(truncateToWidth(ctx, f.v, innerW - f.x), x0 + f.x, fy + S.factK + 6 + S.factV * 0.82);
+    });
+    fy += factRowH;
+  });
+
+  // Table
+  const tx = x0;
+  const tY = S.mat + S.padTop + headerH + 18;
   ctx.save();
-  roundRectPath(ctx, tableX, tableY, tableW, HDR_ROW_H + ROW_H * rows.length, RADIUS);
+  roundRectPath(ctx, tx, tY, innerW, tableH, 12);
   ctx.clip();
-
-  // Header bar background
-  ctx.fillStyle = '#1f2937';
-  ctx.fillRect(tableX, tableY, tableW, HDR_ROW_H);
-
-  // Header text
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '600 ' + HDR_FONT + 'px ' + fontStack;
-  ctx.textAlign = 'left';
-  ctx.fillText('Player', tableX + 16, tableY + HDR_ROW_H / 2);
+  ctx.fillStyle = C.sheet; ctx.fillRect(tx, tY, innerW, tableH);
+  ctx.fillStyle = C.green; ctx.fillRect(tx, tY, innerW, S.headH);
+  ctx.fillStyle = C.onGreen;
+  ctx.font = '900 ' + S.hdr + 'px ' + DISPLAY;
+  const hy = tY + S.headH / 2 + S.hdr * 0.36;
+  ctx.textAlign = 'center'; ctx.fillText('#', tx + S.numW / 2, hy);
+  ctx.textAlign = 'left'; spaced(ctx, 'PLAYER', tx + S.numW + 14, hy, 0.05);
   ctx.textAlign = 'center';
-  for (let i = 0; i < innings; i++) {
-    const cx = tableX + PLAYER_COL_W + inningColW * i + inningColW / 2;
-    ctx.fillText(String(i + 1), cx, tableY + HDR_ROW_H / 2);
-  }
+  for (let i = 0; i < innings; i++) ctx.fillText(String(i + 1), tx + S.numW + nameW + inningW * i + inningW / 2, hy);
 
-  // Body rows
-  for (let r = 0; r < rows.length; r++) {
-    const rowY = tableY + HDR_ROW_H + ROW_H * r;
-    // Zebra stripes
-    if (r % 2 === 1) {
-      ctx.fillStyle = '#f9fafb';
-      ctx.fillRect(tableX, rowY, tableW, ROW_H);
-    }
-    // Row separator
-    ctx.fillStyle = '#e5e7eb';
-    ctx.fillRect(tableX, rowY + ROW_H - 1, tableW, 1);
+  rows.forEach((r, ri) => {
+    const ry = tY + S.headH + S.rowH * ri;
+    const cy = ry + S.rowH / 2;
+    // bench shading first, so the rules draw over it
+    r.positions.forEach((pos, i) => {
+      if (pos === 'Bench') { ctx.fillStyle = C.bench; ctx.fillRect(tx + S.numW + nameW + inningW * i, ry, inningW, S.rowH); }
+    });
+    if (ri > 0) { ctx.fillStyle = C.rule; ctx.fillRect(tx, ry, innerW, 1); }
+    ctx.fillStyle = C.ruleSoft;
+    ctx.fillRect(tx + S.numW, ry, 1, S.rowH);
+    for (let i = 0; i < innings; i++) ctx.fillRect(tx + S.numW + nameW + inningW * i, ry, 1, S.rowH);
 
-    // Bat-order circle
-    const circleR = isMobile ? 12 : 14;
-    const cx = tableX + 16 + circleR;
-    const cy = rowY + ROW_H / 2;
-    ctx.fillStyle = '#1F7A2A';
-    ctx.beginPath();
-    ctx.arc(cx, cy, circleR, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 ' + (isMobile ? 12 : 14) + 'px ' + fontStack;
-    ctx.textAlign = 'center';
-    ctx.fillText(String(rows[r].batOrder), cx, cy + 0.5);
-
-    // Player name (truncate if too long)
-    ctx.fillStyle = '#1c2128';
-    ctx.font = '500 ' + NAME_FONT + 'px ' + fontStack;
+    ctx.fillStyle = C.ink; ctx.textAlign = 'center';
+    ctx.font = '900 ' + S.num + 'px ' + DISPLAY;
+    ctx.fillText(String(r.batOrder), tx + S.numW / 2, cy + S.num * 0.36);
     ctx.textAlign = 'left';
-    const nameX = cx + circleR + 10;
-    const nameMaxW = PLAYER_COL_W - (nameX - tableX) - 12;
-    ctx.fillText(truncateToWidth(ctx, rows[r].name, nameMaxW), nameX, cy);
-
-    // Positions per inning
-    for (let i = 0; i < innings; i++) {
-      const colX = tableX + PLAYER_COL_W + inningColW * i;
-      const pos = rows[r].positions[i] || '';
-      const isBench = pos === 'Bench';
-      const display = isBench ? 'OFF' : pos;
-      if (display) {
-        ctx.fillStyle = isBench ? '#9ca3af' : '#1c2128';
-        ctx.font = (isBench ? 'italic 500 ' : '600 ') + POS_FONT + 'px ' + fontStack;
-      } else {
-        ctx.fillStyle = '#d1d5db';
-        ctx.font = POS_FONT + 'px ' + fontStack;
+    ctx.font = '700 ' + S.name + 'px ' + BODY;
+    ctx.fillText(truncateToWidth(ctx, r.name, nameW - 24), tx + S.numW + 14, cy + S.name * 0.35);
+    ctx.textAlign = 'center';
+    r.positions.forEach((pos, i) => {
+      const cx = tx + S.numW + nameW + inningW * i + inningW / 2;
+      if (pos === 'Bench') {
+        ctx.fillStyle = C.ink2; ctx.font = '700 ' + S.off + 'px ' + BODY;
+        const w = spacedWidth(ctx, 'OFF', 0.14);
+        ctx.textAlign = 'left'; spaced(ctx, 'OFF', cx - w / 2, cy + S.off * 0.36, 0.14); ctx.textAlign = 'center';
+      } else if (pos) {
+        ctx.fillStyle = C.ink; ctx.font = '900 ' + S.pos + 'px ' + DISPLAY;
+        ctx.fillText(truncateToWidth(ctx, pos, inningW - 6), cx, cy + S.pos * 0.36);
       }
-      ctx.textAlign = 'center';
-      ctx.fillText(display || '—', colX + inningColW / 2, cy);
-    }
-
-    // Vertical separators between inning columns
-    ctx.fillStyle = '#eef0f3';
-    for (let i = 0; i <= innings; i++) {
-      const colX = tableX + PLAYER_COL_W + inningColW * i;
-      ctx.fillRect(colX, rowY, 1, ROW_H);
-    }
-  }
-
+    });
+  });
   ctx.restore();
-
-  // Outer table border
-  ctx.strokeStyle = '#e5e7eb';
-  ctx.lineWidth = 1;
-  roundRectPath(ctx, tableX + 0.5, tableY + 0.5, tableW - 1, HDR_ROW_H + ROW_H * rows.length - 1, RADIUS);
+  ctx.strokeStyle = C.ink; ctx.lineWidth = 2;
+  roundRectPath(ctx, tx + 1, tY + 1, innerW - 2, tableH - 2, 11);
   ctx.stroke();
 
-  // 4. Footer
-  ctx.fillStyle = '#9ca3af';
-  ctx.font = FOOTER_FONT + 'px ' + fontStack;
-  ctx.textAlign = 'right';
-  const footerY = H - PAD / 2 - FOOTER_FONT / 2;
-  ctx.fillText('getleadoff.com', W - PAD, footerY);
+  // Footer
+  const footY = tY + tableH + 16 + S.foot;
+  ctx.font = '600 ' + S.foot + 'px ' + BODY; ctx.fillStyle = C.ink2; ctx.textAlign = 'left';
+  ctx.fillText('Made with ', x0, footY);
+  const mw = ctx.measureText('Made with ').width;
+  ctx.font = '700 ' + S.foot + 'px ' + BODY; ctx.fillStyle = C.ink;
+  ctx.fillText('Leadoff', x0 + mw, footY);
+  ctx.font = '600 ' + S.foot + 'px ' + BODY; ctx.fillStyle = C.ink2; ctx.textAlign = 'right';
+  ctx.fillText('getleadoff.com', x0 + innerW, footY);
   ctx.textAlign = 'left';
-  ctx.fillText(rows.length + ' player' + (rows.length !== 1 ? 's' : '') + ' · ' + innings + ' innings', PAD, footerY);
 
   return canvas;
 }
@@ -10733,9 +10722,8 @@ let _fieldInning    = 0;        // zero-indexed inning shown in field view
 //   outfield arc: radius 600 from home, foul lines land at (76,296) and (924,296)
 // Each percentage is relative to the field-stage container (1000 wide × 800 tall).
 // ═══ CRATE FIELD (screen-only) — iOS LineupFieldView parity ═══
-// The PRINT sheets deliberately keep the legacy FIELD_SVG_MARKUP /
-// FIELD_POS_COORDS below so printed output stays byte-identical B&W.
-// Do NOT point print code at these crate versions.
+// Printouts never use these: they come from the shared print templates
+// (B&W line-art field, see printLineupSheet).
 const FIELD_SVG_MARKUP_CRATE = (
   '<svg class="field-bg" viewBox="0 0 540 500" preserveAspectRatio="none" aria-hidden="true">' +
     '<defs><linearGradient id="crateGrassM" x1="0" y1="0" x2="0" y2="1">' +
@@ -10784,22 +10772,6 @@ function fieldBenchCountsFor(playerId) {
   };
 }
 
-// ═══ LEGACY field constants — PRINT ONLY (keep byte-identical) ═══
-const FIELD_POS_COORDS = {
-  'P':   { x: 50, y: 65 },   // pitcher's mound
-  'C':   { x: 50, y: 90 },   // catcher, behind home plate
-  '1B':  { x: 70, y: 65 },   // first base
-  '2B':  { x: 59, y: 55 },   // 2B fielder — between 1B bag and 2B base, pulled outfield
-  '3B':  { x: 30, y: 65 },   // third base
-  'SS':  { x: 41, y: 55 },   // shortstop — between 2B base and 3B
-  'LF':  { x: 18, y: 30 },   // deep left
-  'CF':  { x: 50, y: 20 },   // deep center
-  'RF':  { x: 82, y: 30 },   // deep right
-  'LCF': { x: 33, y: 22 },   // left-center (10-player softball)
-  'RCF': { x: 67, y: 22 }    // right-center
-  // UTL1/2/3 render in a row below the diamond, not on it.
-};
-
 function setLineupViewMode(mode) {
   if (mode !== 'list' && mode !== 'field' && mode !== 'allinnings') mode = 'list';
   _lineupViewMode = mode;
@@ -10832,24 +10804,10 @@ function setLineupViewMode(mode) {
 }
 
 // ── All Innings grid ────────────────────────────────────────────
-// Reusable copy of the field SVG. Cloned into each inning card so we
-// don't keep the markup in memory more than once at the source level.
-const FIELD_SVG_MARKUP = (
-  '<svg class="field-bg" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
-    '<path d="M 500 720 L 76 296 A 600 600 0 0 1 924 296 Z" fill="#f0f7ed" stroke="#9aa0a6" stroke-width="3" stroke-linejoin="round"/>' +
-    '<polygon points="500,720 700,520 500,320 300,520" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
-    '<rect x="690" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
-    '<rect x="490" y="310" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
-    '<rect x="290" y="510" width="20" height="20" fill="#ffffff" stroke="#9aa0a6" stroke-width="1.5"/>' +
-    '<circle cx="500" cy="520" r="28" fill="#ffffff" stroke="#9aa0a6" stroke-width="2"/>' +
-    '<polygon points="488,712 512,712 512,728 500,738 488,728" fill="#9aa0a6"/>' +
-  '</svg>'
-);
-
 // Build the bubble HTML for one inning. Read-only — no click handlers; the
 // whole card is a link into single-inning Field view for editing.
-function buildInningBubblesHtml(inningIdx, crate) {
-  const COORDS = crate ? FIELD_POS_COORDS_CRATE : FIELD_POS_COORDS;
+function buildInningBubblesHtml(inningIdx) {
+  const COORDS = FIELD_POS_COORDS_CRATE;
   const playerLookup = {};
   (state.players || []).forEach(p => { playerLookup[p.id] = p; });
   const assignedAt = {};
@@ -10866,22 +10824,15 @@ function buildInningBubblesHtml(inningIdx, crate) {
   const onField = active.filter(p => p !== 'Bench' && COORDS[p]);
   const utlPositions = active.filter(p => /^UTL/.test(p));
 
-  // Crate (screen) chips: empty = dark pill with the code; occupied = panel
-  // chip with the first name. Legacy markup below is kept for PRINT.
+  // Crate chips: empty = dark pill with the code; occupied = panel chip
+  // with the first name.
   const bubble = (pos, player, conflict, positioned, coord) => {
     const empty = !player;
     const style = positioned ? '" style="left:' + coord.x + '%;top:' + coord.y + '%;' : '';
-    if (crate) {
-      const inner = empty
-        ? '<div class="field-pos-label">' + escHtml(pos) + '</div>'
-        : '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>';
-      return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
-    }
-    const name = player ? shortenPlayerName(player.name) : '— —';
-    return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' +
-      '<div class="field-pos-label">' + escHtml(pos) + '</div>' +
-      '<div class="field-pos-name">' + escHtml(name) + '</div>' +
-    '</div>';
+    const inner = empty
+      ? '<div class="field-pos-label">' + escHtml(pos) + '</div>'
+      : '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>';
+    return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
   };
 
   let fieldHtml = '';
@@ -10915,7 +10866,7 @@ function renderAllInningsView() {
 
   let html = '';
   for (let i = 0; i < innings; i++) {
-    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i, true);
+    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
     html +=
       '<div class="allinnings-card" onclick="jumpToFieldInning(' + i + ')" title="Click to edit inning ' + (i + 1) + '">' +
         '<div class="allinnings-card-header">' +
@@ -10953,90 +10904,6 @@ function jumpToFieldInning(idx) {
   _fieldInning = idx;
   setLineupViewMode('field');
 }
-
-// Cmd+P (or the 🖨 Print button) while in All Innings view prints a
-// dedicated #print-allinnings-sheet that contains the game header, the
-// batting lineup, and the inning grid. The standard #print-sheet is
-// suppressed for this print pass via body.printing-allinnings.
-function populatePrintAllInnings() {
-  const sheet = document.getElementById('print-allinnings-sheet');
-  if (!sheet) return;
-
-  // Header values — same fields the list-view print sheet shows so both
-  // printouts match: Game / Opponent / Date / Field, plus the logo.
-  const gameName     = state.gameName || '';
-  const opponent     = state.opponent || '';
-  const gameDate     = state.gameDate ? formatDate(state.gameDate) : '';
-  const gameLocation = state.gameLocation || '';
-
-  // Batting list — attending players in batting order
-  const playerLookup = {};
-  (state.players || []).forEach(p => { playerLookup[p.id] = p; });
-  const battingRows = (state.lineup || [])
-    .filter(r => state.attendance[r.playerId] && playerLookup[r.playerId])
-    .map(r => playerLookup[r.playerId].name);
-
-  // Inning cards
-  const innings = Math.max(1, state.innings || 6);
-  let cardsHtml = '';
-  for (let i = 0; i < innings; i++) {
-    const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
-    cardsHtml +=
-      '<div class="allinnings-card">' +
-        '<div class="allinnings-card-header">' +
-          '<span>Inning <span class="allinnings-card-num">' + (i + 1) + '</span></span>' +
-        '</div>' +
-        '<div class="field-stage">' +
-          FIELD_SVG_MARKUP +
-          '<div class="field-positions">' + fieldHtml + '</div>' +
-        '</div>' +
-        utlHtml +
-      '</div>';
-  }
-
-  // Same .print-top / .print-info / .print-logo structure used by the
-  // list-view print sheet — see #print-sheet's markup. Keeps both printouts
-  // visually consistent.
-  const fieldRow = (label, value) =>
-    '<div style="flex:1;display:flex;gap:6px;align-items:baseline;">' +
-      '<span class="print-info-label">' + label + ':</span>' +
-      '<span class="print-info-value">' + escHtml(value) + '</span>' +
-    '</div>';
-
-  sheet.innerHTML =
-    '<div class="print-top">' +
-      '<div class="print-info">' +
-        '<div class="print-info-row">' +
-          fieldRow('Game', gameName) +
-          fieldRow('Opponent', opponent) +
-        '</div>' +
-        '<div class="print-info-row">' +
-          fieldRow('Date', gameDate) +
-          fieldRow('Field', gameLocation) +
-        '</div>' +
-      '</div>' +
-      '<div class="print-logo">' +
-        '<img src="assets/leadoff-logo-ink.svg" alt="Leadoff" />' +
-      '</div>' +
-    '</div>' +
-    '<div class="print-allinnings-body">' +
-      '<div class="print-batting-list">' +
-        '<div class="print-batting-title">Batting Order</div>' +
-        '<ol>' + battingRows.map(n => '<li>' + escHtml(n) + '</li>').join('') + '</ol>' +
-      '</div>' +
-      '<div class="print-allinnings-grid">' + cardsHtml + '</div>' +
-    '</div>';
-}
-
-window.addEventListener('beforeprint', () => {
-  if (_lineupViewMode === 'allinnings') {
-    populatePrintAllInnings();
-    document.body.classList.add('printing-allinnings');
-  }
-});
-window.addEventListener('afterprint', () => {
-  document.body.classList.remove('printing-allinnings');
-});
 
 // Wire stored preference at startup so refreshes preserve the user's choice.
 document.addEventListener('DOMContentLoaded', () => {
@@ -12182,6 +12049,7 @@ function goToStep4() {
     state.gamePositions = [...state.leagueRules.activePositions];
   }
 
+  prefetchPrintTemplates();
   setStep(4);
   renderAttendance();
   renderGamePositions();
@@ -12199,6 +12067,7 @@ function goToStep4() {
 
 async function goToStep5() {
   save();
+  prefetchPrintTemplates();
   setStep(5);
   renderExport();
   setExportSaveStatus('saving');
@@ -13829,52 +13698,9 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- ══════════════ PRINT-ONLY ALL INNINGS SHEET ══════════════ -->
-<!-- Populated by populatePrintAllInnings() right before window.print(). -->
-<div id="print-allinnings-sheet"></div>
-
-<!-- ══════════════ PRINT-ONLY SHEET ══════════════ -->
-<div id="print-sheet">
-  <div class="print-top">
-    <div class="print-info">
-      <div class="print-info-row">
-        <div style="flex:1;display:flex;gap:6px;align-items:baseline;">
-          <span class="print-info-label">Game:</span>
-          <span class="print-info-value" id="print-game"></span>
-        </div>
-        <div style="flex:1;display:flex;gap:6px;align-items:baseline;">
-          <span class="print-info-label">Opponent:</span>
-          <span class="print-info-value" id="print-opponent"></span>
-        </div>
-      </div>
-      <div class="print-info-row">
-        <div style="flex:1;display:flex;gap:6px;align-items:baseline;">
-          <span class="print-info-label">Date:</span>
-          <span class="print-info-value" id="print-date"></span>
-        </div>
-        <div style="flex:1;display:flex;gap:6px;align-items:baseline;">
-          <span class="print-info-label">Field:</span>
-          <span class="print-info-value" id="print-field"></span>
-        </div>
-      </div>
-    </div>
-    <div class="print-logo">
-      <img src="assets/leadoff-logo-ink.svg" alt="Leadoff" />
-    </div>
-  </div>
-  <table class="print-table">
-    <thead id="print-thead"></thead>
-    <tbody id="print-tbody"></tbody>
-  </table>
-  <div class="print-notes">
-    <div class="print-notes-label">Notes</div>
-    <div class="print-notes-lines">
-      <div class="print-notes-line"></div>
-      <div class="print-notes-line"></div>
-      <div class="print-notes-line"></div>
-    </div>
-  </div>
-</div>
+<!-- ══════════════ PRINTOUT HOST ══════════════ -->
+<!-- Filled by renderPrintSheet() from the shared print templates. -->
+<div id="print-sheet" aria-hidden="true"></div>
 
 
 <!-- Share Team modal (body-level: must render from any view) -->

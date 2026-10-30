@@ -1,0 +1,303 @@
+/* ═══════════════════════════════════════════════════════════════════
+   LEADOFF PRINTOUT · shared by every lineup printout and share image
+   ───────────────────────────────────────────────────────────────────
+   One stylesheet, three outputs:
+   - Paper (print media, and html.lo-paper for a PDF made on screen):
+     pure black and neutral grays only, so no printer reaches for
+     color ink. Bench innings are hatched, not tinted.
+   - Share image (screen media, iOS snapshot at 1056×816): cream mat,
+     white sheet, brand green and pennant red, warm Crate inks.
+   - The web app injects this file's markup + this CSS into app.html,
+     so every selector is scoped under .lo-print and sets the
+     properties it relies on (app.html has older global rules for
+     .field-pos-bubble, .allinnings-card, etc.).
+   Edit here, then run: node print-templates/build.js
+   ═══════════════════════════════════════════════════════════════════ */
+
+.lo-print {
+  /* Paper defaults: black + neutral grays (R = G = B) only. */
+  --lo-ink: #000000;
+  --lo-ink-2: #555555;
+  --lo-rule: #BDBDBD;
+  --lo-rule-soft: #DCDCDC;
+  --lo-field: #9E9E9E;
+  --lo-bench: repeating-linear-gradient(135deg, #FFFFFF 0 4px, #D2D2D2 4px 5px);
+  --lo-bench-ink: #3A3A3A;
+  --lo-head-bg: #000000;
+  --lo-head-ink: #FFFFFF;
+  --lo-code-bg: #000000;
+  --lo-code-ink: #FFFFFF;
+  --lo-kick-bg: #000000;
+  --lo-kick-ink: #FFFFFF;
+  --lo-flag-bg: #FFFFFF;
+  --lo-flag-ink: #000000;
+  --lo-flag-ring: inset 0 0 0 1.5px #000000;
+  --lo-display: "Sofia Sans Extra Condensed", "Arial Narrow", -apple-system, system-ui, sans-serif;
+  --lo-body: "Barlow Semi Condensed", "Arial Narrow", -apple-system, system-ui, sans-serif;
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: #FFFFFF;
+  color: var(--lo-ink);
+  font-family: var(--lo-body);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.lo-print *, .lo-print *::before, .lo-print *::after { box-sizing: border-box; }
+
+/* Page height the layout fills. List grows past it (a long roster
+   spills to page 2 rather than clipping); Field by Inning is fixed. */
+.lo-print.lo-list { min-height: 7.5in; }
+.lo-print.lo-all  { height: 7.5in; }
+
+/* Share image: cream mat, white sheet, brand colors. Skipped when the
+   page is marked html.lo-paper (a PDF someone will print). */
+@media screen {
+  html:not(.lo-paper) .lo-print {
+    --lo-ink: #101613;
+    --lo-ink-2: #6B6659;
+    --lo-rule: #CFC9BB;
+    --lo-rule-soft: #E4DFD3;
+    --lo-field: #A9A396;
+    --lo-bench: #EFEBE1;
+    --lo-bench-ink: #6B6659;
+    --lo-head-bg: #46CF51;
+    --lo-head-ink: #0B2410;
+    --lo-code-bg: #46CF51;
+    --lo-code-ink: #0B2410;
+    --lo-kick-bg: #EC2146;
+    --lo-kick-ink: #FFF8E6;
+    --lo-flag-bg: #D9731A;
+    --lo-flag-ink: #101613;
+    --lo-flag-ring: none;
+    margin: 22px;
+    padding: 28px 32px 20px;
+    border-radius: 22px;
+  }
+  html:not(.lo-paper) .lo-print.lo-list { min-height: calc(100vh - 44px); }
+  html:not(.lo-paper) .lo-print.lo-all  { height: calc(100vh - 44px); }
+  /* Paper on screen: letter page with the same .45in margins as print. */
+  html.lo-paper .lo-print { margin: .45in; }
+  html.lo-paper .lo-print.lo-list { min-height: calc(100vh - .9in); }
+  html.lo-paper .lo-print.lo-all  { height: calc(100vh - .9in); }
+}
+/* The mark's ink goes pure black on paper; the share image keeps it. */
+.lo-print .lo-logo svg [fill="#101613"] { fill: var(--lo-ink); }
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.lo-print .lo-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin: 0; }
+.lo-print .lo-head-main { flex: 1; min-width: 0; }
+.lo-print .lo-kicker {
+  display: inline-block;
+  margin: 0;
+  padding: 6px 20px 5px 10px;
+  background: var(--lo-kick-bg);
+  color: var(--lo-kick-ink);
+  font: 900 13px/1 var(--lo-display);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%);
+}
+.lo-print .lo-title {
+  margin: 10px 0 0;
+  padding: 0;
+  font: 900 46px/.92 var(--lo-display);
+  letter-spacing: .005em;
+  text-transform: uppercase;
+  color: var(--lo-ink);
+  overflow-wrap: anywhere;
+}
+/* Blank game name: a line to write on. */
+.lo-print .lo-title:empty { width: 62%; height: 46px; border-bottom: 2px solid var(--lo-ink); }
+.lo-print .lo-facts { display: flex; flex-wrap: wrap; gap: 8px 30px; margin: 12px 0 0; }
+.lo-print .lo-fact { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.lo-print .lo-fact-k { font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-fact-v { font: 700 16px/1.15 var(--lo-body); color: var(--lo-ink); }
+.lo-print .lo-fact-v:empty { display: block; width: 150px; height: 19px; border-bottom: 1.5px solid var(--lo-ink); }
+.lo-print .lo-logo { flex: none; width: 186px; margin: 2px 0 0; }
+.lo-print .lo-logo svg { display: block; width: 100%; height: auto; }
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.lo-print .lo-foot {
+  display: flex; justify-content: space-between; gap: 16px; margin: 0;
+  font: 600 10.5px/1 var(--lo-body); letter-spacing: .04em; color: var(--lo-ink-2);
+}
+.lo-print .lo-foot b { font-weight: 700; color: var(--lo-ink); }
+
+/* ── Player List ────────────────────────────────────────────────── */
+.lo-print .lo-table-wrap { flex: 0 0 auto; margin: 0; border: 2px solid var(--lo-ink); border-radius: 12px; overflow: hidden; }
+.lo-print .lo-table { width: 100%; height: 100%; margin: 0; border-collapse: collapse; border-spacing: 0; table-layout: fixed; background: #FFFFFF; }
+.lo-print .lo-table th {
+  height: 34px; padding: 0 6px; border: 0;
+  background: var(--lo-head-bg); color: var(--lo-head-ink);
+  font: 900 15px/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase; text-align: center;
+}
+.lo-print .lo-table th:first-child { width: 48px; }
+.lo-print .lo-table th:nth-child(2) { width: 29%; text-align: left; padding-left: 14px; }
+.lo-print .lo-table td {
+  height: 40px; padding: 0 6px; border: 0;
+  border-top: 1px solid var(--lo-rule); border-left: 1px solid var(--lo-rule-soft);
+  background: #FFFFFF; color: var(--lo-ink);
+  font: 900 23px/1 var(--lo-display); letter-spacing: .02em; text-transform: uppercase; text-align: center;
+  white-space: nowrap; overflow: hidden;
+}
+.lo-print .lo-table tr:first-child td { border-top: 0; }
+.lo-print .lo-table td:first-child { border-left: 0; font-size: 21px; }
+.lo-print .lo-table td:nth-child(2) {
+  padding-left: 14px; text-align: left; text-transform: none; letter-spacing: 0;
+  font: 700 17px/1.1 var(--lo-body); text-overflow: ellipsis;
+}
+/* Bench innings read at a glance: shaded cell, small label. */
+.lo-print .lo-table td.lo-off {
+  background: var(--lo-bench); color: var(--lo-bench-ink);
+  font: 700 11.5px/1 var(--lo-body); letter-spacing: .14em;
+  text-shadow: 0 0 2px #FFFFFF, 0 0 2px #FFFFFF, 0 0 3px #FFFFFF;
+}
+.lo-print .lo-table td:empty { background: #FFFFFF; }
+
+/* Bigger rosters step the rows down so the card stays one page
+   (fits 20 players on letter; notes give way first). */
+.lo-print.lo-rows-s .lo-table td { height: 37px; }
+.lo-print.lo-rows-m .lo-table td { height: 33px; font-size: 20px; }
+.lo-print.lo-rows-m .lo-table td:nth-child(2) { font-size: 15.5px; }
+.lo-print.lo-rows-l .lo-table td { height: 29px; font-size: 18px; }
+.lo-print.lo-rows-l .lo-table td:nth-child(2) { font-size: 14.5px; }
+.lo-print.lo-rows-xl .lo-table td { height: 25px; font-size: 16px; }
+.lo-print.lo-rows-xl .lo-table td:nth-child(2) { font-size: 13px; }
+.lo-print.lo-rows-m .lo-table td.lo-off,
+.lo-print.lo-rows-l .lo-table td.lo-off,
+.lo-print.lo-rows-xl .lo-table td.lo-off { font-size: 10px; }
+.lo-print.lo-rows-xl .lo-notes { display: none; }
+/* Long game names drop a size instead of wrapping into the table's room. */
+.lo-print.lo-title-long .lo-title { font-size: 34px; }
+/* Nine-plus innings: narrower name column. */
+.lo-print.lo-inn-l .lo-table th:nth-child(2) { width: 24%; }
+
+.lo-print .lo-notes { flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px; min-height: 42px; margin: 0; }
+.lo-print .lo-notes-k { font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-lines {
+  flex: 1 1 auto; min-height: 28px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--lo-rule) 27px, var(--lo-rule) 28px);
+}
+
+/* Share image: no write-in lines; the table takes the room. */
+@media screen {
+  html:not(.lo-paper) .lo-print .lo-notes { display: none; }
+  html:not(.lo-paper) .lo-print.lo-list .lo-table-wrap { flex: 1 1 auto; display: flex; flex-direction: column; }
+  html:not(.lo-paper) .lo-print.lo-list .lo-table { flex: 1 1 auto; }
+}
+
+/* ── Field by Inning ────────────────────────────────────────────── */
+.lo-print .lo-all-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 178px minmax(0, 1fr); gap: 16px; margin: 0; }
+.lo-print .lo-bat { min-width: 0; margin: 0; }
+.lo-print .lo-bat-k { margin: 2px 0 8px; font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-bat ol { list-style: none; margin: 0; padding: 0; counter-reset: lo-bat; border-top: 2px solid var(--lo-ink); }
+.lo-print .lo-bat li {
+  counter-increment: lo-bat; display: flex; align-items: baseline; gap: 8px;
+  margin: 0; padding: 6px 0 5px; border-bottom: 1px solid var(--lo-rule-soft);
+  font: 700 14.5px/1.15 var(--lo-body); color: var(--lo-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lo-print .lo-bat li::before {
+  content: counter(lo-bat); flex: none; width: 22px; text-align: right;
+  font: 900 19px/1 var(--lo-display); color: var(--lo-ink);
+}
+.lo-print.lo-rows-m .lo-bat li { padding: 4px 0 3px; font-size: 13.5px; }
+.lo-print.lo-rows-l .lo-bat li, .lo-print.lo-rows-xl .lo-bat li { padding: 3px 0 2px; font-size: 12.5px; }
+.lo-print.lo-rows-m .lo-bat li::before, .lo-print.lo-rows-l .lo-bat li::before, .lo-print.lo-rows-xl .lo-bat li::before { font-size: 16px; }
+
+.lo-print .lo-grid {
+  min-width: 0; min-height: 0; margin: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+/* 1-2 innings: 2 x 1 · 3-4: 2 x 2 · 5-6: 3 x 2 · 7-9: 3 x 3 · 10+: 4 x 3 */
+.lo-print.lo-inn-xs .lo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr); }
+.lo-print.lo-inn-s .lo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.lo-print.lo-inn-l .lo-grid { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+.lo-print.lo-inn-xl .lo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); }
+
+.lo-print .allinnings-card {
+  container-type: size;
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 0; min-height: 0; margin: 0; padding: 8px 8px 6px;
+  background: #FFFFFF; border: 1.5px solid var(--lo-rule); border-radius: 12px; box-shadow: none;
+  break-inside: avoid; page-break-inside: avoid; cursor: default; transition: none;
+}
+.lo-print .allinnings-card-header {
+  align-self: stretch; display: block; margin: 0; padding: 0 2px;
+  font: 900 15px/1 var(--lo-display); letter-spacing: .06em; text-transform: uppercase; color: var(--lo-ink);
+  border: 0; background: none;
+}
+.lo-print .field-stage {
+  container-type: inline-size;
+  position: relative;
+  flex: none;
+  width: min(100%, calc((100cqh - 26px) * 1.25));
+  aspect-ratio: 1000 / 800;
+  height: auto;
+  margin: auto;
+  padding: 0; border: 0; border-radius: 0; background: none; overflow: visible;
+}
+.lo-print .allinnings-card:has(.field-utl-row) .field-stage { width: min(100%, calc((100cqh - 60px) * 1.25)); }
+/* Once finish.js has stretched the drawing (preserveAspectRatio=none),
+   the field fills the card's height too, up to square, which spreads
+   the positions apart. Spots are % of this box, so they stay on the
+   bases at any aspect. */
+.lo-print.lo-fit .field-stage { width: min(100%, calc((100cqh - 30px) * 1.45)); aspect-ratio: auto; height: min(calc(100cqh - 30px), 88cqw); margin: auto; }
+.lo-print.lo-fit .allinnings-card:has(.field-utl-row) .field-stage { width: min(100%, calc((100cqh - 64px) * 1.45)); height: min(calc(100cqh - 64px), 88cqw); }
+.lo-print .field-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lo-print .field-bg * { vector-effect: non-scaling-stroke; fill: #FFFFFF; stroke: var(--lo-field); }
+.lo-print .field-bg path { stroke-width: 1.6px; }
+.lo-print .field-bg polygon { stroke-width: 1.4px; }
+.lo-print .field-bg rect, .lo-print .field-bg circle { stroke-width: 1px; }
+.lo-print .field-bg polygon:last-of-type { fill: var(--lo-field); stroke: none; }
+.lo-print .field-positions { position: absolute; inset: 0; margin: 0; padding: 0; }
+
+/* A position: code tag over the kid's name. No box, so names keep
+   clear of each other; the white halo lifts them off the lines. */
+.lo-print .field-pos-bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 0; max-width: 28%; margin: 0; padding: 0;
+  background: none; border: 0; border-radius: 0; box-shadow: none;
+  text-align: center; cursor: default; transition: none;
+}
+.lo-print .field-pos-label {
+  display: inline-block; margin: 0; padding: 2px 4px 1px; border-radius: 4px;
+  background: var(--lo-code-bg); color: var(--lo-code-ink);
+  font: 900 clamp(8px, 4.4cqw, 13px)/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase;
+}
+.lo-print .field-pos-name {
+  display: block; max-width: 100%; margin: 0;
+  font: 700 clamp(8.5px, 5.4cqw, 16px)/1.05 var(--lo-body); color: var(--lo-ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 0 2px #FFF, 0 0 2px #FFF, 0 0 3px #FFF, 0 0 4px #FFF;
+}
+.lo-print .field-pos-bubble.empty .field-pos-label { background: #FFFFFF; color: var(--lo-ink); box-shadow: inset 0 0 0 1.25px var(--lo-ink); }
+.lo-print .field-pos-bubble.empty .field-pos-name { color: var(--lo-ink-2); font-weight: 600; }
+.lo-print .field-pos-bubble.conflict .field-pos-label { background: var(--lo-flag-bg); color: var(--lo-flag-ink); box-shadow: var(--lo-flag-ring); }
+/* Two kids on one spot: the tag reads "P!" so it holds up without color. */
+.lo-print .field-pos-bubble.conflict .field-pos-label::after { content: "!"; margin-left: 1px; }
+.lo-print .field-utl-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px;
+  margin: 2px 0 0; padding: 0;
+}
+.lo-print .field-utl-row .field-pos-bubble { position: static; transform: none; max-width: none; }
+
+@media print {
+  .lo-print .lo-table th, .lo-print .lo-kicker, .lo-print .field-pos-label { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

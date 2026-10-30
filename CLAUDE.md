@@ -72,10 +72,18 @@ The Cowork session built out, in order:
 - Auto-saved local **drafts** per game (`localStorage`, key `lineupDJ_drafts_v1`), with explicit "Save Draft & Exit" buttons in steps 3 and 4 and "Draft in progress" badges on the schedule view.
 - "Edit Lineup" path that loads a saved Firestore lineup back into the builder; subsequent saves merge into the same doc via `state.editingLineupDocId`.
 - "Import from Previous" modal in step 4 — pick a past lineup as a starting point.
-- "Save as Image" modal — Canvas-based PNG/JPEG export, two presets (mobile 580px, web 1200px).
+- "Save as Image" modal: canvas PNG/JPEG export in the Leadoff share look (cream mat, white sheet, logo, green header row), two presets: Phone (640 css px, "First L." names) and Wide (1200 css px, full names). Drawn in `renderLineupImageToCanvas`; keep it matching the printout's screen look.
 - **Field view** toggle in step 4: SVG diamond with click-to-pick and drag-and-drop player swaps (HTML5 DnD; click-to-pick is the touch fallback).
-- **All Innings** view: grid of mini-fields, one card per inning. Print works via dedicated `#print-allinnings-sheet`. Header markup is shared with the list-view print sheet.
+- **All Innings** view: grid of mini-fields, one card per inning. Its Print button prints the Field by Inning printout (see Printouts).
 - Polish: animated flying clones for drag-and-drop swaps (Web Animations API), data-attrs on bubbles for post-render lookups.
+
+## Printouts (shared with the iOS app, Oct 30 2026)
+
+- One design for every lineup printout and share image: `print-template.html` (Player List) and `print-template-allinnings.html` (Field by Inning) at the site root. **Generated**: edit `print-templates/` (print.css, list.html, allinnings.html, finish.js) and run `node print-templates/build.js`. Never hand-edit the two outputs.
+- The live iOS app (3.1+) fetches these exact files from `lineupcard.app/print-template*.html` (newer builds: `app.getleadoff.com`) for Print AND the share image/PDF, fills the `{{GAME}} {{OPPONENT}} {{DATE}} {{FIELD}}` + `{{THEAD}} {{TBODY}}` / `{{BATTING}} {{CARDS}}` tokens, and snapshots 1056x816 about 250ms after load. So: keep the token names, keep each file self-contained (fonts and logo inlined, nothing loads late), and keep both URLs resolving on both domains. A broken template breaks printing for every iPhone at once: render it through `loFillList` / `loFillAllInnings` before pushing.
+- The web fills the same templates the same way (`loFillList` / `loFillAllInnings` in app.html mirror Swift's `LineupPrintTemplate`), injects `.lo-print` into `#print-sheet` and `#lo-css` as a print-only style, and runs `#lo-finish` (bench shading, roster density, field spots). Buttons, Cmd+P in the builder or a saved lineup, and File > Print (warm template) all go through `printLineupSheet`.
+- Anything that lands on paper is black and neutral gray only (R = G = B, pure #000 ink, bench innings hatched, conflicts marked "P!"), so printers never use color ink (Dan, Oct 30 2026). That is print media, plus `html.lo-paper` for a PDF rendered on screen (iOS adds it before "Share as PDF"). Only the share image (screen media) gets color: cream mat, warm Crate inks, green header row, pennant red. Verify with a saturation check on a print render (max HSL saturation must be 0). The app's colored Crate field (`FIELD_*_CRATE`) is screen-only; printouts use the template's line-art field.
+- The iOS app bundles copies in `Resources/PrintTemplates/` for offline use: copy the two built files over before each iOS release.
 
 ## Mobile
 
