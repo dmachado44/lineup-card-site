@@ -2196,45 +2196,7 @@
     .lineups-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 15px; }
 
     /* ── SCHEDULE VIEW ── */
-    .schedule-list { display: flex; flex-direction: column; gap: 24px; }
-    .schedule-section-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 24px 0 12px; padding: 0; }
-    .schedule-section-label:first-child { margin-top: 0; }
-    .schedule-date-group {}
-    .schedule-date-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin: 0 0 12px; padding-left: 2px; }
-    .schedule-table {
-      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
-      overflow: hidden;
-    }
-    .schedule-item {
-      display: flex; align-items: center; justify-content: space-between; gap: 20px;
-      padding: 16px 22px; cursor: pointer;
-      transition: background-color 0.2s ease-out;
-      border-bottom: 1px solid var(--border);
-      text-decoration: none; color: inherit;
-    }
-    .schedule-item:last-child { border-bottom: none; }
-    .schedule-item:hover { background: var(--bg-secondary); }
-    .schedule-item:focus-visible { outline: 2px solid var(--green); outline-offset: -2px; background: var(--bg-secondary); }
-    .schedule-item:active { background: var(--border); }
-    .schedule-item-info { display: flex; flex-direction: column; gap: 3px; flex: 1; }
-    .schedule-item-title { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
-    .schedule-item-meta { font-size: 13px; color: var(--muted); }
-    .schedule-item-badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; letter-spacing: 0.3px; }
-    .schedule-item-badge.home { background: var(--teal-light); color: var(--accent-down); }
-    .schedule-item-badge.away { background: color-mix(in srgb, var(--attention) 12%, var(--panel)); color: var(--attention); }
-    .schedule-item-action { font-size: 13px; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
-    .schedule-item:not(.schedule-past) .schedule-item-action { color: var(--green); font-weight: 600; }
-    .schedule-item-action .lineup-linked { color: var(--green); font-weight: 600; }
-    /* Draft-in-progress badge — orange, distinct from the green "Lineup saved" badge */
-    .schedule-item-action .lineup-draft {
-      color: var(--attention);
-      font-weight: 600;
-      background: color-mix(in srgb, var(--attention) 12%, var(--panel));
-      padding: 2px 8px;
-      border-radius: 10px;
-      font-size: 12px;
-    }
-    .schedule-item:not(.schedule-past) .schedule-item-action:has(.lineup-draft) { color: var(--attention); }
+    .schedule-list { display: flex; flex-direction: column; gap: 32px; }
     /* Draft saved/saving status indicator inside the lineup builder */
     .draft-status {
       font-size: 12px;
@@ -2246,10 +2208,6 @@
     }
     .draft-status.draft-status-saved { color: var(--green); }
     .draft-status.draft-status-saving { color: var(--muted); font-style: italic; }
-    .schedule-chevron { font-size: 16px; color: var(--gray-3); transition: color 0.15s; }
-    .schedule-item:hover .schedule-chevron { color: var(--muted); }
-    .schedule-past .schedule-item-info { opacity: 0.55; transition: opacity 0.2s ease-out; }
-    .schedule-past:hover .schedule-item-info { opacity: 0.8; }
     .schedule-sync-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--muted); }
     .schedule-sync-bar .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
     .schedule-empty { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 15px; }
@@ -3128,7 +3086,7 @@
     }
 
     /* Section headers that were all-caps go sentence case, one spec app-wide */
-    .schedule-section-label, .schedule-date-label, .pos-header-label, .sidebar-section-label {
+    .pos-header-label, .sidebar-section-label {
       text-transform: none;
       letter-spacing: 0;
       font-size: 14px;
@@ -3307,18 +3265,6 @@
     .gn-tag.up { background: var(--accent-wash); color: var(--accent-down); }
     .gn-tag.down { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); color: var(--text); }
     .gn-tag.ball { background: var(--accent); color: var(--on-accent); }
-    .gn-ball-line { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-down); font-weight: 700; font-size: 12px; margin-top: 2px; }
-    .gn-notes-flag { color: var(--accent-down); font-size: 13px; margin-right: 6px; }
-    /* season ledger card */
-    .gn-ledger { border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--card); padding: 12px 14px; margin: 0 0 14px; }
-    .gn-ledger-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 15px; color: var(--text); margin-bottom: 8px; }
-    .gn-ledger-head .count { margin-left: auto; font-weight: 400; font-size: 13px; color: var(--muted); }
-    .gn-ledger-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .gn-ledger-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); font-size: 12px; font-weight: 700; color: var(--muted); background: transparent; font-family: inherit; min-height: 32px; }
-    button.gn-ledger-chip { cursor: pointer; }
-    button.gn-ledger-chip:hover { border-color: var(--ink); color: var(--text); }
-    .gn-ledger-hint { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 4px; }
-    .gn-ledger-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
 
     /* ══════════════════════════════════════════════════════════════════
        SHELL v2 (Oct 30 2026) — from the web audit board.
@@ -3781,9 +3727,6 @@
     .ng-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; }
     .ng-date { display: flex; flex-direction: column; gap: 2px; min-width: 96px; padding-right: 24px; border-right: 1px solid var(--hairline); white-space: nowrap; }
     .schedule-list > .lc-emph { margin: 16px 0 4px; }
-    .schedule-list > .lc-emph + .schedule-section-label { margin-top: 8px; }
-    /* Green is a fill; small green text steps down (brand rule) */
-    .schedule-item:not(.schedule-past) .schedule-item-action, .schedule-item-action .lineup-linked { color: var(--accent-down); }
     .ng-dow { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .ng-md { font-family: var(--font-display); font-weight: 900; font-size: 46px; line-height: .9; text-transform: uppercase; }
     .ng-tm { font-size: 17px; font-weight: 700; margin-top: 4px; }
@@ -3843,6 +3786,89 @@
     .ts-ic:hover .sb-tip, .ts-ic:focus-visible .sb-tip { opacity: 1; transform: translate(-50%, 0); transition-delay: .3s; }
     .ts-card .btn-ghost { min-height: 40px; }
     .dash-note { margin: -8px 0 0; font-size: 14px; color: var(--ink-secondary); }
+
+    /* ── Schedule v2 (Oct 30 2026): game rows + Game balls ──
+       Section heads sit outside their cards (17px semibold); cards are
+       quiet white on cream; the Next game card stays the one sticker. */
+    .schedule-list > .lc-emph { margin: 16px 0 0; }
+    .sc-sec { display: flex; flex-direction: column; gap: 12px; }
+    .sc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px; }
+    .sc-head h2 { margin: 0; font-size: 17px; font-weight: 600; color: var(--ink); }
+    .sc-head span { font-size: 13.5px; font-weight: 600; color: var(--ink-secondary); }
+    .sc-list { background: var(--panel); border-radius: var(--radius); overflow: hidden; }
+    .sc-row {
+      display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 20px;
+      padding: 16px 22px 16px 18px; cursor: pointer; position: relative;
+      transition: background-color .15s;
+    }
+    .sc-row + .sc-row::before { content: ""; position: absolute; top: 0; left: 18px; right: 22px; height: 1px; background: var(--hairline); }
+    .sc-row:hover { background: color-mix(in srgb, var(--bg-secondary) 70%, var(--panel)); }
+    .sc-row:focus-visible { outline: 3px solid var(--accent-down); outline-offset: -3px; border-radius: var(--radius); }
+    .sc-row:active { background: var(--bg-secondary); }
+    .sc-row.inert { cursor: default; }
+    .sc-row.inert:hover { background: none; }
+    .sc-date { display: flex; flex-direction: column; gap: 3px; padding-right: 16px; border-right: 1px solid var(--hairline); white-space: nowrap; }
+    .sc-dow { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-secondary); }
+    .sc-md { font-family: var(--font-display); font-weight: 900; font-size: 24px; line-height: .9; text-transform: uppercase; color: var(--ink); }
+    .sc-main { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .sc-op { font-size: 17px; font-weight: 700; line-height: 1.2; color: var(--ink); overflow-wrap: anywhere; }
+    .sc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 14px; color: var(--ink-secondary); }
+    .sc-meta .lc-chip { height: 22px; font-size: 11.5px; padding: 0 8px; }
+    .sc-ball { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; color: var(--accent-down); }
+    .sc-side { display: flex; align-items: center; gap: 16px; white-space: nowrap; }
+    .sc-side .lc-st { font-size: 14px; }
+    .sc-notes { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--bg-secondary); color: var(--ink-secondary); }
+    .sc-go {
+      display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 10px 0 14px;
+      border-radius: 10px; border: 1px solid var(--hairline-strong); background: var(--panel);
+      font-size: 14px; font-weight: 700; color: var(--ink);
+      transition: border-color .15s, background-color .15s;
+    }
+    .sc-go svg { transition: transform .3s var(--lc-pop); }
+    .sc-row:hover .sc-go { border-color: var(--ink); }
+    .sc-row:hover .sc-go svg { transform: translateX(2px); }
+    .sc-row.past .sc-date { opacity: .7; }
+    .sc-row.past .sc-md { color: var(--ink-secondary); }
+    .sc-more { align-self: flex-start; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+    .lc-ball { flex: none; display: block; }
+    .sc-empty-ic { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--panel); color: var(--ink-secondary); margin-bottom: 12px; }
+    .sc-empty-t { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    @media (max-width: 760px) {
+      .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 16px 14px 14px; }
+      .sc-row + .sc-row::before { left: 14px; right: 16px; }
+      .sc-date { padding-right: 12px; }
+      .sc-md { font-size: 20px; }
+      .sc-side { grid-column: 2; justify-content: space-between; gap: 10px; }
+      .sc-go { height: 34px; }
+    }
+
+    /* Game balls: one slot per kid fills as balls go out; waiting kids first. */
+    .gb-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; border-radius: var(--radius); background: var(--panel); }
+    .gb-slots { display: flex; gap: 4px; }
+    .gb-slots i { flex: 1; height: 8px; border-radius: 4px; background: var(--hairline-strong); transition: background-color .3s; }
+    .gb-slots i.on { background: var(--accent); }
+    .gb-hint { margin: -6px 0 0; font-size: 14px; color: var(--ink-secondary); }
+    .gb-group { display: flex; flex-direction: column; gap: 10px; }
+    .gb-k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .gb-k span { margin-left: 4px; color: var(--ink); }
+    .gb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .gb-chip {
+      display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px;
+      border-radius: 999px; border: 1px solid var(--hairline-strong); background: var(--panel);
+      font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink);
+      transition: border-color .15s, background-color .15s, transform .08s;
+    }
+    button.gb-chip { cursor: pointer; }
+    button.gb-chip:hover { border-color: var(--ink); }
+    button.gb-chip:active { transform: scale(.94); }
+    button.gb-chip:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
+    .gb-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
+    button.gb-chip.has:hover { border-color: var(--accent-down); }
+    .gb-x { font-weight: 800; font-size: 12.5px; padding: 1px 6px; border-radius: 6px; background: var(--accent); color: var(--on-accent); }
+    .gb-pop { animation: gbPop .45s var(--lc-pop); }
+    @keyframes gbPop { 0% { transform: scale(.82); } 60% { transform: scale(1.06); } 100% { transform: none; } }
+    @media (prefers-reduced-motion: reduce) { .gb-pop { animation: none; } .sc-go svg { transition: none; } }
 
     /* ── Players: roster table + side panel ── */
     .pl-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
@@ -8121,6 +8147,7 @@ async function openSchedule(teamId) {
   if (!team) return;
   const calUrl = team.gameChangerCalendarUrl || '';
 
+  if (_scheduleTeamId !== teamId) _schedShowAllPast = false;
   _scheduleTeamId = teamId;
   _scheduleTeamName = team.name;
   _scheduleCanCoach = isCoachRole(team);
@@ -8220,10 +8247,10 @@ function renderSchedule() {
     const team = _userTeams.find(t => t.id === _scheduleTeamId);
     const hasCal = !!(team && team.gameChangerCalendarUrl);
     container.innerHTML = `<div class="schedule-empty">
-      <div style="font-size:32px;margin-bottom:12px;">📅</div>
-      ${hasCal ? 'No games found on this calendar.' : 'No games yet.'}<br>
-      <span style="font-size:13px;color:var(--muted);">Lineups you build and save will show up here${hasCal ? '' : ' — or link a GameChanger calendar in Team / League Settings'}.</span>
-      ${_scheduleCanCoach ? `<div style="margin-top:18px;"><button class="btn btn-primary" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build Lineup →</button></div>` : ''}
+      <div class="sc-empty-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div>
+      <div class="sc-empty-t">${hasCal ? 'No games on this calendar yet' : 'No games yet'}</div>
+      <span>Lineups you build and save show up here.${hasCal ? '' : ' Link a GameChanger calendar in Team settings to see the whole season.'}</span>
+      ${_scheduleCanCoach ? `<div style="margin-top:18px;"><button class="btn btn-primary" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build lineup</button></div>` : ''}
     </div>`;
     return;
   }
@@ -8256,127 +8283,99 @@ function renderSchedule() {
   if (ng && ng.game) comingUp = upcoming.filter(x => x !== ng.game);
   else if (ng && ng.lineup) comingUp = upcoming.filter(x => x._lineup !== ng.lineup);
 
-  function renderLineupCard(entry) {
-    const dayStr = entry.dateObj.getTime() > 0
-      ? entry.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : '';
+  // One row per game: date tile, opponent + Home/Away + time + field,
+  // where the lineup stands, and the one thing a tap does.
+  function scRow(entry, isPast) {
+    const lineupOnly = !!entry._lineup;
+    const idx = lineupOnly ? -1 : _scheduleGames.indexOf(entry);
+    const matched = lineupOnly ? entry._lineup
+      : _scheduleLineups.find(l => l.opponent === entry.opponent && l.gameDate === entry.date);
+    const draftHit = (!lineupOnly && _scheduleCanCoach) ? findDraftForScheduleGame(_scheduleTeamId, entry) : null;
+    const hasDate = entry.dateObj.getTime() > 0;
+    const dow = hasDate ? entry.dateObj.toLocaleDateString('en-US', { weekday: 'short' }) : '';
+    const md = hasDate ? entry.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date';
     const timeStr = entry.time && entry.time !== '00:00' ? formatTime(entry.time) : '';
-    const playerCount = (entry._lineup.players || []).length;
-    const meta = [dayStr, timeStr, entry.location, playerCount + ' player' + (playerCount !== 1 ? 's' : '')].filter(Boolean).join(' · ');
-    const onclick = `viewScheduleLineup('${entry._lineup.id}')`;
-    return `
-      <div class="schedule-item schedule-past" role="button" tabindex="0" aria-label="Saved lineup ${escHtml(entry._title)}" onclick="${onclick}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclick}}">
-        <div class="schedule-item-info">
-          <div class="schedule-item-title">${escHtml(entry._title)}</div>
-          <div class="schedule-item-meta">${escHtml(meta)}</div>
-          ${gnScheduleBallLine(entry._lineup)}
-        </div>
-        <div class="schedule-item-action">${gnScheduleFlag(entry._lineup)}<span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>
-      </div>`;
-  }
+    const title = lineupOnly ? entry._title
+      : (entry.isHome === false ? '@ ' : 'vs ') + entry.opponent;
+    const chip = lineupOnly ? '' : nextGameChip(entry);
 
-  function renderGameCard(game, isPast) {
-    if (game._lineup) return renderLineupCard(game);
-    const idx = _scheduleGames.indexOf(game);
-    const dayStr = game.dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-    const timeStr = game.time && game.time !== '00:00' ? formatTime(game.time) : '';
-    const meta = [dayStr, timeStr, game.location].filter(Boolean).join(' · ');
-
-    const matchedLineup = _scheduleLineups.find(l =>
-      l.opponent === game.opponent && l.gameDate === game.date
-    );
-
-    // Drafts beat saved lineups: if the user has unsaved work for this
-    // game, take them straight back to it.
-    const draftHit = findDraftForScheduleGame(_scheduleTeamId, game);
-
-    let actionHtml;
-    let onclick;
-    if (!_scheduleCanCoach) {
-      // Read-only (member/parent): saved lineups open; everything else inert.
-      if (matchedLineup) {
-        actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
-        onclick = `viewScheduleLineup('${matchedLineup.id}')`;
-      } else {
-        actionHtml = `<div class="schedule-item-action"></div>`;
-        onclick = '';
-      }
-    } else if (draftHit) {
-      const ago = relativeTimeShort(draftHit.draft.updatedAt);
-      const label = matchedLineup
-        ? 'Draft (editing) · ' + ago
-        : 'Draft in progress · ' + ago;
-      actionHtml = `<div class="schedule-item-action">` +
-        `<span class="lineup-draft" title="Resume your draft">${label}</span>` +
-        `<span class="schedule-chevron">›</span></div>`;
-      onclick = `createLineupFromSchedule(${idx})`;
-    } else if (matchedLineup) {
-      actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
-      onclick = `viewScheduleLineup('${matchedLineup.id}')`;
-    } else if (!isPast) {
-      actionHtml = `<div class="schedule-item-action">Build lineup<span class="schedule-chevron">›</span></div>`;
-      onclick = `createLineupFromSchedule(${idx})`;
+    // Status + action (members only ever open saved lineups)
+    let st, go = '', onclick = '';
+    const build = lineupOnly ? '' : `createLineupFromSchedule(${idx})`;
+    if (draftHit) {
+      st = `<span class="lc-st dr"><i></i>Draft · ${escHtml(relativeTimeShort(draftHit.draft.updatedAt))}</span>`;
+      go = 'Finish lineup'; onclick = build;
+    } else if (matched) {
+      st = `<span class="lc-st ok"><i></i>${isPast ? 'Lineup saved' : (_scheduleCanCoach ? 'Lineup ready' : 'Lineup posted')}</span>`;
+      go = 'View lineup'; onclick = `viewScheduleLineup('${matched.id}')`;
+    } else if (_scheduleCanCoach) {
+      st = `<span class="lc-st no"><i></i>${isPast ? 'No lineup' : 'Not started'}</span>`;
+      go = isPast ? 'Add lineup' : 'Build lineup'; onclick = build;
     } else {
-      actionHtml = `<div class="schedule-item-action"><span class="schedule-chevron">›</span></div>`;
-      onclick = `createLineupFromSchedule(${idx})`;
+      st = `<span class="lc-st no"><i></i>No lineup yet</span>`;
     }
-
-    const pennant = '';
-
-    return `
-      <div class="schedule-item ${isPast ? 'schedule-past' : ''}" role="button" tabindex="0" aria-label="${game.isHome ? 'Home' : 'Away'} game vs ${escHtml(game.opponent)}, ${dayStr}" onclick="${onclick}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclick}}">
-        <div class="schedule-item-info">
-          <div class="schedule-item-title">
-            ${pennant}<span class="schedule-item-badge ${game.isHome ? 'home' : 'away'}">${game.isHome ? 'HOME' : 'AWAY'}</span>
-            vs ${escHtml(game.opponent)}
-          </div>
-          <div class="schedule-item-meta">${escHtml(meta)}</div>
-          ${matchedLineup ? gnScheduleBallLine(matchedLineup) : ''}
-        </div>
-        ${actionHtml}
-      </div>`;
+    const ball = matched ? gnScheduleBallLine(matched) : '';
+    const notes = matched ? gnScheduleFlag(matched) : '';
+    const meta = [chip, timeStr ? `<span>${escHtml(timeStr)}</span>` : '', entry.location ? `<span class="sc-loc">${escHtml(entry.location)}</span>` : '']
+      .filter(Boolean).join('');
+    const label = [title, [dow, md].filter(Boolean).join(' '), timeStr].filter(Boolean).join(', ');
+    const tap = onclick
+      ? ` role="button" tabindex="0" aria-label="${sbAttr(label + (go ? '. ' + go : ''))}" onclick="${onclick}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclick}}"`
+      : '';
+    return `<div class="sc-row${isPast ? ' past' : ''}${onclick ? '' : ' inert'}"${tap}>
+      <div class="sc-date" aria-hidden="true"><span class="sc-dow">${escHtml(dow)}</span><span class="sc-md">${escHtml(md)}</span></div>
+      <div class="sc-main">
+        <div class="sc-op">${escHtml(title)}</div>
+        ${meta ? `<div class="sc-meta">${meta}</div>` : ''}
+        ${ball}
+      </div>
+      <div class="sc-side">${st}${notes}${go ? `<span class="sc-go">${go}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>` : ''}</div>
+    </div>`;
   }
 
-  // Game Notes decorations (coach only — members never have notes loaded).
+  // Game Notes decorations (coach only; members never have notes loaded).
   function gnScheduleBallLine(lineup) {
     const name = gnGameBallName(gnNotesFor(_scheduleTeamId, lineup.id), lineup);
-    return name ? `<div class="gn-ball-line">⚾ Game ball · ${escHtml(name)}</div>` : '';
+    return name ? `<div class="sc-ball">${LC_BALL_SVG}Game ball · ${escHtml(name)}</div>` : '';
   }
   function gnScheduleFlag(lineup) {
-    return gnNotesFor(_scheduleTeamId, lineup.id) ? '<span class="gn-notes-flag" title="Has game notes">📝</span>' : '';
+    return gnNotesFor(_scheduleTeamId, lineup.id)
+      ? '<span class="sc-notes" title="Has game notes"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7"/></svg><span class="sr-only">Has game notes</span></span>'
+      : '';
   }
 
-  function renderSection(label, games, isPast) {
-    if (games.length === 0) return '';
-    // Group by month within the section
-    const groups = {};
-    games.forEach(game => {
-      const key = game.dateObj.toLocaleString('default', { month: 'long', year: 'numeric' });
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(game);
-    });
-    let html = `<h2 class="schedule-section-label">${label}</h2>`;
-    for (const [month, monthGames] of Object.entries(groups)) {
-      html += `<div class="schedule-date-group">`;
-      html += `<h3 class="schedule-date-label">${month}</h3>`;
-      html += `<div class="schedule-table">`;
-      monthGames.forEach(game => { html += renderGameCard(game, isPast); });
-      html += `</div></div>`;
-    }
-    return html;
+  // Section header sits outside its card (brand rule), count on the right.
+  function scSection(label, games, isPast) {
+    if (!games.length) return '';
+    const cap = isPast && !_schedShowAllPast ? SC_PAST_PREVIEW : games.length;
+    const shown = games.slice(0, cap);
+    const more = games.length - shown.length;
+    return `<section class="sc-sec" aria-label="${sbAttr(label)}">
+      <div class="sc-head"><h2>${label}</h2><span>${games.length} game${games.length === 1 ? '' : 's'}</span></div>
+      <div class="sc-list">${shown.map(g => scRow(g, isPast)).join('')}</div>
+      ${more > 0 ? `<button type="button" class="btn btn-ghost sc-more" onclick="_schedShowAllPast = true; renderSchedule()">Show ${more} more past game${more === 1 ? '' : 's'}</button>` : ''}
+    </section>`;
   }
 
   let html = '<div class="schedule-list">';
   if (ng) html += scheduleNextHtml(ng);
-  html += renderSection(ng ? 'Coming up' : 'Upcoming games', comingUp, false);
+  html += scSection(ng ? 'Coming up' : 'Upcoming games', comingUp, false);
   if (_scheduleCanCoach) {
     const roster = _scheduleRoster.length ? _scheduleRoster
       : ((_activeTeamId === _scheduleTeamId && state && state.players) ? state.players : []);
     html += gnLedgerHtml(_scheduleTeamId, roster.length ? roster : gnRosterFromLineups(_scheduleLineups));
   }
-  html += renderSection('Past games', past, true);
+  html += scSection('Past games', past, true);
   html += '</div>';
   container.innerHTML = html;
 }
+
+// Past games show the latest few until the coach asks for the rest;
+// resets whenever a different team's schedule opens.
+const SC_PAST_PREVIEW = 4;
+var _schedShowAllPast = false;
+// Baseball mark for game balls (product copy stays emoji-free).
+const LC_BALL_SVG = '<svg class="lc-ball" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.4 3.1c1.3 1.3 2 3 2 4.9s-.7 3.6-2 4.9M11.6 3.1c-1.3 1.3-2 3-2 4.9s.7 3.6 2 4.9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
 
 // Roster fallback for the ledger when the builder's state isn't loaded for
 // this team: every player id/name seen across saved lineups.
@@ -8663,23 +8662,41 @@ function gnLedgerHtml(teamId, players) {
     .filter(p => p.name)
     .map(p => ({ id: rosterDocIdFor(p.id), name: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), count: counts[rosterDocIdFor(p.id)] || 0 }))
     .sort((a, b) => ((a.count === 0) !== (b.count === 0)) ? (a.count === 0 ? -1 : 1) : a.name.localeCompare(b.name));
-  const waiting = entries.filter(e => e.count === 0).length;
+  const waiting = entries.filter(e => e.count === 0);
+  const got = entries.filter(e => e.count > 0);
   const chip = e => {
-    const label = `${e.count ? '⚾ ' : ''}${escHtml(e.name)}${e.count > 1 ? ' ×' + e.count : ''}`;
-    if (!_scheduleCanCoach) return `<span class="gn-ledger-chip ${e.count ? 'has' : ''}">${label}</span>`;
+    const label = `${e.count ? LC_BALL_SVG : ''}<span>${escHtml(e.name)}</span>${e.count > 1 ? `<b class="gb-x">×${e.count}</b>` : ''}`;
+    const cls = `gb-chip${e.count ? ' has' : ''}${e.id === _gnJustToggled ? ' gb-pop' : ''}`;
+    if (!_scheduleCanCoach) return `<span class="${cls}">${label}</span>`;
     const hasTally = (Number(tally[e.id]) || 0) > 0;
-    const tip = hasTally ? 'Tap to take this ball back' : 'Tap to hand out a game ball';
-    return `<button type="button" class="gn-ledger-chip ${e.count ? 'has' : ''}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}')">${label}</button>`;
+    const tip = e.count ? (hasTally ? 'Tap to take this ball back' : 'Tap to hand out another ball') : 'Tap to hand out a game ball';
+    return `<button type="button" class="${cls}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}')">${label}</button>`;
   };
-  return `<div class="gn-ledger">
-    <div class="gn-ledger-head">⚾ Game Balls <span class="gn-ledger-hint">${_scheduleCanCoach ? 'Tap a kid to hand out a ball' : ''}</span><span class="count">${waiting} still waiting</span></div>
-    <div class="gn-ledger-chips">${entries.map(chip).join('')}</div>
-  </div>`;
+  // "Fill the slots": one slot per kid, filled as balls go out.
+  const slots = entries.length
+    ? `<div class="gb-slots" role="img" aria-label="${got.length} of ${entries.length} kids have a game ball">${entries.map((e, i) => `<i class="${i < got.length ? 'on' : ''}"></i>`).join('')}</div>`
+    : '';
+  const group = (k, list) => list.length
+    ? `<div class="gb-group"><div class="gb-k">${k} <span>${list.length}</span></div><div class="gb-chips">${list.map(chip).join('')}</div></div>`
+    : '';
+  const summary = !entries.length ? ''
+    : waiting.length === 0 ? 'Every kid has one'
+    : `${got.length} of ${entries.length} kids have one`;
+  return `<section class="sc-sec" aria-label="Game balls">
+    <div class="sc-head"><h2>Game balls</h2><span>${summary}</span></div>
+    <div class="gb-card">
+      ${slots}
+      ${_scheduleCanCoach ? `<p class="gb-hint">Tap a kid to hand out a game ball. Tap again to take it back.</p>` : ''}
+      ${group('Still waiting', waiting)}
+      ${group('Got one', got)}
+    </div>
+  </section>`;
 }
 
 // One tap = +1 ball for the season, a second tap takes that ball back.
 // Balls recorded on a specific game (Game Notes) are never touched here.
 let _gnTallyBusy = false;
+var _gnJustToggled = null;
 async function gnToggleTallyBall(playerId) {
   const teamId = _scheduleTeamId;
   const fb = initFirebase();
@@ -8689,6 +8706,8 @@ async function gnToggleTallyBall(playerId) {
   if (n > 0) { if (n === 1) delete tally[playerId]; else tally[playerId] = n - 1; }
   else tally[playerId] = 1;
   _gnTallyBusy = true;
+  _gnJustToggled = playerId;   // that chip pops on the next render
+  setTimeout(() => { if (_gnJustToggled === playerId) _gnJustToggled = null; }, 800);
   const prev = _gnTally[teamId];
   _gnTally[teamId] = tally;          // optimistic
   renderSchedule();
