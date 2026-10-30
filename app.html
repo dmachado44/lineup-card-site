@@ -5253,6 +5253,7 @@ function initFirebase() {
       } else {
         if (topbarAuth) topbarAuth.innerHTML = '';
         if (topbarAuthBuilder) topbarAuthBuilder.innerHTML = '';
+        if (typeof stopLiveSync === 'function') stopLiveSync();
         _userTeams = [];
         _activeTeamId = null;
         document.body.classList.remove('signed-in');
@@ -5399,6 +5400,7 @@ async function checkSubscription(user) {
     // route the URL points at (deep links resume here after sign-in).
     document.body.classList.add('signed-in');
     _teamsReady = loadUserTeams(user);
+    _teamsReady.then(() => startLiveSync(user));
     handleRoute();
 
   } catch(e) {
@@ -5407,6 +5409,7 @@ async function checkSubscription(user) {
     _subscriptionActive = true; // assume active to avoid false paywall
     document.body.classList.add('signed-in');
     _teamsReady = loadUserTeams(user);
+    _teamsReady.then(() => startLiveSync(user));
     handleRoute();
   }
 }
@@ -6325,68 +6328,9 @@ async function selectTeam(teamId, closeDropdown = true) {
       inviteCode:  teamData.inviteCode || ''
     };
 
-    state.teamName     = teamName;
-    state.teamSport    = teamData.sport    || state.teamSport    || 'Baseball';
-    state.teamLevel    = teamData.level    || state.teamLevel    || '';
-    state.teamAgeGroup = teamData.ageGroup || state.teamAgeGroup || '';
-    state.teamSeason   = teamData.season   || state.teamSeason   || 'Spring';
-    state.teamYear     = teamData.year     || state.teamYear     || new Date().getFullYear();
-    state.teamNotes    = teamData.notes    || state.teamNotes    || '';
-    state.teamCalendarUrl = teamData.gameChangerCalendarUrl || '';
-
-    const setField = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    setField('team-name',      teamName);
-    setField('team-sport',     state.teamSport);
-    setField('team-level',     state.teamLevel);
-    setField('team-age-group', state.teamAgeGroup);
-    setField('team-season',    state.teamSeason);
-    setField('team-year',      state.teamYear);
-    setField('team-notes',     state.teamNotes);
-    setField('team-calendar-url', state.teamCalendarUrl);
-    // Update calendar button state based on whether a URL is already saved
-    var calBtn = document.getElementById('btn-add-calendar');
-    if (calBtn) {
-      if (state.teamCalendarUrl) {
-        calBtn.textContent = 'Update Calendar';
-        calBtn.disabled = false;
-        calBtn.style.opacity = '1';
-        calBtn.style.cursor = 'pointer';
-      } else {
-        calBtn.textContent = 'Add Calendar';
-        calBtn.disabled = true;
-        calBtn.style.opacity = '0.4';
-        calBtn.style.cursor = 'not-allowed';
-      }
-    }
-
-    // Hydrate league rules + innings from the team doc (one-shot .get(),
-    // per the intentional sync boundary — this is NOT live sync). Without
-    // this, the engine runs on — and Save Team writes back — whatever rules
-    // localStorage held from a previous team/session, clobbering iOS edits.
-    if (teamData.leagueRules && typeof teamData.leagueRules === 'object') {
-      state.leagueRules = Object.assign({}, state.leagueRules, teamData.leagueRules);
-      // The doc carries an explicit rules map — engine rules (incl. the
-      // allPlayersBat batting cap) apply as configured.
-      state.rulesExplicit = true;
-    } else {
-      // Pre-rules team: no explicit map on the doc. The decode default for
-      // allPlayersBat is false, but ON is the shipped norm — the batting cap
-      // must NOT apply here (mirrors iOS's effectiveRules path).
-      state.rulesExplicit = false;
-    }
-    if (teamData.innings) state.innings = teamData.innings;
-
-    // Keep the rules-editor UI in sync with the hydrated state
-    const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
-    setChecked('rule-all-bat',        state.leagueRules.allPlayersBat);
-    setChecked('rule-back-to-back',   state.leagueRules.allowBackToBack !== false);
-    setChecked('rule-coed',           state.leagueRules.coEd);
-    setChecked('rule-pitcher-return', state.leagueRules.pitcherCanReturn !== false);
-    setField('rule-max-same-pos', String(state.leagueRules.maxSamePosition || 0));
-    setField('rule-max-pitch',    String(state.leagueRules.maxInningsPitched || 0));
-    const inningCountEl = document.getElementById('inning-count');
-    if (inningCountEl) inningCountEl.textContent = state.innings;
-    if (typeof renderPosGrid === 'function') renderPosGrid();
+    // Team fields + league rules → state and the settings forms (shared
+    // with the live listener).
+    hydrateTeamDoc(teamData);
 
     // Apply team theming to the builder
     const currentTeam = _userTeams.find(t => t.id === teamId);
@@ -6408,27 +6352,10 @@ async function selectTeam(teamId, closeDropdown = true) {
       document.querySelectorAll('.builder-sub').forEach(el => { el.textContent = subText; });
     }
 
-    const players = playerSnap.docs.map(doc => {
-      const d = doc.data();
-      return {
-        id:      'imp_' + doc.id,
-        name:    d.name   || 'Unknown',
-        prefPos: d.prefPos || [],
-        fieldPriority: d.fieldPriority || 'both',
-        battingSkills: d.battingSkills || { power: 5, contact: 5, speed: 5 },
-        gender:  d.gender || '',
-        // Shared basic info (matches iOS player creation). number: 0 is a
-        // real jersey number; null/undefined = unset ("team doesn't use numbers").
-        number:  (typeof d.number === 'number') ? d.number : null,
-        namePronunciation: d.namePronunciation || '',
-        // iOS Player model fields (Today's Order = isActive sorted by order).
-        // null = missing on the doc → the next roster save backfills them.
-        order:    (typeof d.order === 'number') ? d.order : null,
-        isActive: (typeof d.isActive === 'boolean') ? d.isActive : null
-      };
-    });
+    const players = playerSnap.docs.map(doc => mapPlayerDoc(doc.id, doc.data()));
 
     state.players      = players;
+    _rosterDirty       = {};   // a fresh read: nothing pending from another team
     state.attendance   = {};
     state.lineup       = [];
     // Clear game-specific fields so they don't bleed across teams
@@ -6459,10 +6386,292 @@ async function selectTeam(teamId, closeDropdown = true) {
     renderLineupGrid();
     renderPlayingTimeSummary();
 
+    // Follow this team's roster live from here on (iOS edits show up).
+    watchTeamPlayers(teamId);
+
   } catch(e) {
     console.error('selectTeam error:', e);
   }
 }
+
+// One player doc → the web's player record. Shared by the first read and
+// the live listener so both see exactly the same fields.
+function mapPlayerDoc(docId, d) {
+  d = d || {};
+  const sk = d.battingSkills;
+  return {
+    id:      'imp_' + docId,
+    name:    d.name   || 'Unknown',
+    prefPos: Array.isArray(d.prefPos) ? d.prefPos.slice() : [],
+    fieldPriority: d.fieldPriority || 'both',
+    battingSkills: sk ? { power: sk.power || 5, contact: sk.contact || 5, speed: sk.speed || 5 } : { power: 5, contact: 5, speed: 5 },
+    gender:  d.gender || '',
+    // Shared basic info (matches iOS player creation). number: 0 is a
+    // real jersey number; null/undefined = unset ("team doesn't use numbers").
+    number:  (typeof d.number === 'number') ? d.number : null,
+    namePronunciation: d.namePronunciation || '',
+    // iOS Player model fields (Today's Order = isActive sorted by order).
+    // null = missing on the doc → the next roster save backfills them.
+    order:    (typeof d.order === 'number') ? d.order : null,
+    isActive: (typeof d.isActive === 'boolean') ? d.isActive : null
+  };
+}
+
+// Team doc → state + the settings forms. Used by the first read and by the
+// live listener. opts.team / opts.rules pick the halves to apply; opts.skip
+// is a Set of form field ids being edited here (those keep the local value).
+function hydrateTeamDoc(teamData, opts) {
+  opts = Object.assign({ team: true, rules: true, skip: null }, opts || {});
+  const skip = id => !!(opts.skip && opts.skip.has(id));
+  const setField = (id, val) => { if (skip(id)) return; const el = document.getElementById(id); if (el) el.value = val; };
+
+  if (opts.team) {
+    if (!skip('team-name'))      state.teamName     = teamData.name || 'Unnamed Team';
+    if (!skip('team-sport'))     state.teamSport    = teamData.sport    || state.teamSport    || 'Baseball';
+    if (!skip('team-level'))     state.teamLevel    = teamData.level    || state.teamLevel    || '';
+    if (!skip('team-age-group')) state.teamAgeGroup = teamData.ageGroup || state.teamAgeGroup || '';
+    if (!skip('team-season'))    state.teamSeason   = teamData.season   || state.teamSeason   || 'Spring';
+    if (!skip('team-year'))      state.teamYear     = teamData.year     || state.teamYear     || new Date().getFullYear();
+    if (!skip('team-notes'))     state.teamNotes    = teamData.notes    || state.teamNotes    || '';
+    if (!skip('team-calendar-url')) state.teamCalendarUrl = teamData.gameChangerCalendarUrl || '';
+
+    setField('team-name',      state.teamName);
+    setField('team-sport',     state.teamSport);
+    setField('team-level',     state.teamLevel);
+    setField('team-age-group', state.teamAgeGroup);
+    setField('team-season',    state.teamSeason);
+    setField('team-year',      state.teamYear);
+    setField('team-notes',     state.teamNotes);
+    setField('team-calendar-url', state.teamCalendarUrl);
+    // Update calendar button state based on whether a URL is already saved
+    var calBtn = document.getElementById('btn-add-calendar');
+    if (calBtn && !skip('team-calendar-url')) {
+      if (state.teamCalendarUrl) {
+        calBtn.textContent = 'Update Calendar';
+        calBtn.disabled = false;
+        calBtn.style.opacity = '1';
+        calBtn.style.cursor = 'pointer';
+      } else {
+        calBtn.textContent = 'Add Calendar';
+        calBtn.disabled = true;
+        calBtn.style.opacity = '0.4';
+        calBtn.style.cursor = 'not-allowed';
+      }
+    }
+  }
+
+  if (opts.rules) {
+    // League rules + innings from the team doc. Without this, the engine runs
+    // on (and Save Team writes back) whatever rules localStorage held from a
+    // previous team/session, clobbering iOS edits.
+    if (teamData.leagueRules && typeof teamData.leagueRules === 'object') {
+      state.leagueRules = Object.assign({}, state.leagueRules, teamData.leagueRules);
+      // The doc carries an explicit rules map — engine rules (incl. the
+      // allPlayersBat batting cap) apply as configured.
+      state.rulesExplicit = true;
+    } else {
+      // Pre-rules team: no explicit map on the doc. The decode default for
+      // allPlayersBat is false, but ON is the shipped norm — the batting cap
+      // must NOT apply here (mirrors iOS's effectiveRules path).
+      state.rulesExplicit = false;
+    }
+    if (teamData.innings) state.innings = teamData.innings;
+
+    // Keep the rules-editor UI in sync with the hydrated state
+    const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+    setChecked('rule-all-bat',        state.leagueRules.allPlayersBat);
+    setChecked('rule-back-to-back',   state.leagueRules.allowBackToBack !== false);
+    setChecked('rule-coed',           state.leagueRules.coEd);
+    setChecked('rule-pitcher-return', state.leagueRules.pitcherCanReturn !== false);
+    setField('rule-max-same-pos', String(state.leagueRules.maxSamePosition || 0));
+    setField('rule-max-pitch',    String(state.leagueRules.maxInningsPitched || 0));
+    const inningCountEl = document.getElementById('inning-count');
+    if (inningCountEl) inningCountEl.textContent = state.innings;
+    if (typeof renderPosGrid === 'function') renderPosGrid();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// LIVE SYNC (Oct 30 2026): the web follows iOS in real time
+// ═══════════════════════════════════════════════════
+// Dan: "make sure iOS and web are fully synced at all times." iOS already
+// listens live, so web edits show up there right away. These listeners close
+// the other direction. Read-only (onSnapshot) on docs the web already reads:
+//   · your teams (owned + joined) → sidebar, All teams, roles, rules, settings
+//   · the open team's players     → Players page and its side panel
+//   · the open schedule's lineups → Schedule
+// Local unsaved edits win: a field being edited here keeps its value until
+// it's saved, and the lineup builder keeps its session (it re-reads on entry).
+// Listeners never write.
+var _live = { uid: null, owned: null, joined: null, ownedDocs: null, joinedDocs: null,
+              players: null, playersTeam: null, lineups: null, lineupsTeam: null };
+
+function startLiveSync(user) {
+  const fb = initFirebase();
+  if (!fb || !user) return;
+  stopLiveSync();
+  _live.uid = user.uid;
+  const docsById = s => { const m = {}; s.docs.forEach(d => { m[d.id] = d; }); return m; };
+  const quiet = what => e => console.warn('Live sync paused (' + what + '):', e && e.message);
+  _live.owned = fb.db.collection('teams').where('ownerId', '==', user.uid)
+    .onSnapshot(s => { _live.ownedDocs = docsById(s); applyLiveTeams(); }, quiet('owned teams'));
+  _live.joined = fb.db.collection('teams').where('memberIds', 'array-contains', user.uid)
+    .onSnapshot(s => { _live.joinedDocs = docsById(s); applyLiveTeams(); }, quiet('joined teams'));
+  if (_activeTeamId) watchTeamPlayers(_activeTeamId);
+  if (_scheduleTeamId) watchScheduleLineups(_scheduleTeamId);
+}
+
+function stopLiveSync() {
+  ['owned', 'joined', 'players', 'lineups'].forEach(k => {
+    if (typeof _live[k] === 'function') { try { _live[k](); } catch (e) {} }
+    _live[k] = null;
+  });
+  _live.uid = null; _live.ownedDocs = null; _live.joinedDocs = null;
+  _live.playersTeam = null; _live.lineupsTeam = null;
+}
+
+// Both team queries must report before the list is rebuilt, or a team would
+// blink out while the second query is still on its way.
+function applyLiveTeams() {
+  if (!_live.ownedDocs || !_live.joinedDocs) return;
+  const byId = Object.assign({}, _live.ownedDocs, _live.joinedDocs);
+  const pos = {};
+  _userTeams.forEach((t, i) => { pos[t.id] = i; });
+  const at = id => (id in pos ? pos[id] : 1e6);
+  const next = Object.values(byId).map(mapTeamDoc).sort((a, b) => at(a.id) - at(b.id));
+  if (JSON.stringify(next) !== JSON.stringify(_userTeams)) {
+    _userTeams = next;
+    renderSidebar();
+    const dash = document.getElementById('view-dashboard');
+    if (dash && dash.classList.contains('active')) renderDashboard();
+  }
+  const active = _activeTeamId && byId[_activeTeamId];
+  if (active) applyLiveTeamDoc(active.data() || {});
+}
+
+function applyLiveTeamDoc(data) {
+  _activeTeamMeta = Object.assign(_activeTeamMeta || {}, {
+    id: _activeTeamId,
+    ownerId:     data.ownerId || '',
+    coachIds:    data.coachIds || [],
+    memberIds:   data.memberIds || [],
+    memberNames: data.memberNames || {},
+    inviteCode:  data.inviteCode || ''
+  });
+  const b = document.getElementById('view-builder');
+  const inBuilder = !!(b && b.classList.contains('active'));
+  const inSettings = inBuilder && b.classList.contains('settings-mode');
+  if (inBuilder && !inSettings) return;   // the lineup builder keeps its session
+  if (_settingsSaving) return;            // our own save is landing
+  if (inSettings && _settingsSection === 'rules') {
+    if (!_settingsDirty) hydrateTeamDoc(data, { team: false, rules: true });
+    return;
+  }
+  if (inSettings) {
+    hydrateTeamDoc(data, { team: true, rules: !_settingsDirty, skip: _settingsDirtyKeys });
+    return;
+  }
+  hydrateTeamDoc(data);
+}
+
+function watchTeamPlayers(teamId) {
+  if (!_live.uid || !teamId) return;
+  if (_live.playersTeam === teamId && _live.players) return;
+  if (typeof _live.players === 'function') { try { _live.players(); } catch (e) {} }
+  const fb = initFirebase();
+  if (!fb) return;
+  _live.playersTeam = teamId;
+  _live.players = fb.db.collection('teams').doc(teamId).collection('players')
+    .onSnapshot(s => applyLivePlayers(teamId, s), e => console.warn('Live sync paused (players):', e && e.message));
+}
+
+var LIVE_PLAYER_FIELDS = ['name', 'number', 'namePronunciation', 'prefPos', 'fieldPriority', 'battingSkills', 'gender', 'order', 'isActive'];
+function applyLivePlayers(teamId, snap) {
+  if (teamId !== _activeTeamId) return;
+  const b = document.getElementById('view-builder');
+  if (b && b.classList.contains('active') && !b.classList.contains('settings-mode') && _builderOpen) return;
+  const changes = typeof snap.docChanges === 'function' ? snap.docChanges() : [];
+  let changed = false;
+  const removedNames = [];
+  const touched = new Set();
+  changes.forEach(ch => {
+    const docId = ch.doc.id;
+    const local = state.players.find(p => rosterDocIdFor(p.id) === docId);
+    if (ch.type === 'removed') {
+      if (!local) return;   // already gone here (our own delete)
+      state.players = state.players.filter(p => p !== local);
+      delete state.attendance[local.id];
+      state.lineup = state.lineup.filter(r => r.playerId !== local.id);
+      delete _rosterDirty[local.id];
+      if (_ppPendingRemoval && _ppPendingRemoval.id === local.id) { clearTimeout(_ppPendingRemoval.timer); _ppPendingRemoval = null; hideToast(); }
+      if (_ppOpen === local.id) closePlayerPanel();
+      removedNames.push(local.name);
+      changed = true;
+      return;
+    }
+    if (_pendingPlayerDeletes.has(docId)) return;   // we're deleting it
+    const fresh = mapPlayerDoc(docId, ch.doc.data());
+    if (!local) {
+      state.players.push(fresh);
+      state.attendance[fresh.id] = true;
+      changed = true;
+      return;
+    }
+    const d = _rosterDirty[local.id];
+    LIVE_PLAYER_FIELDS.forEach(f => {
+      if (d && (d.fields.has('*') || d.fields.has(f))) return;   // an edit here wins until it's saved
+      if (JSON.stringify(local[f]) !== JSON.stringify(fresh[f])) { local[f] = fresh[f]; changed = true; touched.add(local.id); }
+    });
+  });
+  if (!changed) return;
+  try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch (e) {}
+  if (isPlayersViewActive()) {
+    renderPlayerManagementList();
+    // Refresh the open panel; the field you're in keeps your cursor and text.
+    if (_ppOpen && _ppOpen !== 'new' && touched.has(_ppOpen)) {
+      const panel = document.getElementById('player-panel');
+      const a = document.activeElement;
+      const keep = (panel && a && panel.contains(a) && a.id && a.tagName === 'INPUT' && a.type !== 'range')
+        ? { id: a.id, value: a.value, typed: a.value !== (a.dataset.orig || ''), s: a.selectionStart, e: a.selectionEnd } : null;
+      renderPlayerPanel();
+      if (keep) {
+        // Text you've typed here stays; a field you only clicked into takes the new value.
+        const el = document.getElementById(keep.id);
+        if (el) { if (keep.typed) el.value = keep.value; el.focus({ preventScroll: true }); try { el.setSelectionRange(keep.s, keep.e); } catch (x) {} }
+      }
+    }
+    if (removedNames.length) showToast(removedNames.length === 1 ? `${removedNames[0]} was removed on another device` : `${removedNames.length} players were removed on another device`, '', null, 4000);
+  }
+  renderPlayerList();
+}
+
+function watchScheduleLineups(teamId) {
+  if (!_live.uid || !teamId) return;
+  if (_live.lineupsTeam === teamId && _live.lineups) return;
+  if (typeof _live.lineups === 'function') { try { _live.lineups(); } catch (e) {} }
+  const fb = initFirebase();
+  if (!fb) return;
+  _live.lineupsTeam = teamId;
+  _live.lineups = fb.db.collection('teams').doc(teamId).collection('lineups')
+    .onSnapshot(s => {
+      if (_scheduleTeamId !== teamId) return;
+      const next = s.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      if (JSON.stringify(next) === JSON.stringify(_scheduleLineups)) return;
+      _scheduleLineups = next;
+      const st = _teamStatus[teamId];
+      setTeamStatus(teamId, st ? st.games : _scheduleGames, next, st ? st.calError : null);
+      const v = document.getElementById('view-schedule');
+      if (v && v.classList.contains('active')) renderSchedule();
+    }, e => console.warn('Live sync paused (lineups):', e && e.message));
+}
+
+// Coming back to the tab: lineups on other teams may have moved on iOS.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible' || !_live.uid) return;
+  Object.keys(_teamStatus).forEach(invalidateTeamStatus);
+  const dash = document.getElementById('view-dashboard');
+  if (dash && dash.classList.contains('active')) renderDashboard();
+});
 
 // ═══════════════════════════════════════════════════
 // VIEW MANAGEMENT
@@ -7040,6 +7249,13 @@ async function enterBuilder(teamId, mode, startStep) {
 }
 
 function resetForNewTeam() {
+  // A new team has no doc yet. Without clearing the team pointer, saving the
+  // new team wrote its name and players INTO whichever team was opened last
+  // (pre-existing bug, found Oct 30 2026 while auditing sync).
+  _activeTeamId = null;
+  _activeTeamMeta = null;
+  _pendingPlayerDeletes.clear();
+  _rosterDirty = {};
   // Clear all team, game, and roster state
   state.teamName = '';
   state.teamSport = 'Baseball';
@@ -7061,9 +7277,14 @@ function resetForNewTeam() {
   state.editingLineupDocId = null;
 
   // Sync all form fields to blank
-  const textFields = ['team-name','team-level','team-age-group','team-notes',
+  const textFields = ['team-name','team-level','team-age-group','team-notes','team-calendar-url',
                       'game-name','opponent','game-location','game-notes','game-time'];
   textFields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  // ...including the last team's GameChanger link, which used to ride along.
+  state.teamCalendarUrl = '';
+  const calRes = document.getElementById('calendar-sync-result');
+  if (calRes) calRes.innerHTML = '';
+  if (typeof updateCalendarBtn === 'function' && document.getElementById('btn-add-calendar')) updateCalendarBtn();
 
   const el = id => document.getElementById(id);
   if (el('team-sport'))   el('team-sport').value   = 'Baseball';
@@ -7238,6 +7459,75 @@ function enterLineupMode() {
 // because that would race with iOS-side player additions.
 const _pendingPlayerDeletes = new Set();
 
+// ── Roster write contract v2 (Oct 30 2026, "fully synced at all times") ──
+// The web writes ONLY the player fields a coach changed here. It used to
+// re-send every field it loaded at page open on every save, which could
+// overwrite a newer edit made on the iOS app in the meantime.
+// Clears are real now, matching iOS:
+//   number / namePronunciation empty → FieldValue.delete() (iOS updatePlayer
+//     clearedPlayerFields does the same)
+//   prefPos [] · fieldPriority 'both' · battingSkills 5/5/5 → written as
+//     values (iOS updateCoachAttributes writes all four explicitly)
+// New players get their non-empty fields. order/isActive are still only
+// backfilled when missing. gender is never sent for existing players (the
+// web has no gender control; iOS owns it).
+var _rosterDirty = {};   // local player id → { fields: Set, rev }
+var _rosterRev = 0;
+function markPlayerDirty(id, field) {
+  if (!id) return;
+  const e = _rosterDirty[id] || (_rosterDirty[id] = { fields: new Set(), rev: 0 });
+  e.fields.add(field);
+  e.rev = ++_rosterRev;
+}
+function playerWriteData(player, idx, allNew) {
+  const FV = firebase.firestore.FieldValue;
+  const d = _rosterDirty[player.id];
+  const isNew = allNew || !!(d && d.fields.has('*'));
+  const data = {};
+  const num = (typeof player.number === 'number' && !isNaN(player.number)) ? player.number : null;
+  const pron = String(player.namePronunciation || '').trim();
+  const skills = player.battingSkills || { power: 5, contact: 5, speed: 5 };
+  if (isNew) {
+    data.name = player.name;
+    data.gender = player.gender || '';
+    if (num !== null) data.number = num;
+    if (pron) data.namePronunciation = pron;
+    if (player.prefPos && player.prefPos.length) data.prefPos = player.prefPos.slice();
+    if (player.fieldPriority && player.fieldPriority !== 'both') data.fieldPriority = player.fieldPriority;
+    if (skills.power !== 5 || skills.contact !== 5 || skills.speed !== 5) {
+      data.battingSkills = { power: skills.power, contact: skills.contact, speed: skills.speed };
+    }
+  } else if (d) {
+    const f = d.fields;
+    if (f.has('name') && String(player.name || '').trim()) data.name = String(player.name).trim();
+    if (f.has('number')) data.number = num !== null ? num : FV.delete();
+    if (f.has('namePronunciation')) data.namePronunciation = pron || FV.delete();
+    if (f.has('prefPos')) data.prefPos = (player.prefPos || []).slice();
+    if (f.has('fieldPriority')) data.fieldPriority = player.fieldPriority || 'both';
+    if (f.has('battingSkills')) data.battingSkills = { power: skills.power, contact: skills.contact, speed: skills.speed };
+  }
+  // iOS needs order + isActive to list a player: backfill ONLY when missing.
+  if (typeof player.order !== 'number') { data.order = idx; player.order = idx; }
+  if (typeof player.isActive !== 'boolean') { data.isActive = true; player.isActive = true; }
+  return data;
+}
+// Queue every pending player write into `batch`. Returns what to mark clean
+// once the commit lands (edits made while it's in flight stay dirty).
+function queueRosterWrites(batch, teamRef, allNew) {
+  const done = [];
+  state.players.forEach((player, idx) => {
+    const data = playerWriteData(player, idx, allNew);
+    const d = _rosterDirty[player.id];
+    if (d) done.push([player.id, d.rev]);
+    if (!Object.keys(data).length) return;
+    batch.set(teamRef.collection('players').doc(rosterDocIdFor(player.id)), data, { merge: true });
+  });
+  return done;
+}
+function markRosterClean(done) {
+  (done || []).forEach(([id, rev]) => { const d = _rosterDirty[id]; if (d && d.rev === rev) delete _rosterDirty[id]; });
+}
+
 // Write ONLY the players subcollection — used by the Players page auto-save.
 // Critically, this does NOT touch the team document, so it can't accidentally
 // clobber team-level fields like leagueRules or innings that selectTeam()
@@ -7265,52 +7555,9 @@ async function saveRosterOnlyToFirestore() {
 
     const batch = fb.db.batch();
 
-    // Upsert every current player. Rule #1 + #2: merge-safe writes, and
-    // only the fields this client manages. iOS-only fields (walkoutSong,
-    // voiceIntro, songId, …) are untouched. Basic info (name, number,
-    // namePronunciation) is SHARED with iOS player creation.
-    state.players.forEach((player, idx) => {
-      const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
-      const ref = teamRef.collection('players').doc(docId);
-      const playerData = {
-        name:   player.name,
-        gender: player.gender || ''
-      };
-      // iOS REQUIRES order + isActive to decode a player (Today's Order =
-      // players with isActive, sorted by order — WEB_HANDOFF 2.3/3.1).
-      // Write them ONLY when missing (new players + legacy web-created docs);
-      // never clobber values the iOS coach editor manages.
-      if (typeof player.order !== 'number') {
-        playerData.order = idx;
-        player.order = idx;
-      }
-      if (typeof player.isActive !== 'boolean') {
-        playerData.isActive = true;
-        player.isActive = true;
-      }
-      // Jersey number: 0 is a real number; unset = OMIT the field entirely
-      // (nil means "team doesn't use numbers"). Never write null — omission
-      // preserves whatever iOS has on the doc.
-      if (typeof player.number === 'number' && !isNaN(player.number)) {
-        playerData.number = player.number;
-      }
-      if (player.namePronunciation && player.namePronunciation.trim()) {
-        playerData.namePronunciation = player.namePronunciation.trim();
-      }
-      if (player.prefPos && player.prefPos.length > 0) {
-        playerData.prefPos = player.prefPos;
-      }
-      if (player.fieldPriority && player.fieldPriority !== 'both') {
-        playerData.fieldPriority = player.fieldPriority;
-      }
-      if (player.battingSkills) {
-        const s = player.battingSkills;
-        if (s.power !== 5 || s.contact !== 5 || s.speed !== 5) {
-          playerData.battingSkills = { power: s.power, contact: s.contact, speed: s.speed };
-        }
-      }
-      batch.set(ref, playerData, { merge: true });
-    });
+    // Rule #1 + #2: merge-safe writes of ONLY the fields changed here
+    // (write contract v2 above). iOS-only fields are never sent.
+    const done = queueRosterWrites(batch, teamRef, false);
 
     // Rule #3: only delete players the coach explicitly removed in this
     // session. A snapshot of the set is captured BEFORE the commit so we
@@ -7323,6 +7570,7 @@ async function saveRosterOnlyToFirestore() {
 
     await batch.commit();
     toDelete.forEach(id => _pendingPlayerDeletes.delete(id));
+    markRosterClean(done);
     return true;
   } catch (e) {
     console.error('saveRosterOnlyToFirestore error:', e);
@@ -7371,8 +7619,11 @@ async function saveTeamToFirestore() {
 
   try {
     let teamId = _activeTeamId;
+    let rosterIsNew = false;     // a brand-new team doc: every player is new too
+    let canWriteRoster = false;  // owner or coach of an existing team
 
     if (!teamId) {
+      rosterIsNew = true;
       // Brand new team — create with ownership fields
       const ref = await fb.db.collection('teams').add({
         ...coreFields,
@@ -7395,6 +7646,7 @@ async function saveTeamToFirestore() {
       if (existingDoc.exists && existing.ownerId === uid) {
         // Confirmed owner — update core fields only; preserve memberIds/ownerId as-is
         await fb.db.collection('teams').doc(teamId).set(coreFields, { merge: true });
+        canWriteRoster = true;
       } else if (existingDoc.exists &&
                  ((existing.coachIds || []).includes(uid) || (existing.memberIds || []).includes(uid))) {
         // Coach or member of THIS team — never fork a copy of it, and never
@@ -7402,10 +7654,12 @@ async function saveTeamToFirestore() {
         // batch below; plain members write nothing.
         console.warn('saveTeamToFirestore: not owner of', teamId, '— skipping core team write');
         if (!(existing.coachIds || []).includes(uid)) return true;
+        canWriteRoster = true;
       } else {
         // Not on this team at all (e.g. borrowed via shared link) — the
         // legacy behavior: create their own copy instead of touching it.
         console.warn('saveTeamToFirestore: not on team', teamId, '— creating new team instead');
+        rosterIsNew = true;
         const ref = await fb.db.collection('teams').add({
           ...coreFields,
           ownerId:    uid,
@@ -7422,59 +7676,18 @@ async function saveTeamToFirestore() {
       }
     }
 
-    // Save players as a subcollection batch.
-    // SAFETY: always use { merge: true } so iOS-only fields (walkoutSong,
-    // voiceIntro, jerseyNumber, etc.) are never touched or deleted.
-    // SAFETY: only write prefPos when it has actual values — writing an
-    // empty array would silently overwrite preferences set in the iOS app.
-    if (state.players.length > 0) {
-      const batch = fb.db.batch();
-      state.players.forEach((player, idx) => {
-        const docId = player.id.replace(/^(imp_|p_)/, '') || player.id;
-        const ref = fb.db.collection('teams').doc(teamId).collection('players').doc(docId);
-        const playerData = {
-          name:   player.name,
-          gender: player.gender || ''
-        };
-      // iOS REQUIRES order + isActive to decode a player (Today's Order =
-        // players with isActive, sorted by order — WEB_HANDOFF 2.3/3.1).
-        // Write them ONLY when missing (new players + legacy web-created docs);
-        // never clobber values the iOS coach editor manages.
-        if (typeof player.order !== 'number') {
-          playerData.order = idx;
-          player.order = idx;
-        }
-        if (typeof player.isActive !== 'boolean') {
-          playerData.isActive = true;
-          player.isActive = true;
-        }
-        // Shared basic info (matches iOS player creation): jersey number
-        // (0 real, unset omitted — never null) and pronunciation.
-        if (typeof player.number === 'number' && !isNaN(player.number)) {
-          playerData.number = player.number;
-        }
-        if (player.namePronunciation && player.namePronunciation.trim()) {
-          playerData.namePronunciation = player.namePronunciation.trim();
-        }
-        if (player.prefPos && player.prefPos.length > 0) {
-          playerData.prefPos = player.prefPos;
-        }
-        if (player.fieldPriority && player.fieldPriority !== 'both') {
-          playerData.fieldPriority = player.fieldPriority;
-        }
-        // Only persist battingSkills if the coach has actually rated something
-        // (i.e. at least one skill isn't the neutral default of 5). This keeps
-        // Firestore docs clean for teams that never use the feature.
-        if (player.battingSkills) {
-          const s = player.battingSkills;
-          if (s.power !== 5 || s.contact !== 5 || s.speed !== 5) {
-            playerData.battingSkills = { power: s.power, contact: s.contact, speed: s.speed };
-          }
-        }
-        batch.set(ref, playerData, { merge: true }); // merge preserves all iOS fields
-      });
-      await batch.commit();
-    }
+    // Players: the same write contract as the Players page (v2): merge
+    // writes of only what changed here; a new team writes every player.
+    // Removals made in the builder roster go through the explicit
+    // _pendingPlayerDeletes set, same as the Players page.
+    const teamRef = fb.db.collection('teams').doc(teamId);
+    const batch = fb.db.batch();
+    const done = queueRosterWrites(batch, teamRef, rosterIsNew);
+    const toDelete = (canWriteRoster && !rosterIsNew) ? Array.from(_pendingPlayerDeletes) : [];
+    toDelete.forEach(docId => batch.delete(teamRef.collection('players').doc(docId)));
+    await batch.commit();
+    toDelete.forEach(id => _pendingPlayerDeletes.delete(id));
+    markRosterClean(done);
 
     // Refresh the in-memory team list so the dashboard shows the new team
     await loadUserTeams(fb.auth.currentUser);
@@ -8000,6 +8213,7 @@ async function openSchedule(teamId) {
       : [];
     // Same read All teams makes; share it so the dashboard doesn't refetch.
     setTeamStatus(teamId, _scheduleGames, _scheduleLineups, calError);
+    watchScheduleLineups(teamId);   // lineups saved on iOS show up live
 
     if (calUrl && calError) {
       syncBar.innerHTML = `
@@ -8937,6 +9151,11 @@ function gnStopDictation(keepHint) {
 let _settingsDirty = false;
 var _settingsSaving = false;
 var _settingsRev = 0;   // bumps on every change, so a save can tell if more came in meanwhile
+var _settingsDirtyKeys = new Set();   // Team Settings form fields edited here (ids)
+var SETTINGS_FIELD_KEYS = {
+  'team-name': 'name', 'team-sport': 'sport', 'team-season': 'season', 'team-year': 'year',
+  'team-level': 'level', 'team-age-group': 'ageGroup', 'team-notes': 'notes'
+};
 
 // Save bar (Oct 30 2026): nothing at the bottom until something changes,
 // then it rises with Reset (far left) and Save (far right). Save carries its
@@ -8973,6 +9192,7 @@ function markSettingsDirty() {
 
 function resetSettingsDirty() {
   _settingsDirty = false;
+  _settingsDirtyKeys.clear();
   const btn = document.getElementById('settings-save-btn');
   if (btn) btn.classList.add('inactive');
   setSaveBar('hidden');
@@ -8999,15 +9219,20 @@ async function settingsSave() {
         setSaveBar('error', "That schedule link didn't load. Fix it, then save again.");
         return;
       }
-      saveTeam();
-      ok = await saveTeamToFirestore();
+      const res = await saveTeamSettingsToFirestore(cal);
+      if (res && res.msg) {
+        _settingsSaving = false;
+        setSaveBar('error', res.msg);
+        return;
+      }
+      ok = !!(res && res.ok);
       if (ok && cal.changed) {
         state.teamCalendarUrl = cal.url;
         const t = _userTeams.find(x => x.id === _activeTeamId);
         if (t) t.gameChangerCalendarUrl = cal.url;
         invalidateTeamStatus(_activeTeamId);
-        const res = document.getElementById('calendar-sync-result');
-        if (res) res.innerHTML = `<span class="lc-st ok"><i></i>${cal.games} game${cal.games === 1 ? '' : 's'} synced, ${cal.upcoming} coming up</span>`;
+        const calOut = document.getElementById('calendar-sync-result');
+        if (calOut) calOut.innerHTML = `<span class="lc-st ok"><i></i>${cal.games} game${cal.games === 1 ? '' : 's'} synced, ${cal.upcoming} coming up</span>`;
       }
     }
   } catch (e) {
@@ -9022,6 +9247,49 @@ async function settingsSave() {
     if (_settingsRev === rev) resetSettingsDirty();
     else setSaveBar('dirty');   // more changes landed while saving
   }, 900);
+}
+
+// Team Settings save (Oct 30 2026): owner-only, and ONLY the fields edited
+// here (plus a checked calendar link). It used to go through
+// saveTeamToFirestore, which re-sent every core field AND every player from
+// the page-open snapshot, so an iOS edit made meanwhile could be undone.
+// leagueRules/innings belong to the League Rules page and aren't sent here.
+async function saveTeamSettingsToFirestore(cal) {
+  const fb = initFirebase();
+  if (!fb || !fb.auth.currentUser || !_activeTeamId) return { ok: false };
+  saveTeam();   // form → state
+  const vals = { name: state.teamName, sport: state.teamSport, season: state.teamSeason, year: state.teamYear,
+                 level: state.teamLevel, ageGroup: state.teamAgeGroup, notes: state.teamNotes };
+  const data = {};
+  _settingsDirtyKeys.forEach(id => { const k = SETTINGS_FIELD_KEYS[id]; if (k) data[k] = vals[k]; });
+  if ('name' in data && !String(data.name || '').trim()) return { ok: false, msg: 'Give the team a name, then save.' };
+  if (cal && cal.changed) data.gameChangerCalendarUrl = cal.url;
+  else if (_settingsDirtyKeys.has('team-calendar-url') && !(document.getElementById('team-calendar-url') || {}).value) {
+    data.gameChangerCalendarUrl = firebase.firestore.FieldValue.delete();   // unlink the schedule
+  }
+  if (!Object.keys(data).length) return { ok: true };
+  try {
+    const teamRef = fb.db.collection('teams').doc(_activeTeamId);
+    const doc = await teamRef.get();
+    if (!doc.exists || (doc.data() || {}).ownerId !== fb.auth.currentUser.uid) {
+      console.warn('saveTeamSettingsToFirestore: not the owner — skipping');
+      return { ok: false };
+    }
+    data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+    await teamRef.set(data, { merge: true });
+    // Reflect it here right away (the live listener confirms it shortly).
+    const t = _userTeams.find(x => x.id === _activeTeamId);
+    if (t) {
+      ['name', 'sport', 'season', 'year', 'level', 'ageGroup'].forEach(k => { if (k in data) t[k] = data[k]; });
+      if ('gameChangerCalendarUrl' in data) t.gameChangerCalendarUrl = (cal && cal.changed) ? cal.url : '';
+    }
+    if ('gameChangerCalendarUrl' in data) { state.teamCalendarUrl = t ? t.gameChangerCalendarUrl : state.teamCalendarUrl; invalidateTeamStatus(_activeTeamId); }
+    renderSidebar();
+    return { ok: true };
+  } catch (e) {
+    console.error('saveTeamSettingsToFirestore error:', e);
+    return { ok: false };
+  }
 }
 
 // Team Settings: if the GameChanger link changed, make sure it loads before
@@ -9118,7 +9386,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const settingsInputs = ['team-name','team-sport','team-season','team-year','team-level','team-age-group','team-notes','team-calendar-url'];
   settingsInputs.forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', markSettingsDirty);
+    if (!el) return;
+    const mark = () => { _settingsDirtyKeys.add(id); markSettingsDirty(); };
+    el.addEventListener('input', mark);
+    el.addEventListener('change', mark);
   });
 
   // Safety net: if the user hides the tab or closes the page while the
@@ -9290,10 +9561,10 @@ function renderPlayerPanel() {
   body.innerHTML = `
     <div class="pp-name" id="pp-title">${escHtml(p.name || 'Unnamed')}</div>
     <div class="pp-two">
-      <div class="pp-f"><label for="pp-name">Name</label><input type="text" id="pp-name" value="${sbAttr(p.name)}" autocomplete="off" oninput="ppSetName('${id}', this.value)" onchange="if(!this.value.trim()){this.value=(state.players.find(x=>x.id==='${id}')||{}).name||'';}"></div>
-      <div class="pp-f"><label for="pp-num">Number</label><input type="text" inputmode="numeric" class="player-num-input" id="pp-num" value="${sbAttr(num)}" placeholder="None" autocomplete="off" onchange="updatePlayerNumber('${id}', this.value); renderPlayerManagementList()"></div>
+      <div class="pp-f"><label for="pp-name">Name</label><input type="text" id="pp-name" value="${sbAttr(p.name)}" data-orig="${sbAttr(p.name)}" autocomplete="off" oninput="ppSetName('${id}', this.value)" onchange="if(!this.value.trim()){this.value=(state.players.find(x=>x.id==='${id}')||{}).name||'';}"></div>
+      <div class="pp-f"><label for="pp-num">Number</label><input type="text" inputmode="numeric" class="player-num-input" id="pp-num" value="${sbAttr(num)}" data-orig="${sbAttr(num)}" placeholder="None" autocomplete="off" onchange="updatePlayerNumber('${id}', this.value); renderPlayerManagementList()"></div>
     </div>
-    <div class="pp-f"><label for="pp-pron">How the announcer says it</label><input type="text" id="pp-pron" value="${sbAttr(p.namePronunciation || '')}" placeholder="Optional" autocomplete="off" onchange="updatePlayerPronunciation('${id}', this.value); renderPlayerManagementList()"></div>
+    <div class="pp-f"><label for="pp-pron">How the announcer says it</label><input type="text" id="pp-pron" value="${sbAttr(p.namePronunciation || '')}" data-orig="${sbAttr(p.namePronunciation || '')}" placeholder="Optional" autocomplete="off" onchange="updatePlayerPronunciation('${id}', this.value); renderPlayerManagementList()"></div>
     <div class="pp-f">
       <span class="pp-lb" id="pp-pos-lb">Can play</span>
       <div class="pp-chips" role="group" aria-labelledby="pp-pos-lb">${getActiveFieldPositions().map(pos => {
@@ -9373,6 +9644,7 @@ function ppAddPlayer() {
     prefPos: [], fieldPriority: 'both',
     battingSkills: { power: 5, contact: 5, speed: 5 }
   });
+  markPlayerDirty(id, '*');   // new: every field goes up on the next save
   state.attendance[id] = true;
   _ppJustAdded = id;
   renderPlayerManagementList();
@@ -9504,6 +9776,7 @@ function addPlayerFromMgmt() {
     prefPos: [], fieldPriority: 'both',
     battingSkills: { power: 5, contact: 5, speed: 5 }
   });
+  markPlayerDirty(id, '*');   // new: every field goes up on the next save
   state.attendance[id] = true;
   input.value = '';
   if (numInput) numInput.value = '';
@@ -11556,6 +11829,7 @@ function addPlayer() {
     prefPos: [], fieldPriority: 'both',
     battingSkills: { power: 5, contact: 5, speed: 5 }
   });
+  markPlayerDirty(id, '*');   // new: every field goes up on the next save
   state.attendance[id] = true;
   input.value = '';
   if (numInput) numInput.value = '';
@@ -11568,6 +11842,7 @@ function addPlayer() {
 
 function removePlayer(id) {
   state.players = state.players.filter(p => p.id !== id);
+  delete _rosterDirty[id];
   delete state.attendance[id];
   state.lineup = state.lineup.filter(r => r.playerId !== id);
   // Remember the Firestore doc id so auto-save can delete it. Only players
@@ -11587,6 +11862,7 @@ function togglePrefPos(playerId, pos) {
   const idx = player.prefPos.indexOf(pos);
   if (idx === -1) player.prefPos.push(pos);
   else player.prefPos.splice(idx, 1);
+  markPlayerDirty(playerId, 'prefPos');
   renderPlayerList();
   save();
   scheduleRosterSave();
@@ -11596,6 +11872,7 @@ function setFieldPriority(playerId, priority) {
   const player = state.players.find(p => p.id === playerId);
   if (!player) return;
   player.fieldPriority = priority;
+  markPlayerDirty(playerId, 'fieldPriority');
   renderPlayerList();
   save();
   scheduleRosterSave();
@@ -11610,6 +11887,7 @@ function setPlayerSkill(playerId, skill, value) {
   if (!player.battingSkills) player.battingSkills = { power: 5, contact: 5, speed: 5 };
   const v = Math.max(1, Math.min(10, parseInt(value, 10) || 5));
   player.battingSkills[skill] = v;
+  markPlayerDirty(playerId, 'battingSkills');
   save();
   scheduleRosterSave();
 }
@@ -11636,21 +11914,21 @@ function handleSkillSliderInput(el) {
 
 function updatePlayerName(id, name) {
   const p = state.players.find(p => p.id === id);
-  if (p) p.name = name;
+  if (p) { p.name = name; markPlayerDirty(id, 'name'); }
   save();
   scheduleRosterSave();
 }
 
 function updatePlayerNumber(id, value) {
   const p = state.players.find(p => p.id === id);
-  if (p) p.number = parseJerseyNumber(value);
+  if (p) { p.number = parseJerseyNumber(value); markPlayerDirty(id, 'number'); }
   save();
   scheduleRosterSave();
 }
 
 function updatePlayerPronunciation(id, value) {
   const p = state.players.find(p => p.id === id);
-  if (p) p.namePronunciation = String(value || '').trim();
+  if (p) { p.namePronunciation = String(value || '').trim(); markPlayerDirty(id, 'namePronunciation'); }
   save();
   scheduleRosterSave();
 }

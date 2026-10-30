@@ -9,18 +9,23 @@ Tech stack: vanilla HTML/CSS/JavaScript (no framework), Firebase + Firestore (sh
 The iOS app is the primary product with paying users. The web shares Firestore data and **must never cause data loss**. Rules for any Firestore write from the web:
 
 - **Always use `{ merge: true }`.** Never plain `set()`. Merge leaves unknown fields alone.
-- Only write fields the web is authoritative for. Don't echo back fields we loaded but don't manage (`walkoutSong`, `voiceIntro`, `jerseyNumber` are iOS-only).
+- Only write fields the web is authoritative for, and only the ones changed in this session (write contract v2 below). Never echo back fields we loaded (`walkoutSong`, `voiceIntro`, song/intro fields are iOS-only).
 - **Never diff-delete player docs.** Don't list server docs and remove anything "not in state" — that races with iOS-side additions. Only delete via the explicit `_pendingPlayerDeletes` set populated from `removePlayer()` in the current session.
 - Always verify ownership (`teamDoc.data().ownerId === currentUser.uid`) before writing.
 - Prefer scoped writes (e.g. `saveRosterOnlyToFirestore()`) over whole-team writes.
 - Firestore security rules live in the Firebase console / iOS repo, not in this web repo.
 
-## Web ↔ iOS sync boundaries (intentional, not bugs)
+## Web ↔ iOS sync (live both ways since Oct 30 2026)
 
-- iOS → web is **not** live-sync. Web does a one-shot `.get()`, not `onSnapshot()`. Changes only appear after refresh.
-- Deleting a player in iOS does **not** remove them from web until manual refresh. The web auto-save will not propagate iOS-side deletes.
+Dan asked for iOS and web to be "fully synced at all times". iOS already listens live, so web writes show up there right away. The web now listens too (read-only `onSnapshot`, see LIVE SYNC in app.html):
 
-Do not "fix" these without an explicit request. If live sync is needed, it's a standalone design conversation.
+- Your teams (owned + joined queries): sidebar, All teams, roles, Team Settings and League Rules forms follow iOS edits.
+- The open team's players: the Players table and side panel update live, including players added or deleted on iOS.
+- The open schedule's lineups: lineups saved on iOS appear on Schedule.
+
+Local unsaved edits win: a field being edited on the web keeps its value until saved (player fields via `_rosterDirty`, Team Settings via `_settingsDirtyKeys`, League Rules while the save bar is up). The lineup builder keeps its session and re-reads on entry. Listeners never write.
+
+**Write contract v2:** the web writes only the fields a coach changed here (`markPlayerDirty`, `queueRosterWrites`). Clears match iOS: `number` / `namePronunciation` cleared with `FieldValue.delete()` (iOS `clearedPlayerFields`), `prefPos: []`, `fieldPriority: 'both'` and 5/5/5 `battingSkills` written as values (iOS `updateCoachAttributes`). Team Settings writes only edited core fields (`saveTeamSettingsToFirestore`), never players or rules.
 
 ## Project layout
 
