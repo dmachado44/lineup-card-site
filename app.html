@@ -3950,6 +3950,241 @@
       }
       .share-card-code .code::before { transition: opacity .15s !important; }
     }
+
+    /* ══════════════════════════════════════════════════════════════════
+       SHELL v2 · PHASE 2 (Oct 30 2026) — status before menus.
+       All Teams status cards + one Up next card · Schedule Next game card ·
+       Players roster table + side panel · phone section tabs.
+       ══════════════════════════════════════════════════════════════════ */
+    :root { --attention-ink: #8A4A06; --pp-w: 400px; }
+    @media (prefers-color-scheme: dark) { :root { --attention-ink: #F0A35E; } }
+
+    /* Pennant: the one red flag per screen, on the card of note */
+    .lc-pennant {
+      position: absolute; top: -15px; left: 24px; z-index: 1;
+      background: var(--pennant); color: #FFF8E6;
+      font-family: var(--font-display); font-weight: 900; font-size: 15px; line-height: 1; letter-spacing: .08em; text-transform: uppercase;
+      padding: 7px 22px 7px 12px; clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+    }
+    .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    .lc-chip.home { background: var(--accent-wash); color: var(--accent-down); }
+    .lc-chip.away { background: color-mix(in srgb, var(--attention) 14%, var(--panel)); color: var(--attention-ink); }
+    .lc-st { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink-secondary); }
+    .lc-st i { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline-strong); display: block; flex: none; }
+    .lc-st.ok { color: var(--accent-down); }
+    .lc-st.ok i { background: var(--accent); }
+    .lc-st.dr { color: var(--attention-ink); }
+    .lc-st.dr i { background: var(--attention); }
+    .lc-st.no { font-weight: 600; }
+    .lc-rise { animation: lcRise .4s var(--lc-spring) both; }
+
+    /* ── Emphasis card (Schedule Next game, All teams Up next) ── */
+    .lc-emph {
+      position: relative; margin: 18px 0 28px; padding: 34px 28px 26px; border-radius: var(--radius);
+      background: var(--panel); border: 2px solid var(--sticker-ink); box-shadow: 4px 4px 0 0 var(--sticker-ink);
+    }
+    .ng-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; }
+    .ng-date { display: flex; flex-direction: column; gap: 2px; min-width: 96px; padding-right: 24px; border-right: 1px solid var(--hairline); white-space: nowrap; }
+    .schedule-list > .lc-emph { margin: 16px 0 4px; }
+    .schedule-list > .lc-emph + .schedule-section-label { margin-top: 8px; }
+    /* Green is a fill; small green text steps down (brand rule) */
+    .schedule-item:not(.schedule-past) .schedule-item-action, .schedule-item-action .lineup-linked { color: var(--accent-down); }
+    .ng-dow { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .ng-md { font-family: var(--font-display); font-weight: 900; font-size: 46px; line-height: .9; text-transform: uppercase; }
+    .ng-tm { font-size: 17px; font-weight: 700; margin-top: 4px; }
+    .ng-op { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+    .ng-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 8px; font-size: 15px; color: var(--ink-secondary); }
+    .ng-seg { display: flex; gap: 6px; margin-top: 16px; max-width: 420px; }
+    .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+    .ng-seg > div.todo { font-weight: 600; color: var(--ink-secondary); }
+    .ng-seg span { display: block; height: 6px; border-radius: 3px; background: var(--hairline-strong); overflow: hidden; }
+    .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; animation: ngFill .6s var(--lc-glide) .35s both; }
+    .ng-act { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 190px; }
+    .ng-act .btn-ghost { min-height: 42px; }
+    .ng-wait { font-size: 15px; color: var(--ink-secondary); max-width: 220px; }
+    @keyframes ngFill { from { transform: scaleX(0); } to { transform: none; } }
+    @media (max-width: 760px) {
+      .lc-emph { padding: 30px 18px 20px; }
+      .ng-card { grid-template-columns: 1fr; gap: 14px; }
+      .ng-date { flex-direction: row; align-items: baseline; gap: 10px; padding: 0 0 12px; border-right: none; border-bottom: 1px solid var(--hairline); }
+      .ng-md { font-size: 36px; }
+      .ng-tm { margin: 0 0 0 auto; }
+      .ng-op { font-size: 24px; }
+      .ng-act { min-width: 0; }
+    }
+
+    /* ── All teams: Up next + status cards ── */
+    .dash-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; }
+    .dash-hero .sb-badge { width: 56px; height: 56px; border-radius: 16px; font-size: 24px; }
+    .dash-hk { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .dash-hk a { color: inherit; text-decoration: none; }
+    .dash-hk a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+    .dash-ht { font-size: 30px; font-weight: 700; line-height: 1.1; margin-top: 4px; overflow-wrap: anywhere; }
+    @media (max-width: 760px) {
+      .dash-hero { grid-template-columns: auto minmax(0, 1fr); gap: 14px 16px; }
+      .dash-hero .ng-act { grid-column: 1 / -1; }
+      .dash-hero .sb-badge { width: 44px; height: 44px; border-radius: 12px; font-size: 19px; }
+      .dash-ht { font-size: 24px; }
+    }
+    .teams-grid.ts-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .ts-card { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--radius); background: var(--panel); }
+    .ts-head { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: none; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+    .ts-head .sb-badge { width: 42px; height: 42px; border-radius: 12px; font-size: 18px; }
+    .ts-head b { display: block; font-size: 18px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ts-head span.ts-sub { display: block; font-size: 13.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ts-head:hover b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
+    .ts-head > span:last-child { min-width: 0; }
+    .ts-next { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: 14px; background: var(--bg-secondary); font-size: 14.5px; }
+    .ts-k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .ts-v { font-size: 16px; font-weight: 700; }
+    .ts-op { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+    .ts-next .lc-st { margin-top: 4px; font-size: 14px; }
+    .ts-sk { display: block; height: 12px; border-radius: 6px; background: var(--hairline); animation: lcPulse 1.2s ease-in-out infinite; }
+    .ts-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; }
+    .ts-icons { display: flex; gap: 6px; }
+    .ts-ic { position: relative; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--bg-secondary); color: var(--ink); display: grid; place-items: center; cursor: pointer; transition: background .15s; }
+    .ts-ic:hover { background: var(--gray-5); }
+    .ts-ic .sb-tip { left: 50%; top: auto; bottom: calc(100% + 8px); transform: translate(-50%, 4px); }
+    .ts-ic:hover .sb-tip, .ts-ic:focus-visible .sb-tip { opacity: 1; transform: translate(-50%, 0); transition-delay: .3s; }
+    .ts-card .btn-ghost { min-height: 40px; }
+    .dash-note { margin: -8px 0 0; font-size: 14px; color: var(--ink-secondary); }
+
+    /* ── Players: roster table + side panel ── */
+    .pl-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+    .pl-head .dashboard-sub { margin: 0; }
+    .pl-head .players-header-info { position: relative; }
+    .pl-head .roster-save-status { position: absolute; left: 0; top: 100%; margin-top: 2px; }
+    .players-header { display: none; }
+    .pl-tbl { background: var(--panel); border-radius: 18px; overflow: hidden; }
+    .pl-tr {
+      width: 100%; display: grid; grid-template-columns: minmax(180px, 1.3fr) minmax(200px, 2fr) 110px 20px; gap: 16px; align-items: center;
+      padding: 12px 18px; border: none; border-top: 1px solid var(--hairline); background: transparent; font: inherit; color: inherit; text-align: left;
+      transition: background-color .15s;
+    }
+    button.pl-tr { cursor: pointer; }
+    button.pl-tr:hover { background: color-mix(in srgb, var(--page) 45%, var(--panel)); }
+    button.pl-tr:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
+    .pl-tr.is-sel, button.pl-tr.is-sel:hover { background: var(--gray-5); }
+    .pl-tr.pl-hd { border-top: none; padding: 12px 18px 10px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
+    .pl-tbl.ro .pl-tr { grid-template-columns: minmax(180px, 1.3fr) minmax(200px, 2fr); }
+    .pl-who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .pl-ava { flex: none; width: 36px; height: 36px; border-radius: 50%; background: var(--bg-secondary); display: grid; place-items: center; font-family: var(--font-display); font-weight: 900; font-size: 15px; color: var(--ink-secondary); }
+    .pl-ava.num { color: var(--accent); font-size: 17px; }
+    .pl-who b { display: block; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-who small { display: block; font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-who > span:last-child { min-width: 0; }
+    .pl-ps { display: flex; flex-wrap: wrap; gap: 4px; }
+    .pl-ps span { height: 24px; padding: 0 7px; border-radius: 6px; background: var(--accent-wash); color: var(--accent-down); font-size: 12.5px; font-weight: 700; display: grid; place-items: center; }
+    .pl-ps em { font-style: normal; font-size: 13.5px; color: var(--ink-secondary); }
+    .pl-pref { font-size: 14.5px; color: var(--ink-secondary); }
+    .pl-chev { color: var(--gray); }
+    .pl-empty { padding: 36px 20px; text-align: center; color: var(--ink-secondary); }
+    .pl-tr.pl-row-in { animation: lcRise .35s var(--lc-spring) both; }
+    .pl-tr.pl-row-new { animation: plNew 1.4s var(--lc-glide) both; }
+    @keyframes plNew { 0%, 30% { background: var(--accent-wash); } 100% { background: transparent; } }
+    @media (max-width: 760px) {
+      .pl-tr, .pl-tbl.ro .pl-tr { grid-template-columns: minmax(0, 1fr) 20px; padding: 12px 14px; }
+      .pl-tbl.ro .pl-tr { grid-template-columns: minmax(0, 1fr); }
+      .pl-tr .pl-ps, .pl-tr .pl-pref, .pl-tr.pl-hd { display: none; }
+    }
+
+    .pp {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 46; width: var(--pp-w); max-width: 100%;
+      background: var(--panel); box-shadow: -1px 0 0 var(--hairline);
+      transform: translateX(105%); visibility: hidden; transition: transform .32s var(--lc-glide), visibility 0s linear .32s;
+      display: flex; flex-direction: column;
+    }
+    body.pp-open .pp { transform: none; visibility: visible; transition: transform .32s var(--lc-glide); }
+    @media (min-width: 1280px) {
+      .players-page { transition: padding-right .32s var(--lc-glide); }
+      body.pp-open .players-page { padding-right: calc(40px + var(--pp-w)); }
+    }
+    @media (min-width: 980px) and (max-width: 1279px) { body.pp-open .pp { box-shadow: -1px 0 0 var(--hairline), -18px 0 40px rgba(16,22,19,.12); } }
+    @media (max-width: 979px) { .pp { top: 56px; width: 100%; z-index: 58; } }
+    .pp-hd { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px 8px; }
+    .pp-saved { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--ink-secondary); min-width: 0; }
+    .pp-saved i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: block; flex: none; }
+    .pp-saved.is-saving i { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
+    .pp-saved.is-error { color: var(--alert-ink); }
+    .pp-saved.is-error i { background: var(--alert-ink); }
+    .pp-x { flex: none; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--bg-secondary); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+    .pp-x:hover { background: var(--gray-5); }
+    .pp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 20px; }
+    .pp-name { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+    .pp-f { display: flex; flex-direction: column; gap: 6px; }
+    .pp-lb { font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+    .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
+    .pp-two .player-num-input { width: 100%; flex: none; }
+    .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pp-pc {
+      height: 36px; min-width: 46px; padding: 0 10px; border-radius: 18px; border: 1.5px solid var(--hairline-strong); background: var(--panel);
+      font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-secondary); cursor: pointer;
+      transition: background-color .2s, border-color .2s, color .2s, transform .12s;
+    }
+    .pp-pc:active { transform: scale(.94); }
+    .pp-pc.on { background: var(--accent-wash); border-color: var(--sticker-ink); color: var(--ink); }
+    .pp-pc.pop { animation: lcPopScale .3s var(--lc-pop); }
+    @media (prefers-color-scheme: dark) { .pp-pc.on { border-color: var(--accent); background: var(--accent-wash); color: var(--ink); } }
+    .pp-seg { display: flex; padding: 3px; border-radius: 11px; background: var(--bg-secondary); }
+    .pp-seg button { flex: 1; height: 36px; border: none; border-radius: 8px; background: transparent; font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; transition: background-color .2s, color .2s; }
+    .pp-seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(16,22,19,.14); }
+    .pp-priv { border-radius: 14px; background: var(--bg-secondary); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .pp-privh { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
+    .pp-privh span { font-weight: 600; color: var(--ink-secondary); }
+    .pp-priv .skill { padding-top: 6px; }
+    .pp-priv .skill-name { min-width: 64px; }
+    .pp-rm { padding-top: 16px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 4px; }
+    .pp-rmb { align-self: flex-start; border: none; background: transparent; padding: 6px 0; font: inherit; font-size: 15px; font-weight: 700; color: var(--alert-ink); cursor: pointer; }
+    .pp-rmb:hover { text-decoration: underline; text-underline-offset: 3px; }
+    .pp-rm span, .pp-help { font-size: 13px; color: var(--ink-secondary); }
+    .pp-add { align-self: flex-start; }
+    .pp :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+
+    /* Toast with undo: a snackbar keeps its ink in both themes */
+    .lc-toast {
+      position: fixed; left: 50%; bottom: 24px; z-index: 96; min-width: 280px; max-width: calc(100vw - 32px);
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; overflow: hidden;
+      padding: 12px 12px 12px 18px; border-radius: 14px; background: #101613; color: #F5F6F8;
+      font-size: 15px; font-weight: 600; box-shadow: 0 14px 40px rgba(16,22,19,.28);
+      transform: translate(-50%, 160%); visibility: hidden; transition: transform .38s var(--lc-spring), visibility 0s linear .38s;
+    }
+    .lc-toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform .38s var(--lc-spring); }
+    .lc-toast button { border: none; background: transparent; padding: 6px 8px; border-radius: 8px; font: inherit; font-weight: 800; color: #46CF51; cursor: pointer; }
+    .lc-toast button:hover { background: rgba(255,255,255,.08); }
+    .lc-toast .lc-toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: #46CF51; transform-origin: left; }
+    .lc-toast.show .lc-toast-bar { animation: toastDrain var(--toast-ms, 10000ms) linear both; }
+    @keyframes toastDrain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+    /* ── Phone: section tabs under the top bar ── */
+    .m-tabs { display: none; }
+    @media (max-width: 979px) {
+      body.signed-in.has-mtabs { padding-top: 100px; }
+      body.signed-in.has-mtabs .m-topbar { box-shadow: none; }
+      body.signed-in.has-mtabs .m-tabs {
+        display: flex; gap: 4px; position: fixed; top: 56px; left: 0; right: 0; z-index: 54; height: 44px; padding: 0 10px;
+        background: var(--panel); box-shadow: 0 1px 0 var(--hairline); overflow-x: auto; scrollbar-width: none;
+      }
+      .m-tabs::-webkit-scrollbar { display: none; }
+      .m-tab { position: relative; flex: none; height: 44px; padding: 0 12px; border: none; background: transparent; font: inherit; font-size: 15.5px; font-weight: 600; color: var(--ink-secondary); cursor: pointer; white-space: nowrap; }
+      .m-tab.on { color: var(--ink); font-weight: 700; }
+      .m-tab.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; border-radius: 2px; background: var(--ink); animation: mTabIn .25s var(--lc-glide); }
+      .m-tab:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
+    }
+    @keyframes mTabIn { from { transform: scaleX(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* ── Team settings: the save bar also saves the calendar link ── */
+    #view-builder.settings-mode #btn-add-calendar { display: none; }
+    /* Game info: a lineup needs a name or an opponent */
+    .field-err { font-size: 14px; font-weight: 600; color: var(--alert-ink); }
+    .field-err:empty { display: none; }
+    input.is-invalid, input.is-invalid:focus { border-color: var(--alert-ink); }
+    input.is-invalid:focus { box-shadow: 0 0 0 3px var(--alert-wash); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lc-rise, .ng-seg span i, .pl-tr, .pp, .pp-pc, .lc-toast, .lc-toast-bar, .m-tab::after, .ts-sk, .players-page {
+        animation: none !important; transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -3984,6 +4219,8 @@
   </button>
   <button class="m-team" id="m-team" type="button" onclick="toggleSidebarDrawer()" aria-label="Open navigation"></button>
 </header>
+<!-- Phone section tabs for the team you're on (rendered by renderMobileTabs) -->
+<nav class="m-tabs" id="m-tabs" aria-label="Team sections"></nav>
 
 <!-- ══════════════ VIEW 1: AUTH ══════════════ -->
 <div id="view-auth">
@@ -4084,15 +4321,19 @@
     <div class="dashboard-header">
       <div class="dashboard-header-left">
         <h1>All teams</h1>
-        <p class="dashboard-sub">Select a team to build a game-day lineup.</p>
+        <p class="dashboard-sub" id="dash-sub">What's next for each of your teams.</p>
       </div>
       <div class="flex-row gap-sm">
-        <button class="btn btn-ghost" onclick="navigate('#/join')">Join Team</button>
-        <button class="btn btn-primary" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">+ New Team</button>
+        <button class="btn btn-ghost" onclick="navigate('#/join')">Join with a code</button>
+        <button class="btn btn-ghost" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New team
+        </button>
       </div>
     </div>
 
-    <div class="teams-grid" id="teams-grid"></div>
+    <!-- The soonest game across your teams (one sticker on the page) -->
+    <div id="dash-hero"></div>
+    <div class="teams-grid ts-grid" id="teams-grid"></div>
 
     <div class="team-card-empty" id="empty-state" style="display:none;">
       <div class="empty-icon">⚾</div>
@@ -4267,37 +4508,44 @@
 
 
   <div class="players-page">
-    <div class="players-header">
+    <div class="page-crumb"></div>
+    <div class="pl-head">
       <div class="players-header-info">
-        <div class="page-crumb"></div>
         <h1 id="players-team-name">Players</h1>
-        <p class="dashboard-sub" id="players-team-sub">Manage your roster</p>
+        <p class="dashboard-sub" id="players-team-sub">Your roster</p>
         <span id="roster-save-status" class="roster-save-status" aria-live="polite"></span>
       </div>
+      <button class="btn btn-primary" id="pl-add-btn" type="button" onclick="openPlayerPanel('new')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add player
+      </button>
     </div>
 
-    <div class="card">
-      <div class="card-title">Roster</div>
-      <div class="card-sub">Tap position badges to set which positions each player can play. Set a priority to weight infield or outfield preference in auto-assign. Rate Power, Contact, and Speed (1–10) to smarten up batting order suggestions — or leave them at the default 5 if you'd rather not rank your kids.</div>
+    <!-- Roster table: click a kid to edit in the side panel (rendered by renderPlayerManagementList) -->
+    <div id="player-list-mgmt" class="pl-tbl" aria-label="Roster"></div>
 
-      <div class="tip">
-        <span class="tip-icon">💡</span>
-        <span>Position and priority selections drive the lineup auto-assign algorithm. The more accurately you set these, the fairer your lineups will be.</span>
-      </div>
-
-      <div id="player-list-mgmt" class="player-list"></div>
-
-      <div class="add-player-row" id="add-player-row-mgmt">
-        <input type="text" id="new-player-name-mgmt" placeholder="Full name..." onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
-        <input type="text" inputmode="numeric" class="player-num-input" id="new-player-num-mgmt" placeholder="#" onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
-        <input type="text" class="player-pron-input" id="new-player-pron-mgmt" placeholder="Pronunciation (optional)" onkeydown="if(event.key==='Enter') addPlayerFromMgmt()" />
-        <button class="btn btn-primary btn-sm" onclick="addPlayerFromMgmt()">+ Add Player</button>
-      </div>
+    <!-- Legacy add row stays in the DOM for addPlayerFromMgmt(); the panel feeds it -->
+    <div class="add-player-row" id="add-player-row-mgmt" style="display:none;">
+      <input type="text" id="new-player-name-mgmt" />
+      <input type="text" id="new-player-num-mgmt" />
+      <input type="text" id="new-player-pron-mgmt" />
     </div>
-
-    <div class="player-mgmt-count" id="players-team-sub-bottom" style="text-align:center;margin-top:16px;"></div>
+    <div class="player-mgmt-count" id="players-team-sub-bottom" style="display:none;"></div>
   </div>
 </div>
+
+<!-- Players side panel: one kid at a time; changes save as you go -->
+<aside class="pp" id="player-panel" aria-label="Edit player" aria-hidden="true">
+  <div class="pp-hd">
+    <span class="pp-saved" id="pp-saved" aria-live="polite"><i></i><span>Changes save as you go</span></span>
+    <button class="pp-x" type="button" onclick="closePlayerPanel()" aria-label="Close player">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="pp-body" id="pp-body"></div>
+</aside>
+
+<!-- Undo toast (roster removals) -->
+<div class="lc-toast" id="lc-toast" role="status" aria-live="polite"><span id="lc-toast-text"></span><button type="button" id="lc-toast-btn">Undo</button><i class="lc-toast-bar"></i></div>
 
 <!-- ══════════════ VIEW 3: BUILDER ══════════════ -->
 <div id="view-builder">
@@ -4562,7 +4810,8 @@
           <div class="form-grid">
             <div class="field">
               <label>Game / Event Name</label>
-              <input type="text" id="game-name" placeholder="e.g. Season Opener, Tournament Game 1" />
+              <input type="text" id="game-name" placeholder="e.g. Season Opener, Tournament Game 1" aria-describedby="game-name-err" />
+              <div class="field-err" id="game-name-err" role="alert"></div>
             </div>
             <div class="field">
               <label>Opponent (optional)</label>
@@ -5769,6 +6018,7 @@ async function loadUserTeams(user) {
 function renderDashboard() {
   const grid = document.getElementById('teams-grid');
   const emptyState = document.getElementById('empty-state');
+  const hero = document.getElementById('dash-hero');
 
   // Show/hide new team button based on feature flag
   const newTeamBtn = document.getElementById('new-team-btn');
@@ -5776,50 +6026,271 @@ function renderDashboard() {
 
   if (_userTeams.length === 0) {
     grid.innerHTML = '';
+    if (hero) hero.innerHTML = '';
     emptyState.style.display = 'block';
     return;
   }
 
   emptyState.style.display = 'none';
-  grid.innerHTML = _userTeams.map(team => {
-    // Team color stays in the emblem/avatar only — no card stripe
-    // (one-signature-color rule; stripe removed by request July 2026).
-    const borderStyle = '';
-    const logoHtml = team.logoURL
-      ? `<img class="team-logo-mark" src="${team.logoURL}" alt="" />`
-      : `<div class="team-letter-avatar" style="background:${team.primaryColor ? team.primaryColor + '22' : 'var(--gray-5)'};color:${team.primaryColor || 'var(--text)'};">${escHtml(team.name.substring(0, 2).toUpperCase())}</div>`;
-    return `
-      <div class="team-card" ${borderStyle}>
-        <div class="team-card-header">
-          ${logoHtml}
-          <div class="team-card-name mb-0" style="min-width:0;">${escHtml(team.name)}</div>
-          <button class="team-share-btn" style="margin-left:auto;" onclick="event.stopPropagation(); openShareTeamModal('${team.id}')" title="Share team invite" aria-label="Share team invite">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-          </button>
-        </div>
-        <div class="team-card-pills">
-          <span class="team-pill">${team.season} ${team.year}</span>
-          ${team.level ? `<span class="team-pill">${team.level}</span>` : ''}
-          ${team.ageGroup ? `<span class="team-pill">${team.ageGroup}</span>` : ''}
-          ${teamRole(team) === 'coach' ? '<span class="team-pill">Coach</span>' : ''}
-          ${teamRole(team) === 'member' ? '<span class="team-pill">Member</span>' : ''}
-        </div>
-        <div class="team-card-actions">
-          ${isCoachRole(team) ? `<button class="btn btn-primary btn-create" onclick="enterBuilder('${team.id}', 'lineup', 3)">Build Lineup →</button>` : ''}
-          <div class="btn-row">
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/schedule')">Schedule</button>
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/players')">Players</button>
-          </div>
-          ${teamRole(team) === 'owner' ? `<div class="btn-row">
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/rules')">League Rules</button>
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/settings')">Team Settings</button>
-          </div>` : teamRole(team) === 'coach' ? `<div class="btn-row">
-            <button class="btn btn-ghost" onclick="navigate('#/team/${team.id}/rules')">League Rules</button>
-          </div>` : ''}
-        </div>
+  const sub = document.getElementById('dash-sub');
+  if (sub) sub.textContent = _userTeams.length + (_userTeams.length === 1 ? ' team' : ' teams') + ". What's next for each.";
+
+  // Status before menus (Oct 30 2026): each card says what's next for that
+  // team. undefined = still checking; null = nothing coming up.
+  const nexts = {};
+  _userTeams.forEach(t => {
+    const st = _teamStatus[t.id];
+    nexts[t.id] = (st && st.loaded) ? computeNextGame(t.id, st.games, st.lineups) : undefined;
+  });
+  // Up next: the soonest game across your teams carries the page's one
+  // sticker. Wait until every team has reported so the card doesn't jump.
+  let heroTeam = null;
+  if (_userTeams.every(t => nexts[t.id] !== undefined)) {
+    _userTeams.forEach(t => {
+      const e = nexts[t.id];
+      if (e && (!heroTeam || e.dateObj < nexts[heroTeam.id].dateObj)) heroTeam = t;
+    });
+  }
+  const heroKey = heroTeam ? heroTeam.id + '|' + nexts[heroTeam.id].date + '|' + nexts[heroTeam.id].kind : '';
+  if (hero) {
+    if (!heroTeam) { hero.innerHTML = ''; hero.dataset.key = ''; }
+    else {
+      hero.innerHTML = dashHeroHtml(heroTeam, nexts[heroTeam.id], hero.dataset.key !== heroKey);
+      hero.dataset.key = heroKey;
+    }
+  }
+  grid.innerHTML = _userTeams.filter(t => t !== heroTeam).map(t => teamStatusCardHtml(t, nexts[t.id])).join('');
+
+  // Fetch whatever is missing or stale (read-only), then render once more.
+  // Only while All teams is on screen, so landing elsewhere doesn't fan out.
+  const dashEl = document.getElementById('view-dashboard');
+  if (!dashEl || !dashEl.classList.contains('active')) return;
+  const stale = _userTeams.filter(t => {
+    const st = _teamStatus[t.id];
+    return !st || (!st.pending && (!st.loaded || Date.now() - st.at >= TEAM_STATUS_TTL));
+  });
+  if (stale.length) {
+    Promise.all(stale.map(t => loadTeamStatus(t).catch(() => null))).then(() => {
+      const dash = document.getElementById('view-dashboard');
+      if (dash && dash.classList.contains('active')) renderDashboard();
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// TEAM STATUS — what's next for each team (Oct 30 2026)
+// ═══════════════════════════════════════════════════
+// Read-only: the GameChanger calendar (Netlify proxy) + saved lineups
+// (.get(), the same read Schedule makes) + this device's drafts. Cached a
+// few minutes so All teams and Schedule don't refetch on every visit.
+var _teamStatus = {};
+var TEAM_STATUS_TTL = 3 * 60 * 1000;
+
+function setTeamStatus(teamId, games, lineups, calError) {
+  _teamStatus[teamId] = { at: Date.now(), games: games || [], lineups: lineups || [], calError: calError || null, loaded: true, pending: null };
+}
+function invalidateTeamStatus(teamId) {
+  if (teamId && _teamStatus[teamId]) _teamStatus[teamId].at = 0;
+}
+function loadTeamStatus(team) {
+  const cur = _teamStatus[team.id];
+  if (cur && cur.pending) return cur.pending;
+  if (cur && cur.loaded && Date.now() - cur.at < TEAM_STATUS_TTL) return Promise.resolve(cur);
+  const fb = initFirebase();
+  const calUrl = team.gameChangerCalendarUrl || '';
+  let calError = null;
+  const p = Promise.all([
+    calUrl
+      ? fetchSchedule(calUrl).then(t => filterGames(parseICS(t), getCalendarName(t))).catch(e => { calError = e; return []; })
+      : Promise.resolve([]),
+    fb
+      ? fb.db.collection('teams').doc(team.id).collection('lineups').get()
+          .then(s => s.docs.map(d => Object.assign({ id: d.id }, d.data())))
+          .catch(() => (cur && cur.lineups) || [])
+      : Promise.resolve([])
+  ]).then(([games, lineups]) => {
+    setTeamStatus(team.id, games, lineups, calError);
+    return _teamStatus[team.id];
+  }).catch(e => {
+    setTeamStatus(team.id, [], (cur && cur.lineups) || [], e);
+    return _teamStatus[team.id];
+  });
+  _teamStatus[team.id] = Object.assign({ games: [], lineups: [], loaded: false, at: 0 }, cur || {}, { pending: p });
+  return p;
+}
+
+function lineupMatchesGame(l, g) { return l.opponent === g.opponent && l.gameDate === g.date; }
+
+// The next game for a team: calendar games, saved lineups that aren't on
+// the calendar, and named drafts on this device, soonest first.
+function computeNextGame(teamId, games, lineups) {
+  games = games || []; lineups = lineups || [];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const dayOf = s => { if (!s) return null; const d = new Date(String(s) + 'T00:00:00'); return isNaN(d) ? null : d; };
+  const at = (date, time) => {
+    const d = dayOf(date); if (!d) return null;
+    const m = /^(\d{1,2}):(\d{2})/.exec(time || '');
+    if (m) d.setHours(+m[1], +m[2], 0, 0);
+    return d;
+  };
+  const norm = s => String(s || '').toLowerCase().trim();
+  const entries = [];
+  games.forEach(g => {
+    const d = dayOf(g.date); if (!d || d < today) return;
+    entries.push({ game: g, dateObj: g.dateObj || at(g.date, g.time), date: g.date, time: g.time || '', opponent: g.opponent, isHome: g.isHome, location: g.location || '', title: (g.isHome ? 'vs ' : '@ ') + g.opponent });
+  });
+  lineups.forEach(l => {
+    if (games.some(g => lineupMatchesGame(l, g))) return;
+    const d = at(l.gameDate, l.gameTime); if (!d || dayOf(l.gameDate) < today) return;
+    entries.push({ lineup: l, dateObj: d, date: l.gameDate, time: l.gameTime || '', opponent: l.opponent || '', isHome: null, location: l.gameLocation || '', title: l.gameName || (l.opponent ? 'vs ' + l.opponent : 'Game lineup') });
+  });
+  const drafts = readAllDrafts();
+  Object.keys(drafts).forEach(key => {
+    const dr = drafts[key];
+    if (!dr || dr.teamId !== teamId) return;
+    if (!norm(dr.gameName) && !norm(dr.opponent)) return;   // nameless drafts never surface
+    const d = at(dr.gameDate, dr.gameTime); if (!d || dayOf(dr.gameDate) < today) return;
+    if (entries.some(e => e.date === dr.gameDate && norm(e.opponent) === norm(dr.opponent))) return;
+    entries.push({ draftOnly: true, dateObj: d, date: dr.gameDate, time: dr.gameTime || '', opponent: dr.opponent || '', isHome: null, location: dr.gameLocation || '', title: dr.gameName || ('vs ' + dr.opponent), draft: dr, draftKey: key });
+  });
+  entries.sort((a, b) => a.dateObj - b.dateObj);
+  const e = entries[0];
+  if (!e) return null;
+  if (e.game) {
+    e.lineup = lineups.find(l => lineupMatchesGame(l, e.game)) || null;
+    const hit = findDraftForScheduleGame(teamId, e.game);
+    if (hit) { e.draft = hit.draft; e.draftKey = hit.key; }
+  } else if (e.lineup) {
+    const k = getDraftKey(teamId, e.lineup.gameDate, e.lineup.opponent);
+    if (k && drafts[k]) { e.draft = drafts[k]; e.draftKey = k; }
+  }
+  e.kind = e.draft ? 'draft' : e.lineup ? 'saved' : 'none';
+  return e;
+}
+
+function agoWords(ts) {
+  if (!ts) return '';
+  const t = typeof ts === 'string' ? new Date(ts).getTime() : ts;
+  const m = Math.floor(Math.max(0, Date.now() - t) / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + (m === 1 ? ' minute ago' : ' minutes ago');
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago');
+  const d = Math.floor(h / 24);
+  return d === 1 ? 'yesterday' : d + ' days ago';
+}
+function nextGameWhen(e, long) {
+  const day = e.dateObj.toLocaleDateString('en-US', { weekday: long ? 'long' : 'short', month: 'short', day: 'numeric' });
+  const t = e.time && e.time !== '00:00' ? formatTime(e.time) : '';
+  return [day, t].filter(Boolean).join(' · ');
+}
+function nextGameChip(e) {
+  return e.isHome === true ? '<span class="lc-chip home">Home</span>'
+       : e.isHome === false ? '<span class="lc-chip away">Away</span>' : '';
+}
+function nextGameStatusHtml(e, canCoach) {
+  if (e.kind === 'draft' && canCoach) return `<span class="lc-st dr"><i></i>Lineup draft, edited ${escHtml(agoWords(e.draft.updatedAt))}</span>`;
+  if (e.lineup) return `<span class="lc-st ok"><i></i>${canCoach ? 'Lineup ready' : 'Lineup posted'}</span>`;
+  return `<span class="lc-st no"><i></i>${canCoach ? 'Lineup not started' : "The coach hasn't posted a lineup yet"}</span>`;
+}
+// Primary (sticker) first, then one quiet action at most.
+function nextGameActions(teamId, e, canCoach, from) {
+  const call = what => `openNextGame('${sbAttr(teamId)}', '${what}', '${from || ''}')`;
+  if (!canCoach) return e.lineup ? [{ label: 'View lineup', call: call('view') }] : [];
+  if (e.kind === 'draft') return [{ label: 'Finish lineup', call: call('build') }];
+  if (e.kind === 'saved') return [{ label: 'View lineup', call: call('view') }, { label: 'Edit lineup', call: call('build') }];
+  return [{ label: 'Build lineup', call: call('build') }];
+}
+
+var _builderReturn = null;   // where Save draft & exit goes when the builder was opened from All teams
+async function openNextGame(teamId, what, from) {
+  const team = _userTeams.find(t => t.id === teamId);
+  if (!team) return;
+  const st = _teamStatus[teamId];
+  const e = st ? computeNextGame(teamId, st.games, st.lineups) : null;
+  const coach = isCoachRole(team);
+  if (!e) { if (coach) enterBuilder(teamId, 'lineup', 3); return; }
+  // Point the schedule state at this team so the schedule flows work from anywhere.
+  _scheduleTeamId = teamId;
+  _scheduleTeamName = team.name;
+  _scheduleCanCoach = coach;
+  _scheduleGames = st.games;
+  _scheduleLineups = st.lineups;
+  if (what === 'view' && e.lineup) { navigate('#/team/' + teamId + '/lineups/' + e.lineup.id); return; }
+  if (!coach) return;
+  const back = from === 'dash' ? '#/' : null;
+  if (e.game) {
+    await createLineupFromSchedule(_scheduleGames.indexOf(e.game));
+  } else {
+    await enterBuilder(teamId, 'lineup', 3);
+    if (!_builderOpen) return;
+    if (e.draft) {
+      applyDraftToState(e.draft);
+      try { _draftLastSavedAt = new Date(e.draft.updatedAt).getTime(); } catch (x) {}
+      updateDraftSavedIndicator();
+      save();
+    } else if (e.lineup) {
+      loadSavedLineupIntoBuilder(e.lineup);
+      save();
+    }
+  }
+  if (_builderOpen) { _builderReturn = back; renderWizardBar(); }
+}
+
+function dashHeroHtml(team, e, animate) {
+  const coach = isCoachRole(team);
+  const id = sbAttr(team.id);
+  const acts = nextGameActions(team.id, e, coach, 'dash');
+  const btns = acts.length
+    ? acts.map((a, i) => `<button class="btn ${i === 0 ? 'btn-primary btn-lg' : 'btn-ghost'}" type="button" onclick="${a.call}">${a.label}</button>`).join('')
+    : `<button class="btn btn-ghost" type="button" onclick="navigate('#/team/${id}/schedule')">Open schedule</button>`;
+  return `<section class="lc-emph dash-hero${animate ? ' lc-rise' : ''}" aria-label="Up next">
+    <span class="lc-pennant">Up next</span>
+    ${teamBadgeHtml(team)}
+    <div style="min-width:0">
+      <div class="dash-hk"><a href="#/team/${id}/schedule">${escHtml(team.name)}</a> · ${escHtml(nextGameWhen(e, true))}</div>
+      <div class="dash-ht">${escHtml(e.title)}</div>
+      <div class="ng-meta">${nextGameChip(e)}${nextGameStatusHtml(e, coach)}${e.location ? `<span>${escHtml(e.location)}</span>` : ''}</div>
+    </div>
+    <div class="ng-act">${btns}</div>
+  </section>`;
+}
+
+function teamStatusCardHtml(team, e) {
+  const id = sbAttr(team.id);
+  const role = teamRole(team);
+  const coach = role === 'owner' || role === 'coach';
+  const st = _teamStatus[team.id];
+  let next, action;
+  if (e === undefined) {
+    next = `<span class="ts-k">Next game</span><span class="ts-sk" style="width:64%;margin-top:7px"></span><span class="ts-sk" style="width:42%;margin-top:9px"></span>`;
+    action = null;
+  } else if (!e) {
+    const linked = !!team.gameChangerCalendarUrl;
+    const why = !linked ? 'No schedule linked yet'
+      : (st && st.calError) ? "Couldn't reach the calendar just now" : 'Nothing on the calendar yet';
+    const hint = !linked ? (role === 'owner' ? 'Link GameChanger to see games here' : 'Saved lineups show up here') : '';
+    next = `<span class="ts-k">Next game</span><span class="ts-v">${why}</span>${hint ? `<span class="lc-st no"><i></i>${hint}</span>` : ''}`;
+    action = (role === 'owner' && !linked) ? { label: 'Link schedule', call: `navigate('#/team/${id}/settings')` }
+      : coach ? { label: 'Build lineup', call: `enterBuilder('${id}', 'lineup', 3)` }
+      : { label: 'Open schedule', call: `navigate('#/team/${id}/schedule')` };
+  } else {
+    next = `<span class="ts-k">Next game</span><span class="ts-v">${escHtml(nextGameWhen(e, true))}</span><span class="ts-op">${escHtml(e.title)}</span>${nextGameStatusHtml(e, coach)}`;
+    action = nextGameActions(team.id, e, coach, 'dash')[0] || { label: 'Open schedule', call: `navigate('#/team/${id}/schedule')` };
+  }
+  return `<article class="ts-card">
+    <button class="ts-head" type="button" onclick="navigate('#/team/${id}/schedule')" aria-label="${sbAttr(team.name)} schedule">
+      ${teamBadgeHtml(team)}<span><b>${escHtml(team.name || 'Team')}</b><span class="ts-sub">${escHtml(teamSubLine(team))}</span></span>
+    </button>
+    <div class="ts-next">${next}</div>
+    <div class="ts-foot">
+      ${action ? `<button class="btn btn-ghost btn-sm" type="button" onclick="${action.call}">${action.label}</button>` : '<span></span>'}
+      <div class="ts-icons">
+        <button class="ts-ic" type="button" onclick="navigate('#/team/${id}/players')" aria-label="Players">${SB_ICONS.players}<span class="sb-tip">Players</span></button>
+        <button class="ts-ic" type="button" onclick="openShareTeamModal('${id}')" aria-label="Share team">${SB_ICONS.share}<span class="sb-tip">Share team</span></button>
       </div>
-    `;
-  }).join('');
+    </div>
+  </article>`;
 }
 
 async function selectTeam(teamId, closeDropdown = true) {
@@ -6014,6 +6485,7 @@ function showView(view) {
   if (view === 'lineups') document.getElementById('view-lineups').classList.add('active');
   if (view === 'schedule') document.getElementById('view-schedule').classList.add('active');
   if (view === 'players') document.getElementById('view-players').classList.add('active');
+  if (view !== 'players' && _ppOpen) closePlayerPanel();
   syncBuilderTools();
 }
 
@@ -6100,6 +6572,11 @@ async function handleRoute() {
 
   // Reaching any real route means the builder is no longer the live view.
   _builderOpen = false;
+  _builderReturn = null;
+
+  // Leaving Players: land a pending removal and any debounced roster edits
+  // before the next view re-reads the team.
+  if (isPlayersViewActive()) await leavePlayersView();
 
   // Auto-expand the team you're navigating into.
   if (m.teamId) { _sidebarExpandedTeam = m.teamId; lsSet(LS_LAST_TEAM, m.teamId); }
@@ -6188,9 +6665,12 @@ function teamBadgeHtml(team) {
 function teamSubLine(team) {
   if (!team) return '';
   const role = teamRole(team);
+  // Two teams with the same name (two Tigers) also show the age group.
+  const twin = _userTeams.some(t => t !== team && t.id !== team.id && String(t.name || '').trim().toLowerCase() === String(team.name || '').trim().toLowerCase());
   return [
     [team.season, team.year].filter(Boolean).join(' '),
     team.level || '',
+    twin ? (team.ageGroup || '') : '',
     role === 'coach' ? 'Coach' : role === 'member' ? 'Member' : ''
   ].filter(Boolean).join(' · ');
 }
@@ -6289,6 +6769,7 @@ function renderSidebar() {
     mTeam.setAttribute('aria-label', team ? `Open navigation. Current team: ${team.name}` : 'Open navigation');
   }
   renderTeamCrumbs();
+  renderMobileTabs();
   syncRailUi();
   // Transitions only after the first paint, so sign-in doesn't animate the shell in.
   if (!document.body.classList.contains('sb-ready')) setTimeout(() => document.body.classList.add('sb-ready'), 400);
@@ -6480,6 +6961,7 @@ async function enterBuilder(teamId, mode, startStep) {
     showLineupPaywall();
     return;
   }
+  if (isPlayersViewActive()) await leavePlayersView();
 
   _appMode = mode || 'setup';
   // The lineup builder isn't a deep-linkable route (it holds unsaved state).
@@ -6514,6 +6996,8 @@ async function enterBuilder(teamId, mode, startStep) {
         return;
       }
     }
+    const calRes = document.getElementById('calendar-sync-result');
+    if (calRes) calRes.innerHTML = '';
     // Show steps 1–2 (the settings-team/settings-rules classes hide the
     // one that doesn't belong to this section); hide 3–5.
     [1,2,3,4,5].forEach(i => {
@@ -6527,6 +7011,7 @@ async function enterBuilder(teamId, mode, startStep) {
     window.scrollTo(0, 0);
   } else {
     builderEl.classList.remove('settings-mode');
+    clearGameNameErr();
     if (teamId) {
       await selectTeam(teamId, false);
       // If another team was selected while loading, bail — that enterBuilder call will finish instead
@@ -7513,6 +7998,8 @@ async function openSchedule(teamId) {
     _scheduleLineups = lineupSnap
       ? lineupSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       : [];
+    // Same read All teams makes; share it so the dashboard doesn't refetch.
+    setTeamStatus(teamId, _scheduleGames, _scheduleLineups, calError);
 
     if (calUrl && calError) {
       syncBar.innerHTML = `
@@ -7591,8 +8078,12 @@ function renderSchedule() {
   // Past: most recent first (descending)
   past.sort((a, b) => b.dateObj - a.dateObj);
 
-  // The soonest upcoming game wears the NEXT GAME pennant (one per screen)
-  const nextGame = upcoming.length > 0 ? upcoming[0] : null;
+  // The soonest upcoming game gets the Next game card (the page's one
+  // sticker) and leaves the list below, so it isn't shown twice.
+  const ng = computeNextGame(_scheduleTeamId, _scheduleGames, _scheduleLineups);
+  let comingUp = upcoming;
+  if (ng && ng.game) comingUp = upcoming.filter(x => x !== ng.game);
+  else if (ng && ng.lineup) comingUp = upcoming.filter(x => x._lineup !== ng.lineup);
 
   function renderLineupCard(entry) {
     const dayStr = entry.dateObj.getTime() > 0
@@ -7651,15 +8142,14 @@ function renderSchedule() {
       actionHtml = `<div class="schedule-item-action"><span class="lineup-linked">Lineup saved</span><span class="schedule-chevron">›</span></div>`;
       onclick = `viewScheduleLineup('${matchedLineup.id}')`;
     } else if (!isPast) {
-      actionHtml = `<div class="schedule-item-action">Build Lineup<span class="schedule-chevron">›</span></div>`;
+      actionHtml = `<div class="schedule-item-action">Build lineup<span class="schedule-chevron">›</span></div>`;
       onclick = `createLineupFromSchedule(${idx})`;
     } else {
       actionHtml = `<div class="schedule-item-action"><span class="schedule-chevron">›</span></div>`;
       onclick = `createLineupFromSchedule(${idx})`;
     }
 
-    const pennant = (game === nextGame)
-      ? `<span class="kicker kicker--pennant">NEXT GAME</span> ` : '';
+    const pennant = '';
 
     return `
       <div class="schedule-item ${isPast ? 'schedule-past' : ''}" role="button" tabindex="0" aria-label="${game.isHome ? 'Home' : 'Away'} game vs ${escHtml(game.opponent)}, ${dayStr}" onclick="${onclick}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${onclick}}">
@@ -7705,7 +8195,8 @@ function renderSchedule() {
   }
 
   let html = '<div class="schedule-list">';
-  html += renderSection('Upcoming games', upcoming, false);
+  if (ng) html += scheduleNextHtml(ng);
+  html += renderSection(ng ? 'Coming up' : 'Upcoming games', comingUp, false);
   if (_scheduleCanCoach) {
     const roster = _scheduleRoster.length ? _scheduleRoster
       : ((_activeTeamId === _scheduleTeamId && state && state.players) ? state.players : []);
@@ -7810,6 +8301,37 @@ function loadSavedLineupIntoBuilder(lineup) {
 
 // View a saved lineup from the schedule — route to the shared lineup-detail URL
 // so it gets its own history entry (Back returns to the schedule).
+// Schedule's Next game card: date block, opponent, where the lineup stands,
+// and the one next step (Oct 30 2026, from the audit board).
+function scheduleNextHtml(e) {
+  const coach = _scheduleCanCoach;
+  const d = e.dateObj;
+  const dow = d.toLocaleDateString('en-US', { weekday: 'long' });
+  const md = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const tm = e.time && e.time !== '00:00' ? formatTime(e.time) : '';
+  // Game info · Lineup · Saved
+  const w = e.kind === 'saved' ? [100, 100, 100] : e.kind === 'draft' ? [100, 55, 0] : [e.game ? 100 : 0, 0, 0];
+  const labels = ['Game info', 'Lineup', 'Saved'];
+  const said = ['done', 'in progress', 'not started'];
+  const segAria = labels.map((l, i) => l + ' ' + (w[i] >= 100 ? said[0] : w[i] > 0 ? said[1] : said[2])).join(', ');
+  const seg = coach
+    ? `<div class="ng-seg" role="img" aria-label="Lineup progress: ${sbAttr(segAria)}">${labels.map((l, i) =>
+        `<div class="${w[i] ? '' : 'todo'}"><span>${w[i] ? `<i style="--w:${w[i]}%"></i>` : ''}</span>${l}</div>`).join('')}</div>`
+    : '';
+  const acts = nextGameActions(_scheduleTeamId, e, coach, 'sched');
+  const btns = acts.map((a, i) => `<button class="btn ${i === 0 ? 'btn-primary btn-lg' : 'btn-ghost'}" type="button" onclick="${a.call}">${a.label}</button>`).join('');
+  return `<section class="lc-emph ng-card lc-rise" aria-label="Next game">
+    <span class="lc-pennant">Next game</span>
+    <div class="ng-date"><span class="ng-dow">${escHtml(dow)}</span><span class="ng-md">${escHtml(md)}</span>${tm ? `<span class="ng-tm">${escHtml(tm)}</span>` : ''}</div>
+    <div style="min-width:0">
+      <div class="ng-op">${escHtml(e.title)}</div>
+      <div class="ng-meta">${nextGameChip(e)}${nextGameStatusHtml(e, coach)}${e.location ? `<span>${escHtml(e.location)}</span>` : ''}</div>
+      ${seg}
+    </div>
+    ${btns ? `<div class="ng-act">${btns}</div>` : ''}
+  </section>`;
+}
+
 function viewScheduleLineup(lineupId) {
   navigate('#/team/' + _scheduleTeamId + '/lineups/' + lineupId);
 }
@@ -8419,7 +8941,7 @@ var _settingsRev = 0;   // bumps on every change, so a save can tell if more cam
 // Save bar (Oct 30 2026): nothing at the bottom until something changes,
 // then it rises with Reset (far left) and Save (far right). Save carries its
 // own state: dots while Firestore writes, a check when it lands.
-function setSaveBar(phase) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'error'
+function setSaveBar(phase, msg) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'error'
   const bar = document.getElementById('settings-save-bar');
   if (!bar) return;
   const btn = document.getElementById('sbar-save');
@@ -8436,7 +8958,7 @@ function setSaveBar(phase) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'error'
   if (txt) {
     const t = _userTeams.find(x => x.id === _activeTeamId);
     txt.textContent = phase === 'done' ? (t ? 'Saved to ' + t.name : 'Saved')
-      : phase === 'error' ? "Couldn't save. Check your connection and try again."
+      : phase === 'error' ? (msg || "Couldn't save. Check your connection and try again.")
       : 'Unsaved changes';
   }
 }
@@ -8468,9 +8990,25 @@ async function settingsSave() {
       saveRules();
       ok = await saveLeagueRulesToFirestore();
     } else {
-      // Team Settings view: full owner-only core save
+      // Team Settings view: full owner-only core save. A new GameChanger
+      // link is checked first (read-only fetch), then rides the same save —
+      // no separate Update Calendar button (Oct 30 2026).
+      const cal = await checkSettingsCalendar();
+      if (cal.error) {
+        _settingsSaving = false;
+        setSaveBar('error', "That schedule link didn't load. Fix it, then save again.");
+        return;
+      }
       saveTeam();
       ok = await saveTeamToFirestore();
+      if (ok && cal.changed) {
+        state.teamCalendarUrl = cal.url;
+        const t = _userTeams.find(x => x.id === _activeTeamId);
+        if (t) t.gameChangerCalendarUrl = cal.url;
+        invalidateTeamStatus(_activeTeamId);
+        const res = document.getElementById('calendar-sync-result');
+        if (res) res.innerHTML = `<span class="lc-st ok"><i></i>${cal.games} game${cal.games === 1 ? '' : 's'} synced, ${cal.upcoming} coming up</span>`;
+      }
     }
   } catch (e) {
     console.error('settingsSave failed:', e);
@@ -8484,6 +9022,29 @@ async function settingsSave() {
     if (_settingsRev === rev) resetSettingsDirty();
     else setSaveBar('dirty');   // more changes landed while saving
   }, 900);
+}
+
+// Team Settings: if the GameChanger link changed, make sure it loads before
+// saving it. Read-only (the Netlify ICS proxy); never writes.
+async function checkSettingsCalendar() {
+  const el = document.getElementById('team-calendar-url');
+  const url = el ? el.value.trim() : '';
+  const t = _userTeams.find(x => x.id === _activeTeamId);
+  const saved = (t && t.gameChangerCalendarUrl) || state.teamCalendarUrl || '';
+  if (!url || url === saved) return { changed: false };
+  const res = document.getElementById('calendar-sync-result');
+  if (res) res.innerHTML = '<span class="lc-st"><i></i>Checking the schedule link…</span>';
+  try {
+    const ics = await fetchSchedule(url);
+    const games = filterGames(parseICS(ics), getCalendarName(ics));
+    const now = new Date();
+    if (res) res.innerHTML = '';
+    return { changed: true, url, games: games.length, upcoming: games.filter(g => g.dateObj >= now).length };
+  } catch (e) {
+    if (res) res.innerHTML = `<span class="field-err">That link didn't load (${escHtml(e.message || 'fetch failed')}). In GameChanger: Team, Schedule, Share, Copy Link.</span>`;
+    if (el) { el.classList.add('is-invalid'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus({ preventScroll: true }); }
+    return { error: e };
+  }
 }
 
 // Reset = reload this team's saved settings (read-only .get(), no writes).
@@ -8512,6 +9073,11 @@ function renderSettingsHeader() {
   } else {
     setSaveBar('hidden');
   }
+  // Calendar: in Settings the save bar saves it; the Add button is for new teams.
+  const calHelp = document.querySelector('#calendar-url-field .cal-helper');
+  if (calHelp) calHelp.textContent = inSettings
+    ? 'Find it in GameChanger → Team → Schedule → Share → Copy Link. Save checks the link and syncs your games.'
+    : 'Find it in GameChanger → Team → Schedule → Share → Copy Link.';
   // Team Information subtitle: the "create" wording only fits a new team.
   const infoSub = document.getElementById('team-info-sub');
   if (infoSub) infoSub.textContent = inSettings
@@ -8589,6 +9155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let _playersCanEdit = true;   // members get a read-only roster
 
 async function openPlayerManagement(teamId) {
+  if (_ppOpen) closePlayerPanel();
   if (teamId) {
     await selectTeam(teamId, false);
   }
@@ -8625,84 +9192,301 @@ function renderPlayerManagementList() {
   const container = document.getElementById('player-list-mgmt');
   if (!container) return;
 
-  // Members/parents see the roster read-only: no edits, no skills, no
-  // add/remove. (Coach skills privacy proper migrates to coachAssessments.)
+  // Members/parents see the roster read-only: names, numbers, positions.
+  // No edits, no ratings, no add/remove.
   const canEdit = _playersCanEdit !== false;
+  const list = state.players.filter(p => !(_ppPendingRemoval && _ppPendingRemoval.id === p.id));
+  container.classList.toggle('ro', !canEdit);
+  const head = canEdit
+    ? '<div class="pl-tr pl-hd"><span>Player</span><span>Can play</span><span>Prefers</span><span></span></div>'
+    : '<div class="pl-tr pl-hd"><span>Player</span><span>Can play</span></div>';
+  container.innerHTML = list.length
+    ? head + list.map(p => plRowHtml(p, canEdit)).join('')
+    : `<div class="pl-empty">${canEdit ? 'No players yet. Add your first kid to get started.' : 'No players on this roster yet.'}</div>`;
 
-  container.innerHTML = '';
-  state.players.forEach((player, idx) => {
-    const row = document.createElement('div');
-    row.className = 'player-row';
-    row.dataset.playerId = player.id;
-
-    const prio = player.fieldPriority || 'both';
-    const skills = player.battingSkills || { power: 5, contact: 5, speed: 5 };
-    row.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
-        <input type="text" value="${escHtml(player.name)}" placeholder="Full name"
-          ${canEdit ? `onchange="updatePlayerName('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'}
-          style="flex:1;min-width:80px;" />
-        <input type="text" inputmode="numeric" class="player-num-input" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
-          ${canEdit ? `onchange="updatePlayerNumber('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'} />
-        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="${canEdit ? 'Pronunciation (optional)' : ''}"
-          ${canEdit ? `onchange="updatePlayerPronunciation('${player.id}', this.value); renderPlayerManagementList()"` : 'disabled'} />
-        ${canEdit ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}'); renderPlayerManagementList()" title="Remove player">✕</button>` : ''}
-      </div>
-      <div class="priority-row">
-        <span class="priority-label">Positions:</span>
-        <div class="pos-pills">
-          ${getActiveFieldPositions().map(pos =>
-            `<span class="pos-pill ${player.prefPos.includes(pos) ? 'selected' : ''}"
-              ${canEdit ? `onclick="togglePrefPos('${player.id}','${pos}'); renderPlayerManagementList()"` : 'style="cursor:default;"'}>${pos}</span>`
-          ).join('')}
-        </div>
-      </div>
-      ${canEdit ? `<div class="priority-row">
-        <span class="priority-label">Prioritize:</span>
-        <div class="priority-pills">
-          <span class="priority-pill ${prio === 'infield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','infield'); renderPlayerManagementList()">Infield</span>
-          <span class="priority-pill ${prio === 'outfield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','outfield'); renderPlayerManagementList()">Outfield</span>
-          <span class="priority-pill ${prio === 'both' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','both'); renderPlayerManagementList()">Both</span>
-        </div>
-      </div>` : ''}
-      ${canEdit ? `<div class="priority-row skills-row">
-        <span class="priority-label">Batting:</span>
-        <div class="skills-grid">
-          ${['power', 'contact', 'speed'].map(s => {
-            const val = skills[s];
-            const ratio = ((val - 1) / 9).toFixed(4);
-            return `
-            <div class="skill">
-              <span class="skill-name">${s.charAt(0).toUpperCase() + s.slice(1)}</span>
-              <div class="slider-wrap" style="--fill-ratio:${ratio}">
-                <div class="slider-tooltip">${val}</div>
-                <input type="range" class="skill-slider" min="1" max="10" step="1" value="${val}"
-                  oninput="handleSkillSliderInput(this)"
-                  onpointerdown="this.parentElement.classList.add('dragging')"
-                  onpointercancel="this.parentElement.classList.remove('dragging')"
-                  onchange="setPlayerSkill('${player.id}','${s}', this.value)" />
-              </div>
-              <span class="skill-value">${val}</span>
-            </div>
-          `;
-          }).join('')}
-        </div>
-      </div>` : ''}
-    `;
-    container.appendChild(row);
-  });
-
-  // Update count labels
-  const countText = `${state.players.length} player${state.players.length !== 1 ? 's' : ''} on the roster`;
+  const n = list.length;
   const subEl = document.getElementById('players-team-sub');
-  if (subEl) subEl.textContent = countText;
-  const bottomEl = document.getElementById('players-team-sub-bottom');
-  if (bottomEl) bottomEl.textContent = countText;
-
-  // Hide add row if team creation is gated OR the viewer can't edit
-  const addRow = document.getElementById('add-player-row-mgmt');
-  if (addRow) addRow.style.display = (ALLOW_TEAM_CREATION && canEdit) ? '' : 'none';
+  if (subEl) subEl.textContent = canEdit
+    ? `${n} on the roster. Positions and preference steer auto-fill. Click a kid to edit.`
+    : `${n} on the roster.`;
+  const addBtn = document.getElementById('pl-add-btn');
+  if (addBtn) addBtn.style.display = (ALLOW_TEAM_CREATION && canEdit) ? '' : 'none';
 }
+
+function plRowHtml(p, canEdit) {
+  const hasNum = !(p.number === null || p.number === undefined || p.number === '');
+  const ava = hasNum
+    ? `<span class="pl-ava num">${escHtml(String(p.number))}</span>`
+    : `<span class="pl-ava">${escHtml(String(p.name || '?').trim().charAt(0).toUpperCase() || '?')}</span>`;
+  const pron = p.namePronunciation ? 'Says it ' + p.namePronunciation : (canEdit ? 'No pronunciation yet' : '');
+  const active = getActiveFieldPositions();
+  const pos = (p.prefPos || []).filter(x => active.includes(x));
+  const posHtml = pos.length ? pos.map(x => `<span>${escHtml(x)}</span>`).join('') : '<em>Anywhere</em>';
+  const pref = { infield: 'Infield', outfield: 'Outfield' }[p.fieldPriority] || 'Either';
+  const who = `<span class="pl-who">${ava}<span><b>${escHtml(p.name || 'Unnamed')}</b>${pron ? `<small>${escHtml(pron)}</small>` : ''}</span></span>`;
+  if (!canEdit) return `<div class="pl-tr">${who}<span class="pl-ps">${posHtml}</span></div>`;
+  const cls = 'pl-tr' + (_ppOpen === p.id ? ' is-sel' : '') + (_ppJustAdded === p.id ? ' pl-row-new' : '');
+  return `<button class="${cls}" type="button" data-player-id="${sbAttr(p.id)}" onclick="openPlayerPanel('${sbAttr(p.id)}')" aria-label="Edit ${sbAttr(p.name || 'player')}"${_ppOpen === p.id ? ' aria-current="true"' : ''}>${who}<span class="pl-ps">${posHtml}</span><span class="pl-pref">${pref}</span><svg class="pl-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`;
+}
+
+// ── Players side panel (Oct 30 2026) ──
+// Edits go through the existing helpers (updatePlayerName, togglePrefPos,
+// setFieldPriority, setPlayerSkill…), so the write contract is unchanged:
+// saveRosterOnlyToFirestore, merge:true, only web-managed fields.
+var _ppOpen = null;              // player id in the panel, 'new', or null
+var _ppJustAdded = null;
+var _ppPendingRemoval = null;    // { id, name, timer } while Undo is on screen
+var PP_UNDO_MS = 10000;
+var PP_LOCK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
+
+function ppRow(id) {
+  return document.querySelector(`#player-list-mgmt [data-player-id="${cssEscape(id)}"]`);
+}
+function openPlayerPanel(id) {
+  if (_playersCanEdit === false) return;
+  _ppOpen = id;
+  renderPlayerPanel();
+  const panel = document.getElementById('player-panel');
+  if (panel) panel.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('pp-open');
+  document.querySelectorAll('#player-list-mgmt .pl-tr.is-sel').forEach(el => { el.classList.remove('is-sel'); el.removeAttribute('aria-current'); });
+  const row = id !== 'new' ? ppRow(id) : null;
+  if (row) { row.classList.add('is-sel'); row.setAttribute('aria-current', 'true'); }
+  if (id === 'new') setTimeout(() => { const n = document.getElementById('pp-name'); if (n) n.focus(); }, 80);
+}
+function closePlayerPanel() {
+  const was = _ppOpen;
+  _ppOpen = null;
+  document.body.classList.remove('pp-open');
+  const panel = document.getElementById('player-panel');
+  if (panel) panel.setAttribute('aria-hidden', 'true');
+  document.querySelectorAll('#player-list-mgmt .pl-tr.is-sel').forEach(el => { el.classList.remove('is-sel'); el.removeAttribute('aria-current'); });
+  if (was && was !== 'new' && isPlayersViewActive()) { const r = ppRow(was); if (r) r.focus({ preventScroll: true }); }
+}
+
+function renderPlayerPanel() {
+  const body = document.getElementById('pp-body');
+  if (!body) return;
+  const enterAdd = `onkeydown="if(event.key==='Enter'){event.preventDefault();ppAddPlayer();}"`;
+  if (_ppOpen === 'new') {
+    body.innerHTML = `
+      <div class="pp-name">New player</div>
+      <div class="pp-two">
+        <div class="pp-f"><label for="pp-name">Name</label><input type="text" id="pp-name" placeholder="Full name" autocomplete="off" ${enterAdd}></div>
+        <div class="pp-f"><label for="pp-num">Number</label><input type="text" inputmode="numeric" class="player-num-input" id="pp-num" placeholder="None" autocomplete="off" ${enterAdd}></div>
+      </div>
+      <div class="pp-f"><label for="pp-pron">How the announcer says it</label><input type="text" id="pp-pron" placeholder="Optional" autocomplete="off" ${enterAdd}></div>
+      <button class="btn btn-primary pp-add" type="button" onclick="ppAddPlayer()">Add player</button>
+      <span class="pp-help" id="pp-add-help" aria-live="polite">Press Enter to add and start the next one. Positions and ratings are a click away after.</span>`;
+    return;
+  }
+  const p = state.players.find(x => x.id === _ppOpen);
+  if (!p) { closePlayerPanel(); return; }
+  const id = sbAttr(p.id);
+  const prio = p.fieldPriority || 'both';
+  const skills = p.battingSkills || { power: 5, contact: 5, speed: 5 };
+  const num = (p.number === null || p.number === undefined) ? '' : p.number;
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  body.innerHTML = `
+    <div class="pp-name" id="pp-title">${escHtml(p.name || 'Unnamed')}</div>
+    <div class="pp-two">
+      <div class="pp-f"><label for="pp-name">Name</label><input type="text" id="pp-name" value="${sbAttr(p.name)}" autocomplete="off" oninput="ppSetName('${id}', this.value)" onchange="if(!this.value.trim()){this.value=(state.players.find(x=>x.id==='${id}')||{}).name||'';}"></div>
+      <div class="pp-f"><label for="pp-num">Number</label><input type="text" inputmode="numeric" class="player-num-input" id="pp-num" value="${sbAttr(num)}" placeholder="None" autocomplete="off" onchange="updatePlayerNumber('${id}', this.value); renderPlayerManagementList()"></div>
+    </div>
+    <div class="pp-f"><label for="pp-pron">How the announcer says it</label><input type="text" id="pp-pron" value="${sbAttr(p.namePronunciation || '')}" placeholder="Optional" autocomplete="off" onchange="updatePlayerPronunciation('${id}', this.value); renderPlayerManagementList()"></div>
+    <div class="pp-f">
+      <span class="pp-lb" id="pp-pos-lb">Can play</span>
+      <div class="pp-chips" role="group" aria-labelledby="pp-pos-lb">${getActiveFieldPositions().map(pos => {
+        const on = (p.prefPos || []).includes(pos);
+        return `<button class="pp-pc${on ? ' on' : ''}" type="button" aria-pressed="${on}" onclick="ppTogglePos('${id}', '${pos}', this)">${pos}</button>`;
+      }).join('')}</div>
+      <span class="pp-help">None picked means anywhere.</span>
+    </div>
+    <div class="pp-f">
+      <span class="pp-lb" id="pp-pref-lb">Prefers</span>
+      <div class="pp-seg" id="pp-seg" role="group" aria-labelledby="pp-pref-lb">${[['infield', 'Infield'], ['outfield', 'Outfield'], ['both', 'Either']].map(([v, l]) =>
+        `<button type="button" data-v="${v}" class="${prio === v ? 'on' : ''}" aria-pressed="${prio === v}" onclick="ppSetPriority('${id}', '${v}')">${l}</button>`).join('')}</div>
+    </div>
+    <div class="pp-priv">
+      <div class="pp-privh">${PP_LOCK_SVG}Batting ratings <span>· only coaches see these</span></div>
+      ${['power', 'contact', 'speed'].map(s => {
+        const val = skills[s];
+        const ratio = ((val - 1) / 9).toFixed(4);
+        return `<div class="skill"><span class="skill-name">${cap(s)}</span><div class="slider-wrap" style="--fill-ratio:${ratio}"><div class="slider-tooltip">${val}</div><input type="range" class="skill-slider" min="1" max="10" step="1" value="${val}" aria-label="${cap(s)}" oninput="handleSkillSliderInput(this)" onpointerdown="this.parentElement.classList.add('dragging')" onpointercancel="this.parentElement.classList.remove('dragging')" onchange="setPlayerSkill('${id}', '${s}', this.value)"></div><span class="skill-value">${val}</span></div>`;
+      }).join('')}
+      <span class="pp-help">Leave them at 5 if you'd rather not rate. They only nudge the batting order.</span>
+    </div>
+    <div class="pp-rm">
+      <button class="pp-rmb" type="button" onclick="ppRemovePlayer('${id}')">Remove from roster</button>
+      <span>Saved lineups keep the name. You can undo for 10 seconds.</span>
+    </div>`;
+}
+
+function ppSetName(id, v) {
+  const name = String(v || '').trim();
+  if (!name) return;   // never save an empty name; blur puts the old one back
+  updatePlayerName(id, name);
+  const t = document.getElementById('pp-title');
+  if (t) t.textContent = name;
+  const b = ppRow(id) && ppRow(id).querySelector('.pl-who b');
+  if (b) b.textContent = name;
+}
+function ppTogglePos(id, pos, btn) {
+  togglePrefPos(id, pos);
+  const p = state.players.find(x => x.id === id);
+  const on = !!(p && (p.prefPos || []).includes(pos));
+  if (btn) {
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.classList.remove('pop'); void btn.offsetWidth; btn.classList.add('pop');
+  }
+  renderPlayerManagementList();
+}
+function ppSetPriority(id, v) {
+  setFieldPriority(id, v);
+  document.querySelectorAll('#pp-seg button').forEach(b => {
+    const on = b.dataset.v === v;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  renderPlayerManagementList();
+}
+function ppAddPlayer() {
+  if (_playersCanEdit === false) return;
+  const nameEl = document.getElementById('pp-name');
+  const numEl = document.getElementById('pp-num');
+  const pronEl = document.getElementById('pp-pron');
+  const help = document.getElementById('pp-add-help');
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) {
+    if (help) help.textContent = 'Type a name first.';
+    if (nameEl) { nameEl.classList.add('is-invalid'); nameEl.focus(); }
+    return;
+  }
+  // Same record addPlayerFromMgmt() builds (order/isActive filled on first save).
+  const id = 'p_' + Date.now();
+  state.players.push({
+    id, name,
+    number: parseJerseyNumber(numEl ? numEl.value : ''),
+    namePronunciation: pronEl ? pronEl.value.trim() : '',
+    order: null, isActive: null,
+    prefPos: [], fieldPriority: 'both',
+    battingSkills: { power: 5, contact: 5, speed: 5 }
+  });
+  state.attendance[id] = true;
+  _ppJustAdded = id;
+  renderPlayerManagementList();
+  renderPlayerList();
+  save();
+  scheduleRosterSave();
+  const row = ppRow(id);
+  if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  setTimeout(() => { if (_ppJustAdded === id) _ppJustAdded = null; }, 1500);
+  [nameEl, numEl, pronEl].forEach(el => { if (el) el.value = ''; });
+  if (nameEl) { nameEl.classList.remove('is-invalid'); nameEl.focus(); }
+  if (help) help.textContent = `Added ${name}. Type the next name, or close when you're done.`;
+}
+
+// Remove with undo: the kid leaves the table now, but the delete only goes
+// through removePlayer() (the explicit _pendingPlayerDeletes path) once the
+// 10 seconds are up, or the moment you leave the page.
+function ppRemovePlayer(id) {
+  if (_playersCanEdit === false) return;
+  const p = state.players.find(x => x.id === id);
+  if (!p) return;
+  commitPendingRemoval();   // one undo at a time
+  closePlayerPanel();
+  _ppPendingRemoval = { id, name: p.name, timer: setTimeout(commitPendingRemoval, PP_UNDO_MS) };
+  renderPlayerManagementList();
+  showToast(`${p.name || 'Player'} removed`, 'Undo', undoPendingRemoval, PP_UNDO_MS);
+}
+function commitPendingRemoval() {
+  const r = _ppPendingRemoval;
+  if (!r) return;
+  clearTimeout(r.timer);
+  _ppPendingRemoval = null;
+  hideToast();
+  if (state.players.some(p => p.id === r.id)) removePlayer(r.id);
+  renderPlayerManagementList();
+}
+function undoPendingRemoval() {
+  const r = _ppPendingRemoval;
+  if (!r) return;
+  clearTimeout(r.timer);
+  _ppPendingRemoval = null;
+  hideToast();
+  renderPlayerManagementList();
+  const row = ppRow(r.id);
+  if (row) { row.classList.add('pl-row-new'); row.focus({ preventScroll: true }); }
+}
+async function leavePlayersView() {
+  commitPendingRemoval();
+  try { await flushRosterSave(); } catch (e) { console.error('flushRosterSave failed:', e); }
+}
+
+var _toastTimer = null;
+function showToast(text, actionLabel, onAction, ms) {
+  const t = document.getElementById('lc-toast');
+  if (!t) return;
+  ms = ms || 4000;
+  document.getElementById('lc-toast-text').textContent = text;
+  const b = document.getElementById('lc-toast-btn');
+  b.textContent = actionLabel || '';
+  b.style.display = actionLabel ? '' : 'none';
+  b.onclick = () => { if (onAction) onAction(); };
+  t.style.setProperty('--toast-ms', ms + 'ms');
+  t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(hideToast, ms);
+}
+function hideToast() {
+  clearTimeout(_toastTimer);
+  const t = document.getElementById('lc-toast');
+  if (t) t.classList.remove('show');
+}
+
+// Phone: section tabs for the team you're on, under the top bar.
+function renderMobileTabs() {
+  const el = document.getElementById('m-tabs');
+  if (!el) return;
+  const route = parseHash(location.hash);
+  const builder = document.getElementById('view-builder');
+  const lineupBuilder = _builderOpen && builder && builder.classList.contains('active') && !builder.classList.contains('settings-mode');
+  const team = route.teamId ? _userTeams.find(t => t.id === route.teamId) : null;
+  const show = !!team && !lineupBuilder && ['schedule', 'players', 'lineupDetail', 'rules', 'settings'].includes(route.name);
+  document.body.classList.toggle('has-mtabs', show);
+  if (!show) { el.innerHTML = ''; return; }
+  const id = sbAttr(team.id);
+  const tabs = [['schedule', 'Schedule'], ['players', 'Players']];
+  if (isCoachRole(team)) tabs.push(['rules', 'Rules']);
+  if (teamRole(team) === 'owner') tabs.push(['settings', 'Settings']);
+  const cur = route.name === 'lineupDetail' ? 'schedule' : route.name;
+  el.innerHTML = tabs.map(([k, l]) =>
+    `<button class="m-tab${k === cur ? ' on' : ''}" type="button"${k === cur ? ' aria-current="page"' : ''} onclick="navigate('#/team/${id}/${k}')">${l}</button>`).join('');
+  const on = el.querySelector('.m-tab.on');
+  if (on && on.scrollIntoView) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+}
+
+function clearGameNameErr() {
+  const err = document.getElementById('game-name-err');
+  if (err) err.textContent = '';
+  const gn = document.getElementById('game-name');
+  if (gn) gn.classList.remove('is-invalid');
+}
+document.addEventListener('input', (e) => {
+  const t = e.target;
+  if (!t || !t.classList) return;
+  if (t.id === 'game-name' || t.id === 'opponent') clearGameNameErr();
+  if (t.classList.contains('is-invalid')) t.classList.remove('is-invalid');
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || !_ppOpen) return;
+  if (document.querySelector('.modal-overlay.open, .modal-overlay.active')) return;
+  closePlayerPanel();
+});
+// Closing the tab mid-undo still lands the removal (the existing pagehide
+// handler then flushes the roster save it schedules).
+window.addEventListener('pagehide', () => { if (_ppPendingRemoval && isPlayersViewActive()) commitPendingRemoval(); });
 
 function addPlayerFromMgmt() {
   if (_playersCanEdit === false) return;
@@ -8996,21 +9780,16 @@ let _draftIndicatorTimer = null;
 
 // Heuristic: only worth saving a draft if there's something interesting
 // in the lineup (some attendance, an assigned position, or game info typed).
+// Oct 30 2026: a draft also needs a name or an opponent, so nameless
+// drafts stop piling up (Continue now asks for one on Game Info).
 function draftHasContent() {
-  if ((state.gameName || '').trim()) return true;
-  if ((state.opponent || '').trim()) return true;
-  if ((state.gameLocation || '').trim()) return true;
-  if (state.attendance && Object.values(state.attendance).some(v => v)) return true;
-  if (Array.isArray(state.lineup) && state.lineup.some(r =>
-    Array.isArray(r.positions) && r.positions.some(p => p && p !== '')
-  )) return true;
-  return false;
+  return !!((state.gameName || '').trim() || (state.opponent || '').trim());
 }
 
 function flushDraftSave() {
   const key = getCurrentDraftKey();
-  if (!key) return false;
-  if (!draftHasContent()) return false;
+  // Nothing to save yet: clear the "Saving draft…" hint instead of leaving it up.
+  if (!key || !draftHasContent()) { updateDraftSavedIndicator(); return false; }
   const all = readAllDrafts();
   all[key] = buildDraftRecord();
   writeAllDrafts(all);
@@ -9027,8 +9806,8 @@ function markLineupDirty() {
     _draftSaveTimer = null;
     flushDraftSave();
   }, 600);
-  // Show "Saving…" hint immediately
-  updateDraftSavedIndicator(true);
+  // Show "Saving…" hint immediately (only when there's a draft to save)
+  updateDraftSavedIndicator(!!getCurrentDraftKey() && draftHasContent());
 }
 
 function clearDraftForCurrent() {
@@ -9183,14 +9962,13 @@ function saveDraftAndExit() {
     state.gameNotes    = document.getElementById('game-notes').value.trim();
   }
   flushDraftSave();
-  // Prefer returning to schedule if we came from there, else dashboard
-  if (_scheduleTeamId && _scheduleTeamId === _activeTeamId) {
-    showView('schedule');
-    // Re-render so the new draft badge shows immediately
-    if (typeof renderSchedule === 'function') renderSchedule();
-  } else {
-    backToDashboard();
-  }
+  // Back to where the build started: All teams, else this team's schedule
+  // (routed, so the page and the sidebar both re-render), else the dashboard.
+  const back = _builderReturn;
+  _builderReturn = null;
+  if (back) navigate(back);
+  else if (_scheduleTeamId && _scheduleTeamId === _activeTeamId) navigate('#/team/' + _activeTeamId + '/schedule');
+  else backToDashboard();
 }
 
 function discardCurrentDraft() {
@@ -10896,6 +11674,17 @@ function isPlayersViewActive() {
 }
 
 function setRosterSaveStatus(state /* 'saving' | 'saved' | 'error' | 'idle' */) {
+  // The players panel carries the same status next to its close button.
+  const ps = document.getElementById('pp-saved');
+  if (ps) {
+    const label = ps.querySelector('span');
+    ps.classList.toggle('is-saving', state === 'saving');
+    ps.classList.toggle('is-error', state === 'error');
+    if (label) label.textContent = state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved'
+      : state === 'error' ? "Couldn't save. Trying again…" : 'Changes save as you go';
+    clearTimeout(ps._t);
+    if (state === 'saved') ps._t = setTimeout(() => { if (label) label.textContent = 'Changes save as you go'; }, 1800);
+  }
   const el = document.getElementById('roster-save-status');
   if (!el) return;
   if (_rosterSaveHideTimer) { clearTimeout(_rosterSaveHideTimer); _rosterSaveHideTimer = null; }
@@ -11068,6 +11857,14 @@ function goToStep3() {
 
 function goToStep4() {
   save();
+  if (_appMode === 'lineup' && !(state.gameName || '').trim() && !(state.opponent || '').trim()) {
+    const gn = document.getElementById('game-name');
+    const err = document.getElementById('game-name-err');
+    if (err) err.textContent = 'Name this game or add the opponent so you can find the lineup later.';
+    if (gn) { gn.classList.add('is-invalid'); gn.focus(); }
+    if (_currentStep !== 3) setStep(3);
+    return;
+  }
   if (state.players.length === 0) {
     alert('Please add at least one player before continuing.');
     return;
@@ -11205,6 +12002,7 @@ async function saveLineupToFirestore() {
     }
     // The lineup is now committed — drop the working draft for this game.
     clearDraftForCurrent();
+    invalidateTeamStatus(_activeTeamId);
     // Refresh the in-memory schedule lineup cache so the badge updates
     // immediately if the user navigates back to Schedule.
     if (Array.isArray(_scheduleLineups) && _scheduleTeamId === _activeTeamId) {
