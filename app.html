@@ -3803,6 +3803,9 @@
     .step-actions .draft-status.draft-status-saving { color: var(--ink-secondary); font-style: normal; }
     .step-actions .draft-status.draft-status-saving::before { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
     .step-actions .draft-status.draft-status-saved { color: var(--ink-secondary); }
+    .step-actions .draft-status.export-err { color: var(--alert-ink); font-weight: 600; }
+    .step-actions .draft-status.export-err::before { background: var(--alert-ink); }
+    #export-edit svg { flex: none; }
     #step3-save-draft, #step4-save-draft { display: none !important; }
     .step-footer { margin-bottom: 20px; }
     @media (max-width: 768px) {
@@ -5017,7 +5020,7 @@
           </div>
           <div class="flex-row gap-sm flex-wrap no-print">
             <button class="btn btn-ghost btn-sm" onclick="printExport()">Print</button>
-            <button class="btn btn-primary btn-sm" onclick="copyLineup(this)">Copy lineup</button>
+            <button class="btn btn-outline btn-sm" onclick="copyLineup(this)">Copy lineup</button>
           </div>
         </div>
 
@@ -5034,7 +5037,12 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
-          <button class="btn btn-outline btn-lg" onclick="goToStep1()">New lineup</button>
+          <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026) -->
+          <div class="draft-status" id="export-save-status" aria-live="polite"></div>
+          <button class="btn btn-outline btn-lg" id="export-edit" onclick="editSavedLineup()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>Edit lineup
+          </button>
+          <button class="btn btn-primary btn-lg" id="export-done" onclick="finishLineup()">Done</button>
         </div>
       </div>
     </div>
@@ -12193,7 +12201,44 @@ async function goToStep5() {
   save();
   setStep(5);
   renderExport();
-  await saveLineupToFirestore();
+  setExportSaveStatus('saving');
+  const ok = await saveLineupToFirestore();
+  setExportSaveStatus(ok ? 'saved' : 'error');
+}
+
+// Export step footer (Oct 30 2026): where the save stands, Edit lineup to go
+// back in (same doc, merges on the next save), Done to leave.
+var _exportSaved = false;
+function setExportSaveStatus(phase) {
+  _exportSaved = phase === 'saved';
+  const el = document.getElementById('export-save-status');
+  const done = document.getElementById('export-done');
+  if (el) {
+    const t = _userTeams.find(x => x.id === _activeTeamId);
+    el.classList.toggle('draft-status-saving', phase === 'saving');
+    el.classList.toggle('export-err', phase === 'error');
+    el.textContent = phase === 'saving' ? 'Saving lineup…'
+      : phase === 'saved' ? 'Saved to ' + (t ? t.name : 'your team') + ". It's on every phone now."
+      : "Couldn't save the lineup. Check your connection.";
+  }
+  if (done) done.textContent = phase === 'error' ? 'Try again' : 'Done';
+}
+function editSavedLineup() {
+  // editingLineupDocId stays set, so the next save updates this same lineup.
+  goToStep4();
+}
+async function finishLineup() {
+  if (!_exportSaved) {
+    setExportSaveStatus('saving');
+    const ok = await saveLineupToFirestore();
+    setExportSaveStatus(ok ? 'saved' : 'error');
+    if (!ok) return;
+  }
+  const back = _builderReturn;
+  _builderReturn = null;
+  if (back) navigate(back);
+  else if (_activeTeamId) navigate('#/team/' + _activeTeamId + '/schedule');
+  else backToDashboard();
 }
 
 // ── Roster identity (cross-client contract — WEB_HANDOFF 2.3) ────────
@@ -12228,7 +12273,7 @@ function resolveLocalPlayerId(savedId, savedName) {
 
 async function saveLineupToFirestore() {
   const fb = initFirebase();
-  if (!fb || !_activeTeamId) return;
+  if (!fb || !_activeTeamId) return false;
 
   const attending = state.players.filter(p => state.attendance[p.id]);
   const activeLineup = state.lineup.filter(r => {
@@ -12236,7 +12281,7 @@ async function saveLineupToFirestore() {
     return p && state.attendance[p.id];
   });
 
-  if (activeLineup.length === 0) return;
+  if (activeLineup.length === 0) return false;
 
   // Build the doc with only fields the web is authoritative for.
   // Don't echo unknown iOS fields. Always write with merge:true so we never
@@ -12299,8 +12344,10 @@ async function saveLineupToFirestore() {
       if (idx === -1) _scheduleLineups.push(cached);
       else _scheduleLineups[idx] = cached;
     }
+    return true;
   } catch(e) {
     console.error('Failed to save lineup:', e);
+    return false;
   }
 }
 
