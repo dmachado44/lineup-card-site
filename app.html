@@ -980,75 +980,6 @@
       color: var(--ink-secondary);
       margin-bottom: 14px;
     }
-    .pos-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .pos-header-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-    }
-    .pos-count-badge {
-      font-size: 12px;
-      font-weight: 700;
-      background: var(--accent);
-      color: var(--on-accent);
-      padding: 2px 9px;
-      border-radius: 100px;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-    .preset-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 12px 0 18px;
-    }
-    .preset-btn {
-      padding: 8px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-pill);
-      background: var(--white);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: inherit;
-      color: var(--text);
-      transition: all 0.15s;
-    }
-    .preset-btn:hover { border-color: var(--black); background: var(--bg-secondary); }
-    .pos-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .pos-toggle {
-      padding: 10px 18px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius-pill);
-      background: var(--white);
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: inherit;
-      color: var(--text);
-      transition: all 0.15s;
-    }
-    .pos-toggle:hover { border-color: var(--gray-3); background: var(--bg-secondary); }
-    .pos-toggle.on {
-      background: var(--accent);
-      color: var(--on-accent);
-      border-color: var(--accent);
-      font-weight: 600;
-    }
-    .pos-hint { font-size: 13px; color: var(--muted); }
-
     .rule-row {
       display: flex;
       align-items: center;
@@ -3086,7 +3017,7 @@
     }
 
     /* Section headers that were all-caps go sentence case, one spec app-wide */
-    .pos-header-label, .sidebar-section-label {
+    .sidebar-section-label {
       text-transform: none;
       letter-spacing: 0;
       font-size: 14px;
@@ -3843,6 +3774,70 @@
       .sc-go { height: 34px; }
     }
 
+    /* ── League rules v2 (Oct 30 2026) ──
+       Section heads outside quiet cards (.sc-head), positions grouped with
+       the who's-here selection state, limits as segmented controls. */
+    .rules-sec { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+    .settings-mode .rules-row .rules-sec { margin-bottom: 0; }
+    .rules-card { border: none; margin: 0; padding: 22px 26px; }
+    .settings-mode #step-2 .rules-card { margin-bottom: 0; }
+    .rules-hint { margin: 0 0 16px; font-size: 14px; color: var(--ink-secondary); }
+    #pos-grid { display: flex; flex-direction: column; gap: 14px; }
+    .pos-group { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
+    .pos-group + .pos-group { padding-top: 14px; border-top: 1px solid var(--hairline); }
+    .pos-k { padding-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+    .pos-k span { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-secondary); }
+    .pos-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pos-chip {
+      display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 10px; border-radius: 19px;
+      border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
+      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity .2s, background-color .2s, border-color .2s, color .2s, transform .12s;
+    }
+    .pos-chip:active { transform: scale(.96); }
+    .pos-chip .att-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; flex: none; transition: background-color .2s; }
+    .pos-chip.off { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); }
+    .pos-chip.off .att-check { background: var(--hairline-strong); }
+    .pos-chip.off:hover { border-color: var(--ink-secondary); color: var(--ink); }
+    .pos-chip.pop { animation: lcPopScale .3s var(--lc-pop); }
+    .pos-chip:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .pos-chip[aria-disabled="true"] { cursor: not-allowed; }
+    .pos-code { font-size: 12px; font-weight: 700; color: var(--ink-secondary); margin-left: 1px; }
+    .pos-chip.on .pos-code { color: var(--accent-down); }
+    @media (prefers-color-scheme: dark) { .pos-chip.on { border-color: var(--accent); } .pos-chip.on .pos-code { color: var(--accent); } }
+
+    .rules-card .rule-row { padding: 18px 0; border-bottom: 1px solid var(--hairline); gap: 20px; }
+    .rules-card .rule-row:first-child { padding-top: 2px; }
+    .rules-card .rule-row:last-child { padding-bottom: 2px; border-bottom: none; }
+    .rule-row.rule-stack { flex-direction: column; align-items: stretch; gap: 12px; }
+    .rule-select-hidden { display: none !important; }
+    .rule-seg { display: flex; padding: 3px; border-radius: 11px; background: var(--bg-secondary); }
+    .rule-seg button {
+      flex: 1; height: 38px; border: none; border-radius: 8px; background: transparent;
+      font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink-secondary); cursor: pointer;
+      transition: background-color .2s, color .2s;
+    }
+    .rule-seg button:hover { color: var(--ink); }
+    .rule-seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(16,22,19,.14); }
+    .rule-seg button:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
+    .inning-control { gap: 14px; }
+    .inning-control button {
+      width: 40px; height: 40px; border: 1.5px solid var(--hairline-strong); background: var(--panel); color: var(--ink);
+      transition: border-color .15s, transform .08s;
+    }
+    .inning-control button:hover { border-color: var(--ink); background: var(--panel); }
+    .inning-control button:active { transform: scale(.92); }
+    .inning-count { font-family: var(--font-display); font-weight: 900; font-size: 30px; line-height: 1; min-width: 30px; color: var(--ink); }
+    .inning-count.tick { animation: lcTick .35s var(--lc-pop); }
+    @media (max-width: 760px) {
+      .rules-card { padding: 18px 16px; }
+      .pos-group { grid-template-columns: 1fr; gap: 10px; }
+      .pos-k { padding-top: 0; display: flex; gap: 8px; align-items: baseline; }
+      .pos-k span { margin-top: 0; }
+      .pos-chip { height: 36px; font-size: 14.5px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .pos-chip.pop, .inning-count.tick { animation: none; } }
+
     /* Game balls: one slot per kid fills as balls go out; waiting kids first. */
     .gb-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; border-radius: var(--radius); background: var(--panel); }
     .gb-slots { display: flex; gap: 4px; }
@@ -4502,39 +4497,37 @@
     <div id="step-2" class="step-panel" style="display:none;">
 
       <!-- Field Positions -->
-      <div class="card">
-        <div class="section-label">Field Positions</div>
-        <div class="pos-header">
-          <span class="pos-header-label">Active Positions</span>
-          <span class="pos-count-badge" id="pos-count-badge">9 Selected</span>
+      <section class="rules-sec" aria-labelledby="rules-pos-h">
+        <div class="sc-head"><h2 id="rules-pos-h">Field positions</h2><span id="pos-count-badge">9 of 14 on</span></div>
+        <div class="card rules-card">
+          <p class="rules-hint">Tap a position to turn it on or off for every lineup.</p>
+          <div id="pos-grid"></div>
         </div>
-        <div class="text-hint">Tap a position to toggle it on or off for your lineup.</div>
-        <div class="pos-grid" id="pos-grid"></div>
-        <div class="pos-hint mt-md">Green = active · Tap to toggle on/off</div>
-      </div>
+      </section>
 
       <!-- Game Rules + Pitching Rules (side by side in settings mode) -->
       <div class="rules-row">
 
       <!-- Game Rules -->
-      <div class="card">
-        <div class="section-label">Game Rules</div>
+      <section class="rules-sec" aria-labelledby="rules-game-h">
+      <div class="sc-head"><h2 id="rules-game-h">Game rules</h2></div>
+      <div class="card rules-card">
 
         <div class="rule-row">
           <div class="rule-text">
-            <div class="rule-title">Number of Innings</div>
+            <div class="rule-title">Number of innings</div>
             <div class="rule-sub">How many innings does a typical game last?</div>
           </div>
           <div class="inning-control">
-            <button onclick="changeInnings(-1)">−</button>
-            <span class="inning-count" id="inning-count">6</span>
-            <button onclick="changeInnings(1)">+</button>
+            <button type="button" onclick="changeInnings(-1)" aria-label="Fewer innings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+            <span class="inning-count" id="inning-count" aria-live="polite">6</span>
+            <button type="button" onclick="changeInnings(1)" aria-label="More innings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
           </div>
         </div>
 
         <div class="rule-row">
           <div class="rule-text">
-            <div class="rule-title">All Players Bat</div>
+            <div class="rule-title">All players bat</div>
             <div class="rule-sub">Every player on the roster is included in the batting order</div>
           </div>
           <label class="toggle-switch">
@@ -4545,7 +4538,7 @@
 
         <div class="rule-row">
           <div class="rule-text">
-            <div class="rule-title">Same Position Back-to-Back</div>
+            <div class="rule-title">Same position back-to-back</div>
             <div class="rule-sub">Allow a player to play the same position in consecutive innings</div>
           </div>
           <label class="toggle-switch">
@@ -4554,12 +4547,13 @@
           </label>
         </div>
 
-        <div class="rule-row">
+        <div class="rule-row rule-stack">
           <div class="rule-text">
-            <div class="rule-title">Max Innings at Same Position</div>
+            <div class="rule-title">Max innings at one position</div>
             <div class="rule-sub">Limit how many total innings a player can play any one position</div>
           </div>
-          <select id="rule-max-same-pos" class="rule-select" onchange="markSettingsDirty(); saveRules()">
+          <div class="rule-seg" data-for="rule-max-same-pos" role="radiogroup" aria-label="Max innings at one position"></div>
+          <select id="rule-max-same-pos" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
             <option value="2">2 innings</option>
@@ -4569,7 +4563,7 @@
 
         <div class="rule-row">
           <div class="rule-text">
-            <div class="rule-title">Co-Ed League</div>
+            <div class="rule-title">Co-ed league</div>
             <div class="rule-sub">Gender-specific rules apply (noted in export)</div>
           </div>
           <label class="toggle-switch">
@@ -4578,14 +4572,16 @@
           </label>
         </div>
       </div>
+      </section>
 
       <!-- Pitching Rules -->
-      <div class="card">
-        <div class="section-label">Pitching Rules</div>
+      <section class="rules-sec" aria-labelledby="rules-pitch-h">
+      <div class="sc-head"><h2 id="rules-pitch-h">Pitching rules</h2></div>
+      <div class="card rules-card">
 
         <div class="rule-row">
           <div class="rule-text">
-            <div class="rule-title">Pitcher Can Return to Pitch</div>
+            <div class="rule-title">Pitcher can return to pitch</div>
             <div class="rule-sub">Once a pitcher is removed they can return to the mound later</div>
           </div>
           <label class="toggle-switch">
@@ -4594,12 +4590,13 @@
           </label>
         </div>
 
-        <div class="rule-row">
+        <div class="rule-row rule-stack">
           <div class="rule-text">
-            <div class="rule-title">Max Innings Pitched Per Player</div>
+            <div class="rule-title">Max innings pitched per player</div>
             <div class="rule-sub">Limit how many innings any one player can pitch per game</div>
           </div>
-          <select id="rule-max-pitch" class="rule-select" onchange="markSettingsDirty(); saveRules()">
+          <div class="rule-seg" data-for="rule-max-pitch" role="radiogroup" aria-label="Max innings pitched per player"></div>
+          <select id="rule-max-pitch" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
             <option value="2">2 innings</option>
@@ -4609,6 +4606,7 @@
           </select>
         </div>
       </div>
+      </section>
 
       </div><!-- /.rules-row -->
 
@@ -11618,17 +11616,57 @@ function getActiveFieldPositions() {
   return positions.filter(p => p !== 'Bench');
 }
 
+// Field positions, grouped Infield / Outfield / Utility. Chips use the
+// builder's who's-here selection state (wash + ink ring + ink check when
+// on, dimmed when off); the tapped chip pops (Oct 30 2026).
+var _posPop = null;
+const POS_GROUPS = [['Infield', INFIELD_POSITIONS], ['Outfield', OUTFIELD_POSITIONS], ['Utility', ['UTL1', 'UTL2', 'UTL3']]];
+function posLabel(pos) {
+  const full = POS_FULL[pos] || pos;
+  return full.charAt(0) + full.slice(1).toLowerCase();   // sentence case: "First base"
+}
 function renderPosGrid() {
   const grid = document.getElementById('pos-grid');
   const active = state.leagueRules.activePositions;
-  grid.innerHTML = ALL_POSITIONS.map(pos => `
-    <button class="pos-toggle ${active.includes(pos) ? 'on' : ''}"
-            onclick="togglePos('${pos}')">
-      ${POS_FULL[pos] || pos}
-    </button>
-  `).join('');
-  document.getElementById('pos-count-badge').textContent = active.length + ' selected';
+  const check = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const last = active.length <= 1;
+  grid.innerHTML = POS_GROUPS.map(([label, list]) => {
+    const on = list.filter(p => active.includes(p)).length;
+    return `<div class="pos-group">
+      <div class="pos-k">${label} <span>${on} of ${list.length}</span></div>
+      <div class="pos-chips">${list.map(pos => {
+        const isOn = active.includes(pos);
+        const lock = isOn && last;
+        return `<button type="button" class="pos-chip ${isOn ? 'on' : 'off'}${_posPop === pos ? ' pop' : ''}" aria-pressed="${isOn}"
+          ${lock ? 'aria-disabled="true" title="Keep at least one position on"' : ''} onclick="togglePos('${pos}')">
+          <i class="att-check">${check}</i>${escHtml(posLabel(pos))}<b class="pos-code">${pos}</b></button>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
+  _posPop = null;
+  document.getElementById('pos-count-badge').textContent = active.length + ' of ' + ALL_POSITIONS.length + ' on';
   updateRulesSummary();
+}
+
+// Segmented limits ("No max · 1 · 2 · 3") drive the hidden <select>s the
+// rest of the rules code reads and writes; they redraw from those selects.
+function renderRuleSegs() {
+  document.querySelectorAll('.rule-seg[data-for]').forEach(seg => {
+    const sel = document.getElementById(seg.dataset.for);
+    if (!sel) return;
+    seg.innerHTML = Array.from(sel.options).map(o => {
+      const on = o.value === sel.value;
+      const txt = o.value === '0' ? 'No max' : o.value;
+      return `<button type="button" role="radio" aria-checked="${on}" class="${on ? 'on' : ''}" onclick="setRuleSeg('${seg.dataset.for}', '${o.value}')">${txt}</button>`;
+    }).join('');
+  });
+}
+function setRuleSeg(id, value) {
+  const sel = document.getElementById(id);
+  if (!sel || sel.value === value) return;
+  sel.value = value;
+  sel.dispatchEvent(new Event('change'));
+  renderRuleSegs();
 }
 
 function togglePos(pos) {
@@ -11636,6 +11674,8 @@ function togglePos(pos) {
   const idx = active.indexOf(pos);
   if (idx === -1) active.push(pos);
   else if (active.length > 1) active.splice(idx, 1);
+  else return;
+  _posPop = pos;
   markSettingsDirty();
   renderPosGrid();
   renderPlayerList();  // keep roster pills in sync
@@ -11684,11 +11724,15 @@ function updateRulesSummary() {
   ].filter(Boolean);
   const el = document.getElementById('rules-summary');
   if (el) el.textContent = parts.join(' · ');
+  renderRuleSegs();
 }
 
 function changeInnings(delta) {
+  const before = state.innings;
   state.innings = Math.max(1, Math.min(9, state.innings + delta));
-  document.getElementById('inning-count').textContent = state.innings;
+  const ic = document.getElementById('inning-count');
+  ic.textContent = state.innings;
+  if (state.innings !== before) { ic.classList.remove('tick'); void ic.offsetWidth; ic.classList.add('tick'); }
   state.lineup.forEach(row => {
     while (row.positions.length < state.innings) row.positions.push('');
     row.positions = row.positions.slice(0, state.innings);
