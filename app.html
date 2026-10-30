@@ -3544,7 +3544,7 @@
     .builder-tools { display: none; }
     #view-builder.tools-on .builder-tools {
       display: flex; flex-direction: column; position: fixed; right: 0; bottom: 0; top: var(--wizard-h); z-index: 44;
-      width: 360px; background: var(--panel); box-shadow: -1px 0 0 var(--hairline);
+      width: 360px; background: var(--panel); box-shadow: -1px 0 0 var(--hairline), inset 0 1px 0 var(--hairline);   /* inset top: carries the header's bottom hairline across the panel */
       transform: translateX(105%); visibility: hidden; transition: transform .32s var(--lc-glide), visibility 0s linear .32s;
     }
     body.tools-visible #view-builder.tools-on .builder-tools { transform: none; visibility: visible; transition: transform .32s var(--lc-glide); }
