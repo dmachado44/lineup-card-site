@@ -3475,6 +3475,11 @@
       transition: left .32s var(--lc-glide), right .32s var(--lc-glide);
       animation: barUp .4s var(--lc-spring) both;
     }
+    /* With Lineup tools open the bar stops at the rail and sits above it, so
+       it draws the rail's left hairline down its own right edge. */
+    @media (min-width: 980px) {
+      body.tools-visible #view-builder:not(.settings-mode) .step-actions { box-shadow: 0 -1px 0 var(--hairline), inset -1px 0 0 var(--hairline), 0 -10px 30px rgba(16,22,19,.05); }
+    }
     .step-actions .draft-status, .step-actions .text-muted { text-align: left; min-width: 0; font-size: 15px; font-style: normal; display: flex; align-items: center; gap: 8px; }
     .step-actions .draft-status { margin-right: auto; }
     .step-actions .text-muted { margin-right: 20px; }
