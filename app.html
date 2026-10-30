@@ -1895,28 +1895,22 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+    /* Same selected state as the who's-here and League rules chips (wash +
+       ink ring when on, quiet outline when off), position code only. */
     .game-pos-pill {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 500;
-      border: 1.5px solid var(--border);
-      cursor: pointer;
-      transition: all 0.15s;
-      user-select: none;
+      display: inline-flex; align-items: center; justify-content: center; min-width: 48px; height: 36px; padding: 0 13px;
+      border-radius: 18px; border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
+      font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; user-select: none;
+      transition: background-color .2s, border-color .2s, color .2s, transform .12s;
     }
-    .game-pos-pill.on {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: var(--on-accent);
-      font-weight: 600;
-    }
-    .game-pos-pill.off {
-      background: var(--white);
-      border-color: var(--border);
-      color: var(--muted);
-    }
-    .game-pos-pill.off:hover { border-color: var(--gray); }
+    .game-pos-pill:active { transform: scale(.96); }
+    .game-pos-pill.off { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); }
+    .game-pos-pill.off:hover { border-color: var(--ink-secondary); color: var(--ink); }
+    .game-pos-pill.pop { animation: lcPopScale .3s var(--lc-pop); }
+    .game-pos-pill:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .game-pos-pill[aria-disabled="true"] { cursor: not-allowed; }
+    @media (prefers-color-scheme: dark) { .game-pos-pill.on { border-color: var(--accent); } }
+    @media (prefers-reduced-motion: reduce) { .game-pos-pill.pop { animation: none; } }
     .game-pos-count { font-size: 14px; color: var(--muted); margin-bottom: 20px; }
 
     @media (max-width: 700px) {
@@ -12345,6 +12339,7 @@ function renderAttendance() {
 }
 
 // ── Game Positions (per-game override) ──
+var _gamePosPop = null;
 function renderGamePositions() {
   const grid = document.getElementById('game-pos-grid');
   const countEl = document.getElementById('game-pos-count');
@@ -12352,12 +12347,15 @@ function renderGamePositions() {
   const active = state.gamePositions || [];
   const pool = state.leagueRules.activePositions;  // only show positions from league rules
   countEl.textContent = `${active.length} of ${pool.length} positions active`;
-  grid.innerHTML = pool.map(pos => `
-    <div class="game-pos-pill ${active.includes(pos) ? 'on' : 'off'}"
-         onclick="toggleGamePosition('${pos}')">
-      ${pos}
-    </div>
-  `).join('');
+  const last = active.length <= 1;
+  grid.innerHTML = pool.map(pos => {
+    const on = active.includes(pos);
+    const lock = on && last;
+    return `<button type="button" class="game-pos-pill ${on ? 'on' : 'off'}${_gamePosPop === pos ? ' pop' : ''}" aria-pressed="${on}"
+      title="${lock ? 'Keep at least one position on' : escHtml(posLabel(pos))}"${lock ? ' aria-disabled="true"' : ''}
+      onclick="toggleGamePosition('${pos}')">${pos}</button>`;
+  }).join('');
+  _gamePosPop = null;
 }
 
 function toggleGamePosition(pos) {
@@ -12366,7 +12364,10 @@ function toggleGamePosition(pos) {
     state.gamePositions.push(pos);
   } else if (state.gamePositions.length > 1) {
     state.gamePositions.splice(idx, 1);
+  } else {
+    return;   // keep at least one position on
   }
+  _gamePosPop = pos;
   renderGamePositions();
   shuffleFielding();
 }
