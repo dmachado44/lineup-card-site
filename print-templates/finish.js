@@ -8,7 +8,9 @@
   // itself (SS covered the pitcher); these keep every name clear.
   var SPOTS = {
     P: [50, 63], C: [50, 90], '1B': [77, 62], '2B': [64, 46], SS: [36, 46], '3B': [23, 62],
-    LF: [17, 28], CF: [50, 18], RF: [83, 28], LCF: [32, 20], RCF: [68, 20]
+    LF: [17, 28], CF: [50, 18], RF: [83, 28], LCF: [32, 20], RCF: [68, 20],
+    // foul territory beside home: bottom right, bottom left, then low center-right
+    UTL1: [85, 87], UTL2: [15, 87], UTL3: [70, 92]
   };
   // The part of the 1000 x 800 field drawing worth showing.
   var VIEW = [50, 95, 900, 680];
@@ -32,15 +34,19 @@
         else if (/^Inn\s+\d+$/.test(t)) ths[i].textContent = t.replace(/^Inn\s+/, '');
       }
 
-      // Bigger rosters step the rows down so the card stays one page.
+      // Rows share the sheet's row budget (print.css --lo-r); the
+      // classes step the batting list and drop the notes for big rosters.
       rows = root.querySelectorAll('.lo-table tbody tr').length || root.querySelectorAll('.lo-bat li').length;
+      root.style.setProperty('--lo-rows', String(Math.max(1, rows)));
       if (rows >= 17) root.classList.add('lo-rows-xl');
       else if (rows >= 15) root.classList.add('lo-rows-l');
       else if (rows >= 13) root.classList.add('lo-rows-m');
       else if (rows === 12) root.classList.add('lo-rows-s');
 
       var title = root.querySelector('.lo-title');
-      if (title && (title.textContent || '').trim().length > 30) root.classList.add('lo-title-long');
+      var tlen = title ? (title.textContent || '').trim().length : 0;
+      if (tlen > 46) root.classList.add('lo-title-xlong');
+      else if (tlen > 30) root.classList.add('lo-title-long');
 
       // Innings decide the grid (Field by Inning) or the name column (list).
       cards = root.querySelectorAll('.allinnings-card').length;
@@ -65,6 +71,17 @@
       }
       var crop = svgs.length ? VIEW : [0, 0, 1000, 800];
       if (svgs.length) root.classList.add('lo-fit');
+
+      // Utility spots (UTL1-3) move from the row under the field into the
+      // empty foul corners, so every card is the same height.
+      var utlRows = root.querySelectorAll('.allinnings-card .field-utl-row');
+      for (i = 0; i < utlRows.length; i++) {
+        var host = utlRows[i].parentNode.querySelector('.field-positions');
+        if (!host) continue;
+        var utl = utlRows[i].querySelectorAll('.field-pos-bubble');
+        for (var j = 0; j < utl.length; j++) host.appendChild(utl[j]);
+        utlRows[i].parentNode.removeChild(utlRows[i]);
+      }
 
       var bubbles = root.querySelectorAll('.field-positions .field-pos-bubble');
       for (i = 0; i < bubbles.length; i++) {

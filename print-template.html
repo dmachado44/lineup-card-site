@@ -34,6 +34,14 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
      so every selector is scoped under .lo-print and sets the
      properties it relies on (app.html has older global rules for
      .field-pos-bubble, .allinnings-card, etc.).
+
+   SIZING: the sheet is drawn like an image. Every size is a multiple
+   of --u = 1/960 of the sheet's width (container units), and on paper
+   the sheet is always 100 wide by 68 tall. Printers and print engines
+   disagree about page size, margins and px-per-inch (iOS shrinks the
+   page to its own scale), but they all scale width and height
+   together, so a 100:68 sheet fits one landscape page: Letter with
+   margins up to about half an inch, A4 up to about .45in.
    Edit here, then run: node print-templates/build.js
    ═══════════════════════════════════════════════════════════════════ */
 
@@ -58,10 +66,19 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
   --lo-display: "Sofia Sans Extra Condensed", "Arial Narrow", -apple-system, system-ui, sans-serif;
   --lo-body: "Barlow Semi Condensed", "Arial Narrow", -apple-system, system-ui, sans-serif;
 
+  /* One design px. Resolves against the sheet for everything inside
+     it (not inside inning cards, which are containers of their own). */
+  --u: 0.104167cqw;
+  /* Player List row budget, in design px (see .lo-list below). */
+  --lo-rows: 11;
+  --lo-avail: 397;
+  --lo-rmax: 40;
+  --lo-r: min(var(--lo-rmax), calc((var(--lo-avail) + var(--lo-title-save, 0) + var(--lo-notes-save, 0)) / var(--lo-rows)));
+
+  container-type: inline-size;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 14px;
   width: auto;
   margin: 0;
   padding: 0;
@@ -69,22 +86,21 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
   color: var(--lo-ink);
   font-family: var(--lo-body);
   font-weight: 600;
-  font-size: 14px;
   line-height: 1.25;
   letter-spacing: 0;
   text-align: left;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
+  /* Paper: 100 x 68, whatever the page's scale. */
+  aspect-ratio: 100 / 68;
+  height: auto;
 }
 .lo-print *, .lo-print *::before, .lo-print *::after { box-sizing: border-box; }
+.lo-print > * + * { margin-top: calc(14 * var(--u)) !important; }
 
-/* Page height the layout fills. List grows past it (a long roster
-   spills to page 2 rather than clipping); Field by Inning is fixed. */
-.lo-print.lo-list { min-height: 7.5in; }
-.lo-print.lo-all  { height: 7.5in; }
-
-/* Share image: cream mat, white sheet, brand colors. Skipped when the
-   page is marked html.lo-paper (a PDF someone will print). */
+/* Share image: cream mat, white sheet, brand colors, fills the 1056 x
+   816 snapshot. Skipped when the page is html.lo-paper (a PDF someone
+   will print), which keeps the 100 x 68 paper sheet. */
 @media screen {
   html:not(.lo-paper) .lo-print {
     --lo-ink: #101613;
@@ -103,115 +119,112 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
     --lo-flag-bg: #D9731A;
     --lo-flag-ink: #101613;
     --lo-flag-ring: none;
+    --lo-avail: 536;
+    --lo-rmax: 48;
     margin: 22px;
     padding: 28px 32px 20px;
     border-radius: 22px;
+    aspect-ratio: auto;
+    height: calc(100vh - 44px);
   }
-  html:not(.lo-paper) .lo-print.lo-list { min-height: calc(100vh - 44px); }
-  html:not(.lo-paper) .lo-print.lo-all  { height: calc(100vh - 44px); }
-  /* Paper on screen: letter page with the same .45in margins as print. */
   html.lo-paper .lo-print { margin: .45in; }
-  html.lo-paper .lo-print.lo-list { min-height: calc(100vh - .9in); }
-  html.lo-paper .lo-print.lo-all  { height: calc(100vh - .9in); }
 }
 /* The mark's ink goes pure black on paper; the share image keeps it. */
 .lo-print .lo-logo svg [fill="#101613"] { fill: var(--lo-ink); }
 
 /* ── Header ─────────────────────────────────────────────────────── */
-.lo-print .lo-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 28px; margin: 0; }
+.lo-print .lo-head { display: flex; align-items: flex-start; justify-content: space-between; gap: calc(28 * var(--u)); margin: 0; }
 .lo-print .lo-head-main { flex: 1; min-width: 0; }
 .lo-print .lo-kicker {
   display: inline-block;
   margin: 0;
-  padding: 6px 20px 5px 10px;
+  padding: calc(6 * var(--u)) calc(20 * var(--u)) calc(5 * var(--u)) calc(10 * var(--u));
   background: var(--lo-kick-bg);
   color: var(--lo-kick-ink);
-  font: 900 13px/1 var(--lo-display);
+  font: 900 calc(13 * var(--u))/1 var(--lo-display);
   letter-spacing: .1em;
   text-transform: uppercase;
-  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 50%, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10 * var(--u)) 50%, 100% 100%, 0 100%);
 }
 .lo-print .lo-title {
-  margin: 10px 0 0;
+  margin: calc(10 * var(--u)) 0 0;
   padding: 0;
-  font: 900 46px/.92 var(--lo-display);
+  font: 900 calc(46 * var(--u))/.92 var(--lo-display);
   letter-spacing: .005em;
   text-transform: uppercase;
   color: var(--lo-ink);
   overflow-wrap: anywhere;
 }
+/* Long game names drop a size instead of wrapping into the table's room
+   (finish.js; the saved height goes back to the rows). */
+.lo-print.lo-title-long { --lo-title-save: 11; }
+.lo-print.lo-title-long .lo-title { font-size: calc(34 * var(--u)); }
+.lo-print.lo-title-xlong { --lo-title-save: 16; }
+.lo-print.lo-title-xlong .lo-title { font-size: calc(28 * var(--u)); }
 /* Blank game name: a line to write on. */
-.lo-print .lo-title:empty { width: 62%; height: 46px; border-bottom: 2px solid var(--lo-ink); }
-.lo-print .lo-facts { display: flex; flex-wrap: wrap; gap: 8px 30px; margin: 12px 0 0; }
-.lo-print .lo-fact { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.lo-print .lo-fact-k { font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
-.lo-print .lo-fact-v { font: 700 16px/1.15 var(--lo-body); color: var(--lo-ink); }
-.lo-print .lo-fact-v:empty { display: block; width: 150px; height: 19px; border-bottom: 1.5px solid var(--lo-ink); }
-.lo-print .lo-logo { flex: none; width: 186px; margin: 2px 0 0; }
+.lo-print .lo-title:empty { width: 62%; height: calc(42 * var(--u)); border-bottom: 2px solid var(--lo-ink); }
+.lo-print .lo-facts { display: flex; flex-wrap: wrap; gap: calc(8 * var(--u)) calc(30 * var(--u)); margin: calc(12 * var(--u)) 0 0; }
+.lo-print .lo-fact { display: flex; flex-direction: column; gap: calc(3 * var(--u)); min-width: 0; }
+.lo-print .lo-fact-k { font: 700 calc(10.5 * var(--u))/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-fact-v { font: 700 calc(16 * var(--u))/1.15 var(--lo-body); color: var(--lo-ink); }
+.lo-print .lo-fact-v:empty { display: block; width: calc(150 * var(--u)); height: calc(18 * var(--u)); border-bottom: 1.5px solid var(--lo-ink); }
+.lo-print .lo-logo { flex: none; width: calc(186 * var(--u)); margin: calc(2 * var(--u)) 0 0; }
 .lo-print .lo-logo svg { display: block; width: 100%; height: auto; }
 
 /* ── Footer ─────────────────────────────────────────────────────── */
 .lo-print .lo-foot {
-  display: flex; justify-content: space-between; gap: 16px; margin: 0;
-  font: 600 10.5px/1 var(--lo-body); letter-spacing: .04em; color: var(--lo-ink-2);
+  display: flex; justify-content: space-between; gap: calc(16 * var(--u)); margin: 0;
+  font: 600 calc(10.5 * var(--u))/1 var(--lo-body); letter-spacing: .04em; color: var(--lo-ink-2);
 }
 .lo-print .lo-foot b { font-weight: 700; color: var(--lo-ink); }
 
-/* ── Player List ────────────────────────────────────────────────── */
-.lo-print .lo-table-wrap { flex: 0 0 auto; margin: 0; border: 2px solid var(--lo-ink); border-radius: 12px; overflow: hidden; }
+/* ── Player List ──────────────────────────────────────────────────
+   Rows share a fixed budget: --lo-avail design px is what's left of the
+   100 x 68 sheet (653 design px tall) after the header, table head, gaps, one notes line and
+   the footer. Each row gets budget / players, capped at 40, and the
+   type scales with the row, so 16 players (and up to about 20) still
+   fit one page. Spare height under a short roster goes to notes. */
+.lo-print .lo-table-wrap { flex: 0 0 auto; margin: 0; border: 2px solid var(--lo-ink); border-radius: calc(12 * var(--u)); overflow: hidden; }
 .lo-print .lo-table { width: 100%; height: 100%; margin: 0; border-collapse: collapse; border-spacing: 0; table-layout: fixed; background: #FFFFFF; }
 .lo-print .lo-table th {
-  height: 34px; padding: 0 6px; border: 0;
+  height: calc(34 * var(--u)); padding: 0 calc(6 * var(--u)); border: 0;
   background: var(--lo-head-bg); color: var(--lo-head-ink);
-  font: 900 15px/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase; text-align: center;
+  font: 900 calc(15 * var(--u))/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase; text-align: center;
 }
-.lo-print .lo-table th:first-child { width: 48px; }
-.lo-print .lo-table th:nth-child(2) { width: 29%; text-align: left; padding-left: 14px; }
+.lo-print .lo-table th:first-child { width: calc(48 * var(--u)); }
+.lo-print .lo-table th:nth-child(2) { width: 29%; text-align: left; padding-left: calc(14 * var(--u)); }
 .lo-print .lo-table td {
-  height: 40px; padding: 0 6px; border: 0;
+  height: calc(var(--lo-r) * var(--u)); padding: 0 calc(6 * var(--u)); border: 0;
   border-top: 1px solid var(--lo-rule); border-left: 1px solid var(--lo-rule-soft);
   background: #FFFFFF; color: var(--lo-ink);
-  font: 900 23px/1 var(--lo-display); letter-spacing: .02em; text-transform: uppercase; text-align: center;
+  font: 900 calc(min(23, var(--lo-r) * .66) * var(--u))/1 var(--lo-display); letter-spacing: .02em; text-transform: uppercase; text-align: center;
   white-space: nowrap; overflow: hidden;
 }
 .lo-print .lo-table tr:first-child td { border-top: 0; }
-.lo-print .lo-table td:first-child { border-left: 0; font-size: 21px; }
+.lo-print .lo-table td:first-child { border-left: 0; font-size: calc(min(21, var(--lo-r) * .6) * var(--u)); }
 .lo-print .lo-table td:nth-child(2) {
-  padding-left: 14px; text-align: left; text-transform: none; letter-spacing: 0;
-  font: 700 17px/1.1 var(--lo-body); text-overflow: ellipsis;
+  padding-left: calc(14 * var(--u)); text-align: left; text-transform: none; letter-spacing: 0;
+  font: 700 calc(min(17, var(--lo-r) * .53) * var(--u))/1.1 var(--lo-body); text-overflow: ellipsis;
 }
-/* Bench innings read at a glance: shaded cell, small label. */
+/* Bench innings read at a glance: hatched cell, small label. */
 .lo-print .lo-table td.lo-off {
   background: var(--lo-bench); color: var(--lo-bench-ink);
-  font: 700 11.5px/1 var(--lo-body); letter-spacing: .14em;
+  font: 700 calc(max(8, min(11.5, var(--lo-r) * .3)) * var(--u))/1 var(--lo-body); letter-spacing: .14em;
   text-shadow: 0 0 2px #FFFFFF, 0 0 2px #FFFFFF, 0 0 3px #FFFFFF;
 }
 .lo-print .lo-table td:empty { background: #FFFFFF; }
-
-/* Bigger rosters step the rows down so the card stays one page
-   (fits 20 players on letter; notes give way first). */
-.lo-print.lo-rows-s .lo-table td { height: 37px; }
-.lo-print.lo-rows-m .lo-table td { height: 33px; font-size: 20px; }
-.lo-print.lo-rows-m .lo-table td:nth-child(2) { font-size: 15.5px; }
-.lo-print.lo-rows-l .lo-table td { height: 29px; font-size: 18px; }
-.lo-print.lo-rows-l .lo-table td:nth-child(2) { font-size: 14.5px; }
-.lo-print.lo-rows-xl .lo-table td { height: 25px; font-size: 16px; }
-.lo-print.lo-rows-xl .lo-table td:nth-child(2) { font-size: 13px; }
-.lo-print.lo-rows-m .lo-table td.lo-off,
-.lo-print.lo-rows-l .lo-table td.lo-off,
-.lo-print.lo-rows-xl .lo-table td.lo-off { font-size: 10px; }
-.lo-print.lo-rows-xl .lo-notes { display: none; }
-/* Long game names drop a size instead of wrapping into the table's room. */
-.lo-print.lo-title-long .lo-title { font-size: 34px; }
 /* Nine-plus innings: narrower name column. */
 .lo-print.lo-inn-l .lo-table th:nth-child(2) { width: 24%; }
 
-.lo-print .lo-notes { flex: 1 1 auto; display: flex; flex-direction: column; gap: 6px; min-height: 42px; margin: 0; }
-.lo-print .lo-notes-k { font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-notes { flex: 1 1 auto; display: flex; flex-direction: column; gap: calc(6 * var(--u)); min-height: 0; margin: 0; }
+.lo-print .lo-notes-k { font: 700 calc(10.5 * var(--u))/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
 .lo-print .lo-lines {
-  flex: 1 1 auto; min-height: 28px;
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, var(--lo-rule) 27px, var(--lo-rule) 28px);
+  flex: 1 1 auto; min-height: calc(28 * var(--u));
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(27 * var(--u)), var(--lo-rule) calc(27 * var(--u)), var(--lo-rule) calc(28 * var(--u)));
 }
+/* 17+ players: the notes line gives its room to the rows. */
+.lo-print.lo-rows-xl { --lo-notes-save: 59; }
+.lo-print.lo-rows-xl .lo-notes { display: none; }
 
 /* Share image: no write-in lines; the table takes the room. */
 @media screen {
@@ -221,27 +234,27 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
 }
 
 /* ── Field by Inning ────────────────────────────────────────────── */
-.lo-print .lo-all-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: 178px minmax(0, 1fr); gap: 16px; margin: 0; }
+.lo-print .lo-all-body { flex: 1 1 auto; min-height: 0; display: grid; grid-template-columns: calc(178 * var(--u)) minmax(0, 1fr); gap: calc(16 * var(--u)); margin: 0; }
 .lo-print .lo-bat { min-width: 0; margin: 0; }
-.lo-print .lo-bat-k { margin: 2px 0 8px; font: 700 10.5px/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
+.lo-print .lo-bat-k { margin: calc(2 * var(--u)) 0 calc(8 * var(--u)); font: 700 calc(10.5 * var(--u))/1 var(--lo-body); letter-spacing: .12em; text-transform: uppercase; color: var(--lo-ink-2); }
 .lo-print .lo-bat ol { list-style: none; margin: 0; padding: 0; counter-reset: lo-bat; border-top: 2px solid var(--lo-ink); }
 .lo-print .lo-bat li {
-  counter-increment: lo-bat; display: flex; align-items: baseline; gap: 8px;
-  margin: 0; padding: 6px 0 5px; border-bottom: 1px solid var(--lo-rule-soft);
-  font: 700 14.5px/1.15 var(--lo-body); color: var(--lo-ink);
+  counter-increment: lo-bat; display: flex; align-items: baseline; gap: calc(8 * var(--u));
+  margin: 0; padding: calc(6 * var(--u)) 0 calc(5 * var(--u)); border-bottom: 1px solid var(--lo-rule-soft);
+  font: 700 calc(14.5 * var(--u))/1.15 var(--lo-body); color: var(--lo-ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .lo-print .lo-bat li::before {
-  content: counter(lo-bat); flex: none; width: 22px; text-align: right;
-  font: 900 19px/1 var(--lo-display); color: var(--lo-ink);
+  content: counter(lo-bat); flex: none; width: calc(22 * var(--u)); text-align: right;
+  font: 900 calc(19 * var(--u))/1 var(--lo-display); color: var(--lo-ink);
 }
-.lo-print.lo-rows-m .lo-bat li { padding: 4px 0 3px; font-size: 13.5px; }
-.lo-print.lo-rows-l .lo-bat li, .lo-print.lo-rows-xl .lo-bat li { padding: 3px 0 2px; font-size: 12.5px; }
-.lo-print.lo-rows-m .lo-bat li::before, .lo-print.lo-rows-l .lo-bat li::before, .lo-print.lo-rows-xl .lo-bat li::before { font-size: 16px; }
+.lo-print.lo-rows-m .lo-bat li { padding: calc(4 * var(--u)) 0 calc(3 * var(--u)); font-size: calc(13.5 * var(--u)); }
+.lo-print.lo-rows-l .lo-bat li, .lo-print.lo-rows-xl .lo-bat li { padding: calc(3 * var(--u)) 0 calc(2 * var(--u)); font-size: calc(12.5 * var(--u)); }
+.lo-print.lo-rows-m .lo-bat li::before, .lo-print.lo-rows-l .lo-bat li::before, .lo-print.lo-rows-xl .lo-bat li::before { font-size: calc(16 * var(--u)); }
 
 .lo-print .lo-grid {
   min-width: 0; min-height: 0; margin: 0;
-  display: grid; gap: 10px;
+  display: grid; gap: calc(10 * var(--u));
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
 }
@@ -251,36 +264,37 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
 .lo-print.lo-inn-l .lo-grid { grid-template-rows: repeat(3, minmax(0, 1fr)); }
 .lo-print.lo-inn-xl .lo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); }
 
+/* Each card is its own container: inside it, cqw/cqh are the card's
+   content box, so the card header and field scale with the card. */
 .lo-print .allinnings-card {
   container-type: size;
   position: relative;
   display: flex; flex-direction: column; align-items: center;
-  min-width: 0; min-height: 0; margin: 0; padding: 8px 8px 6px;
-  background: #FFFFFF; border: 1.5px solid var(--lo-rule); border-radius: 12px; box-shadow: none;
+  min-width: 0; min-height: 0; margin: 0;
+  padding: calc(8 * var(--u)) calc(8 * var(--u)) calc(6 * var(--u));
+  background: #FFFFFF; border: 1.5px solid var(--lo-rule); border-radius: calc(12 * var(--u)); box-shadow: none;
   break-inside: avoid; page-break-inside: avoid; cursor: default; transition: none;
 }
 .lo-print .allinnings-card-header {
-  align-self: stretch; display: block; margin: 0; padding: 0 2px;
-  font: 900 15px/1 var(--lo-display); letter-spacing: .06em; text-transform: uppercase; color: var(--lo-ink);
+  align-self: stretch; display: block; margin: 0; padding: 0 .8cqw;
+  font: 900 6.2cqw/1 var(--lo-display); letter-spacing: .06em; text-transform: uppercase; color: var(--lo-ink);
   border: 0; background: none;
 }
 .lo-print .field-stage {
   container-type: inline-size;
   position: relative;
   flex: none;
-  width: min(100%, calc((100cqh - 26px) * 1.25));
+  width: min(100%, calc((100cqh - 8cqw) * 1.25));
   aspect-ratio: 1000 / 800;
   height: auto;
   margin: auto;
   padding: 0; border: 0; border-radius: 0; background: none; overflow: visible;
 }
-.lo-print .allinnings-card:has(.field-utl-row) .field-stage { width: min(100%, calc((100cqh - 60px) * 1.25)); }
-/* Once finish.js has stretched the drawing (preserveAspectRatio=none),
-   the field fills the card's height too, up to square, which spreads
-   the positions apart. Spots are % of this box, so they stay on the
-   bases at any aspect. */
-.lo-print.lo-fit .field-stage { width: min(100%, calc((100cqh - 30px) * 1.45)); aspect-ratio: auto; height: min(calc(100cqh - 30px), 88cqw); margin: auto; }
-.lo-print.lo-fit .allinnings-card:has(.field-utl-row) .field-stage { width: min(100%, calc((100cqh - 64px) * 1.45)); height: min(calc(100cqh - 64px), 88cqw); }
+/* Once finish.js has cropped and stretched the drawing
+   (preserveAspectRatio=none), the field fills the card up to 0.88:1,
+   which spreads the positions apart. Spots are % of this box, so they
+   stay on the bases at any aspect. */
+.lo-print.lo-fit .field-stage { width: min(100%, calc((100cqh - 8cqw) * 1.45)); aspect-ratio: auto; height: min(calc(100cqh - 8cqw), 88cqw); margin: auto; }
 .lo-print .field-bg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .lo-print .field-bg * { vector-effect: non-scaling-stroke; fill: #FFFFFF; stroke: var(--lo-field); }
 .lo-print .field-bg path { stroke-width: 1.6px; }
@@ -290,23 +304,24 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
 .lo-print .field-positions { position: absolute; inset: 0; margin: 0; padding: 0; }
 
 /* A position: code tag over the kid's name. No box, so names keep
-   clear of each other; the white halo lifts them off the lines. */
+   clear of each other; the white halo lifts them off the lines.
+   Sizes are % of the field (cqw of .field-stage). */
 .lo-print .field-pos-bubble {
   position: absolute;
   transform: translate(-50%, -50%);
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  display: flex; flex-direction: column; align-items: center; gap: .8cqw;
   min-width: 0; max-width: 28%; margin: 0; padding: 0;
   background: none; border: 0; border-radius: 0; box-shadow: none;
   text-align: center; cursor: default; transition: none;
 }
 .lo-print .field-pos-label {
-  display: inline-block; margin: 0; padding: 2px 4px 1px; border-radius: 4px;
+  display: inline-block; margin: 0; padding: .8cqw 1.6cqw .4cqw; border-radius: 1.6cqw;
   background: var(--lo-code-bg); color: var(--lo-code-ink);
-  font: 900 clamp(8px, 4.4cqw, 13px)/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase;
+  font: 900 4.4cqw/1 var(--lo-display); letter-spacing: .05em; text-transform: uppercase;
 }
 .lo-print .field-pos-name {
   display: block; max-width: 100%; margin: 0;
-  font: 700 clamp(8.5px, 5.4cqw, 16px)/1.05 var(--lo-body); color: var(--lo-ink);
+  font: 700 5.4cqw/1.05 var(--lo-body); color: var(--lo-ink);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   text-shadow: 0 0 2px #FFF, 0 0 2px #FFF, 0 0 3px #FFF, 0 0 4px #FFF;
 }
@@ -315,9 +330,11 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
 .lo-print .field-pos-bubble.conflict .field-pos-label { background: var(--lo-flag-bg); color: var(--lo-flag-ink); box-shadow: var(--lo-flag-ring); }
 /* Two kids on one spot: the tag reads "P!" so it holds up without color. */
 .lo-print .field-pos-bubble.conflict .field-pos-label::after { content: "!"; margin-left: 1px; }
+/* Utility spots (UTL1-3): finish.js moves them into the empty foul
+   corners of the field. This row is only the no-script fallback. */
 .lo-print .field-utl-row {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px;
-  margin: 2px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 1cqw 4cqw;
+  margin: .6cqw 0 0; padding: 0;
 }
 .lo-print .field-utl-row .field-pos-bubble { position: static; transform: none; max-width: none; }
 
@@ -355,7 +372,9 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
   // itself (SS covered the pitcher); these keep every name clear.
   var SPOTS = {
     P: [50, 63], C: [50, 90], '1B': [77, 62], '2B': [64, 46], SS: [36, 46], '3B': [23, 62],
-    LF: [17, 28], CF: [50, 18], RF: [83, 28], LCF: [32, 20], RCF: [68, 20]
+    LF: [17, 28], CF: [50, 18], RF: [83, 28], LCF: [32, 20], RCF: [68, 20],
+    // foul territory beside home: bottom right, bottom left, then low center-right
+    UTL1: [85, 87], UTL2: [15, 87], UTL3: [70, 92]
   };
   // The part of the 1000 x 800 field drawing worth showing.
   var VIEW = [50, 95, 900, 680];
@@ -379,15 +398,19 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
         else if (/^Inn\s+\d+$/.test(t)) ths[i].textContent = t.replace(/^Inn\s+/, '');
       }
 
-      // Bigger rosters step the rows down so the card stays one page.
+      // Rows share the sheet's row budget (print.css --lo-r); the
+      // classes step the batting list and drop the notes for big rosters.
       rows = root.querySelectorAll('.lo-table tbody tr').length || root.querySelectorAll('.lo-bat li').length;
+      root.style.setProperty('--lo-rows', String(Math.max(1, rows)));
       if (rows >= 17) root.classList.add('lo-rows-xl');
       else if (rows >= 15) root.classList.add('lo-rows-l');
       else if (rows >= 13) root.classList.add('lo-rows-m');
       else if (rows === 12) root.classList.add('lo-rows-s');
 
       var title = root.querySelector('.lo-title');
-      if (title && (title.textContent || '').trim().length > 30) root.classList.add('lo-title-long');
+      var tlen = title ? (title.textContent || '').trim().length : 0;
+      if (tlen > 46) root.classList.add('lo-title-xlong');
+      else if (tlen > 30) root.classList.add('lo-title-long');
 
       // Innings decide the grid (Field by Inning) or the name column (list).
       cards = root.querySelectorAll('.allinnings-card').length;
@@ -412,6 +435,17 @@ html.lo-paper,html.lo-paper body{background:#FFFFFF}
       }
       var crop = svgs.length ? VIEW : [0, 0, 1000, 800];
       if (svgs.length) root.classList.add('lo-fit');
+
+      // Utility spots (UTL1-3) move from the row under the field into the
+      // empty foul corners, so every card is the same height.
+      var utlRows = root.querySelectorAll('.allinnings-card .field-utl-row');
+      for (i = 0; i < utlRows.length; i++) {
+        var host = utlRows[i].parentNode.querySelector('.field-positions');
+        if (!host) continue;
+        var utl = utlRows[i].querySelectorAll('.field-pos-bubble');
+        for (var j = 0; j < utl.length; j++) host.appendChild(utl[j]);
+        utlRows[i].parentNode.removeChild(utlRows[i]);
+      }
 
       var bubbles = root.querySelectorAll('.field-positions .field-pos-bubble');
       for (i = 0; i < bubbles.length; i++) {
