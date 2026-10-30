@@ -3726,18 +3726,22 @@
     .sc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px; }
     .sc-head h2 { margin: 0; font-size: 17px; font-weight: 600; color: var(--ink); }
     .sc-head span { font-size: 13.5px; font-weight: 600; color: var(--ink-secondary); }
-    .sc-list { background: var(--panel); border-radius: var(--radius); overflow: hidden; }
+    .sc-list { background: var(--panel); border-radius: var(--radius); padding: 6px; }
     .sc-row {
       display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 20px;
-      padding: 16px 22px 16px 18px; cursor: pointer; position: relative;
+      padding: 16px 16px 16px 12px; border-radius: 14px; cursor: pointer; position: relative;
       transition: background-color .15s;
     }
-    .sc-row + .sc-row::before { content: ""; position: absolute; top: 0; left: 18px; right: 22px; height: 1px; background: var(--hairline); }
-    .sc-row:hover { background: color-mix(in srgb, var(--bg-secondary) 70%, var(--panel)); }
-    .sc-row:focus-visible { outline: 3px solid var(--accent-down); outline-offset: -3px; border-radius: var(--radius); }
-    .sc-row:active { background: var(--bg-secondary); }
+    .sc-row + .sc-row::before { content: ""; position: absolute; top: 0; left: 12px; right: 16px; height: 1px; background: var(--hairline); transition: opacity .15s; }
+    /* Hover is an inset light-green highlight inside the white card, so it
+       never reads as the cream page; the rules next to it step aside. */
+    .sc-row:hover { background: color-mix(in srgb, var(--accent-wash) 60%, var(--panel)); }
+    .sc-row:hover::before, .sc-row:hover + .sc-row::before { opacity: 0; }
+    .sc-row:focus-visible { outline: 3px solid var(--accent-down); outline-offset: -3px; }
+    .sc-row:active { background: var(--accent-wash); }
     .sc-row.inert { cursor: default; }
     .sc-row.inert:hover { background: none; }
+    .sc-row.inert:hover::before, .sc-row.inert:hover + .sc-row::before { opacity: 1; }
     .sc-date { display: flex; flex-direction: column; gap: 3px; padding-right: 16px; border-right: 1px solid var(--hairline); white-space: nowrap; }
     .sc-dow { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-secondary); }
     .sc-md { font-family: var(--font-display); font-weight: 900; font-size: 24px; line-height: .9; text-transform: uppercase; color: var(--ink); }
@@ -3766,8 +3770,9 @@
     .sc-empty-ic { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--panel); color: var(--ink-secondary); margin-bottom: 12px; }
     .sc-empty-t { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
     @media (max-width: 760px) {
-      .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 16px 14px 14px; }
-      .sc-row + .sc-row::before { left: 14px; right: 16px; }
+      .sc-list { padding: 4px; }
+      .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 12px 14px 10px; }
+      .sc-row + .sc-row::before { left: 10px; right: 12px; }
       .sc-date { padding-right: 12px; }
       .sc-md { font-size: 20px; }
       .sc-side { grid-column: 2; justify-content: space-between; gap: 10px; }
