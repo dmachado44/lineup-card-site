@@ -548,10 +548,6 @@
       padding: 26px 30px;
       margin-bottom: 24px;
     }
-    .card--emph {
-      border: 2px solid var(--sticker-ink);
-      box-shadow: 4px 4px 0 0 var(--sticker-ink);
-    }
     .card-title {
       font-family: var(--font-display);
       font-weight: 900;
@@ -604,7 +600,7 @@
       width: 100%;
       -webkit-appearance: none;
     }
-    .card, .modal, .pp, .feedback-panel, .auth-page-card { --field-bg: var(--field-fill-on-white); }
+    .card, .lc-emph, .modal, .pp, .feedback-panel, .auth-page-card { --field-bg: var(--field-fill-on-white); }
     .add-player-row { --field-bg: var(--field-fill); }
     select {
       padding-right: 40px;
@@ -2907,14 +2903,6 @@
       letter-spacing: 0.1em;
       color: var(--ink-secondary);
     }
-    /* Pennant variant — ONE per screen at the point of emphasis */
-    .kicker--pennant {
-      display: inline-block;
-      color: var(--sticker-cream);
-      background: var(--pennant);
-      padding: 3px 14px 3px 9px;
-      clip-path: polygon(0 0, calc(100% - 0.45em) 0, 100% 50%, calc(100% - 0.45em) 100%, 0 100%);
-    }
 
     /* Section headers that were all-caps go sentence case, one spec app-wide */
     .sidebar-section-label {
@@ -3561,13 +3549,18 @@
     :root { --attention-ink: #8A4A06; --pp-w: 400px; }
     @media (prefers-color-scheme: dark) { :root { --attention-ink: #F0A35E; } }
 
-    /* Pennant: the one red flag per screen, on the card of note */
+    /* Pennant (F6, Oct 31 2026): the one red flag per screen, on the card of
+       note. Same as iOS .lcPennantKicker(): it sits in the card's first row
+       (never hanging off the edge), 11px heavy caps in sticker cream on the
+       pennant red, a flag with a V notch cut into its tail (notch = 38% of
+       the height). Garnish only, never an alert. */
     .lc-pennant {
-      position: absolute; top: -15px; left: 24px; z-index: 1;
-      background: var(--pennant); color: #FFF8E6;
-      font-family: var(--font-display); font-weight: 900; font-size: 15px; line-height: 1; letter-spacing: .08em; text-transform: uppercase;
-      padding: 7px 22px 7px 12px; clip-path: polygon(0 0, 100% 0, calc(100% - 11px) 50%, 100% 100%, 0 100%);
+      display: inline-block; justify-self: start; align-self: start;
+      background: var(--pennant); color: var(--sticker-cream);
+      font-size: 11px; font-weight: 800; line-height: 1; letter-spacing: .09em; text-transform: uppercase; white-space: nowrap;
+      padding: 5px 14px 5px 8px; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
     }
+    .lc-emph > .lc-pennant { grid-column: 1 / -1; }
     .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
     .lc-chip.home { background: var(--accent-wash); color: var(--accent-down); }
     .lc-chip.away { background: color-mix(in srgb, var(--attention) 14%, var(--panel)); color: var(--attention-ink); }
@@ -3582,10 +3575,10 @@
 
     /* ── Emphasis card (Schedule Next game, All teams Up next) ── */
     .lc-emph {
-      position: relative; margin: 18px 0 28px; padding: 34px 28px 26px; border-radius: var(--radius);
+      position: relative; margin: 18px 0 28px; padding: 24px 28px 26px; border-radius: var(--radius);
       background: var(--panel); border: 2px solid var(--sticker-ink); box-shadow: 4px 4px 0 0 var(--sticker-ink);
     }
-    .ng-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 28px; align-items: center; }
+    .ng-card { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px 28px; align-items: center; }
     .ng-date { display: flex; flex-direction: column; gap: 2px; min-width: 96px; padding-right: 24px; border-right: 1px solid var(--hairline); white-space: nowrap; }
     .schedule-list > .lc-emph { margin: 16px 0 4px; }
     .ng-dow { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
@@ -3603,7 +3596,7 @@
     .ng-wait { font-size: 15px; color: var(--ink-secondary); max-width: 220px; }
     @keyframes ngFill { from { transform: scaleX(0); } to { transform: none; } }
     @media (max-width: 760px) {
-      .lc-emph { padding: 30px 18px 20px; }
+      .lc-emph { padding: 20px 18px; }
       .ng-card { grid-template-columns: 1fr; gap: 14px; }
       .ng-date { flex-direction: row; align-items: baseline; gap: 10px; padding: 0 0 12px; border-right: none; border-bottom: 1px solid var(--hairline); }
       .ng-md { font-size: 36px; }
@@ -3613,7 +3606,7 @@
     }
 
     /* ── All teams: Up next + status cards ── */
-    .dash-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; }
+    .dash-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px 22px; align-items: center; }
     .dash-hero .sb-badge { --ring: 2px; width: 56px; height: 56px; font-size: 24px; }
     .dash-hk { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .dash-hk a { color: inherit; text-decoration: none; }
@@ -4114,7 +4107,7 @@
         <p class="dashboard-sub">Enter the invite code your coach shared with you.</p>
       </div>
     </div>
-    <div class="card card--emph">
+    <div class="lc-emph">
       <div class="card-title">Invite code</div>
       <div class="card-sub">Codes are 8 characters — find yours in the team's settings in the Leadoff iOS app or this site.</div>
       <div class="add-player-row">
