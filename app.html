@@ -258,12 +258,6 @@
     .brand-wordmark { display: block; height: 32px; width: auto; }
     .topbar-logo picture, .sidebar-brand picture { display: block; line-height: 0; }
     .topbar-divider { width: 1px; height: 18px; background: var(--hairline); }
-    .topbar-title {
-      font-size: 14px;
-      color: var(--ink-secondary);
-      font-weight: 400;
-      letter-spacing: -0.1px;
-    }
     .topbar-spacer { flex: 1; }
 
     /* ── AUTH TOPBAR ── */
@@ -332,7 +326,6 @@
       flex-shrink: 0;
     }
     .auth-logo-name { font-weight: 700; font-size: 17px; }
-    .auth-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
     .auth-sub { font-size: 13px; color: var(--ink-secondary); margin-bottom: 28px; line-height: 1.5; }
     .auth-providers { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     /* Provider buttons are sticker buttons (README-INTEGRATION §3): green
@@ -640,7 +633,7 @@
     .btn:disabled { opacity: 0.55; cursor: default; pointer-events: none; }
 
     /* Primary CTA = accent sticker (green is a FILL; text is dark grass, never white) */
-    .btn-primary, .btn-teal, .btn-cta {
+    .btn-primary, .btn-cta {
       background: var(--accent);
       color: var(--on-accent);
     }
@@ -654,7 +647,7 @@
 
     /* Tertiary / quiet actions — 12px hairline, no fill, body face.
        Sticker chrome is for elements of note only. */
-    .btn-ghost, .btn-back {
+    .btn-ghost {
       background: none;
       color: var(--ink);
       border: 1px solid color-mix(in srgb, var(--ink-secondary) 15%, transparent);
@@ -665,8 +658,8 @@
       text-transform: none;
       letter-spacing: 0;
     }
-    .btn-ghost:hover, .btn-back:hover { background: var(--panel); border-color: var(--hairline-strong); }
-    .btn-ghost:active, .btn-back:active { transform: scale(0.98); box-shadow: none; }
+    .btn-ghost:hover { background: var(--panel); border-color: var(--hairline-strong); }
+    .btn-ghost:active { transform: scale(0.98); box-shadow: none; }
 
     /* Danger = alert wash (red is alerts, never the accent) */
     .btn-danger {
@@ -1666,24 +1659,6 @@
       }
     }
 
-    .att-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 10px 18px;
-      border-radius: var(--radius-pill);
-      background: var(--panel);
-      border: 1.5px solid var(--hairline);
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--ink);
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-    .att-pill:hover { border-color: var(--gray-3); background: var(--bg-secondary); }
-    .att-pill.in { background: var(--accent); border-color: var(--accent); font-weight: 600; color: var(--on-accent); }
-    .att-pill.out { background: var(--panel); border-color: var(--hairline); color: var(--ink-secondary); }
-
     .att-count { font-size: 14px; color: var(--ink-secondary); margin-bottom: 20px; }
     .attendance-grid {
       display: flex;
@@ -1841,36 +1816,10 @@
       padding: 4px 16px 4px 10px;
       clip-path: polygon(0 0, calc(100% - 0.45em) 0, 100% 50%, calc(100% - 0.45em) 100%, 0 100%);
     }
-    .team-card-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-    .team-pill {
-      font-size: 14px;
-      background: var(--gray-5);
-      color: var(--ink-secondary);
-      border-radius: 100px;
-      padding: 6px 14px;
-      font-weight: 500;
-    }
     .team-card-actions {
       display: flex;
       flex-direction: column;
       gap: 12px;
-    }
-    .team-card-actions .btn-create {
-      width: 100%;
-      justify-content: center;
-    }
-    .team-card-actions .btn-row {
-      display: flex;
-      gap: 8px;
-    }
-    .team-card-actions .btn-row .btn {
-      flex: 1;
-      justify-content: center;
     }
     .team-card-empty {
       text-align: center;
@@ -2222,20 +2171,6 @@
     .member-role-pill.owner { background: var(--accent-wash); color: var(--accent-down); }
     .member-role-pill.coach { background: var(--accent-wash); color: var(--accent-down); }
 
-    /* Team share icon — small circular hairline button (header-icon spec) */
-    .team-share-btn {
-      width: 32px; height: 32px;
-      border-radius: 50%;
-      border: 1px solid color-mix(in srgb, var(--ink-secondary) 15%, transparent);
-      background: none;
-      color: var(--ink-secondary);
-      display: inline-flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-    .team-share-btn:hover { border-color: var(--hairline-strong); color: var(--ink); background: var(--panel); }
-
     /* Show steps 1–2 simultaneously, hide step 3 (roster) */
     .settings-mode #step-1,
     .settings-mode #step-2 { display: flex !important; flex-direction: column; gap: 20px; }
@@ -2370,17 +2305,8 @@
     .sidebar-link:hover { background: var(--bg-secondary); }
     .sidebar-link.active { background: var(--bg-secondary); color: var(--ink); font-weight: 600; }
     .sidebar-link .sidebar-ico { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
-    .sidebar-section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-secondary); padding: 14px 12px 6px; }
     .sidebar-empty { font-size: 13px; color: var(--ink-secondary); padding: 8px 12px; }
     .sidebar-team { display: flex; flex-direction: column; }
-    .sidebar-team-head {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 8px; width: 100%;
-      background: none; border: none; cursor: pointer; text-align: left;
-      font-size: 14px; font-weight: 600; font-family: inherit; color: var(--ink);
-    }
-    .sidebar-team-head:hover { background: var(--bg-secondary); }
-    .sidebar-team.current > .sidebar-team-head { background: var(--bg-secondary); }
     .sidebar-team-logo { width: 24px; height: 24px; border-radius: var(--radius-small); flex-shrink: 0; object-fit: cover; }
     .sidebar-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sidebar-team-chev { color: var(--ink-secondary); font-size: 14px; transition: transform 0.15s; flex-shrink: 0; }
@@ -2467,7 +2393,6 @@
     .hidden { display: none; }
     .text-muted { font-size: 14px; color: var(--ink-secondary); }
     .text-muted-sm { font-size: 13px; color: var(--ink-secondary); }
-    .text-hint { font-size: 14px; color: var(--ink-secondary); margin-bottom: 16px; }
     .flex-row { display: flex; align-items: center; }
     .flex-row.gap-sm { gap: 8px; }
     .flex-row.gap-md { gap: 12px; }
@@ -2696,15 +2621,6 @@
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.1em;
-      color: var(--ink-secondary);
-    }
-
-    /* Section headers that were all-caps go sentence case, one spec app-wide */
-    .sidebar-section-label {
-      text-transform: none;
-      letter-spacing: 0;
-      font-size: 14px;
-      font-weight: 600;
       color: var(--ink-secondary);
     }
 
@@ -3469,7 +3385,6 @@
     .ts-ic .sb-tip { left: 50%; top: auto; bottom: calc(100% + 8px); transform: translate(-50%, 4px); }
     .ts-ic:hover .sb-tip, .ts-ic:focus-visible .sb-tip { opacity: 1; transform: translate(-50%, 0); transition-delay: .3s; }
     .ts-card .btn-ghost { min-height: 40px; }
-    .dash-note { margin: -8px 0 0; font-size: 14px; color: var(--ink-secondary); }
 
     /* ── Schedule v2 (Oct 30 2026): game rows + Game balls ──
        Section heads (.section-head) sit outside their cards; cards are
