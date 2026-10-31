@@ -136,6 +136,11 @@
       --gray-4:      #D9D4C6;
       --gray-5:      #F1ECDD;
       --bg-secondary:#F6F1E3;              /* soft cream for in-panel rows */
+      /* Row hover rule (Dan, Oct 31 2026): every hoverable row on a white
+         panel (Players, Schedule, lineup table, lineup lists) uses the
+         Players-tab tan; pressed or selected rows step to --gray-5. */
+      --row-hover:   color-mix(in srgb, var(--page) 45%, var(--panel));
+      --row-press:   var(--gray-5);
       --bg:          var(--page);
       --border:      var(--hairline);
       --text:        var(--ink);
@@ -1416,7 +1421,7 @@
       color: var(--text);
       text-align: center;
     }
-    .lineup-table tbody tr:hover { background: var(--bg-secondary); }
+    .lineup-table tbody tr:hover { background: var(--row-hover); }
     .lineup-table tbody tr.sortable-ghost { background: var(--bg-secondary); opacity: 0.6; }
     .lineup-table tbody tr.sortable-chosen { background: var(--white); }
     .lineup-table tbody tr.sortable-drag { background: var(--white); opacity: 1; }
@@ -1431,7 +1436,7 @@
       min-width: 200px;
     }
     .lineup-table th:first-child { background: var(--bg-secondary); }
-    .lineup-table tbody tr:hover td:first-child { background: var(--bg-secondary); }
+    .lineup-table tbody tr:hover td:first-child { background: var(--row-hover); }
 
     .player-cell {
       display: flex;
@@ -1712,8 +1717,8 @@
       transition: border-color 0.12s, background 0.12s;
     }
     .import-item:hover {
-      border-color: var(--green);
-      background: var(--bg-secondary);
+      border-color: var(--hairline-strong);
+      background: var(--row-hover);
     }
     .import-item-info { flex: 1; min-width: 0; }
     .import-item-title {
@@ -2086,7 +2091,7 @@
       cursor: pointer;
       transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
-    .lineup-item:hover { border-color: var(--hairline-strong); box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--bg-secondary); }
+    .lineup-item:hover { border-color: var(--hairline-strong); box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: var(--row-hover); }
     .lineup-item:active { transform: scale(0.99); }
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--text); }
@@ -3748,12 +3753,12 @@
       transition: background-color .15s;
     }
     .sc-row + .sc-row::before { content: ""; position: absolute; top: 0; left: 12px; right: 16px; height: 1px; background: var(--hairline); transition: opacity .15s; }
-    /* Hover is an inset light-green highlight inside the white card, so it
-       never reads as the cream page; the rules next to it step aside. */
-    .sc-row:hover { background: color-mix(in srgb, var(--accent-wash) 60%, var(--panel)); }
+    /* Hover is the shared row tan, inset inside the white card (rounded,
+       6px in from the edge); the rules next to it step aside. */
+    .sc-row:hover { background: var(--row-hover); }
     .sc-row:hover::before, .sc-row:hover + .sc-row::before { opacity: 0; }
     .sc-row:focus-visible { outline: 3px solid var(--accent-down); outline-offset: -3px; }
-    .sc-row:active { background: var(--accent-wash); }
+    .sc-row:active { background: var(--row-press); }
     .sc-row.inert { cursor: default; }
     .sc-row.inert:hover { background: none; }
     .sc-row.inert:hover::before, .sc-row.inert:hover + .sc-row::before { opacity: 1; }
@@ -3898,9 +3903,9 @@
       transition: background-color .15s;
     }
     button.pl-tr { cursor: pointer; }
-    button.pl-tr:hover { background: color-mix(in srgb, var(--page) 45%, var(--panel)); }
+    button.pl-tr:hover { background: var(--row-hover); }
     button.pl-tr:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
-    .pl-tr.is-sel, button.pl-tr.is-sel:hover { background: var(--gray-5); }
+    .pl-tr.is-sel, button.pl-tr.is-sel:hover { background: var(--row-press); }
     .pl-tr.pl-hd { border-top: none; padding: 12px 18px 10px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .pl-tbl.ro .pl-tr { grid-template-columns: minmax(180px, 1.3fr) minmax(200px, 2fr); }
     .pl-who { display: flex; align-items: center; gap: 12px; min-width: 0; }

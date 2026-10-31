@@ -86,6 +86,10 @@ The Cowork session built out, in order:
 - Sizing (Oct 30 2026): the paper sheet is drawn like an image, always 100 wide by 68 tall (`aspect-ratio` on `.lo-print`), and every size is a multiple of `--u` (1/960 of the sheet width, container units). Print engines disagree on margins and px-per-inch (iOS prints at the printer's own margins and shrinks to its own scale, about 82 CSS px per inch), but they scale width and height together, so the sheet fits one landscape page on Letter (margins up to ~.5in) and A4. Never set a fixed px or inch height on the sheet again. Player List rows split a fixed budget (`--lo-avail` / `--lo-rows`, capped at 40) and the type scales with the row, so 16 players (up to ~20) fit one page; notes take any spare height and drop at 17+. UTL1-3 sit in the field's foul corners, not in a row under it.
 - The iOS app bundles copies in `Resources/PrintTemplates/` for offline use: copy the two built files over before each iOS release.
 
+## Design rules (app.html)
+
+- **Row hover (Dan, Oct 31 2026):** every hoverable row on a white panel uses `--row-hover` (the Players tab tan, `--page` 45% into `--panel`); a pressed or selected row uses `--row-press` (`--gray-5`). Players, Schedule (inset, rounded, inside the card), lineup table, lineup lists and Import from previous all share it. No green or other tints for row hover. Menus, the sidebar and buttons keep their own hovers.
+
 ## Mobile
 
 The primary user is a parent, not a coach. Mobile experience matters — test touch device styles via `@media (pointer: coarse)`. The lineup list view uses `pointer: coarse` rules to remove chevrons, center position text, fix inning column widths, and stick the player name column.
