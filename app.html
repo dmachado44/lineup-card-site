@@ -743,24 +743,6 @@
     .player-row input[type=text] { min-width: 80px; }
 
     .pos-pills { display: flex; flex-wrap: wrap; gap: 7px; }
-    .pos-pill {
-      font-size: 13px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--hairline);
-      background: var(--panel);
-      color: var(--ink-secondary);
-      cursor: pointer;
-      transition: all 0.15s;
-      font-weight: 500;
-    }
-    .pos-pill:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); }
-    .pos-pill.selected {
-      background: var(--accent);
-      color: var(--on-accent);
-      border-color: var(--accent);
-      font-weight: 600;
-    }
 
     .priority-row {
       display: flex;
@@ -777,24 +759,6 @@
     .priority-pills {
       display: flex;
       gap: 6px;
-    }
-    .priority-pill {
-      font-size: 13px;
-      padding: 5px 12px;
-      border-radius: 20px;
-      border: 1px solid var(--hairline);
-      background: var(--panel);
-      color: var(--ink-secondary);
-      cursor: pointer;
-      transition: all 0.15s;
-      font-weight: 500;
-    }
-    .priority-pill:hover { border-color: var(--hairline-strong); background: var(--bg-secondary); }
-    .priority-pill.active {
-      background: var(--accent);
-      color: var(--on-accent);
-      border-color: var(--accent);
-      font-weight: 600;
     }
 
     /* ── Roster auto-save status indicator ── */
@@ -1889,22 +1853,6 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-    /* Same selected state as the who's-here and League rules chips (wash +
-       ink ring when on, quiet outline when off), position code only. */
-    .game-pos-pill {
-      display: inline-flex; align-items: center; justify-content: center; min-width: 48px; height: 36px; padding: 0 13px;
-      border-radius: 18px; border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
-      font: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer; user-select: none;
-      transition: background-color .2s, border-color .2s, color .2s, transform .12s;
-    }
-    .game-pos-pill:active { transform: scale(.96); }
-    .game-pos-pill.off { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); }
-    .game-pos-pill.off:hover { border-color: var(--ink-secondary); color: var(--ink); }
-    .game-pos-pill.pop { animation: lcPopScale .3s var(--lc-pop); }
-    .game-pos-pill:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
-    .game-pos-pill[aria-disabled="true"] { cursor: not-allowed; }
-    @media (prefers-color-scheme: dark) { .game-pos-pill.on { border-color: var(--accent); } }
-    @media (prefers-reduced-motion: reduce) { .game-pos-pill.pop { animation: none; } }
     .game-pos-count { font-size: 14px; color: var(--ink-secondary); margin-bottom: 20px; }
 
     @media (max-width: 700px) {
@@ -3496,18 +3444,36 @@
 
     /* ── Builder: who's here chips ── */
     .att-pos-row { display: block; }
-    .att-chip {
-      display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 15px 0 10px; border-radius: 19px;
-      border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
-      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
+
+    /* ── Toggle chip (F3, Oct 31 2026): THE on/off chip, same spec as iOS
+       LCToggleChip. Who's here, league field positions, game positions,
+       the player panel and roster rows all use it. 36px capsule, 15/600.
+       On: green wash, 1.5px ink ring, ink text. Off: card fill, faint ink
+       ring, secondary ink. --check adds the 20px check circle (glyph only
+       when on); --dim fades an off chip to 70% (Who's here: a kid who's
+       out recedes). State class is .on; off is the default. ── */
+    .lc-toggle {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 36px; min-width: 46px; padding: 0 12px; border-radius: 18px;
+      border: 1.5px solid color-mix(in srgb, var(--ink) 18%, transparent); background: var(--panel); color: var(--ink-secondary);
+      font: inherit; font-size: 15px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none;
       transition: opacity .2s, background-color .2s, border-color .2s, color .2s, transform .12s;
     }
-    .att-chip:active { transform: scale(.96); }
-    .att-chip .att-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; flex: none; transition: background-color .2s; }
-    .att-chip.out { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); opacity: .6; }
-    .att-chip.out .att-check { background: var(--hairline-strong); }
-    .att-chip.pop { animation: lcPopScale .3s var(--lc-pop); }
-    .att-chip:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .lc-toggle.on { background: var(--accent-wash); border-color: var(--ink); color: var(--ink); }
+    .lc-toggle:not(.on):hover { border-color: var(--ink-secondary); color: var(--ink); }
+    .lc-toggle:active { transform: scale(.95); }
+    .lc-toggle--check { padding-left: 8px; }
+    .lc-toggle-check {
+      width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid; place-items: center;
+      background: color-mix(in srgb, var(--ink) 18%, transparent); color: var(--panel); transition: background-color .2s;
+    }
+    .lc-toggle-check svg { opacity: 0; transform: scale(.5); transition: opacity .2s, transform .25s var(--lc-pop); }
+    .lc-toggle.on .lc-toggle-check { background: var(--ink); }
+    .lc-toggle.on .lc-toggle-check svg { opacity: 1; transform: none; }
+    .lc-toggle--dim:not(.on) { opacity: .7; }
+    .lc-toggle.pop { animation: lcPopScale .3s var(--lc-pop); }
+    .lc-toggle:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .lc-toggle[aria-disabled="true"] { cursor: not-allowed; }
     .att-count { margin-bottom: 14px; font-size: 15px; color: var(--ink-secondary); }
     .att-num { display: inline-block; font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1; color: var(--ink); animation: lcTick .35s var(--lc-pop); }
 
@@ -3627,7 +3593,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       body.signed-in, .sidebar, .sidebar *, .m-topbar *, .wizard-bar *, .step-actions, .builder-tools, .save-bar,
-      .att-chip, .att-num, .lt-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
+      .lc-toggle, .lc-toggle *, .att-num, .lt-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
         animation: none !important; transition: none !important;
       }
       .share-card-code .code::before { transition: opacity .15s !important; }
@@ -3803,23 +3769,8 @@
     .pos-k { padding-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
     .pos-k span { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-secondary); }
     .pos-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-    .pos-chip {
-      display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 10px; border-radius: 19px;
-      border: 1.5px solid var(--sticker-ink); background: var(--accent-wash); color: var(--ink);
-      font: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
-      transition: opacity .2s, background-color .2s, border-color .2s, color .2s, transform .12s;
-    }
-    .pos-chip:active { transform: scale(.96); }
-    .pos-chip .att-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; flex: none; transition: background-color .2s; }
-    .pos-chip.off { background: var(--panel); border-color: var(--hairline-strong); color: var(--ink-secondary); }
-    .pos-chip.off .att-check { background: var(--hairline-strong); }
-    .pos-chip.off:hover { border-color: var(--ink-secondary); color: var(--ink); }
-    .pos-chip.pop { animation: lcPopScale .3s var(--lc-pop); }
-    .pos-chip:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
-    .pos-chip[aria-disabled="true"] { cursor: not-allowed; }
     .pos-code { font-size: 12px; font-weight: 700; color: var(--ink-secondary); margin-left: 1px; }
-    .pos-chip.on .pos-code { color: var(--accent-down); }
-    @media (prefers-color-scheme: dark) { .pos-chip.on { border-color: var(--accent); } .pos-chip.on .pos-code { color: var(--accent); } }
+    .lc-toggle.on .pos-code { color: var(--accent-down); }
 
     .rules-card .rule-row { padding: 18px 0; border-bottom: 1px solid var(--hairline); gap: 20px; }
     .rules-card .rule-row:first-child { padding-top: 2px; }
@@ -3849,9 +3800,8 @@
       .pos-group { grid-template-columns: 1fr; gap: 10px; }
       .pos-k { padding-top: 0; display: flex; gap: 8px; align-items: baseline; }
       .pos-k span { margin-top: 0; }
-      .pos-chip { height: 36px; font-size: 14.5px; }
     }
-    @media (prefers-reduced-motion: reduce) { .pos-chip.pop, .inning-count.tick { animation: none; } }
+    @media (prefers-reduced-motion: reduce) { .inning-count.tick { animation: none; } }
 
     /* Game balls: one slot per kid fills as balls go out; waiting kids first. */
     .gb-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; border-radius: var(--radius); background: var(--panel); }
@@ -3947,15 +3897,6 @@
     .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
     .pp-two .player-num-input { width: 100%; flex: none; }
     .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pp-pc {
-      height: 36px; min-width: 46px; padding: 0 10px; border-radius: 18px; border: 1.5px solid var(--hairline-strong); background: var(--panel);
-      font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-secondary); cursor: pointer;
-      transition: background-color .2s, border-color .2s, color .2s, transform .12s;
-    }
-    .pp-pc:active { transform: scale(.94); }
-    .pp-pc.on { background: var(--accent-wash); border-color: var(--sticker-ink); color: var(--ink); }
-    .pp-pc.pop { animation: lcPopScale .3s var(--lc-pop); }
-    @media (prefers-color-scheme: dark) { .pp-pc.on { border-color: var(--accent); background: var(--accent-wash); color: var(--ink); } }
     .pp-seg { display: flex; padding: 3px; border-radius: 11px; background: var(--bg-secondary); }
     .pp-seg button { flex: 1; height: 36px; border: none; border-radius: 8px; background: transparent; font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; transition: background-color .2s, color .2s; }
     .pp-seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(16,22,19,.14); }
@@ -4010,7 +3951,7 @@
     .field-err:empty { display: none; }
 
     @media (prefers-reduced-motion: reduce) {
-      .lc-rise, .ng-seg span i, .pl-tr, .pp, .pp-pc, .lc-toast, .lc-toast-bar, .m-tab::after, .ts-sk, .players-page {
+      .lc-rise, .ng-seg span i, .pl-tr, .pp, .lc-toast, .lc-toast-bar, .m-tab::after, .ts-sk, .players-page {
         animation: none !important; transition: none !important;
       }
     }
@@ -9598,7 +9539,7 @@ function renderPlayerPanel() {
       <span class="pp-lb" id="pp-pos-lb">Can play</span>
       <div class="pp-chips" role="group" aria-labelledby="pp-pos-lb">${getActiveFieldPositions().map(pos => {
         const on = (p.prefPos || []).includes(pos);
-        return `<button class="pp-pc${on ? ' on' : ''}" type="button" aria-pressed="${on}" onclick="ppTogglePos('${id}', '${pos}', this)">${pos}</button>`;
+        return `<button class="lc-toggle${on ? ' on' : ''}" type="button" aria-pressed="${on}" onclick="ppTogglePos('${id}', '${pos}', this)">${pos}</button>`;
       }).join('')}</div>
       <span class="pp-help">None picked means anywhere.</span>
     </div>
@@ -11683,7 +11624,7 @@ function posLabel(pos) {
 function renderPosGrid() {
   const grid = document.getElementById('pos-grid');
   const active = state.leagueRules.activePositions;
-  const check = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const check = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   const last = active.length <= 1;
   grid.innerHTML = POS_GROUPS.map(([label, list]) => {
     const on = list.filter(p => active.includes(p)).length;
@@ -11692,9 +11633,9 @@ function renderPosGrid() {
       <div class="pos-chips">${list.map(pos => {
         const isOn = active.includes(pos);
         const lock = isOn && last;
-        return `<button type="button" class="pos-chip ${isOn ? 'on' : 'off'}${_posPop === pos ? ' pop' : ''}" aria-pressed="${isOn}"
+        return `<button type="button" class="lc-toggle lc-toggle--check${isOn ? ' on' : ''}${_posPop === pos ? ' pop' : ''}" aria-pressed="${isOn}"
           ${lock ? 'aria-disabled="true" title="Keep at least one position on"' : ''} onclick="togglePos('${pos}')">
-          <i class="att-check">${check}</i>${escHtml(posLabel(pos))}<b class="pos-code">${pos}</b></button>`;
+          <i class="lc-toggle-check">${check}</i>${escHtml(posLabel(pos))}<b class="pos-code">${pos}</b></button>`;
       }).join('')}</div>
     </div>`;
   }).join('');
@@ -12073,17 +12014,17 @@ function renderPlayerList() {
         <span class="priority-label">Positions:</span>
         <div class="pos-pills">
           ${getActiveFieldPositions().map(pos =>
-            `<span class="pos-pill ${player.prefPos.includes(pos) ? 'selected' : ''}"
-              onclick="togglePrefPos('${player.id}','${pos}')">${pos}</span>`
+            `<button type="button" class="lc-toggle${player.prefPos.includes(pos) ? ' on' : ''}" aria-pressed="${player.prefPos.includes(pos)}"
+              onclick="togglePrefPos('${player.id}','${pos}')">${pos}</button>`
           ).join('')}
         </div>
       </div>
       <div class="priority-row">
         <span class="priority-label">Prioritize:</span>
         <div class="priority-pills">
-          <span class="priority-pill ${prio === 'infield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','infield')">Infield</span>
-          <span class="priority-pill ${prio === 'outfield' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</span>
-          <span class="priority-pill ${prio === 'both' ? 'active' : ''}" onclick="setFieldPriority('${player.id}','both')">Both</span>
+          <button type="button" class="lc-toggle${prio === 'infield' ? ' on' : ''}" aria-pressed="${prio === 'infield'}" onclick="setFieldPriority('${player.id}','infield')">Infield</button>
+          <button type="button" class="lc-toggle${prio === 'outfield' ? ' on' : ''}" aria-pressed="${prio === 'outfield'}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</button>
+          <button type="button" class="lc-toggle${prio === 'both' ? ' on' : ''}" aria-pressed="${prio === 'both'}" onclick="setFieldPriority('${player.id}','both')">Both</button>
         </div>
       </div>
     `;
@@ -12383,11 +12324,11 @@ function renderAttendance() {
   // Who's here chips (Oct 30 2026, from the audit board): wash + ink check
   // when in, dimmed when out; the tapped chip pops and the count ticks.
   countEl.innerHTML = `<strong class="att-num">${attending.length}</strong> of ${state.players.length} here · tap a kid who can't make it`;
-  const check = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const check = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   grid.innerHTML = state.players.map(p => {
     const here = !!state.attendance[p.id];
-    return `<button type="button" class="att-chip ${here ? 'in' : 'out'}${_attPop === p.id ? ' pop' : ''}" aria-pressed="${here}"
-         onclick="toggleAttendance('${p.id}')"><i class="att-check">${check}</i>${escHtml(p.name)}</button>`;
+    return `<button type="button" class="lc-toggle lc-toggle--check lc-toggle--dim${here ? ' on' : ''}${_attPop === p.id ? ' pop' : ''}" aria-pressed="${here}"
+         onclick="toggleAttendance('${p.id}')"><i class="lc-toggle-check">${check}</i>${escHtml(p.name)}</button>`;
   }).join('');
   _attPop = null;
   if (typeof renderStrategyInsights === 'function') renderStrategyInsights();
@@ -12407,7 +12348,7 @@ function renderGamePositions() {
   grid.innerHTML = pool.map(pos => {
     const on = active.includes(pos);
     const lock = on && last;
-    return `<button type="button" class="game-pos-pill ${on ? 'on' : 'off'}${_gamePosPop === pos ? ' pop' : ''}" aria-pressed="${on}"
+    return `<button type="button" class="lc-toggle${on ? ' on' : ''}${_gamePosPop === pos ? ' pop' : ''}" aria-pressed="${on}"
       title="${lock ? 'Keep at least one position on' : escHtml(posLabel(pos))}"${lock ? ' aria-disabled="true"' : ''}
       onclick="toggleGamePosition('${pos}')">${pos}</button>`;
   }).join('');
