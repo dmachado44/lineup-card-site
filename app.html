@@ -503,12 +503,14 @@
     /* ── MAIN LAYOUT ── */
     .page { max-width: 1440px; margin: 0 auto; padding: 48px 40px 100px; }
 
-    /* Two-tier cards: quiet (hairline, no shadow) everywhere; emphasis
-       (2px ink border + hard offset shadow, matching the stickers) for ONE
-       element per screen at the point of emphasis. */
+    /* Two-tier cards: quiet (white panel, no border, no shadow; the
+       cream-to-white step is the edge, F16) everywhere; emphasis (2px ink
+       border + hard offset shadow, matching the stickers) for ONE element
+       per screen at the point of emphasis. White-on-white surfaces (modals,
+       panels) keep their own hairline. */
     .card {
       background: var(--panel);
-      border: 1px solid var(--hairline);
+      border: none;
       border-radius: var(--radius-card);
       padding: 26px 30px;
       margin-bottom: 24px;
@@ -1788,39 +1790,6 @@
       gap: 24px;
       margin-bottom: 48px;
     }
-    .team-card {
-      background: var(--panel);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-card);
-      padding: 24px;
-      position: relative;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .team-card:hover { border-color: var(--hairline-strong); transform: translateY(-2px); }
-    .team-card-name {
-      font-size: 24px;
-      margin-bottom: 14px;
-    }
-    /* Pennant garnish — chevron-notched red tag, ONE per screen.
-       Reserved for kickers; never a semantic error treatment. */
-    .team-card-current {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--sticker-cream);
-      background: var(--pennant);
-      padding: 4px 16px 4px 10px;
-      clip-path: polygon(0 0, calc(100% - 0.45em) 0, 100% 50%, calc(100% - 0.45em) 100%, 0 100%);
-    }
-    .team-card-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
     .team-card-empty {
       text-align: center;
       padding: 60px 24px;
@@ -1836,12 +1805,12 @@
       display: flex; align-items: center; justify-content: space-between;
       padding: 18px 24px;
       background: var(--panel);
-      border: 1px solid var(--hairline);
       border-radius: var(--radius-control);
       cursor: pointer;
-      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, transform 0.15s;
+      transition: box-shadow 0.15s, background 0.15s, transform 0.15s;
     }
-    .lineup-item:hover { border-color: var(--hairline-strong); box-shadow: 0 2px 8px rgba(var(--shadow-rgb), 0.06); background: var(--row-hover); }
+    .lineup-item:hover { box-shadow: 0 2px 10px rgba(var(--shadow-rgb), 0.08); }
+    @media (prefers-color-scheme: dark) { .lineup-item:hover { background: color-mix(in srgb, var(--ink) 6%, var(--panel)); } }
     .lineup-item:active { transform: scale(0.99); }
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--ink); }
@@ -2407,28 +2376,6 @@
     .mt-md { margin-top: 14px; }
     .empty-icon { font-size: 48px; margin-bottom: 16px; }
 
-    /* ── TEAM THEMING ── */
-    /* (Colored top-border stripe removed — team color lives in the
-       logo/avatar emblem only, per the one-signature-color rule.) */
-    .team-logo-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-    .team-card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .team-card-header .team-logo-mark {
-      width: 40px;
-      height: 40px;
-    }
-
-
     /* ── AVATAR DROPDOWN ── */
     .avatar-menu-wrap {
       position: relative;
@@ -2607,7 +2554,7 @@
     /* Hero/title surfaces wear the display face (heavy, compressed).
        NOT uppercase — all-caps is reserved for tabs, kickers, sticker labels. */
     .dashboard-header-left h1, .players-header-info h1, .settings-header h1,
-    .auth-page-title, .upgrade-title, .team-card-name, .export-title,
+    .auth-page-title, .upgrade-title, .export-title,
     .modal-title, .auth-logo-name, .auth-page-logo .logo-name {
       font-family: var(--font-display);
       font-weight: 900;
@@ -3449,7 +3396,7 @@
        the who's-here selection state, limits as segmented controls. */
     .rules-sec { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
     .settings-mode .rules-row .rules-sec { margin-bottom: 0; }
-    .rules-card { border: none; margin: 0; padding: 22px 26px; }
+    .rules-card { margin: 0; padding: 22px 26px; }
     .settings-mode #step-2 .rules-card { margin-bottom: 0; }
     .rules-hint { margin: 0 0 16px; font-size: 14px; color: var(--ink-secondary); }
     #pos-grid { display: flex; flex-direction: column; gap: 14px; }
