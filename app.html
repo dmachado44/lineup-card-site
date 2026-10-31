@@ -2658,25 +2658,6 @@
       height: 40px;
     }
 
-    /* ── TEAM LETTER AVATAR (iOS-style) ── */
-    .team-letter-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 700;
-      flex-shrink: 0;
-      color: var(--ink);
-      background: var(--gray-5);
-    }
-    .team-card-header .team-letter-avatar {
-      width: 40px;
-      height: 40px;
-      font-size: 15px;
-    }
 
     /* ── AVATAR DROPDOWN ── */
     .avatar-menu-wrap {
@@ -3184,12 +3165,21 @@
       font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: background .15s;
     }
     .sb-team:hover { background: var(--gray-5); }
+    /* Team badge (F5, Oct 31 2026): same as iOS TeamBadge. A green disc,
+       on-accent display initials (two letters) at ~44% of the size, the
+       logo on top when there is one, and an ink ring over both (1.5px
+       under 40px, 2px from 40px). No team-color tint: the brand pauses team
+       color. No name: the wash with a baseball. */
     .sb-badge {
-      flex: none; width: 36px; height: 36px; border-radius: 10px; overflow: hidden;
-      display: grid; place-items: center; background: var(--accent-wash); color: var(--ink);
+      --ring: 1.5px;
+      flex: none; position: relative; width: 36px; height: 36px; border-radius: 50%; overflow: hidden;
+      display: grid; place-items: center; background: var(--accent); color: var(--on-accent);
       font-family: var(--font-display); font-weight: 900; font-size: 16px; letter-spacing: .02em; line-height: 1;
     }
-    .sb-badge img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .sb-badge::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: 50%; box-shadow: inset 0 0 0 var(--ring) var(--sticker-ink); pointer-events: none; }
+    .sb-badge img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .sb-badge.empty { background: var(--accent-wash); color: var(--accent-down); }
+    .sb-badge.empty svg { width: 46%; height: 46%; }
     .sb-team-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; transition: opacity .14s .16s; }
     .sb-team-name { font-size: 16px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-team-sub { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -3209,7 +3199,7 @@
     }
     .sb-trow:hover { background: var(--bg-secondary); }
     .sb-trow.cur { background: var(--gray-5); }
-    .sb-trow .sb-badge { width: 30px; height: 30px; border-radius: 8px; font-size: 13px; }
+    .sb-trow .sb-badge { width: 30px; height: 30px; font-size: 13px; }
     .sb-trow-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .sb-trow-txt b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-trow-txt span { font-size: 12.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -3324,7 +3314,7 @@
       }
       .m-burger { flex: none; width: 44px; height: 44px; border: none; border-radius: 12px; background: transparent; color: var(--ink); display: grid; place-items: center; cursor: pointer; }
       .m-team { flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px; height: 44px; padding: 0 8px; border: none; border-radius: 12px; background: transparent; color: var(--ink); font: inherit; cursor: pointer; text-align: left; }
-      .m-team .sb-badge { width: 30px; height: 30px; border-radius: 9px; font-size: 13px; }
+      .m-team .sb-badge { width: 30px; height: 30px; font-size: 13px; }
       .m-team b { font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .sidebar { z-index: 60; }
       .sb-pop { width: auto; right: 0; }
@@ -3333,7 +3323,7 @@
     /* ── Page crumb + display-caps titles (matches onboarding) ── */
     .page-crumb { display: flex; align-items: center; gap: 10px; min-height: 24px; margin-bottom: 12px; font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .page-crumb:empty { display: none; }
-    .page-crumb .sb-badge { width: 24px; height: 24px; border-radius: 7px; font-size: 11px; letter-spacing: .02em; }
+    .page-crumb .sb-badge { width: 24px; height: 24px; font-size: 11px; letter-spacing: .02em; }
     .dashboard-header-left h1, .players-header-info h1, .settings-header h1 {
       font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
       font-size: 60px; line-height: .9; letter-spacing: .005em; margin-bottom: 10px;
@@ -3624,7 +3614,7 @@
 
     /* ── All teams: Up next + status cards ── */
     .dash-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 22px; align-items: center; }
-    .dash-hero .sb-badge { width: 56px; height: 56px; border-radius: 16px; font-size: 24px; }
+    .dash-hero .sb-badge { --ring: 2px; width: 56px; height: 56px; font-size: 24px; }
     .dash-hk { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .dash-hk a { color: inherit; text-decoration: none; }
     .dash-hk a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -3632,13 +3622,13 @@
     @media (max-width: 760px) {
       .dash-hero { grid-template-columns: auto minmax(0, 1fr); gap: 14px 16px; }
       .dash-hero .ng-act { grid-column: 1 / -1; }
-      .dash-hero .sb-badge { width: 44px; height: 44px; border-radius: 12px; font-size: 19px; }
+      .dash-hero .sb-badge { width: 44px; height: 44px; font-size: 19px; }
       .dash-ht { font-size: 24px; }
     }
     .teams-grid.ts-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
     .ts-card { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--radius); background: var(--panel); }
     .ts-head { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: none; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
-    .ts-head .sb-badge { width: 42px; height: 42px; border-radius: 12px; font-size: 18px; }
+    .ts-head .sb-badge { --ring: 2px; width: 42px; height: 42px; font-size: 18px; }
     .ts-head b { display: block; font-size: 18px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head span.ts-sub { display: block; font-size: 13.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head:hover b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
@@ -6581,20 +6571,24 @@ var SB_ICONS = {
   signout:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>'
 };
 
+// Two letters, same rule as iOS TeamBadge.initials: the first letters of
+// the first two words, or the first two letters of a one-word name.
 function teamInitials(name) {
-  const words = String(name || '?').trim().split(/\s+/).filter(Boolean);
+  const words = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!words.length) return '';
   if (words.length > 1) return (words[0][0] + words[1][0]).toUpperCase();
-  return (words[0] || '?').substring(0, 2).toUpperCase();
+  return words[0].substring(0, 2).toUpperCase();
 }
 
-// Team badge: the logo when there is one, else initials on a tint of the
-// team color (emblem use only; never the accent).
+const TEAM_BADGE_BALL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7.5 5.2c1.6 1.9 2.5 4.2 2.5 6.8s-.9 4.9-2.5 6.8M16.5 5.2c-1.6 1.9-2.5 4.2-2.5 6.8s.9 4.9 2.5 6.8"/></svg>';
+
+// Team badge (F5): the logo when there is one (initials underneath while it
+// loads or if it fails), else the initials on the green disc. Same as iOS.
 function teamBadgeHtml(team) {
-  const ini = escHtml(teamInitials(team && team.name));
-  const color = team && team.primaryColor;
-  const bg = color ? `background:color-mix(in srgb, ${sbAttr(color)} 26%, var(--panel));` : '';
-  const logo = team && team.logoURL ? `<img src="${sbAttr(team.logoURL)}" alt="" style="position:absolute;inset:0" onerror="this.remove()">` : '';
-  return `<span class="sb-badge" style="position:relative;${bg}" aria-hidden="true">${ini}${logo}</span>`;
+  const ini = teamInitials(team && team.name);
+  const logo = team && team.logoURL ? `<img src="${sbAttr(team.logoURL)}" alt="" onerror="this.remove()">` : '';
+  if (!ini && !logo) return `<span class="sb-badge empty" aria-hidden="true">${TEAM_BADGE_BALL}</span>`;
+  return `<span class="sb-badge" aria-hidden="true">${escHtml(ini)}${logo}</span>`;
 }
 
 function teamSubLine(team) {
