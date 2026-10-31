@@ -136,6 +136,10 @@
 
       /* Bench colors — cream family */
       --bench-bg:    var(--sticker-cream);
+      /* Field fill (§4c): white on the cream page, cream inside white cards,
+         panels and modals so the field still reads. Surfaces set --field-bg. */
+      --field-fill:          var(--panel);
+      --field-fill-on-white: var(--page);
 
       /* Legacy aliases (--muted, --text, --white, --border…) were retired
          Oct 31 2026: use the canonical tokens above. */
@@ -167,6 +171,7 @@
         --gray-5:          #1E2126;
         --bg-secondary:    #1C1F24;
         --bench-bg:        #241F12;
+        --field-fill-on-white: #1E2126;
       }
     }
 
@@ -344,7 +349,6 @@
       content: ''; flex: 1; height: 1px; background: var(--hairline);
     }
     .auth-email-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-    .auth-email-fields input { font-size: 16px; padding: 14px 16px; }
     .auth-email-actions { display: flex; gap: 8px; }
     .auth-email-actions .btn { flex: 1; font-size: 15px; }
     .auth-close {
@@ -567,46 +571,71 @@
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     .form-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
     @media (max-width: 600px) { .form-grid, .form-grid.col3 { grid-template-columns: 1fr; } }
-    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field { display: flex; flex-direction: column; gap: 8px; }
     .field.full { grid-column: 1 / -1; }
 
     /* Sentence case — all-caps is reserved for tabs, kickers, sticker labels */
     label {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
-      color: var(--ink-secondary);
+      color: var(--ink);
     }
 
-    /* Text fields: panel-white fill, 12px radius, hairline at ~30% of the
-       secondary ink. On the cream page, fields read as small white cards.
-       Focus = accent ring (web convention). */
+    /* Text fields: THE field spec (Brand/CRATE_THEME.md §4c, iOS lcField).
+       55px tall, 12px radius, 17/500 ink. 1px hairline (30% secondary ink)
+       at rest; focus and error go to 2px (border + 1px inset ring, so the
+       box never shifts) in step-down green / alert ink. No wash halo.
+       Fill comes from --field-bg: white on the cream page, cream inside
+       white cards, panels and modals. Variants: .field-code (invite codes,
+       64px), .field-compact (inline row cells, 40px), textarea (multiline,
+       120px and up). */
     input[type=text], input[type=url], input[type=email], input[type=password], input[type=date], input[type=time], input[type=number], select, textarea {
-      padding: 13px 16px;
+      height: 55px;
+      padding: 0 16px;
       border: 1px solid var(--hairline-strong);
       border-radius: var(--radius-btn);
-      font-size: 16px;
+      font-size: 17px;
+      font-weight: 500;
       font-family: inherit;
       color: var(--ink);
-      background: var(--panel);
+      background: var(--field-bg, var(--field-fill));
       outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
       width: 100%;
       -webkit-appearance: none;
     }
+    .card, .modal, .pp, .feedback-panel, .auth-page-card { --field-bg: var(--field-fill-on-white); }
+    .add-player-row { --field-bg: var(--field-fill); }
     select {
       padding-right: 40px;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239BA2B0' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B6659' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 14px center;
       cursor: pointer;
     }
-    input[type=text]::placeholder, input[type=url]::placeholder,
-    input[type=email]::placeholder, input[type=password]::placeholder { color: var(--gray-3); }
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-wash);
+    @media (prefers-color-scheme: dark) {
+      select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A919E' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
     }
-    textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+    input::placeholder, textarea::placeholder { color: var(--ink-secondary); opacity: 1; }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent-down);
+      box-shadow: inset 0 0 0 1px var(--accent-down);
+    }
+    input.is-invalid, textarea.is-invalid, select.is-invalid,
+    input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] {
+      border-color: var(--alert-ink);
+      box-shadow: inset 0 0 0 1px var(--alert-ink);
+    }
+    input:disabled, select:disabled, textarea:disabled { opacity: 0.55; cursor: not-allowed; }
+    textarea { height: auto; min-height: 120px; padding: 12px 14px; resize: vertical; line-height: 1.4; }
+    /* Invite codes: centered display face; the placeholder stays body face. */
+    input.field-code {
+      height: 64px; padding: 0 12px; text-align: center;
+      font: 900 32px var(--font-display); letter-spacing: 5px; text-transform: uppercase;
+    }
+    input.field-code::placeholder { font: 600 18px var(--font-body); letter-spacing: 0; text-transform: none; }
+    /* Inline cells in a row (roster rows): 40px, 10px corners. */
+    input.field-compact { height: 40px; padding: 0 10px; border-radius: 10px; font-size: 15px; }
 
     /* ── BUTTONS (Crate sticker system) ──
        The sticker: 12px rounded rect · 2px ink border · hard 4px offset ink
@@ -711,12 +740,7 @@
     }
     .player-pron-input { flex: 1; min-width: 120px; }
     .player-row:hover { border-color: var(--gray-4); }
-    .player-row input[type=text] {
-      min-width: 80px;
-      padding: 8px 12px;
-      font-size: 14px;
-      background: var(--panel);
-    }
+    .player-row input[type=text] { min-width: 80px; }
 
     .pos-pills { display: flex; flex-wrap: wrap; gap: 7px; }
     .pos-pill {
@@ -2915,18 +2939,6 @@
       flex: 1;
       overflow-y: auto;
     }
-    .feedback-panel-body .field label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--ink-secondary);
-      font-weight: 600;
-    }
-    .feedback-panel-body input,
-    .feedback-panel-body textarea {
-      font-size: 15px;
-      padding: 12px 14px;
-    }
     .feedback-panel-body textarea {
       min-height: 200px;
       flex: 1;
@@ -3168,9 +3180,9 @@
     .gn-card { border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; background: var(--panel); }
     .gn-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
     .gn-card-title { font-weight: 700; font-size: 15px; color: var(--ink); }
-    .gn-textarea { width: 100%; box-sizing: border-box; border: 1px solid var(--hairline); border-radius: var(--radius-sm); padding: 9px 11px; font: inherit; font-size: 15px; color: var(--ink); background: var(--bg-secondary); resize: vertical; min-height: 40px; }
-    .gn-textarea:focus { outline: 2px solid var(--accent-wash); border-color: var(--accent-down); }
-    .gn-team-textarea { min-height: 88px; }
+    /* Game notes: the shared textarea; a player note starts one line tall and grows. */
+    .gn-textarea { min-height: 55px; padding: 15px 14px; }
+    .gn-team-textarea { min-height: 120px; padding: 12px 14px; }
     .gn-chips { display: flex; gap: 6px; margin-top: 8px; }
     .gn-chip { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: transparent; color: var(--ink-secondary); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
     .gn-chip:hover { background: var(--bg-secondary); }
@@ -3930,8 +3942,8 @@
     .pp-x:hover { background: var(--gray-5); }
     .pp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 20px; }
     .pp-name { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
-    .pp-f { display: flex; flex-direction: column; gap: 6px; }
-    .pp-lb { font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+    .pp-f { display: flex; flex-direction: column; gap: 8px; }
+    .pp-lb { font-size: 15px; font-weight: 600; color: var(--ink); }
     .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
     .pp-two .player-num-input { width: 100%; flex: none; }
     .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -3957,7 +3969,7 @@
     .pp-rmb:hover { text-decoration: underline; text-underline-offset: 3px; }
     .pp-rm span, .pp-help { font-size: 13px; color: var(--ink-secondary); }
     .pp-add { align-self: flex-start; }
-    .pp :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .pp :focus-visible:not(input, select, textarea) { outline: 2px solid var(--accent-down); outline-offset: 2px; }
 
     /* Toast with undo: a snackbar keeps its ink in both themes */
     .lc-toast {
@@ -3994,10 +4006,8 @@
     /* ── Team settings: the save bar also saves the calendar link ── */
     #view-builder.settings-mode #btn-add-calendar { display: none; }
     /* Game info: a lineup needs a name or an opponent */
-    .field-err { font-size: 14px; font-weight: 600; color: var(--alert-ink); }
+    .field-err { font-size: 13px; font-weight: 600; color: var(--alert-ink); }
     .field-err:empty { display: none; }
-    input.is-invalid, input.is-invalid:focus { border-color: var(--alert-ink); }
-    input.is-invalid:focus { box-shadow: 0 0 0 3px var(--alert-wash); }
 
     @media (prefers-reduced-motion: reduce) {
       .lc-rise, .ng-seg span i, .pl-tr, .pp, .pp-pc, .lc-toast, .lc-toast-bar, .m-tab::after, .ts-sk, .players-page {
@@ -4225,8 +4235,7 @@
       <div class="card-title">Invite code</div>
       <div class="card-sub">Codes are 8 characters — find yours in the team's settings in the Leadoff iOS app or this site.</div>
       <div class="add-player-row">
-        <input type="text" id="join-code-input" placeholder="e.g. K7KMHXWN" autocomplete="off" autocapitalize="characters"
-          style="text-transform:uppercase;letter-spacing:0.15em;font-weight:700;"
+        <input type="text" id="join-code-input" class="field-code" placeholder="e.g. K7KMHXWN" autocomplete="off" autocapitalize="characters" maxlength="8"
           onkeydown="if(event.key==='Enter') joinTeamWithCode()" />
         <button class="btn btn-primary" id="join-team-btn" onclick="joinTeamWithCode()">Join Team</button>
       </div>
@@ -4412,7 +4421,7 @@
         <div class="card-sub" id="team-info-sub">Create a new team or import an existing one from your Leadoff account.</div>
         <div class="form-grid">
           <div class="field">
-            <label>Team Name</label>
+            <label>Team name</label>
             <input type="text" id="team-name" placeholder="e.g. Tigers, Dynamos" />
           </div>
           <div class="field">
@@ -4448,7 +4457,7 @@
             </select>
           </div>
           <div class="field">
-            <label>Age Group</label>
+            <label>Age group</label>
             <select id="team-age-group">
               <option value="">Select Age Group</option>
               <option value="T-Ball (4-6)">T-Ball (4-6)</option>
@@ -4466,7 +4475,7 @@
             <textarea id="team-notes" placeholder="Any other team details..."></textarea>
           </div>
           <div class="field full" id="calendar-url-field">
-            <label>GameChanger Schedule</label>
+            <label>GameChanger schedule</label>
             <div class="calendar-url-row">
               <input type="url" id="team-calendar-url" placeholder="Paste webcal:// link here…" oninput="updateCalendarBtn()" />
               <button class="btn btn-sm btn-primary" id="btn-add-calendar" onclick="testCalendarSync()" disabled
@@ -4631,7 +4640,7 @@
           <div class="card-sub">Basic details for this game's lineup card</div>
           <div class="form-grid">
             <div class="field">
-              <label>Game / Event Name</label>
+              <label>Game / event name</label>
               <input type="text" id="game-name" placeholder="e.g. Season Opener, Tournament Game 1" aria-describedby="game-name-err" />
               <div class="field-err" id="game-name-err" role="alert"></div>
             </div>
@@ -12048,14 +12057,14 @@ function renderPlayerList() {
     const prio = player.fieldPriority || 'both';
     row.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;width:100%;flex-wrap:wrap;">
-        <input type="text" value="${escHtml(player.name)}" placeholder="Full name"
+        <input type="text" class="field-compact" value="${escHtml(player.name)}" placeholder="Full name"
           onchange="updatePlayerName('${player.id}', this.value)"
           style="flex:1;min-width:80px;${!ALLOW_TEAM_CREATION ? 'opacity:0.7;background:var(--bg-secondary);' : ''}"
           ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
-        <input type="text" inputmode="numeric" class="player-num-input" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
+        <input type="text" inputmode="numeric" class="player-num-input field-compact" value="${player.number === null || player.number === undefined ? '' : player.number}" placeholder="#"
           onchange="updatePlayerNumber('${player.id}', this.value)"
           ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
-        <input type="text" class="player-pron-input" value="${escHtml(player.namePronunciation || '')}" placeholder="Pronunciation (optional)"
+        <input type="text" class="player-pron-input field-compact" value="${escHtml(player.namePronunciation || '')}" placeholder="Pronunciation (optional)"
           onchange="updatePlayerPronunciation('${player.id}', this.value)"
           ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
         ${ALLOW_TEAM_CREATION ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}')" title="Remove player">✕</button>` : ''}
@@ -13800,7 +13809,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <input type="hidden" name="source" value="lineup-builder">
     <p style="display:none;"><label>Don't fill this out: <input name="bot-field"></label></p>
     <div class="field">
-      <label>Your Name</label>
+      <label>Your name</label>
       <input type="text" name="name" id="feedback-name" placeholder="Optional" />
     </div>
     <div class="field">
