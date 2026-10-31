@@ -2145,7 +2145,7 @@
     .strategy-labels span.on { color: var(--ink); }
     .strat-readout { margin-top: 6px; padding: 12px 14px; border-radius: var(--radius-btn); background: var(--bg-secondary); }
     .strat-name { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ink); }
-    .strat-name.tick b { display: inline-block; animation: lcTick .3s var(--lc-pop); }
+    .strat-name.tick b { display: inline-block; animation: lcTick var(--lc-pop-dur) var(--lc-pop); }
     .strat-name span { font-size: 13px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
     .strategy-desc { margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--ink-secondary); text-align: left; }
     @media (pointer: coarse) {
@@ -3122,15 +3122,30 @@
        SHELL v2 (Oct 30 2026) — from the web audit board.
        Nav B (team switcher + collapsible rail) · anchored action bars ·
        builder tools pane · who's-here chips · save bar on change.
-       Motion uses the three web curves that stand in for the iOS springs.
+       Motion (F9, Oct 31 2026): the house springs, same feel as iOS and
+       getleadoff.com (CRATE_THEME §4b).
+         Snappy  --lc-spring  things that land: bars, popovers, cards · 380ms
+                              (iOS lcSnappy, site --ease-snappy)
+         Pop     --lc-pop     checks, counts, chips, badges · --lc-pop-dur
+                              (iOS lcPop: ~6% overshoot, settled by ~.4s;
+                              the site's --ease-spring, same linear() curve)
+         Glide   --lc-glide   things that resize: rail, panes, progress ·
+                              320ms. No overshoot, so layout never bounces.
+                              Web only (iOS resizes with lcSnappy).
+       Quick (selection flips) stays a plain ease at .15 to .2s.
        ══════════════════════════════════════════════════════════════════ */
     :root {
-      --lc-spring: cubic-bezier(.32, 1.25, .5, 1);  /* things that land: bars, popovers, cards · 380ms */
-      --lc-glide:  cubic-bezier(.3, .9, .3, 1);     /* things that resize: rail, panel, progress · 320ms */
-      --lc-pop:    cubic-bezier(.3, 1.6, .5, 1);    /* checks, counts, chips · 300ms */
+      --lc-spring: cubic-bezier(.32, 1.25, .5, 1);
+      --lc-glide:  cubic-bezier(.3, .9, .3, 1);
+      --lc-pop:    cubic-bezier(.34, 1.4, .64, 1);  /* fallback where linear() isn't supported */
+      --lc-pop-dur: .6s;
       --sidebar-w: 0px;
       --tools-w:   0px;
       --wizard-h:  64px;
+    }
+    /* Pop as a real spring where the browser can draw one */
+    @supports (transition-timing-function: linear(0, 1)) {
+      :root { --lc-pop: linear(0, .07 3%, .27 7%, .53 12%, .78 18%, .94 24%, 1.03 31%, 1.06 37%, 1.05 44%, 1.02 53%, 1 64%, .995 75%, 1); }
     }
     @media (min-width: 980px) {
       body.signed-in { --sidebar-w: 256px; padding-left: var(--sidebar-w); }
@@ -3241,7 +3256,7 @@
     .sb-plus {
       flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
       background: var(--accent); color: var(--on-accent); border: 2px solid var(--sticker-ink);
-      transition: transform .2s var(--lc-pop);
+      transition: transform var(--lc-pop-dur) var(--lc-pop);
     }
     .sb-build:hover .sb-plus { transform: rotate(90deg); }
     .sb-item {
@@ -3443,15 +3458,15 @@
       width: 20px; height: 20px; border-radius: 50%; flex: none; display: grid; place-items: center;
       background: color-mix(in srgb, var(--ink) 18%, transparent); color: var(--panel); transition: background-color .2s;
     }
-    .lc-toggle-check svg { opacity: 0; transform: scale(.5); transition: opacity .2s, transform .25s var(--lc-pop); }
+    .lc-toggle-check svg { opacity: 0; transform: scale(.5); transition: opacity .2s, transform var(--lc-pop-dur) var(--lc-pop); }
     .lc-toggle.on .lc-toggle-check { background: var(--ink); }
     .lc-toggle.on .lc-toggle-check svg { opacity: 1; transform: none; }
     .lc-toggle--dim:not(.on) { opacity: .7; }
-    .lc-toggle.pop { animation: lcPopScale .3s var(--lc-pop); }
+    .lc-toggle.pop { animation: lcPopScale var(--lc-pop-dur) var(--lc-pop); }
     .lc-toggle:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
     .lc-toggle[aria-disabled="true"] { cursor: not-allowed; }
     .att-count { margin-bottom: 14px; font-size: 15px; color: var(--ink-secondary); }
-    .att-num { display: inline-block; font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1; color: var(--ink); animation: lcTick .35s var(--lc-pop); }
+    .att-num { display: inline-block; font-family: var(--font-display); font-weight: 900; font-size: 22px; line-height: 1; color: var(--ink); animation: lcTick var(--lc-pop-dur) var(--lc-pop); }
 
     /* ── Builder: lineup toolbar (Auto-fill · More · Tools) ── */
     .lineup-toolbar .lt-more-wrap { position: relative; }
@@ -3532,7 +3547,7 @@
     .lc-stateful .s-work, .lc-stateful .s-done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 7px; opacity: 0; pointer-events: none; }
     .lc-stateful.is-work .s-rest, .lc-stateful.is-done .s-rest { opacity: 0; }
     .lc-stateful.is-work .s-work { opacity: 1; }
-    .lc-stateful.is-done .s-done { opacity: 1; animation: lcPopScale .35s var(--lc-pop); }
+    .lc-stateful.is-done .s-done { opacity: 1; animation: lcPopScale var(--lc-pop-dur) var(--lc-pop); }
     .lc-stateful .s-work i { width: 9px; height: 9px; border-radius: 50%; background: currentColor; display: block; animation: lcBounce .6s ease-in-out infinite; }
     .lc-stateful .s-work i:nth-child(2) { animation-delay: .12s; }
     .lc-stateful .s-work i:nth-child(3) { animation-delay: .24s; }
@@ -3541,14 +3556,14 @@
     .share-card-code .code { position: relative; z-index: 0; display: inline-block; padding: 2px 8px 2px 12px; border-radius: var(--radius-btn); }
     .share-card-code .code::before {
       content: ""; position: absolute; inset: 0; z-index: -1; border-radius: var(--radius-btn); background: var(--accent-wash);
-      transform: scale(.9); opacity: 0; transition: transform .3s var(--lc-pop), opacity .2s;
+      transform: scale(.9); opacity: 0; transition: transform var(--lc-pop-dur) var(--lc-pop), opacity .2s;
     }
     .share-card-code.copied .code::before { transform: none; opacity: 1; }
     .share-card-code .cl { display: inline-block; }
     .share-card-code.ripple .cl { animation: codeHop .47s calc(var(--i) * 40ms) both; }
     .share-card-code .tap { display: inline-flex; align-items: center; gap: 6px; }
     .share-card-code.copied .tap { color: var(--ink); font-weight: 700; animation: lcRise .25s var(--lc-spring); }
-    .tap-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; animation: lcPopScale .3s var(--lc-pop); }
+    .tap-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; animation: lcPopScale var(--lc-pop-dur) var(--lc-pop); }
 
     @keyframes codeHop {
       0%   { transform: none; animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
@@ -3709,7 +3724,7 @@
       font-size: 14px; font-weight: 700; color: var(--ink);
       transition: border-color .15s, background-color .15s;
     }
-    .sc-go svg { transition: transform .3s var(--lc-pop); }
+    .sc-go svg { transition: transform var(--lc-pop-dur) var(--lc-pop); }
     .sc-row:hover .sc-go { border-color: var(--ink); }
     .sc-row:hover .sc-go svg { transform: translateX(2px); }
     .sc-row.past .sc-date { opacity: .7; }
@@ -3759,7 +3774,7 @@
     .inning-control button:hover { border-color: var(--ink); background: var(--panel); }
     .inning-control button:active { transform: scale(.92); }
     .inning-count { font-family: var(--font-display); font-weight: 900; font-size: 30px; line-height: 1; min-width: 30px; color: var(--ink); }
-    .inning-count.tick { animation: lcTick .35s var(--lc-pop); }
+    .inning-count.tick { animation: lcTick var(--lc-pop-dur) var(--lc-pop); }
     @media (max-width: 760px) {
       .rules-card { padding: 18px 16px; }
       .pos-group { grid-template-columns: 1fr; gap: 10px; }
@@ -3791,7 +3806,7 @@
     .gb-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
     button.gb-chip.has:hover { border-color: var(--accent-down); }
     .gb-x { font-weight: 800; font-size: 13px; padding: 1px 6px; border-radius: var(--radius-small); background: var(--accent); color: var(--on-accent); }
-    .gb-pop { animation: gbPop .45s var(--lc-pop); }
+    .gb-pop { animation: gbPop var(--lc-pop-dur) var(--lc-pop); }
     @keyframes gbPop { 0% { transform: scale(.82); } 60% { transform: scale(1.06); } 100% { transform: none; } }
     @media (prefers-reduced-motion: reduce) { .gb-pop { animation: none; } .sc-go svg { transition: none; } }
 
