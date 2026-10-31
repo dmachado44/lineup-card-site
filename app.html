@@ -116,6 +116,27 @@
       --font-body:    "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
       --font-display: "Sofia Sans Extra Condensed", "Barlow Semi Condensed", sans-serif;
 
+      /* Type scale (F8, Oct 31 2026): the App scale, same steps and names
+         as iOS Font.lc* (CRATE_THEME §3a). Display face (900, caps):
+         display-title 40, content-title 34, title 26 (.card-title),
+         sticker 17 (sticker buttons), tab 16. Body face: section 17/600
+         secondary (.section-head), headline 17/700, body 17/500 (also
+         field text), sub 15/500, label 15/600, caption 13/600, kicker
+         11/800 kerned caps. New type goes through these. 12 and 14 stay
+         as web-only steps for dense rows; half sizes are gone. */
+      --type-display-title: 40px;
+      --type-content-title: 34px;
+      --type-title:         26px;
+      --type-sticker:       17px;
+      --type-tab:           16px;
+      --type-section:       17px;
+      --type-headline:      17px;
+      --type-body:          17px;
+      --type-sub:           15px;
+      --type-label:         15px;
+      --type-caption:       13px;
+      --type-kicker:        11px;
+
       /* Radii — locked: 12px buttons, 20px cards. Don't invent new ones. */
       /* Radius scale (F7, Oct 31 2026), same as iOS LCRadius: card 20,
          control 12 (buttons, fields, segmented tracks), compact 10 (compact
@@ -333,7 +354,7 @@
       box-shadow: 4px 4px 0 0 var(--sticker-ink);
       font-family: "Sofia Sans Extra Condensed", sans-serif;
       font-weight: 900;
-      font-size: 17px;
+      font-size: var(--type-sticker);
       letter-spacing: 0.02em;
       text-transform: uppercase;
       cursor: pointer;
@@ -556,13 +577,13 @@
     .card-title {
       font-family: var(--font-display);
       font-weight: 900;
-      font-size: 26px;
+      font-size: var(--type-title);
       color: var(--ink);
       margin-bottom: 6px;
       letter-spacing: 0.01em;
     }
     .card-sub {
-      font-size: 15px;
+      font-size: var(--type-sub);
       color: var(--ink-secondary);
       margin-bottom: 28px;
       line-height: 1.6;
@@ -577,7 +598,7 @@
 
     /* Sentence case — all-caps is reserved for tabs, kickers, sticker labels */
     label {
-      font-size: 15px;
+      font-size: var(--type-label);
       font-weight: 600;
       color: var(--ink);
     }
@@ -595,7 +616,7 @@
       padding: 0 16px;
       border: 1px solid var(--hairline-strong);
       border-radius: var(--radius-btn);
-      font-size: 17px;
+      font-size: var(--type-body);
       font-weight: 500;
       font-family: inherit;
       color: var(--ink);
@@ -654,7 +675,7 @@
       box-shadow: 4px 4px 0 0 var(--sticker-ink);
       font-family: var(--font-display);
       font-weight: 900;
-      font-size: 17px;
+      font-size: var(--type-sticker);
       text-transform: uppercase;
       letter-spacing: 0.02em;
       cursor: pointer;
@@ -939,15 +960,23 @@
     }
     .add-player-row input { flex: 1; }
 
-    /* ── LEAGUE RULES ── */
-    /* Section headers: ONE spec app-wide — 17px semibold, secondary ink,
-       sentence case, sitting OUTSIDE panels. No all-caps headers, ever. */
-    .section-label {
-      font-size: 17px;
-      font-weight: 600;
-      color: var(--ink-secondary);
-      margin-bottom: 14px;
+    /* ── SECTION HEADER (F8, Oct 31 2026) ──
+       THE one, same as iOS .lcSectionHeader(): 17px semibold, secondary
+       ink, sentence case, sitting OUTSIDE the panel it heads. No all-caps
+       headers, ever. A trailing <span> carries a count or summary in
+       caption type. Put the <h2> inside when the section needs a label
+       for aria-labelledby. Spacing: 14px below on its own, the container's
+       gap inside .sc-sec, .rules-sec and .bt-sec. */
+    .section-head {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+      margin: 0 0 14px; font-size: var(--type-section); font-weight: 600; color: var(--ink-secondary);
     }
+    .section-head > h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: none; color: inherit; }
+    .section-head > span { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
+    .sc-sec > .section-head, .rules-sec > .section-head, .bt-sec > .section-head { margin: 0; }
+    .sc-sec > .section-head, .rules-sec > .section-head { padding: 0 4px; }
+
+    /* ── LEAGUE RULES ── */
     .rule-row {
       display: flex;
       align-items: center;
@@ -958,8 +987,8 @@
     }
     .rule-row:last-child { border-bottom: none; }
     .rule-text { flex: 1; min-width: 0; }
-    .rule-title { font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 3px; }
-    .rule-sub { font-size: 14px; color: var(--ink-secondary); line-height: 1.4; }
+    .rule-title { font-size: var(--type-body); font-weight: 500; color: var(--ink); margin-bottom: 3px; }
+    .rule-sub { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); line-height: 1.4; }
     .rule-select {
       padding: 9px 14px;
       border: 1.5px solid var(--hairline);
@@ -1846,7 +1875,6 @@
       gap: 8px;
       flex-wrap: wrap;
     }
-    .game-pos-count { font-size: 14px; color: var(--ink-secondary); margin-bottom: 20px; }
 
     @media (max-width: 700px) {
       .att-pos-row {
@@ -2118,7 +2146,7 @@
     .strat-readout { margin-top: 6px; padding: 12px 14px; border-radius: var(--radius-btn); background: var(--bg-secondary); }
     .strat-name { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ink); }
     .strat-name.tick b { display: inline-block; animation: lcTick .3s var(--lc-pop); }
-    .strat-name span { font-size: 12.5px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
+    .strat-name span { font-size: 13px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
     .strategy-desc { margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--ink-secondary); text-align: left; }
     @media (pointer: coarse) {
       .strategy-slider::-webkit-slider-thumb { width: 32px; height: 32px; margin-top: 0; }
@@ -2164,7 +2192,7 @@
     .gn-mom-line.pick { display: block; margin-top: 2px; padding: 10px 12px; border-radius: var(--radius-btn); background: var(--bg-secondary); color: var(--ink-secondary); font-size: 14px; }
     .gn-pick-top { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: var(--ink); }
     .gn-pick-top b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .gn-pick-top span { font-size: 12.5px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
+    .gn-pick-top span { font-size: 13px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
     .gn-pick-sw { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--ink); flex: none; }
     .gn-pick-sw.up { background: var(--accent); } .gn-pick-sw.down { background: var(--gray-3); } .gn-pick-sw.flat { background: var(--panel); }
     .gn-pick-sub { margin-top: 3px; }
@@ -2543,7 +2571,7 @@
     .sidebar-sublink {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 12px 8px 46px; border-radius: 8px;
-      font-size: 13.5px; color: var(--ink-secondary); cursor: pointer;
+      font-size: 13px; color: var(--ink-secondary); cursor: pointer;
     }
     .sidebar-sublink:hover { background: var(--bg-secondary); color: var(--ink); }
     .sidebar-sublink.active { background: var(--bg-secondary); color: var(--ink); font-weight: 600; }
@@ -2902,7 +2930,7 @@
 
     /* In-card kicker: 11px heavy, letter-spaced, all-caps (in-card ONLY) */
     .kicker {
-      font-size: 11px;
+      font-size: var(--type-kicker);
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.1em;
@@ -3062,7 +3090,7 @@
        note, four tag chips (off → up → down → off) and a game-ball pill.
        Quiet hairline chrome; accent wash = up, grey = down. */
     .gn-modal { max-width: 640px; }
-    .gn-game { font-weight: 700; font-size: 17px; color: var(--ink); }
+    .gn-game { font-weight: 700; font-size: var(--type-headline); color: var(--ink); }
     .gn-game-meta { font-size: 13px; color: var(--ink-secondary); margin-bottom: 14px; }
     .gn-card { border: 1px solid var(--hairline); border-radius: var(--radius-btn); padding: 12px 14px; margin-bottom: 10px; background: var(--panel); }
     .gn-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
@@ -3195,7 +3223,7 @@
     .sb-trow .sb-badge { width: 30px; height: 30px; font-size: 13px; }
     .sb-trow-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .sb-trow-txt b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-trow-txt span { font-size: 12.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sb-trow-txt span { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-pop-div { height: 1px; background: var(--hairline); margin: 6px 4px; }
     .sb-plink {
       display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: var(--radius-compact);
@@ -3218,7 +3246,7 @@
     .sb-build:hover .sb-plus { transform: rotate(90deg); }
     .sb-item {
       position: relative; display: flex; align-items: center; gap: 12px; height: 42px; margin: 0 12px; padding: 0 16px;
-      border-radius: 11px; color: var(--ink-secondary); font-size: 15.5px; font-weight: 600; white-space: nowrap; cursor: pointer;
+      border-radius: 11px; color: var(--ink-secondary); font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
       transition: background .15s, color .15s;
     }
     .sb-item svg { flex: none; }
@@ -3333,7 +3361,7 @@
     .wizard-ctx span { overflow: hidden; text-overflow: ellipsis; }
     .wizard-ctx .sep { color: var(--gray-3); flex: none; }
     .wizard-bar .wizard-steps { flex: 0 1 380px; height: auto; margin: 0; gap: 6px; justify-content: stretch; }
-    .wizard-bar .wstep { position: relative; flex: 1 1 0; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; font-size: 12.5px; font-weight: 700; color: var(--ink-secondary); }
+    .wizard-bar .wstep { position: relative; flex: 1 1 0; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; font-size: 13px; font-weight: 700; color: var(--ink-secondary); }
     .wizard-bar .wstep::before { content: ""; display: block; height: 6px; border-radius: 3px; background: var(--hairline-strong); }
     .wizard-bar .wstep::after { content: ""; position: absolute; left: 0; top: 0; height: 6px; width: 0; border-radius: 3px; background: var(--ink); transition: width .5s var(--lc-glide); }
     .wizard-bar .wstep.done::after { width: 100%; }
@@ -3434,7 +3462,7 @@
       transition: opacity .14s, transform .2s var(--lc-spring), visibility 0s linear .2s;
     }
     .lt-more-wrap.open .lt-menu { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .2s var(--lc-spring); }
-    .lt-menu .sb-menu-item { font-size: 14.5px; }
+    .lt-menu .sb-menu-item { font-size: 15px; }
     .bt-toggle { position: relative; }
     .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
     .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
@@ -3455,16 +3483,13 @@
     .bt-close:hover { background: var(--gray-5); }
     .bt-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 26px; }
     .bt-sec { display: flex; flex-direction: column; gap: 10px; }
-    .bt-sec-title { font-size: 17px; font-weight: 700; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-    .bt-sec-title span { font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
-    .builder-tools .card-title { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .builder-tools .card-title { font-family: var(--font-body); text-transform: none; letter-spacing: 0; font-size: var(--type-headline); font-weight: 700; margin-bottom: 4px; }
     .builder-tools .strategy-grid { flex-direction: column; flex-wrap: nowrap; gap: 22px; }
     .builder-tools .strategy-col,
     .builder-tools .strategy-grid.has-insights .strategy-col-slider { flex: none; padding: 0; border: none; }
     .builder-tools .strategy-col-mom, .builder-tools .strategy-col-sug { padding-top: 18px; border-top: 1px solid var(--hairline); }
-    .builder-tools .game-pos-count { margin-bottom: 0; }
     .pt-list { display: flex; flex-direction: column; }
-    .pt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--hairline); font-size: 14.5px; }
+    .pt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--hairline); font-size: 15px; }
     .pt-row:first-child { border-top: none; }
     .pt-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pt-cells { display: flex; gap: 3px; }
@@ -3562,11 +3587,11 @@
     .lc-pennant {
       display: inline-block; justify-self: start; align-self: start;
       background: var(--pennant); color: var(--sticker-cream);
-      font-size: 11px; font-weight: 800; line-height: 1; letter-spacing: .09em; text-transform: uppercase; white-space: nowrap;
+      font-size: var(--type-kicker); font-weight: 800; line-height: 1; letter-spacing: .09em; text-transform: uppercase; white-space: nowrap;
       padding: 5px 14px 5px 8px; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
     }
     .lc-emph > .lc-pennant { grid-column: 1 / -1; }
-    .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
     .lc-chip.home { background: var(--accent-wash); color: var(--accent-down); }
     .lc-chip.away { background: color-mix(in srgb, var(--attention) 14%, var(--panel)); color: var(--attention-ink); }
     .lc-st { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink-secondary); }
@@ -3588,11 +3613,11 @@
     .schedule-list > .lc-emph { margin: 16px 0 4px; }
     .ng-dow { font-size: 14px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .ng-md { font-family: var(--font-display); font-weight: 900; font-size: 46px; line-height: .9; text-transform: uppercase; }
-    .ng-tm { font-size: 17px; font-weight: 700; margin-top: 4px; }
+    .ng-tm { font-size: var(--type-headline); font-weight: 700; margin-top: 4px; }
     .ng-op { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
     .ng-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 8px; font-size: 15px; color: var(--ink-secondary); }
     .ng-seg { display: flex; gap: 6px; margin-top: 16px; max-width: 420px; }
-    .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink); }
+    .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink); }
     .ng-seg > div.todo { font-weight: 600; color: var(--ink-secondary); }
     .ng-seg span { display: block; height: 6px; border-radius: 3px; background: var(--hairline-strong); overflow: hidden; }
     .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; animation: ngFill .6s var(--lc-glide) .35s both; }
@@ -3628,10 +3653,10 @@
     .ts-head { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: none; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
     .ts-head .sb-badge { --ring: 2px; width: 42px; height: 42px; font-size: 18px; }
     .ts-head b { display: block; font-size: 18px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ts-head span.ts-sub { display: block; font-size: 13.5px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ts-head span.ts-sub { display: block; font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head:hover b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .ts-head > span:last-child { min-width: 0; }
-    .ts-next { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: 14px; background: var(--bg-secondary); font-size: 14.5px; }
+    .ts-next { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: 14px; background: var(--bg-secondary); font-size: 15px; }
     .ts-k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .ts-v { font-size: 16px; font-weight: 700; }
     .ts-op { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
@@ -3647,13 +3672,10 @@
     .dash-note { margin: -8px 0 0; font-size: 14px; color: var(--ink-secondary); }
 
     /* ── Schedule v2 (Oct 30 2026): game rows + Game balls ──
-       Section heads sit outside their cards (17px semibold); cards are
+       Section heads (.section-head) sit outside their cards; cards are
        quiet white on cream; the Next game card stays the one sticker. */
     .schedule-list > .lc-emph { margin: 16px 0 0; }
     .sc-sec { display: flex; flex-direction: column; gap: 12px; }
-    .sc-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 0 4px; }
-    .sc-head h2 { margin: 0; font-size: 17px; font-weight: 600; color: var(--ink); }
-    .sc-head span { font-size: 13.5px; font-weight: 600; color: var(--ink-secondary); }
     .sc-list { background: var(--panel); border-radius: var(--radius); padding: 6px; }
     .sc-row {
       display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 20px;
@@ -3671,13 +3693,13 @@
     .sc-row.inert:hover { background: none; }
     .sc-row.inert:hover::before, .sc-row.inert:hover + .sc-row::before { opacity: 1; }
     .sc-date { display: flex; flex-direction: column; gap: 3px; padding-right: 16px; border-right: 1px solid var(--hairline); white-space: nowrap; }
-    .sc-dow { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-secondary); }
+    .sc-dow { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-secondary); }
     .sc-md { font-family: var(--font-display); font-weight: 900; font-size: 24px; line-height: .9; text-transform: uppercase; color: var(--ink); }
     .sc-main { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-    .sc-op { font-size: 17px; font-weight: 700; line-height: 1.2; color: var(--ink); overflow-wrap: anywhere; }
+    .sc-op { font-size: var(--type-headline); font-weight: 700; line-height: 1.2; color: var(--ink); overflow-wrap: anywhere; }
     .sc-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: 14px; color: var(--ink-secondary); }
-    .sc-meta .lc-chip { height: 22px; font-size: 11.5px; padding: 0 8px; }
-    .sc-ball { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 700; color: var(--accent-down); }
+    .sc-meta .lc-chip { height: 22px; font-size: 11px; padding: 0 8px; }
+    .sc-ball { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--accent-down); }
     .sc-side { display: flex; align-items: center; gap: 16px; white-space: nowrap; }
     .sc-side .lc-st { font-size: 14px; }
     .sc-notes { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--bg-secondary); color: var(--ink-secondary); }
@@ -3696,7 +3718,7 @@
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     .lc-ball { flex: none; display: block; }
     .sc-empty-ic { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--panel); color: var(--ink-secondary); margin-bottom: 12px; }
-    .sc-empty-t { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+    .sc-empty-t { font-size: var(--type-headline); font-weight: 700; color: var(--ink); margin-bottom: 6px; }
     @media (max-width: 760px) {
       .sc-list { padding: 4px; }
       .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 12px 14px 10px; }
@@ -3708,7 +3730,7 @@
     }
 
     /* ── League rules v2 (Oct 30 2026) ──
-       Section heads outside quiet cards (.sc-head), positions grouped with
+       Section heads outside quiet cards (.section-head), positions grouped with
        the who's-here selection state, limits as segmented controls. */
     .rules-sec { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
     .settings-mode .rules-row .rules-sec { margin-bottom: 0; }
@@ -3719,7 +3741,7 @@
     .pos-group { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; align-items: start; }
     .pos-group + .pos-group { padding-top: 14px; border-top: 1px solid var(--hairline); }
     .pos-k { padding-top: 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
-    .pos-k span { display: block; margin-top: 4px; font-size: 12.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-secondary); }
+    .pos-k span { display: block; margin-top: 4px; font-size: 13px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-secondary); }
     .pos-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .pos-code { font-size: 12px; font-weight: 700; color: var(--ink-secondary); margin-left: 1px; }
     .lc-toggle.on .pos-code { color: var(--accent-down); }
@@ -3759,7 +3781,7 @@
     .gb-chip {
       display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px;
       border-radius: 999px; border: 1px solid var(--hairline-strong); background: var(--panel);
-      font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink);
+      font: inherit; font-size: 15px; font-weight: 700; color: var(--ink);
       transition: border-color .15s, background-color .15s, transform .08s;
     }
     button.gb-chip { cursor: pointer; }
@@ -3768,7 +3790,7 @@
     button.gb-chip:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
     .gb-chip.has { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
     button.gb-chip.has:hover { border-color: var(--accent-down); }
-    .gb-x { font-weight: 800; font-size: 12.5px; padding: 1px 6px; border-radius: var(--radius-small); background: var(--accent); color: var(--on-accent); }
+    .gb-x { font-weight: 800; font-size: 13px; padding: 1px 6px; border-radius: var(--radius-small); background: var(--accent); color: var(--on-accent); }
     .gb-pop { animation: gbPop .45s var(--lc-pop); }
     @keyframes gbPop { 0% { transform: scale(.82); } 60% { transform: scale(1.06); } 100% { transform: none; } }
     @media (prefers-reduced-motion: reduce) { .gb-pop { animation: none; } .sc-go svg { transition: none; } }
@@ -3798,9 +3820,9 @@
     .pl-who small { display: block; font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pl-who > span:last-child { min-width: 0; }
     .pl-ps { display: flex; flex-wrap: wrap; gap: 4px; }
-    .pl-ps span { height: 24px; padding: 0 7px; border-radius: var(--radius-small); background: var(--accent-wash); color: var(--accent-down); font-size: 12.5px; font-weight: 700; display: grid; place-items: center; }
-    .pl-ps em { font-style: normal; font-size: 13.5px; color: var(--ink-secondary); }
-    .pl-pref { font-size: 14.5px; color: var(--ink-secondary); }
+    .pl-ps span { height: 24px; padding: 0 7px; border-radius: var(--radius-small); background: var(--accent-wash); color: var(--accent-down); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+    .pl-ps em { font-style: normal; font-size: 13px; color: var(--ink-secondary); }
+    .pl-pref { font-size: 15px; color: var(--ink-secondary); }
     .pl-chev { color: var(--gray); }
     .pl-empty { padding: 36px 20px; text-align: center; color: var(--ink-secondary); }
     .pl-tr.pl-row-in { animation: lcRise .35s var(--lc-spring) both; }
@@ -3826,7 +3848,7 @@
     @media (min-width: 980px) and (max-width: 1279px) { body.pp-open .pp { box-shadow: -1px 0 0 var(--hairline), -18px 0 40px rgba(16,22,19,.12); } }
     @media (max-width: 979px) { .pp { top: 56px; width: 100%; z-index: 58; } }
     .pp-hd { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px 8px; }
-    .pp-saved { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--ink-secondary); min-width: 0; }
+    .pp-saved { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-secondary); min-width: 0; }
     .pp-saved i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: block; flex: none; }
     .pp-saved.is-saving i { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
     .pp-saved.is-error { color: var(--alert-ink); }
@@ -3877,7 +3899,7 @@
         background: var(--panel); box-shadow: 0 1px 0 var(--hairline); overflow-x: auto; scrollbar-width: none;
       }
       .m-tabs::-webkit-scrollbar { display: none; }
-      .m-tab { position: relative; flex: none; height: 44px; padding: 0 12px; border: none; background: transparent; font: inherit; font-size: 15.5px; font-weight: 600; color: var(--ink-secondary); cursor: pointer; white-space: nowrap; }
+      .m-tab { position: relative; flex: none; height: 44px; padding: 0 12px; border: none; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-secondary); cursor: pointer; white-space: nowrap; }
       .m-tab.on { color: var(--ink); font-weight: 700; }
       .m-tab.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; border-radius: 2px; background: var(--ink); animation: mTabIn .25s var(--lc-glide); }
       .m-tab:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
@@ -4370,7 +4392,7 @@
 
       <!-- Members & Invite (settings mode only; rendered by renderMembersCard) -->
       <div class="card" id="settings-members-card">
-        <div class="section-label">Members &amp; invite</div>
+        <div class="card-title">Members &amp; invite</div>
         <div class="card-sub">Share the invite code so parents and coaches can join this team from the Leadoff iOS app or this site.</div>
         <div id="invite-code-block"></div>
         <div id="members-list-block"></div>
@@ -4391,7 +4413,7 @@
 
       <!-- Field Positions -->
       <section class="rules-sec" aria-labelledby="rules-pos-h">
-        <div class="sc-head"><h2 id="rules-pos-h">Field positions</h2><span id="pos-count-badge">9 of 14 on</span></div>
+        <div class="section-head"><h2 id="rules-pos-h">Field positions</h2><span id="pos-count-badge">9 of 14 on</span></div>
         <div class="card rules-card">
           <p class="rules-hint">Tap a position to turn it on or off for every lineup.</p>
           <div id="pos-grid"></div>
@@ -4403,7 +4425,7 @@
 
       <!-- Game Rules -->
       <section class="rules-sec" aria-labelledby="rules-game-h">
-      <div class="sc-head"><h2 id="rules-game-h">Game rules</h2></div>
+      <div class="section-head"><h2 id="rules-game-h">Game rules</h2></div>
       <div class="card rules-card">
 
         <div class="rule-row">
@@ -4469,7 +4491,7 @@
 
       <!-- Pitching Rules -->
       <section class="rules-sec" aria-labelledby="rules-pitch-h">
-      <div class="sc-head"><h2 id="rules-pitch-h">Pitching rules</h2></div>
+      <div class="section-head"><h2 id="rules-pitch-h">Pitching rules</h2></div>
       <div class="card rules-card">
 
         <div class="rule-row">
@@ -4813,11 +4835,11 @@
        </div>
         </section>
         <section class="bt-sec" aria-label="Positions for this game">
-          <div class="bt-sec-title">Positions for this game <span class="game-pos-count" id="game-pos-count">9 active</span></div>
+          <div class="section-head">Positions for this game <span id="game-pos-count">9 active</span></div>
           <div class="game-pos-grid" id="game-pos-grid"></div>
         </section>
         <section class="bt-sec" aria-label="Playing time">
-          <div class="bt-sec-title">Playing time <span>innings in the field</span></div>
+          <div class="section-head">Playing time <span>innings in the field</span></div>
           <div class="pt-list" id="pt-summary"></div>
         </section>
       </div>
@@ -8243,7 +8265,7 @@ function renderSchedule() {
     const shown = games.slice(0, cap);
     const more = games.length - shown.length;
     return `<section class="sc-sec" aria-label="${sbAttr(label)}">
-      <div class="sc-head"><h2>${label}</h2><span>${games.length} game${games.length === 1 ? '' : 's'}</span></div>
+      <div class="section-head"><h2>${label}</h2><span>${games.length} game${games.length === 1 ? '' : 's'}</span></div>
       <div class="sc-list">${shown.map(g => scRow(g, isPast)).join('')}</div>
       ${more > 0 ? `<button type="button" class="btn btn-ghost sc-more" onclick="_schedShowAllPast = true; renderSchedule()">Show ${more} more past game${more === 1 ? '' : 's'}</button>` : ''}
     </section>`;
@@ -8575,7 +8597,7 @@ function gnLedgerHtml(teamId, players) {
     : waiting.length === 0 ? 'Every kid has one'
     : `${got.length} of ${entries.length} kids have one`;
   return `<section class="sc-sec" aria-label="Game balls">
-    <div class="sc-head"><h2>Game balls</h2><span>${summary}</span></div>
+    <div class="section-head"><h2>Game balls</h2><span>${summary}</span></div>
     <div class="gb-card">
       ${slots}
       ${_scheduleCanCoach ? `<p class="gb-hint">Tap a kid to hand out a game ball. Tap again to take it back.</p>` : ''}
@@ -8666,7 +8688,7 @@ function renderGameNotesModal() {
       <textarea class="gn-textarea gn-team-textarea" id="gn-team-note" placeholder="Big moments, what to work on, anything you want to remember." oninput="_gnNotes.teamNote = this.value">${escHtml(_gnNotes.teamNote)}</textarea>
       <div class="gn-hint" id="gn-mic-hint" style="display:none;"></div>
     </div>
-    <div class="section-label" style="margin:12px 0 8px;font-weight:700;color:var(--ink-secondary);">Players</div>
+    <div class="section-head" style="margin:12px 0 8px">Players</div>
     ${entries.map(e => gnPlayerCardHtml(e)).join('')}
   `;
 }
