@@ -267,19 +267,7 @@
 
     /* ── AUTH TOPBAR ── */
     .topbar-auth { display: flex; align-items: center; gap: 10px; }
-    .topbar-avatar {
-      width: 30px; height: 30px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: var(--ink);
-      font-size: 12px;
-      font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
-    .topbar-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .topbar .sb-av { width: 30px; height: 30px; font-size: 12px; }
     .topbar-user-name {
       font-size: 13px;
       font-weight: 500;
@@ -797,9 +785,6 @@
       min-height: 16px;
     }
     .roster-save-status.visible { opacity: 1; }
-    .roster-save-status.saving { color: var(--ink-secondary); }
-    .roster-save-status.saved  { color: var(--accent-down); }
-    .roster-save-status.error  { color: var(--alert-ink); }
 
     /* ── Batting skills (Power / Contact / Speed) ── */
     /* Ported from 21st.dev "slider-with-labels-and-tooltip" (OriginUI) —
@@ -1339,51 +1324,6 @@
       justify-content: center;
     }
 
-    /* Position picker popup — anchored near the clicked bubble */
-    .field-pos-picker {
-      position: fixed;
-      z-index: 250;
-      background: var(--panel);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-btn);
-      box-shadow: 0 10px 36px rgba(var(--shadow-rgb), 0.2);
-      width: 240px;
-      max-height: 60vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .field-pos-picker-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--hairline);
-      font-weight: 600;
-      font-size: 14px;
-    }
-    .field-pos-picker-header > span { flex: 1; }
-    .field-pos-picker-body {
-      overflow-y: auto;
-      padding: 6px;
-    }
-    .field-pos-picker-item {
-      display: block;
-      width: 100%;
-      padding: 8px 12px;
-      background: none;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      border-radius: var(--radius-small);
-      font-family: inherit;
-      font-size: 14px;
-      color: var(--ink);
-    }
-    .field-pos-picker-item:hover { background: var(--bg-secondary); }
-    .field-pos-picker-item.selected { background: var(--accent-wash); color: var(--accent); font-weight: 600; }
-    .field-pos-picker-item.muted { color: var(--ink-secondary); font-style: italic; }
-    .field-pos-picker-divider { height: 1px; background: var(--hairline); margin: 4px 6px; }
 
     @media (max-width: 600px) {
       .field-pos-bubble { min-width: 64px; max-width: 110px; padding: 5px 8px; }
@@ -1603,46 +1543,6 @@
       .column-drag-ghost .col-ghost-cell { padding: 5px 8px; }
     }
 
-    .inning-menu {
-      position: fixed;
-      z-index: 200;
-      background: var(--panel);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-compact);
-      box-shadow: 0 6px 24px rgba(var(--shadow-rgb), 0.12);
-      padding: 6px;
-      min-width: 200px;
-      font-size: 14px;
-    }
-    .inning-menu .menu-header {
-      padding: 6px 10px 4px;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--ink-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-    .inning-menu .menu-item {
-      display: block;
-      width: 100%;
-      padding: 8px 12px;
-      background: none;
-      border: none;
-      text-align: left;
-      cursor: pointer;
-      border-radius: var(--radius-small);
-      font-family: inherit;
-      font-size: 14px;
-      color: var(--ink);
-    }
-    .inning-menu .menu-item:hover { background: var(--bg-secondary); }
-    .inning-menu .menu-item.danger { color: var(--alert-ink); }
-    .inning-menu .menu-item.danger:hover { background: var(--alert-wash); }
-    .inning-menu .menu-divider {
-      height: 1px;
-      background: var(--hairline);
-      margin: 4px 6px;
-    }
 
     /* ── Generic modal (Import from Previous) ── */
     .modal-overlay {
@@ -1765,27 +1665,6 @@
       .image-export-options { grid-template-columns: 1fr; }
     }
 
-    /* Toast that confirms an import landed */
-    .import-toast {
-      position: fixed;
-      bottom: 32px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--ink);
-      color: var(--page);
-      padding: 10px 18px;
-      border-radius: 24px;
-      font-size: 14px;
-      box-shadow: 0 6px 20px rgba(var(--shadow-rgb), 0.25);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.18s, transform 0.18s;
-      z-index: 400;
-    }
-    .import-toast.visible {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
 
     @media (pointer: coarse) {
       .lineup-table th.inning-th { padding: 4px 2px; }
@@ -2091,19 +1970,7 @@
 
     /* ── SCHEDULE VIEW ── */
     .schedule-list { display: flex; flex-direction: column; gap: 32px; }
-    /* Draft saved/saving status indicator inside the lineup builder */
-    .draft-status {
-      font-size: 12px;
-      color: var(--ink-secondary);
-      margin-right: 12px;
-      transition: opacity 0.2s;
-      min-width: 110px;
-      text-align: right;
-    }
-    .draft-status.draft-status-saved { color: var(--accent); }
-    .draft-status.draft-status-saving { color: var(--ink-secondary); font-style: italic; }
     .schedule-sync-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--ink-secondary); }
-    .schedule-sync-bar .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
     .schedule-empty { text-align: center; padding: 48px 24px; color: var(--ink-secondary); font-size: 15px; }
 
     /* ── STRATEGY SLIDER ── */
@@ -2706,52 +2573,6 @@
       display: flex;
       align-items: center;
     }
-    .avatar-menu {
-      display: none;
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
-      background: var(--panel);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-btn);
-      box-shadow: 0 8px 24px rgba(var(--shadow-rgb), 0.12);
-      min-width: 200px;
-      z-index: 100;
-      overflow: hidden;
-    }
-    .avatar-menu.open { display: block; }
-    .avatar-menu-header {
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--hairline);
-    }
-    .avatar-menu-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--ink);
-      margin-bottom: 2px;
-    }
-    .avatar-menu-email {
-      font-size: 12px;
-      color: var(--ink-secondary);
-      word-break: break-all;
-    }
-    .avatar-menu-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      width: 100%;
-      padding: 12px 16px;
-      background: none;
-      border: none;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      cursor: pointer;
-      font-family: inherit;
-      transition: background 0.1s;
-    }
-    .avatar-menu-item:hover { background: var(--bg-secondary); color: var(--ink); }
-    .avatar-menu-item.danger { color: var(--alert-ink); }
 
     /* ── PRINTOUTS ──
        #print-sheet is filled right before printing from the shared print
@@ -3226,15 +3047,50 @@
     .sb-team-name { font-size: 16px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-team-sub { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-chev { flex: none; color: var(--ink-secondary); transition: opacity .14s .16s; }
-    .sb-pop {
-      position: absolute; left: 0; top: calc(100% + 8px); width: 300px; max-height: min(520px, calc(100vh - 140px)); overflow-y: auto;
-      background: var(--panel); border-radius: 16px; padding: 8px; z-index: 95;
+    /* ── Menu (F12, Oct 31 2026): THE popover menu ──
+       One surface for every menu and picker: the team switcher, the
+       account menu, the lineup toolbar's More, the legacy topbar avatar,
+       the field position picker and the inning menu. White panel, 14px
+       corners, 6px inset, the popover shadow plus a hairline ring. Rows
+       (.lc-menu-item) are 40px, 15/600, 9px corners; .danger reads alert
+       ink, .selected the accent wash. .lc-menu-label is a kicker,
+       .lc-menu-sep a hairline, .lc-menu-head a name over an email.
+       Placement: .lc-menu--drop hangs under its trigger, right-aligned,
+       hidden until its wrapper is .open, and scales in on Snappy;
+       --left aligns it left, --up opens it above (the sidebar foot).
+       .lc-menu--fixed is placed by JS (position: fixed). */
+    .lc-menu {
+      width: 260px; padding: 6px; border-radius: 14px; z-index: 95;
+      background: var(--panel); color: var(--ink);
       box-shadow: 0 14px 40px rgba(var(--shadow-rgb), .18), 0 0 0 1px var(--hairline);
-      opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top left; pointer-events: none; visibility: hidden;
+    }
+    .lc-menu--drop {
+      position: absolute; right: 0; top: calc(100% + 8px);
+      opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top right; pointer-events: none; visibility: hidden;
       transition: opacity .14s, transform .22s var(--lc-spring), visibility 0s linear .22s;
     }
-    .sb-switch.open .sb-pop { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--lc-spring); }
-    .sb-pop-label { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); padding: 8px 10px 4px; }
+    .lc-menu--left { right: auto; left: 0; transform-origin: top left; }
+    .lc-menu--up { right: auto; left: 0; top: auto; bottom: calc(100% + 8px); transform: scale(.96) translateY(4px); transform-origin: bottom left; }
+    .open > .lc-menu--drop { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--lc-spring); }
+    .lc-menu--fixed { position: fixed; z-index: 250; max-height: 60vh; display: flex; flex-direction: column; }
+    .lc-menu-head { padding: 8px 10px 10px; border-bottom: 1px solid var(--hairline); margin-bottom: 6px; }
+    .lc-menu-head b { display: block; font-size: 15px; }
+    .lc-menu-head span { font-size: 13px; color: var(--ink-secondary); word-break: break-all; }
+    .lc-menu-head--bar { display: flex; align-items: center; gap: 8px; padding: 4px 4px 8px 10px; }
+    .lc-menu-head--bar b { flex: 1; min-width: 0; }
+    .lc-menu-label { padding: 8px 10px 4px; font-size: var(--type-kicker); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-secondary); }
+    .lc-menu-scroll { overflow-y: auto; min-height: 0; }
+    .lc-menu-item {
+      width: 100%; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: none; border-radius: 9px;
+      background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
+    }
+    .lc-menu-item:hover { background: var(--bg-secondary); }
+    .lc-menu-item.danger { color: var(--alert-ink); }
+    .lc-menu-item.danger:hover { background: var(--alert-wash); }
+    .lc-menu-item.selected { background: var(--accent-wash); color: var(--accent-down); }
+    .lc-menu-item.muted { color: var(--ink-secondary); font-weight: 500; font-style: italic; }
+    .lc-menu-sep { height: 1px; background: var(--hairline); margin: 6px 4px; }
+    .sb-pop { width: 300px; max-height: min(520px, calc(100vh - 140px)); overflow-y: auto; }
     .sb-trow {
       width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: none; border-radius: var(--radius-compact);
       background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
@@ -3245,12 +3101,6 @@
     .sb-trow-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .sb-trow-txt b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-trow-txt span { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-pop-div { height: 1px; background: var(--hairline); margin: 6px 4px; }
-    .sb-plink {
-      display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 10px; border-radius: var(--radius-compact);
-      font-size: 15px; font-weight: 600; color: var(--ink); cursor: pointer;
-    }
-    .sb-plink:hover { background: var(--bg-secondary); }
     .sb-pop-anim .sb-trow { animation: sbRowIn .3s var(--lc-spring) both; }
 
     /* Build lineup action + sections */
@@ -3292,25 +3142,9 @@
     .sb-me-txt { display: flex; flex-direction: column; min-width: 0; transition: opacity .14s .16s; }
     .sb-me-txt b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
     .sb-me-txt span { font-size: 13px; color: var(--ink-secondary); }
-    .sb-menu {
-      position: absolute; left: 0; bottom: calc(100% + 8px); width: 260px; padding: 6px; border-radius: 14px; z-index: 95;
-      background: var(--panel); box-shadow: 0 14px 40px rgba(var(--shadow-rgb), .18), 0 0 0 1px var(--hairline);
-      opacity: 0; transform: scale(.96) translateY(4px); transform-origin: bottom left; pointer-events: none; visibility: hidden;
-      transition: opacity .14s, transform .22s var(--lc-spring), visibility 0s linear .22s;
-    }
-    .sb-me-wrap.open .sb-menu { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--lc-spring); }
-    .sb-menu-head { padding: 8px 10px 10px; border-bottom: 1px solid var(--hairline); margin-bottom: 6px; }
-    .sb-menu-head b { display: block; font-size: 15px; }
-    .sb-menu-head span { font-size: 13px; color: var(--ink-secondary); word-break: break-all; }
-    .sb-menu-item {
-      width: 100%; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border: none; border-radius: 9px;
-      background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; cursor: pointer;
-    }
-    .sb-menu-item:hover { background: var(--bg-secondary); }
-    .sb-menu-item.danger { color: var(--alert-ink); }
-    .sidebar-foot .sb-menu-item { color: var(--ink); }
-    .sidebar-foot .sb-menu-item:hover { color: var(--ink); }
-    .sidebar-foot .sb-menu-item.danger { color: var(--alert-ink); }
+    /* The account menu's link would take .sidebar-foot a's quiet ink */
+    .sidebar-foot .lc-menu-item { color: var(--ink); }
+    .sidebar-foot .lc-menu-item.danger { color: var(--alert-ink); }
     .sidebar-foot .sb-item { color: var(--ink-secondary); font-weight: 600; }
     .sidebar-foot .sb-item:hover { color: var(--ink); }
 
@@ -3343,7 +3177,7 @@
       body.sidebar-rail .sb-switch.open > .sb-tip,
       body.sidebar-rail .sb-me-wrap.open > .sb-tip { opacity: 0 !important; }
       body.sidebar-rail .sb-pop { left: calc(100% + 14px); top: -8px; }
-      body.sidebar-rail .sb-menu { left: calc(100% + 14px); bottom: 0; transform-origin: bottom left; }
+      body.sidebar-rail .sb-me-wrap > .lc-menu { left: calc(100% + 14px); bottom: 0; transform-origin: bottom left; }
     }
 
     /* ── Phone top bar (below 980px) ── */
@@ -3424,12 +3258,7 @@
     .step-actions .draft-status { margin-right: auto; }
     .step-actions .text-muted { margin-right: 20px; }
     .step-actions .draft-status:empty, .step-actions .text-muted:empty { display: none; }
-    .step-actions .draft-status::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
-    .step-actions .draft-status.draft-status-saving { color: var(--ink-secondary); font-style: normal; }
-    .step-actions .draft-status.draft-status-saving::before { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
-    .step-actions .draft-status.draft-status-saved { color: var(--ink-secondary); }
-    .step-actions .draft-status.export-err { color: var(--alert-ink); font-weight: 600; }
-    .step-actions .draft-status.export-err::before { background: var(--alert-ink); }
+    .step-actions .draft-status { font-weight: 600; gap: 8px; }
     #export-edit svg { flex: none; }
     #step3-save-draft, #step4-save-draft { display: none !important; }
     .step-footer { margin-bottom: 20px; }
@@ -3476,14 +3305,7 @@
 
     /* ── Builder: lineup toolbar (Auto-fill · More · Tools) ── */
     .lineup-toolbar .lt-more-wrap { position: relative; }
-    .lt-menu {
-      position: absolute; right: 0; top: calc(100% + 8px); width: 250px; padding: 6px; border-radius: 14px; z-index: 30;
-      background: var(--panel); box-shadow: 0 14px 40px rgba(var(--shadow-rgb), .18), 0 0 0 1px var(--hairline);
-      opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top right; pointer-events: none; visibility: hidden;
-      transition: opacity .14s, transform .2s var(--lc-spring), visibility 0s linear .2s;
-    }
-    .lt-more-wrap.open .lt-menu { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .2s var(--lc-spring); }
-    .lt-menu .sb-menu-item { font-size: 15px; }
+    .lt-more-wrap > .lc-menu { z-index: 30; }
     .bt-toggle { position: relative; }
     .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
     .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
@@ -3536,9 +3358,6 @@
     }
     #view-builder.settings-mode .save-bar.show { transform: none; visibility: visible; transition: transform .38s var(--lc-spring), left .32s var(--lc-glide), width .32s var(--lc-glide); }
     .sbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 16px; font-weight: 700; white-space: nowrap; }
-    .sbar-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--attention); flex: none; }
-    .save-bar.is-done .sbar-dot { background: var(--accent); }
-    .save-bar.is-error .sbar-dot { background: var(--alert-ink); }
     .sbar-reset { border: none; background: none; padding: 6px 2px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .sbar-reset:hover { color: var(--ink); }
     .save-bar.is-work .sbar-reset, .save-bar.is-done .sbar-reset { visibility: hidden; }
@@ -3586,7 +3405,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       body.signed-in, .sidebar, .sidebar *, .m-topbar *, .wizard-bar *, .step-actions, .builder-tools, .save-bar,
-      .lc-toggle, .lc-toggle *, .att-num, .lt-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
+      .lc-toggle, .lc-toggle *, .att-num, .lc-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
         animation: none !important; transition: none !important;
       }
       .share-card-code .code::before { transition: opacity .15s !important; }
@@ -3617,13 +3436,26 @@
        Venue is a fact, not a state: no green, and never amber (amber means
        "needs attention"). */
     .lc-chip.home, .lc-chip.away { background: var(--page); color: var(--ink); }
+    /* Status dot (F12, Oct 31 2026): THE one, same as iOS BuilderStatusDot.
+       An 8px dot before a short status line. .ok saved / ready (green),
+       .dr needs attention (amber), .err failed (alert), no tone neutral.
+       Saving reads neutral, never amber. The words take the tone's ink;
+       .lc-st--quiet keeps them secondary when the dot alone carries the
+       state (a hint line, the sync bar). JS: setLcStatus(el, tone, text). */
     .lc-st { display: inline-flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink-secondary); }
-    .lc-st i { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline-strong); display: block; flex: none; }
+    .lc-st > i { width: 8px; height: 8px; border-radius: 50%; background: var(--hairline-strong); display: block; flex: none; }
     .lc-st.ok { color: var(--accent-down); }
-    .lc-st.ok i { background: var(--accent); }
+    .lc-st.ok > i { background: var(--accent); }
     .lc-st.dr { color: var(--attention-ink); }
-    .lc-st.dr i { background: var(--attention); }
+    .lc-st.dr > i { background: var(--attention); }
+    .lc-st.err { color: var(--alert-ink); }
+    .lc-st.err > i { background: var(--alert-ink); }
     .lc-st.no { font-weight: 600; }
+    .lc-st.lc-st--quiet:not(.err) { color: var(--ink-secondary); }
+    .lc-st.pp-saved, .lc-st.roster-save-status { font-weight: 600; }
+    .schedule-sync-bar .lc-st { font-weight: inherit; }
+    .sbar-left .lc-st { gap: 12px; color: var(--ink); }
+    .sbar-left .lc-st.err { color: var(--alert-ink); }
     .lc-rise { animation: lcRise .4s var(--lc-spring) both; }
 
     /* ── Emphasis card (Schedule Next game, All teams Up next) ── */
@@ -3871,11 +3703,7 @@
     @media (min-width: 980px) and (max-width: 1279px) { body.pp-open .pp { box-shadow: -1px 0 0 var(--hairline), -18px 0 40px rgba(var(--shadow-rgb), .12); } }
     @media (max-width: 979px) { .pp { top: 56px; width: 100%; z-index: 58; } }
     .pp-hd { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px 8px; }
-    .pp-saved { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; color: var(--ink-secondary); min-width: 0; }
-    .pp-saved i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: block; flex: none; }
-    .pp-saved.is-saving i { background: var(--attention); animation: lcPulse .7s ease-in-out infinite; }
-    .pp-saved.is-error { color: var(--alert-ink); }
-    .pp-saved.is-error i { background: var(--alert-ink); }
+    .pp-saved { font-size: 13px; min-width: 0; }
     .pp-x { flex: none; width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--bg-secondary); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
     .pp-x:hover { background: var(--gray-5); }
     .pp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 20px; }
@@ -3897,9 +3725,11 @@
     .pp-add { align-self: flex-start; }
     .pp :focus-visible:not(input, select, textarea) { outline: 2px solid var(--accent-down); outline-offset: 2px; }
 
-    /* Toast with undo: a snackbar keeps its ink in both themes */
+    /* Toast (F12): THE toast. A snackbar that keeps its ink in both themes,
+       with an optional action (Undo) and a bar that drains while it shows.
+       showToast(text, actionLabel, onAction, ms). Sits above modals. */
     .lc-toast {
-      position: fixed; left: 50%; bottom: 24px; z-index: 96; min-width: 280px; max-width: calc(100vw - 32px);
+      position: fixed; left: 50%; bottom: 24px; z-index: 400; min-width: 280px; max-width: calc(100vw - 32px);
       display: flex; align-items: center; justify-content: space-between; gap: 18px; overflow: hidden;
       padding: 12px 12px 12px 18px; border-radius: 14px; background: #101613; color: #F5F6F8;
       font-size: 15px; font-weight: 600; box-shadow: 0 14px 40px rgba(var(--shadow-rgb), .28);
@@ -4267,7 +4097,7 @@
       <div class="players-header-info">
         <h1 id="players-team-name">Players</h1>
         <p class="dashboard-sub" id="players-team-sub">Your roster</p>
-        <span id="roster-save-status" class="roster-save-status" aria-live="polite"></span>
+        <span id="roster-save-status" class="roster-save-status lc-st" aria-live="polite"></span>
       </div>
       <button class="btn btn-primary" id="pl-add-btn" type="button" onclick="openPlayerPanel('new')">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add player
@@ -4290,7 +4120,7 @@
 <!-- Players side panel: one kid at a time; changes save as you go -->
 <aside class="pp" id="player-panel" aria-label="Edit player" aria-hidden="true">
   <div class="pp-hd">
-    <span class="pp-saved" id="pp-saved" aria-live="polite"><i></i><span>Changes save as you go</span></span>
+    <span class="lc-st lc-st--quiet ok pp-saved" id="pp-saved" aria-live="polite"><i></i><span>Changes save as you go</span></span>
     <button class="pp-x" type="button" onclick="closePlayerPanel()" aria-label="Close player">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -4620,7 +4450,7 @@
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
           <div class="text-muted" id="step2-status"></div>
-          <div class="draft-status" id="draft-saved-status-step3"></div>
+          <div class="draft-status lc-st" id="draft-saved-status-step3"></div>
           <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
           <button id="step3-continue" class="btn btn-primary btn-lg" onclick="goToStep4()">Continue to Edit Lineup →</button>
@@ -4660,13 +4490,13 @@
               More
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </button>
-            <div class="lt-menu" role="menu">
-              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleBatting()">Generate batting order</button>
-              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleFielding()">Rearrange positions</button>
-              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImportPreviousModal()">Import from a past game</button>
-              <button class="sb-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImageExportModal()">Save as image</button>
-              <div class="sb-pop-div"></div>
-              <button class="sb-menu-item danger" type="button" role="menuitem" onclick="closeLineupMore(); clearFielding()">Clear positions</button>
+            <div class="lc-menu lc-menu--drop" role="menu">
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleBatting()">Generate batting order</button>
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleFielding()">Rearrange positions</button>
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImportPreviousModal()">Import from a past game</button>
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImageExportModal()">Save as image</button>
+              <div class="lc-menu-sep"></div>
+              <button class="lc-menu-item danger" type="button" role="menuitem" onclick="closeLineupMore(); clearFielding()">Clear positions</button>
             </div>
           </div>
           <button class="btn btn-ghost btn-sm bt-toggle" id="bt-toggle" type="button" onclick="toggleBuilderTools()" aria-pressed="false" aria-controls="builder-tools" title="Strategy, positions, playing time and suggestions">
@@ -4743,12 +4573,12 @@
         </div>
 
         <!-- POSITION PICKER popup (shared across field-view bubbles + bench chips) -->
-        <div id="field-pos-picker" class="field-pos-picker" style="display:none;" role="dialog" aria-label="Assign player">
-          <div class="field-pos-picker-header">
-            <span id="field-pos-picker-title">Position</span>
+        <div id="field-pos-picker" class="lc-menu lc-menu--fixed" style="display:none;" role="dialog" aria-label="Assign player">
+          <div class="lc-menu-head lc-menu-head--bar">
+            <b id="field-pos-picker-title">Position</b>
             <button class="modal-close" type="button" onclick="closeFieldPosPicker()" aria-label="Close">×</button>
           </div>
-          <div class="field-pos-picker-body" id="field-pos-picker-body"></div>
+          <div class="lc-menu-scroll" id="field-pos-picker-body"></div>
         </div>
 
       </div>
@@ -4756,7 +4586,7 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
-          <div class="draft-status" id="draft-saved-status"></div>
+          <div class="draft-status lc-st" id="draft-saved-status"></div>
           <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
         </div>
@@ -4792,7 +4622,7 @@
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
           <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026) -->
-          <div class="draft-status" id="export-save-status" aria-live="polite"></div>
+          <div class="draft-status lc-st" id="export-save-status" aria-live="polite"></div>
           <button class="btn btn-outline btn-lg" id="export-edit" onclick="editSavedLineup()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>Edit lineup
           </button>
@@ -4871,8 +4701,7 @@
     <!-- Settings save bar: nothing until something changes (Oct 30 2026) -->
     <div class="save-bar" id="settings-save-bar" role="region" aria-label="Unsaved changes" aria-live="polite">
       <div class="sbar-left">
-        <i class="sbar-dot"></i>
-        <span id="sbar-text">Unsaved changes</span>
+        <span class="lc-st dr" id="sbar-st"><i></i><span id="sbar-text">Unsaved changes</span></span>
         <button class="sbar-reset" type="button" onclick="discardSettingsChanges()">Reset</button>
       </div>
       <button class="btn btn-primary lc-stateful" id="sbar-save" type="button" onclick="settingsSave()">
@@ -4988,19 +4817,15 @@ function initFirebase() {
         const initials = name.charAt(0).toUpperCase();
         const photoURL = user.photoURL;
         const email = user.email || '';
+        // The one avatar (.sb-av) and the one menu (.lc-menu), F12
         const authHTML = `
           <div class="avatar-menu-wrap">
-            <button class="avatar-menu-trigger" onclick="toggleAvatarMenu(this)">
-              <div class="topbar-avatar" title="${escHtml(name)}">
-                ${photoURL ? `<img src="${photoURL}" alt="${initials}" />` : initials}
-              </div>
+            <button class="avatar-menu-trigger" type="button" onclick="toggleAvatarMenu(this)" aria-haspopup="menu" aria-expanded="false">
+              <span class="sb-av" title="${escHtml(name)}">${photoURL ? `<img src="${sbAttr(photoURL)}" alt="">` : escHtml(initials)}</span>
             </button>
-            <div class="avatar-menu">
-              <div class="avatar-menu-header">
-                <div class="avatar-menu-name">${escHtml(name)}</div>
-                ${email ? `<div class="avatar-menu-email">${escHtml(email)}</div>` : ''}
-              </div>
-              <button class="avatar-menu-item danger" onclick="signOut()">Sign out</button>
+            <div class="lc-menu lc-menu--drop" role="menu">
+              <div class="lc-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
+              <button class="lc-menu-item danger" type="button" role="menuitem" onclick="signOut()">Sign out</button>
             </div>
           </div>`;
 
@@ -5246,16 +5071,17 @@ async function signOut() {
 }
 
 function toggleAvatarMenu(btn) {
-  const menu = btn.closest('.avatar-menu-wrap').querySelector('.avatar-menu');
-  const isOpen = menu.classList.contains('open');
+  const wrap = btn.closest('.avatar-menu-wrap');
+  const isOpen = wrap.classList.contains('open');
   // Close all open menus first
-  document.querySelectorAll('.avatar-menu.open').forEach(m => m.classList.remove('open'));
-  if (!isOpen) menu.classList.add('open');
+  document.querySelectorAll('.avatar-menu-wrap.open').forEach(w => w.classList.remove('open'));
+  if (!isOpen) wrap.classList.add('open');
+  btn.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
 }
 // Close avatar menu when clicking outside
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.avatar-menu-wrap')) {
-    document.querySelectorAll('.avatar-menu.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.avatar-menu-wrap.open').forEach(w => w.classList.remove('open'));
   }
 });
 
@@ -6688,13 +6514,13 @@ function renderSidebar() {
           ${SB_ICONS.chev}
         </button>
         <span class="sb-tip">${escHtml(team.name || 'Team')}</span>
-        <div class="sb-pop" role="menu" aria-label="Switch team">
-          <div class="sb-pop-label">Your teams</div>
+        <div class="lc-menu lc-menu--drop lc-menu--left sb-pop" role="menu" aria-label="Switch team">
+          <div class="lc-menu-label">Your teams</div>
           ${rows}
-          <div class="sb-pop-div"></div>
-          <a class="sb-plink" href="#" onclick="closeTeamSwitcher(); navigate('#/'); return false;">${SB_ICONS.grid}All teams</a>
-          ${ALLOW_TEAM_CREATION ? `<a class="sb-plink" href="#" onclick="closeTeamSwitcher(); closeSidebarDrawer(); enterBuilder(null, 'setup', 1); return false;">${SB_ICONS.plus}New team</a>` : ''}
-          <a class="sb-plink" href="#" onclick="closeTeamSwitcher(); navigate('#/join'); return false;">${SB_ICONS.join}Join with a code</a>
+          <div class="lc-menu-sep"></div>
+          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/'); return false;">${SB_ICONS.grid}All teams</a>
+          ${ALLOW_TEAM_CREATION ? `<a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); closeSidebarDrawer(); enterBuilder(null, 'setup', 1); return false;">${SB_ICONS.plus}New team</a>` : ''}
+          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/join'); return false;">${SB_ICONS.join}Join with a code</a>
         </div>
       </div>`;
     html += isCoachRole(team)
@@ -6726,11 +6552,11 @@ function renderSidebar() {
           <span class="sb-me-txt"><b>${escHtml(name)}</b><span>Account, help, feedback</span></span>
         </button>
         <span class="sb-tip">Account</span>
-        <div class="sb-menu" role="menu">
-          <div class="sb-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
-          <button class="sb-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${SB_ICONS.feedback}Send feedback</button>
-          <a class="sb-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${SB_ICONS.link}getleadoff.com</a>
-          <button class="sb-menu-item danger" type="button" role="menuitem" onclick="signOut()">${SB_ICONS.signout}Sign out</button>
+        <div class="lc-menu lc-menu--drop lc-menu--up" role="menu">
+          <div class="lc-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
+          <button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${SB_ICONS.feedback}Send feedback</button>
+          <a class="lc-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${SB_ICONS.link}getleadoff.com</a>
+          <button class="lc-menu-item danger" type="button" role="menuitem" onclick="signOut()">${SB_ICONS.signout}Sign out</button>
         </div>
       </div>`;
   }
@@ -8144,8 +7970,7 @@ async function openSchedule(teamId) {
     } else if (calUrl) {
       syncBar.innerHTML = `
         <div class="schedule-sync-bar">
-          <span class="sync-dot"></span>
-          Last synced just now · ${_scheduleGames.length} game${_scheduleGames.length !== 1 ? 's' : ''} found
+          <span class="lc-st lc-st--quiet ok"><i></i><span>Last synced just now · ${_scheduleGames.length} game${_scheduleGames.length !== 1 ? 's' : ''} found</span></span>
         </div>`;
     }
 
@@ -9128,6 +8953,13 @@ function setSaveBar(phase, msg) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'e
   bar.classList.toggle('is-work', phase === 'work');
   bar.classList.toggle('is-done', phase === 'done');
   bar.classList.toggle('is-error', phase === 'error');
+  // Unsaved reads amber (needs attention), saving neutral, saved green.
+  const st = document.getElementById('sbar-st');
+  if (st) {
+    st.classList.remove('ok', 'dr', 'err');
+    const tone = phase === 'dirty' ? 'dr' : phase === 'done' ? 'ok' : phase === 'error' ? 'err' : '';
+    if (tone) st.classList.add(tone);
+  }
   if (btn) {
     btn.classList.toggle('is-work', phase === 'work');
     btn.classList.toggle('is-done', phase === 'done');
@@ -9655,6 +9487,24 @@ async function leavePlayersView() {
   try { await flushRosterSave(); } catch (e) { console.error('flushRosterSave failed:', e); }
 }
 
+// Status dot (F12): the one .lc-st. tone 'ok' (saved, ready), 'dr' (needs
+// attention), 'err' (failed) or '' (neutral: saving reads neutral, like iOS).
+// Keeps the element's other classes; empty text empties it.
+function setLcStatus(el, tone, text) {
+  if (!el) return;
+  el.classList.add('lc-st');
+  el.classList.remove('ok', 'dr', 'err', 'no');
+  if (tone) el.classList.add(tone);
+  if (!text) { el.textContent = ''; return; }
+  let label = el.querySelector(':scope > span');
+  if (!label || !el.querySelector(':scope > i')) {
+    el.textContent = '';
+    label = document.createElement('span');
+    el.append(document.createElement('i'), label);
+  }
+  label.textContent = text;
+}
+
 var _toastTimer = null;
 function showToast(text, actionLabel, onAction, ms) {
   const t = document.getElementById('lc-toast');
@@ -10135,25 +9985,11 @@ function updateDraftSavedIndicator(saving) {
   if (!els.length) return;
   const inLineup = (_appMode === 'lineup' && _currentStep >= 3);
   els.forEach(el => {
-    if (!inLineup) {
-      el.textContent = '';
-      el.classList.remove('draft-status-saving','draft-status-saved');
-      return;
-    }
-    if (saving) {
-      el.textContent = 'Saving draft…';
-      el.classList.remove('draft-status-saved');
-      el.classList.add('draft-status-saving');
-      return;
-    }
-    if (_draftLastSavedAt) {
-      el.textContent = 'Draft saved ' + relativeTimeShort(_draftLastSavedAt);
-      el.classList.remove('draft-status-saving');
-      el.classList.add('draft-status-saved');
-    } else {
-      el.textContent = '';
-      el.classList.remove('draft-status-saving','draft-status-saved');
-    }
+    if (!inLineup) { setLcStatus(el, '', ''); return; }
+    // Saving reads neutral (F12), like iOS; saved goes green.
+    if (saving) { setLcStatus(el, '', 'Saving draft…'); return; }
+    if (_draftLastSavedAt) setLcStatus(el, 'ok', 'Draft saved ' + relativeTimeShort(_draftLastSavedAt));
+    else setLcStatus(el, '', '');
   });
 }
 
@@ -10357,23 +10193,7 @@ function applyImportFromPrevious(lineupId) {
   const title = lineup.gameName || (lineup.opponent ? 'vs ' + lineup.opponent : 'past game');
   let msg = 'Imported lineup from ' + title;
   if (skipped > 0) msg += ' · ' + skipped + ' player' + (skipped !== 1 ? 's' : '') + ' skipped (not on roster)';
-  showImportToast(msg);
-}
-
-function showImportToast(msg) {
-  let toast = document.getElementById('import-toast');
-  if (!toast) {
-    toast = document.createElement('div');
-    toast.id = 'import-toast';
-    toast.className = 'import-toast';
-    document.body.appendChild(toast);
-  }
-  toast.textContent = msg;
-  // Force reflow so re-adding the class re-runs the transition
-  void toast.offsetWidth;
-  toast.classList.add('visible');
-  if (toast._t) clearTimeout(toast._t);
-  toast._t = setTimeout(() => toast.classList.remove('visible'), 2800);
+  showToast(msg, '', null, 2800);
 }
 
 // ═══════════════════════════════════════════════════
@@ -10450,7 +10270,7 @@ async function exportLineupAsImage(preset) {
         : (approxBytes / (1024 * 1024)).toFixed(1) + ' MB';
 
     if (status) status.textContent = 'Saved ' + filename + ' (' + sizeStr + ')';
-    showImportToast('Saved ' + filename);
+    showToast('Saved ' + filename, '', null, 2800);
     setTimeout(closeImageExportModal, 900);
   } catch (e) {
     console.error('Image export failed:', e);
@@ -11206,13 +11026,13 @@ function showFieldPicker(anchorEl, title, items) {
   items.forEach((it, idx) => {
     if (it.divider) {
       const d = document.createElement('div');
-      d.className = 'field-pos-picker-divider';
+      d.className = 'lc-menu-sep';
       bodyEl.appendChild(d);
       return;
     }
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'field-pos-picker-item' + (it.selected ? ' selected' : '') + (it.muted ? ' muted' : '');
+    b.className = 'lc-menu-item' + (it.selected ? ' selected' : '') + (it.muted ? ' muted' : '');
     b.textContent = it.label;
     b.onclick = (e) => {
       e.stopPropagation();
@@ -11878,32 +11698,31 @@ function setRosterSaveStatus(state /* 'saving' | 'saved' | 'error' | 'idle' */) 
   // The players panel carries the same status next to its close button.
   const ps = document.getElementById('pp-saved');
   if (ps) {
-    const label = ps.querySelector('span');
-    ps.classList.toggle('is-saving', state === 'saving');
-    ps.classList.toggle('is-error', state === 'error');
-    if (label) label.textContent = state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved'
-      : state === 'error' ? "Couldn't save. Trying again…" : 'Changes save as you go';
+    // Saving reads neutral (F12); the dot is green at rest, alert on error.
+    setLcStatus(ps, state === 'saving' ? '' : state === 'error' ? 'err' : 'ok',
+      state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved'
+      : state === 'error' ? "Couldn't save. Trying again…" : 'Changes save as you go');
     clearTimeout(ps._t);
-    if (state === 'saved') ps._t = setTimeout(() => { if (label) label.textContent = 'Changes save as you go'; }, 1800);
+    if (state === 'saved') ps._t = setTimeout(() => setLcStatus(ps, 'ok', 'Changes save as you go'), 1800);
   }
   const el = document.getElementById('roster-save-status');
   if (!el) return;
   if (_rosterSaveHideTimer) { clearTimeout(_rosterSaveHideTimer); _rosterSaveHideTimer = null; }
-  el.classList.remove('saving', 'saved', 'error', 'visible');
+  el.classList.remove('visible');
   if (state === 'saving') {
-    el.textContent = 'Saving…';
-    el.classList.add('saving', 'visible');
+    setLcStatus(el, '', 'Saving…');
+    el.classList.add('visible');
   } else if (state === 'saved') {
-    el.textContent = 'Saved ✓';
-    el.classList.add('saved', 'visible');
+    setLcStatus(el, 'ok', 'Saved');
+    el.classList.add('visible');
     _rosterSaveHideTimer = setTimeout(() => {
       el.classList.remove('visible');
     }, 1800);
   } else if (state === 'error') {
-    el.textContent = 'Save failed — retrying…';
-    el.classList.add('error', 'visible');
+    setLcStatus(el, 'err', "Couldn't save. Trying again…");
+    el.classList.add('visible');
   } else {
-    el.textContent = '';
+    setLcStatus(el, '', '');
   }
 }
 
@@ -12132,11 +11951,10 @@ function setExportSaveStatus(phase) {
   const done = document.getElementById('export-done');
   if (el) {
     const t = _userTeams.find(x => x.id === _activeTeamId);
-    el.classList.toggle('draft-status-saving', phase === 'saving');
-    el.classList.toggle('export-err', phase === 'error');
-    el.textContent = phase === 'saving' ? 'Saving lineup…'
+    setLcStatus(el, phase === 'saved' ? 'ok' : phase === 'error' ? 'err' : '',
+      phase === 'saving' ? 'Saving lineup…'
       : phase === 'saved' ? 'Saved to ' + (t ? t.name : 'your team') + ". It's on every phone now."
-      : "Couldn't save the lineup. Check your connection.";
+      : "Couldn't save the lineup. Check your connection.");
   }
   if (done) done.textContent = phase === 'error' ? 'Try again' : 'Done';
 }
@@ -12697,7 +12515,7 @@ function _ensureInningMenuEl() {
   if (!menu) {
     menu = document.createElement('div');
     menu.id = 'inning-menu';
-    menu.className = 'inning-menu';
+    menu.className = 'lc-menu lc-menu--fixed';
     menu.style.display = 'none';
     document.body.appendChild(menu);
   }
@@ -12708,24 +12526,24 @@ function openInningMenu(inningIdx, triggerEl) {
   const menu = _ensureInningMenuEl();
 
   // Build menu content
-  let html = `<div class="menu-header">Inning ${inningIdx + 1}</div>`;
+  let html = `<div class="lc-menu-label">Inning ${inningIdx + 1}</div>`;
 
   if (state.innings > 1) {
     for (let i = 0; i < state.innings; i++) {
       if (i === inningIdx) continue;
-      html += `<button type="button" class="menu-item" data-act="copy" data-target="${i}">Copy to inning ${i + 1}</button>`;
+      html += `<button type="button" class="lc-menu-item" data-act="copy" data-target="${i}">Copy to inning ${i + 1}</button>`;
     }
     if (state.innings > 2) {
-      html += `<div class="menu-divider"></div>`;
-      html += `<button type="button" class="menu-item" data-act="copy-all">Copy to all other innings</button>`;
+      html += `<div class="lc-menu-sep"></div>`;
+      html += `<button type="button" class="lc-menu-item" data-act="copy-all">Copy to all other innings</button>`;
     }
-    html += `<div class="menu-divider"></div>`;
+    html += `<div class="lc-menu-sep"></div>`;
   }
-  html += `<button type="button" class="menu-item danger" data-act="clear">Clear inning ${inningIdx + 1}</button>`;
+  html += `<button type="button" class="lc-menu-item danger" data-act="clear">Clear inning ${inningIdx + 1}</button>`;
   menu.innerHTML = html;
 
   // Wire up actions
-  menu.querySelectorAll('.menu-item').forEach(btn => {
+  menu.querySelectorAll('.lc-menu-item').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const act = btn.getAttribute('data-act');
