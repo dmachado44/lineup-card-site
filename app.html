@@ -756,10 +756,6 @@
       font-weight: 500;
       white-space: nowrap;
     }
-    .priority-pills {
-      display: flex;
-      gap: 6px;
-    }
 
     /* ── Roster auto-save status indicator ── */
     .roster-save-status {
@@ -1047,32 +1043,28 @@
       justify-content: flex-start;
       margin-bottom: 16px;
     }
-    .view-mode-toggle {
-      display: inline-flex;
-      background: var(--bg-secondary);
-      border-radius: 10px;
-      padding: 3px;
-      gap: 2px;
+    /* ── Segmented control (F4, Oct 31 2026): THE pick-one switch, same
+       spec as iOS LCSegmented. A 36px track of ink at 8% (12px corners,
+       3px inset) with a white thumb (9px corners, soft shadow; white at
+       18% by night). Labels 15/600, secondary ink; the picked one ink.
+       Segments share the width; .lc-seg--fit sizes them to their labels
+       (lineup view switch, paywall plans). Picked state: .on. ── */
+    .lc-seg {
+      display: flex; height: 36px; padding: 3px; border-radius: 12px;
+      background: color-mix(in srgb, var(--ink) 8%, transparent);
     }
-    .view-mode-btn {
-      background: none;
-      border: none;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-family: inherit;
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--ink-secondary);
-      cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+    .lc-seg--fit { display: inline-flex; }
+    .lc-seg > button {
+      flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 0 14px; border: none; border-radius: 9px; background: transparent;
+      font: inherit; font-size: 15px; font-weight: 600; line-height: 1; white-space: nowrap; color: var(--ink-secondary); cursor: pointer;
+      transition: background-color .2s, color .2s, box-shadow .2s;
     }
-    .view-mode-btn .view-mode-icon { margin-right: 4px; }
-    .view-mode-btn:hover { color: var(--ink); }
-    .view-mode-btn.active {
-      background: var(--panel);
-      color: var(--ink);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-    }
+    .lc-seg--fit > button { flex: none; }
+    .lc-seg > button:hover { color: var(--ink); }
+    .lc-seg > button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.10); }
+    .lc-seg > button:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
+    @media (prefers-color-scheme: dark) { .lc-seg > button.on { background: rgba(255,255,255,.18); } }
 
     /* ── FIELD VIEW ── */
     .field-inning-tabs {
@@ -2248,34 +2240,7 @@
       line-height: 1.5;
       margin-bottom: 28px;
     }
-    .upgrade-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      background: var(--bg-secondary);
-      border: 1px solid var(--hairline);
-      border-radius: 12px;
-      padding: 4px;
-      width: fit-content;
-      margin: 0 auto 24px;
-    }
-    .upgrade-toggle-btn {
-      padding: 9px 20px;
-      font-size: 14px;
-      font-weight: 600;
-      border: none;
-      border-radius: 9px;
-      cursor: pointer;
-      background: transparent;
-      color: var(--ink-secondary);
-      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-    }
-    .upgrade-toggle-btn.active {
-      background: var(--panel);
-      color: var(--ink);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-    }
+    .upgrade-toggle { margin: 0 auto 24px; }
     .upgrade-save {
       display: inline-block;
       font-size: 10px;
@@ -3491,7 +3456,6 @@
     .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
     .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
     .bt-dot:empty { display: none; }
-    .view-mode-icon svg { display: block; }
 
     /* ── Builder: tools pane (strategy · positions · playing time) ── */
     .builder-tools { display: none; }
@@ -3777,15 +3741,6 @@
     .rules-card .rule-row:last-child { padding-bottom: 2px; border-bottom: none; }
     .rule-row.rule-stack { flex-direction: column; align-items: stretch; gap: 12px; }
     .rule-select-hidden { display: none !important; }
-    .rule-seg { display: flex; padding: 3px; border-radius: 11px; background: var(--bg-secondary); }
-    .rule-seg button {
-      flex: 1; height: 38px; border: none; border-radius: 8px; background: transparent;
-      font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink-secondary); cursor: pointer;
-      transition: background-color .2s, color .2s;
-    }
-    .rule-seg button:hover { color: var(--ink); }
-    .rule-seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(16,22,19,.14); }
-    .rule-seg button:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
     .inning-control { gap: 14px; }
     .inning-control button {
       width: 40px; height: 40px; border: 1.5px solid var(--hairline-strong); background: var(--panel); color: var(--ink);
@@ -3897,9 +3852,6 @@
     .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
     .pp-two .player-num-input { width: 100%; flex: none; }
     .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pp-seg { display: flex; padding: 3px; border-radius: 11px; background: var(--bg-secondary); }
-    .pp-seg button { flex: 1; height: 36px; border: none; border-radius: 8px; background: transparent; font: inherit; font-size: 14.5px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; transition: background-color .2s, color .2s; }
-    .pp-seg button.on { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(16,22,19,.14); }
     .pp-priv { border-radius: 14px; background: var(--bg-secondary); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
     .pp-privh { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
     .pp-privh span { font-weight: 600; color: var(--ink-secondary); }
@@ -4133,9 +4085,9 @@
       <h2 class="upgrade-title" id="paywall-title">Unlock Lineup Builder</h2>
       <p class="upgrade-sub" id="paywall-message">Generate balanced lineups, auto-assign positions, and manage game day. Try it free for 7 days.</p>
 
-      <div class="upgrade-toggle">
-        <button class="upgrade-toggle-btn active" id="pw-btn-monthly" onclick="setPaywallPlan('monthly')">Monthly</button>
-        <button class="upgrade-toggle-btn" id="pw-btn-yearly" onclick="setPaywallPlan('yearly')">Yearly <span class="upgrade-save">Save 64%</span></button>
+      <div class="lc-seg lc-seg--fit upgrade-toggle" role="radiogroup" aria-label="Plan">
+        <button class="on" id="pw-btn-monthly" onclick="setPaywallPlan('monthly')">Monthly</button>
+        <button id="pw-btn-yearly" onclick="setPaywallPlan('yearly')">Yearly <span class="upgrade-save">Save 64%</span></button>
       </div>
 
       <div class="upgrade-price">
@@ -4505,7 +4457,7 @@
             <div class="rule-title">Max innings at one position</div>
             <div class="rule-sub">Limit how many total innings a player can play any one position</div>
           </div>
-          <div class="rule-seg" data-for="rule-max-same-pos" role="radiogroup" aria-label="Max innings at one position"></div>
+          <div class="lc-seg rule-seg" data-for="rule-max-same-pos" role="radiogroup" aria-label="Max innings at one position"></div>
           <select id="rule-max-same-pos" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
@@ -4548,7 +4500,7 @@
             <div class="rule-title">Max innings pitched per player</div>
             <div class="rule-sub">Limit how many innings any one player can pitch per game</div>
           </div>
-          <div class="rule-seg" data-for="rule-max-pitch" role="radiogroup" aria-label="Max innings pitched per player"></div>
+          <div class="lc-seg rule-seg" data-for="rule-max-pitch" role="radiogroup" aria-label="Max innings pitched per player"></div>
           <select id="rule-max-pitch" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
@@ -4692,15 +4644,15 @@
         </div>
 
         <div class="view-mode-row">
-          <div class="view-mode-toggle" role="tablist" aria-label="Lineup view mode">
-            <button id="view-mode-list" class="view-mode-btn active" role="tab" aria-selected="true" onclick="setLineupViewMode('list')">
-              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span> List
+          <div class="lc-seg lc-seg--fit" role="tablist" aria-label="Lineup view mode">
+            <button id="view-mode-list" class="on" role="tab" aria-selected="true" onclick="setLineupViewMode('list')">
+              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span> List
             </button>
-            <button id="view-mode-field" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('field')">
-              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 9-9 9-9-9z"/></svg></span> Field
+            <button id="view-mode-field" role="tab" aria-selected="false" onclick="setLineupViewMode('field')">
+              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 9-9 9-9-9z"/></svg></span> Field
             </button>
-            <button id="view-mode-allinnings" class="view-mode-btn" role="tab" aria-selected="false" onclick="setLineupViewMode('allinnings')">
-              <span class="view-mode-icon" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></span> All innings
+            <button id="view-mode-allinnings" role="tab" aria-selected="false" onclick="setLineupViewMode('allinnings')">
+              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></span> All innings
             </button>
           </div>
           <div class="view-mode-spacer"></div>
@@ -5192,8 +5144,8 @@ let _paywallPlan = 'monthly';
 
 function showLineupPaywall() {
   _paywallPlan = 'monthly';
-  document.getElementById('pw-btn-monthly').classList.add('active');
-  document.getElementById('pw-btn-yearly').classList.remove('active');
+  document.getElementById('pw-btn-monthly').classList.add('on');
+  document.getElementById('pw-btn-yearly').classList.remove('on');
   document.getElementById('pw-price').textContent = '$2.99';
   document.getElementById('pw-period').textContent = '/mo';
   document.getElementById('pw-checkout-btn').disabled = false;
@@ -5209,13 +5161,13 @@ function setPaywallPlan(plan) {
   const period = document.getElementById('pw-period');
 
   if (plan === 'yearly') {
-    btnM.classList.remove('active');
-    btnY.classList.add('active');
+    btnM.classList.remove('on');
+    btnY.classList.add('on');
     price.textContent = '$12.99';
     period.textContent = '/yr';
   } else {
-    btnM.classList.add('active');
-    btnY.classList.remove('active');
+    btnM.classList.add('on');
+    btnY.classList.remove('on');
     price.textContent = '$2.99';
     period.textContent = '/mo';
   }
@@ -9545,7 +9497,7 @@ function renderPlayerPanel() {
     </div>
     <div class="pp-f">
       <span class="pp-lb" id="pp-pref-lb">Prefers</span>
-      <div class="pp-seg" id="pp-seg" role="group" aria-labelledby="pp-pref-lb">${[['infield', 'Infield'], ['outfield', 'Outfield'], ['both', 'Either']].map(([v, l]) =>
+      <div class="lc-seg" id="pp-seg" role="group" aria-labelledby="pp-pref-lb">${[['infield', 'Infield'], ['outfield', 'Outfield'], ['both', 'Either']].map(([v, l]) =>
         `<button type="button" data-v="${v}" class="${prio === v ? 'on' : ''}" aria-pressed="${prio === v}" onclick="ppSetPriority('${id}', '${v}')">${l}</button>`).join('')}</div>
     </div>
     <div class="pp-priv">
@@ -10804,7 +10756,7 @@ function setLineupViewMode(mode) {
 
   [['list', listBtn], ['field', fieldBtn], ['allinnings', allBtn]].forEach(([m, btn]) => {
     if (!btn) return;
-    btn.classList.toggle('active', m === mode);
+    btn.classList.toggle('on', m === mode);
     btn.setAttribute('aria-selected', m === mode);
   });
 
@@ -12021,10 +11973,10 @@ function renderPlayerList() {
       </div>
       <div class="priority-row">
         <span class="priority-label">Prioritize:</span>
-        <div class="priority-pills">
-          <button type="button" class="lc-toggle${prio === 'infield' ? ' on' : ''}" aria-pressed="${prio === 'infield'}" onclick="setFieldPriority('${player.id}','infield')">Infield</button>
-          <button type="button" class="lc-toggle${prio === 'outfield' ? ' on' : ''}" aria-pressed="${prio === 'outfield'}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</button>
-          <button type="button" class="lc-toggle${prio === 'both' ? ' on' : ''}" aria-pressed="${prio === 'both'}" onclick="setFieldPriority('${player.id}','both')">Both</button>
+        <div class="lc-seg lc-seg--fit" role="group" aria-label="Prioritize">
+          <button type="button" class="${prio === 'infield' ? 'on' : ''}" aria-pressed="${prio === 'infield'}" onclick="setFieldPriority('${player.id}','infield')">Infield</button>
+          <button type="button" class="${prio === 'outfield' ? 'on' : ''}" aria-pressed="${prio === 'outfield'}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</button>
+          <button type="button" class="${prio === 'both' ? 'on' : ''}" aria-pressed="${prio === 'both'}" onclick="setFieldPriority('${player.id}','both')">Both</button>
         </div>
       </div>
     `;
