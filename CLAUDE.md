@@ -88,6 +88,10 @@ The Cowork session built out, in order:
 
 ## Design rules (app.html)
 
+The rules for every surface (iOS, this web app, getleadoff.com), each with its reason, live in the iOS repo at `Brand/DESIGN_RULES.md` and load here (import below). The bullets after it are web-only additions. Ask Dan when a case isn't covered, and run the `leadoff-review-screen` skill after changing a view.
+
+@~/Developer/Leadoff/Brand/DESIGN_RULES.md
+
 - **Row hover (Dan, Oct 31 2026):** every hoverable row on a white panel uses `--row-hover` (the Players tab tan, `--page` 45% into `--panel`); a pressed or selected row uses `--row-press` (`--gray-5`). Players, Schedule (inset, rounded, inside the card), lineup table, lineup lists and Import from previous all share it. No green or other tints for row hover. Menus, the sidebar and buttons keep their own hovers.
 
 ## Mobile
