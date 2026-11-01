@@ -75,137 +75,137 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── CRATE THEME DESIGN TOKENS (Brand/CRATE_THEME.md → web) ──
-       Values lifted verbatim from Color+Theme.swift / LineupTheme.swift
-       (.sandlotCrate palette). The cream page is the page; panels are white. */
+    /* @tokens:begin · GENERATED from Brand/tokens/tokens.json by Brand/tokens/build.js.
+       Don't edit by hand: change tokens.json and rerun `node Brand/tokens/build.js`.
+       Take every value from these tokens. If one you need is missing, ask Dan
+       before adding it (Brand/DESIGN_RULES.md).
+    */
     :root {
       /* Surfaces */
-      --page:            #FAF6EB;  /* cream page canvas */
-      --panel:           #FFFFFF;  /* white card/panel */
+      --page:                  #FAF6EB;  /* the page canvas */
+      --panel:                 #FFFFFF;  /* cards and panels on the page */
 
       /* Ink */
-      --ink:             #101613;  /* primary text — near-black green */
-      --ink-secondary:   #6B6659;  /* secondary text — warm taupe */
+      --ink:                   #101613;  /* primary text */
+      --ink-secondary:         #6B6659;  /* secondary text */
+      --warm-dark-ink:         #3C362A;  /* warm near-black on cream-family surfaces and gold */
 
-      /* Signature accent (grass green) */
-      --accent:          #46CF51;  /* FILL ONLY in light mode (2:1 on white) */
-      --accent-down:     #1F7A2A;  /* small text / icons / quiet CTAs in light */
-      --on-accent:       #0B2410;  /* text ON green fills — NEVER white/cream */
-      --accent-wash:     #DFF5E1;  /* selected states, emblems */
+      /* Signature green */
+      --accent:                #46CF51;  /* a FILL in light mode (2:1 on white); the one interactive color */
+      --accent-down:           #1F7A2A;  /* small green text and icons */
+      --on-accent:             #0B2410;  /* text ON green: never white or cream */
+      --accent-wash:           #DFF5E1;  /* selected states and emblems; never a fill on the cream page */
 
-      /* Sticker button chrome */
-      --sticker-cream:   #FFF8E6;  /* secondary button face */
-      --sticker-ink:     #101613;  /* border + hard shadow */
+      /* Sticker chrome */
+      --sticker-cream:         #FFF8E6;  /* the cream sticker face; keeps its fill at night */
+      --on-sticker-cream:      #101613;  /* label on the cream face: the sticker ink, never flips */
+      --sticker-ink:           #101613;  /* sticker border and hard shadow */
 
-      /* Pennant red — garnish + alerts ONLY, never the accent */
-      --pennant:         #EC2146;
-      --alert-wash:      #FDE3E8;
-      --alert-ink:       #C4173A;
+      /* Garnish and status */
+      --pennant:               #EC2146;  /* one kicker per screen and alert washes; never the accent */
+      --alert-wash:            #FDE3E8;  /* error and destructive washes */
+      --alert-ink:             #C4173A;  /* error text and borders */
+      --attention:             #D9731A;  /* amber: needs attention, nothing else */
+      --attention-ink:         #8A4A06;  /* amber text */
 
-      /* Palette-independent */
-      --attention:       #D9731A;  /* amber "needs attention" — never brand-colored */
-      --warm-dark-ink:   #3C362A;  /* warm near-black for cream-family surfaces */
-      --on-sticker-cream: #101613; /* text ON the cream sticker face: the sticker ink, as on
-                                      iOS and the site (F13). The face keeps its fill in dark
-                                      mode, so this must NOT flip with the theme */
+      /* Lines */
+      --hairline:              color-mix(in srgb, var(--ink-secondary) 18%, transparent);  /* quiet edge: white on white, dense lists */
+      --hairline-strong:       color-mix(in srgb, var(--ink-secondary) 30%, transparent);  /* field rest border */
 
-      /* Hairlines (dark mode separates by fill, not border) */
-      --hairline:        color-mix(in srgb, var(--ink-secondary) 18%, transparent);
-      --hairline-strong: color-mix(in srgb, var(--ink-secondary) 30%, transparent);
+      /* Fields and rows (web app) */
+      --field-fill:            var(--panel);  /* field on the cream page */
+      --field-fill-on-white:   #FAF6EB;  /* field inside white cards, sheets and modals */
+      --row-hover:             color-mix(in srgb, var(--page) 45%, var(--panel));  /* hoverable rows on a white panel (Dan, Oct 31 2026) */
+      --row-press:             var(--gray-5);  /* pressed or selected rows */
+      --bench-bg:              var(--sticker-cream);  /* bench rows */
 
-      /* Shadows (F11, Oct 31 2026): ONE shadow ink, the sticker ink #101613
-         as RGB channels, so every soft shadow reads
-         rgba(var(--shadow-rgb), alpha). Never plain black. Scrims behind
-         modals stay black; they aren't shadows. */
-      --shadow-rgb:      16, 22, 19;
+      /* Warm grays (web app; retiring to ink tints, audit F20) */
+      --gray:                  #8A8578;
+      --gray-3:                #C9C3B4;
+      --gray-4:                #D9D4C6;
+      --gray-5:                #F1ECDD;
+      --bg-secondary:          #F6F1E3;
 
-      /* Typography */
-      --font-body:    "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
-      --font-display: "Sofia Sans Extra Condensed", "Barlow Semi Condensed", sans-serif;
+      /* Shadows */
+      --shadow-rgb:            16, 22, 19;  /* THE shadow ink (#101613) as channels: rgba(var(--shadow-rgb), a). Never plain black; scrims aren't shadows */
 
-      /* Type scale (F8, Oct 31 2026): the App scale, same steps and names
-         as iOS Font.lc* (CRATE_THEME §3a). Display face (900, caps):
-         display-title 40, content-title 34, title 26 (.card-title),
-         sticker 17 (sticker buttons), tab 16. Body face: section 17/600
-         secondary (.section-head), headline 17/700, body 17/500 (also
-         field text), sub 15/500, label 15/600, caption 13/600, kicker
-         11/800 kerned caps. New type goes through these. 12 and 14 stay
-         as web-only steps for dense rows; half sizes are gone. */
-      --type-display-title: 40px;
-      --type-content-title: 34px;
-      --type-title:         26px;
-      --type-sticker:       17px;
-      --type-tab:           16px;
-      --type-section:       17px;
-      --type-headline:      17px;
-      --type-body:          17px;
-      --type-sub:           15px;
-      --type-label:         15px;
-      --type-caption:       13px;
-      --type-kicker:        11px;
+      /* Fonts */
+      --font-body:             "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
+      --font-display:          "Sofia Sans Extra Condensed", "Barlow Semi Condensed", "Arial Narrow", sans-serif;  /* 900, caps */
 
-      /* Radius scale (F7, Oct 31 2026), same names as iOS LCRadius and
-         getleadoff.com: card 20, control 12 (buttons, fields, segmented
-         tracks), compact 10 (compact fields, inning tabs, in-row controls),
-         small 6 (tags, grid cells). Off-scale literals move onto these as
-         their components are touched. */
-      --radius-card:         20px;
-      --radius-control:     12px;
-      --radius-compact: 10px;
-      --radius-small:   6px;
-      --radius-pill:    80px;   /* badges/chips/status pills only — not actionable buttons */
+      /* Type: App scale (iOS Font.lc*, web --type-*) */
+      --type-display-title:    40px;  /* display face */
+      --type-content-title:    34px;  /* display face */
+      --type-title:            26px;  /* display face (.card-title, Font.lcTitle) */
+      --type-sticker:          17px;  /* sticker button labels */
+      --type-tab:              16px;
+      --type-section:          17px;  /* section headers, 600, secondary ink */
+      --type-headline:         17px;  /* 700 */
+      --type-body:             17px;  /* 500; also field text */
+      --type-sub:              15px;  /* 500 */
+      --type-label:            15px;  /* 600 */
+      --type-caption:          13px;  /* 600 */
+      --type-kicker:           11px;  /* 800 kerned caps */
 
-      /* ── Warm neutrals (web only; real values, not aliases) ── */
-      --gray:        #8A8578;              /* warm gray, ink-secondary family */
-      --gray-3:      #C9C3B4;
-      --gray-4:      #D9D4C6;
-      --gray-5:      #F1ECDD;
-      --bg-secondary:#F6F1E3;              /* soft cream for in-panel rows, segmented tracks */
-      /* Row hover rule (Dan, Oct 31 2026): every hoverable row on a white
-         panel (Players, Schedule, lineup table, lineup lists) uses the
-         Players-tab tan; pressed or selected rows step to --gray-5. */
-      --row-hover:   color-mix(in srgb, var(--page) 45%, var(--panel));
-      --row-press:   var(--gray-5);
+      /* Radius */
+      --radius-card:           20px;  /* cards and grouped panels */
+      --radius-control:        12px;  /* buttons, fields, segmented tracks */
+      --radius-compact:        10px;  /* compact fields, in-row controls */
+      --radius-small:          6px;  /* tags, grid cells */
+      --radius-pill:           80px;  /* badges, chips, status pills; never actionable buttons (iOS: Capsule) */
 
-      /* Bench colors — cream family */
-      --bench-bg:    var(--sticker-cream);
-      /* Field fill (§4c): white on the cream page, cream inside white cards,
-         panels and modals so the field still reads. Surfaces set --field-bg. */
-      --field-fill:          var(--panel);
-      --field-fill-on-white: var(--page);
+      /* Spacing steps (Dan, Nov 1 2026). No 10s or 14s in new work; existing ones round up as their screen is touched. Above 32: ask Dan. */
+      --space-2:               2px;
+      --space-4:               4px;
+      --space-6:               6px;
+      --space-8:               8px;
+      --space-12:              12px;
+      --space-16:              16px;
+      --space-20:              20px;
+      --space-24:              24px;
+      --space-32:              32px;
 
-      /* Legacy aliases (--muted, --text, --white, --border…) were retired
-         Oct 31 2026: use the canonical tokens above. */
+      /* Motion (the house springs; iOS lcSnappy, lcQuick, lcPop) */
+      --ease-snappy:           cubic-bezier(.32, 1.25, .5, 1);  /* panels, sheets, layout; no visible bounce */
+      --dur-snappy:            350ms;
+      --ease-pop:              cubic-bezier(.34, 1.4, .64, 1);  /* anything that answers a tap; about 6% overshoot */
+      --dur-pop:               .6s;
+      --ease-glide:            cubic-bezier(.3, .9, .3, 1);  /* things that resize (rail, panes, progress); no overshoot */
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page:                  #0A0B0D;
+        --panel:                 #16181C;
+        --ink:                   #F5F6F8;
+        --ink-secondary:         #8A919E;
+        --warm-dark-ink:         #F1F2EC;
+        --accent-down:           #46CF51;
+        --accent-wash:           #0E2412;
+        --sticker-ink:           #020302;
+        --alert-wash:            #46101C;
+        --alert-ink:             #F5768D;
+        --attention-ink:         #F5A655;
+        --field-fill-on-white:   #1E2126;
+        --bench-bg:              #241F12;
+        --gray:                  #6E7480;
+        --gray-3:                #3A3F47;
+        --gray-4:                #2E333A;
+        --gray-5:                #1E2126;
+        --bg-secondary:          #1C1F24;
+      }
+    }
+    /* A real spring where the browser can draw one */
+    @supports (transition-timing-function: linear(0, 1)) {
+      :root { --ease-pop: linear(0, .07 3%, .27 7%, .53 12%, .78 18%, .94 24%, 1.03 31%, 1.06 37%, 1.05 44%, 1.02 53%, 1 64%, .995 75%, 1); }
+    }
+    /* @tokens:end */
 
-      /* Team theming — emblem/badge use only (never overrides the accent) */
+    /* Team theming: emblem and badge only, never the accent. Set at runtime
+       per team, so these stay out of the token file. */
+    :root {
       --team-primary: #000000;
       --team-secondary: var(--accent-wash);
       --team-logo: none;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --page:            #0A0B0D;  /* Woodsmoke */
-        --panel:           #16181C;
-        --ink:             #F5F6F8;
-        --ink-secondary:   #8A919E;
-        --accent:          #46CF51;  /* same green — 9.7:1 on Woodsmoke */
-        --accent-down:     #46CF51;
-        --on-accent:       #0B2410;
-        --accent-wash:     #0E2412;
-        --sticker-cream:   #FFF8E6;  /* the cream face KEEPS its fill in dark mode */
-        --sticker-ink:     #020302;  /* border/shadow go near-black */
-        --alert-wash:      #46101C;
-        --alert-ink:       #F5768D;
-        --warm-dark-ink:   #F1F2EC;
-        --gray:            #6E7480;
-        --gray-3:          #3A3F47;
-        --gray-4:          #2E333A;
-        --gray-5:          #1E2126;
-        --bg-secondary:    #1C1F24;
-        --bench-bg:        #241F12;
-        --field-fill-on-white: #1E2126;
-      }
     }
 
     body {
@@ -2759,18 +2759,12 @@
                               Web only (iOS resizes with lcSnappy).
        Quick (selection flips) stays a plain ease at .15 to .2s.
        ══════════════════════════════════════════════════════════════════ */
+    /* The springs themselves (--ease-snappy, --ease-glide, --ease-pop,
+       --dur-pop) live in the generated token block at the top. */
     :root {
-      --ease-snappy: cubic-bezier(.32, 1.25, .5, 1);
-      --ease-glide:  cubic-bezier(.3, .9, .3, 1);
-      --ease-pop:    cubic-bezier(.34, 1.4, .64, 1);  /* fallback where linear() isn't supported */
-      --dur-pop: .6s;
       --sidebar-w: 0px;
       --tools-w:   0px;
       --wizard-h:  64px;
-    }
-    /* Pop as a real spring where the browser can draw one */
-    @supports (transition-timing-function: linear(0, 1)) {
-      :root { --ease-pop: linear(0, .07 3%, .27 7%, .53 12%, .78 18%, .94 24%, 1.03 31%, 1.06 37%, 1.05 44%, 1.02 53%, 1 64%, .995 75%, 1); }
     }
     @media (min-width: 980px) {
       body.signed-in { --sidebar-w: 256px; padding-left: var(--sidebar-w); }
@@ -3224,8 +3218,7 @@
        All Teams status cards + one Up next card · Schedule Next game card ·
        Players roster table + side panel · phone section tabs.
        ══════════════════════════════════════════════════════════════════ */
-    :root { --attention-ink: #8A4A06; --pp-w: 400px; }
-    @media (prefers-color-scheme: dark) { :root { --attention-ink: #F0A35E; } }
+    :root { --pp-w: 400px; }
 
     /* Pennant (F6, Oct 31 2026): the one red flag per screen, on the card of
        note. Same as iOS .lcPennantKicker(): it sits in the card's first row
