@@ -1790,15 +1790,6 @@
       gap: 24px;
       margin-bottom: 48px;
     }
-    .team-card-empty {
-      text-align: center;
-      padding: 60px 24px;
-    }
-    .team-card-empty-text {
-      font-size: 15px;
-      color: var(--ink-secondary);
-      margin-bottom: 16px;
-    }
 
     .lineups-list { display: flex; flex-direction: column; gap: 14px; }
     .lineup-item {
@@ -1829,12 +1820,10 @@
     .lineup-detail-grid td:first-child, .lineup-detail-grid th:first-child { text-align: left; }
     .lineup-detail-grid td.bench { color: var(--ink-secondary); font-style: italic; }
     .lineup-detail-grid td.filled { color: var(--ink); font-weight: 500; }
-    .lineups-empty { text-align: center; padding: 40px 20px; color: var(--ink-secondary); font-size: 15px; }
 
     /* ── SCHEDULE VIEW ── */
     .schedule-list { display: flex; flex-direction: column; gap: 32px; }
     .schedule-sync-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--ink-secondary); }
-    .schedule-empty { text-align: center; padding: 48px 24px; color: var(--ink-secondary); font-size: 15px; }
 
     /* ── STRATEGY SLIDER ── */
     /* strategy uses standard .card padding */
@@ -2274,7 +2263,6 @@
     .sidebar-link:hover { background: var(--bg-secondary); }
     .sidebar-link.active { background: var(--bg-secondary); color: var(--ink); font-weight: 600; }
     .sidebar-link .sidebar-ico { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
-    .sidebar-empty { font-size: 13px; color: var(--ink-secondary); padding: 8px 12px; }
     .sidebar-team { display: flex; flex-direction: column; }
     .sidebar-team-logo { width: 24px; height: 24px; border-radius: var(--radius-small); flex-shrink: 0; object-fit: cover; }
     .sidebar-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2374,7 +2362,6 @@
     .mb-lg { margin-bottom: 24px; }
     .mt-sm { margin-top: 8px; }
     .mt-md { margin-top: 14px; }
-    .empty-icon { font-size: 48px; margin-bottom: 16px; }
 
     /* ── AVATAR DROPDOWN ── */
     .avatar-menu-wrap {
@@ -2917,7 +2904,7 @@
     .sb-item.active { background: var(--gray-5); color: var(--ink); font-weight: 700; }
     .sb-share { box-shadow: inset 0 0 0 1.5px var(--hairline); }
     .sb-lbl { transition: opacity .14s .16s; }
-    .sb-empty { font-size: 14px; color: var(--ink-secondary); padding: 12px 24px; }
+    .sb-empty { font-size: var(--type-sub); color: var(--ink-secondary); padding: var(--space-12) var(--space-24); }
 
     /* Account */
     .sb-me-wrap { position: relative; margin: 6px 12px 0; }
@@ -3372,8 +3359,6 @@
     .sc-more { align-self: flex-start; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     .lc-ball { flex: none; display: block; }
-    .sc-empty-ic { display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 16px; background: var(--panel); color: var(--ink-secondary); margin-bottom: 12px; }
-    .sc-empty-t { font-size: var(--type-headline); font-weight: 700; color: var(--ink); margin-bottom: 6px; }
     @media (max-width: 760px) {
       .sc-list { padding: 4px; }
       .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 12px 14px 10px; }
@@ -3479,7 +3464,6 @@
     .pl-ps em { font-style: normal; font-size: 13px; color: var(--ink-secondary); }
     .pl-pref { font-size: 15px; color: var(--ink-secondary); }
     .pl-chev { color: var(--gray); }
-    .pl-empty { padding: 36px 20px; text-align: center; color: var(--ink-secondary); }
     .pl-tr.pl-row-in { animation: lcRise .35s var(--ease-snappy) both; }
     .pl-tr.pl-row-new { animation: plNew 1.4s var(--ease-glide) both; }
     @keyframes plNew { 0%, 30% { background: var(--accent-wash); } 100% { background: transparent; } }
@@ -3570,6 +3554,47 @@
         animation: none !important; transition: none !important;
       }
     }
+
+    /* ── Empty states and setup rows (audit F23, Nov 1 2026). Same spec as iOS
+       EmptyStateCard / LCSetupRow / LCEmblem; built by lcEmptyHtml() and
+       lcSetupRowHtml(). Nothing else draws an empty state. ── */
+    .lc-emblem { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent-wash); color: var(--accent-down); }
+    .lc-emblem svg { width: 20px; height: 20px; }
+    .lc-emblem--panel { width: 56px; height: 56px; }
+    .lc-emblem--panel svg { width: 24px; height: 24px; }
+    .lc-emblem--on-wash { background: var(--panel); }
+    .lc-emblem--alert { background: var(--alert-wash); color: var(--alert-ink); }
+
+    /* .lc-empty--panel: the quiet card, a section's empty state on the page.
+       --floating: no card, a full-page empty. --inline: no card, no action,
+       inside a table or panel the host draws. */
+    .lc-empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: var(--space-32) var(--space-24); border-radius: var(--radius-card); }
+    .lc-empty--panel { background: var(--panel); }
+    .lc-empty--inline { padding: var(--space-24) var(--space-16); }
+    .lc-empty-t { margin-top: var(--space-16); font-size: var(--type-headline); font-weight: 700; color: var(--ink); }
+    .lc-empty-b { margin: var(--space-4) 0 0; max-width: 46ch; font-size: var(--type-sub); font-weight: 500; color: var(--ink-secondary); }
+    .lc-empty > :first-child { margin-top: 0; }
+    .lc-empty-a { margin-top: var(--space-20); display: flex; flex-direction: column; align-items: center; gap: var(--space-8); }
+
+    /* A setup or status row: emblem, title, one line of body, a chevron when
+       it opens something. --featured is the wash (one per page at most);
+       --alert carries the alert emblem. A <div> row is read-only. */
+    .lc-setup-row { display: flex; align-items: center; gap: var(--space-16); width: 100%; padding: var(--space-16); border: 0; border-radius: var(--radius-card); background: var(--panel); color: inherit; font: inherit; text-align: left; }
+    button.lc-setup-row { cursor: pointer; transition: transform var(--dur-pop) var(--ease-pop), opacity .15s ease, box-shadow .15s ease; }
+    button.lc-setup-row:hover { box-shadow: 0 2px 10px rgba(var(--shadow-rgb), .08); }
+    button.lc-setup-row:active { transform: scale(.98); opacity: .92; }
+    button.lc-setup-row:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 4px; }
+    .lc-setup-row--featured { background: var(--accent-wash); }
+    .lc-setup-row-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+    .lc-setup-row-t { font-size: var(--type-headline); font-weight: 700; color: var(--ink); }
+    .lc-setup-row-b { font-size: var(--type-sub); font-weight: 500; color: var(--ink-secondary); }
+    .lc-setup-row-chev { flex: none; display: grid; color: var(--ink-secondary); opacity: .6; }
+    .lc-setup-row-chev svg { width: 14px; height: 14px; }
+    @media (prefers-reduced-motion: reduce) { button.lc-setup-row { transition: opacity .15s ease; } button.lc-setup-row:active { transform: none; } }
+
+    /* Schedule: setup rows above the list, and the empty state with its row */
+    .sc-setup { display: flex; flex-direction: column; gap: var(--space-12); }
+    #schedule-setup:not(:empty) { margin-bottom: var(--space-24); }
   </style>
 </head>
 <body>
@@ -3720,11 +3745,8 @@
     <div id="dash-hero"></div>
     <div class="teams-grid ts-grid" id="teams-grid"></div>
 
-    <div class="team-card-empty" id="empty-state" style="display:none;">
-      <div class="empty-icon">⚾</div>
-      <div class="team-card-empty-text" id="empty-state-text">No teams yet — create your first team to start building lineups.</div>
-      <button class="btn btn-primary" id="empty-state-btn" onclick="enterBuilder(null, 'setup', 1)">Create a Team</button>
-    </div>
+    <!-- No teams yet: filled by renderDashboard (lcEmptyHtml, floating) -->
+    <div id="empty-state" style="display:none;"></div>
   </div>
 </div>
 
@@ -3872,6 +3894,7 @@
       </div>
     </div>
 
+    <div id="schedule-setup" class="sc-setup"></div>
     <div id="schedule-sync-status"></div>
     <div id="schedule-list-container"></div>
   </div>
@@ -5366,7 +5389,9 @@ function mapTeamDoc(d) {
     ownerId:   data.ownerId || '',
     coachIds:  data.coachIds || [],
     memberIds: data.memberIds || [],
-    inviteCode: data.inviteCode || ''
+    inviteCode: data.inviteCode || '',
+    // Read-only: drives the Schedule's "Set up your league rules" row.
+    hasLeagueRules: !!data.leagueRules
   };
 }
 
@@ -5415,6 +5440,13 @@ function renderDashboard() {
   if (_userTeams.length === 0) {
     grid.innerHTML = '';
     if (hero) hero.innerHTML = '';
+    emptyState.innerHTML = lcEmptyHtml({
+      icon: 'ball', style: 'floating',
+      title: 'No teams yet',
+      body: 'Create your first team to start building lineups.',
+      // The header already offers Join with a code.
+      action: ALLOW_TEAM_CREATION ? `<button class="btn btn-primary" type="button" onclick="enterBuilder(null, 'setup', 1)">Create a Team</button>` : ''
+    });
     emptyState.style.display = 'block';
     return;
   }
@@ -6239,6 +6271,49 @@ var SB_ICONS = {
   link:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>',
   signout:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>'
 };
+
+// ── Empty states and setup rows (audit F23; iOS EmptyStateCard, LCSetupRow,
+// LCEmblem). Titles and bodies are static copy, never user input.
+const LC_ICON_PATHS = {
+  ball: '<circle cx="12" cy="12" r="9"/><path d="M7.5 5.2c1.6 1.9 2.5 4.2 2.5 6.8s-.9 4.9-2.5 6.8M16.5 5.2c-1.6 1.9-2.5 4.2-2.5 6.8s.9 4.9 2.5 6.8"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  calendarPlus: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
+  rules: '<path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/>',
+  personPlus: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.4 3.3-5.3 6.5-5.3 1.4 0 2.6.3 3.6.9M18 13v6M15 16h6"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+  alert: '<path d="M12 4.5 2.8 19.5h18.4L12 4.5z"/><path d="M12 10v4.2M12 17.2v.1"/>',
+  chev: '<path d="M9 5.5l6.5 6.5L9 18.5"/>'
+};
+function lcIcon(name, strokeWidth) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (strokeWidth || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
+}
+// size: 'row' (44) | 'panel' (56). tone: '' | 'on-wash' | 'alert'.
+function lcEmblem(icon, size, tone) {
+  return '<span class="lc-emblem' + (size === 'panel' ? ' lc-emblem--panel' : '') + (tone ? ' lc-emblem--' + tone : '') + '" aria-hidden="true">' + lcIcon(icon) + '</span>';
+}
+// { icon, tone, title, body, style: 'panel' | 'floating' | 'inline', action (HTML) }
+// Inline empties never carry an action.
+function lcEmptyHtml(o) {
+  const style = o.style || 'panel';
+  return '<div class="lc-empty lc-empty--' + style + '">'
+    + (o.icon ? lcEmblem(o.icon, style === 'inline' ? 'row' : 'panel', o.tone) : '')
+    + (o.title ? '<div class="lc-empty-t">' + o.title + '</div>' : '')
+    + (o.body ? '<p class="lc-empty-b">' + o.body + '</p>' : '')
+    + (o.action && style !== 'inline' ? '<div class="lc-empty-a">' + o.action + '</div>' : '')
+    + '</div>';
+}
+// { icon, title, body (one line), tone: '' | 'featured' | 'alert', onclick }
+// No onclick = read-only: no chevron, not a button.
+function lcSetupRowHtml(o) {
+  const mod = o.tone ? ' lc-setup-row--' + o.tone : '';
+  const emblemTone = o.tone === 'featured' ? 'on-wash' : (o.tone === 'alert' ? 'alert' : '');
+  const inner = lcEmblem(o.icon, 'row', emblemTone)
+    + '<span class="lc-setup-row-txt"><span class="lc-setup-row-t">' + o.title + '</span><span class="lc-setup-row-b">' + o.body + '</span></span>'
+    + (o.onclick ? '<span class="lc-setup-row-chev" aria-hidden="true">' + lcIcon('chev', 2.6) + '</span>' : '');
+  return o.onclick
+    ? '<button type="button" class="lc-setup-row' + mod + '" onclick="' + o.onclick + '">' + inner + '</button>'
+    : '<div class="lc-setup-row' + mod + '">' + inner + '</div>';
+}
 
 // Two letters, same rule as iOS TeamBadge.initials: the first letters of
 // the first two words, or the first two letters of a one-word name.
@@ -7135,7 +7210,7 @@ async function loadPastLineups(teamId) {
   if (!fb) return;
 
   const container = document.getElementById('lineups-list-container');
-  container.innerHTML = '<div class="lineups-empty">Loading lineups…</div>';
+  container.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading lineups…' });
 
   try {
     const snap = await fb.db.collection('teams').doc(teamId)
@@ -7152,7 +7227,7 @@ async function loadPastLineups(teamId) {
     renderPastLineups();
   } catch(e) {
     console.error('Failed to load lineups:', e);
-    container.innerHTML = '<div class="lineups-empty">Failed to load lineups. Please try again.</div>';
+    container.innerHTML = lcEmptyHtml({ icon: 'alert', tone: 'alert', title: "Couldn't load lineups", body: 'Check your connection and try again.' });
   }
 }
 
@@ -7160,11 +7235,7 @@ function renderPastLineups() {
   const container = document.getElementById('lineups-list-container');
 
   if (_pastLineups.length === 0) {
-    container.innerHTML = `
-      <div class="lineups-empty">
-        <div style="font-size:32px;margin-bottom:12px;">📋</div>
-        No saved lineups yet.<br>Create a lineup and click "Save & Export" to save it here.
-      </div>`;
+    container.innerHTML = lcEmptyHtml({ icon: 'list', title: 'No saved lineups yet', body: 'Lineups you save show up here.' });
     return;
   }
 
@@ -7729,8 +7800,9 @@ async function openSchedule(teamId) {
 
   const container = document.getElementById('schedule-list-container');
   const syncBar = document.getElementById('schedule-sync-status');
-  container.innerHTML = '<div class="schedule-empty">Loading schedule…</div>';
+  container.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading schedule…' });
   syncBar.innerHTML = '';
+  document.getElementById('schedule-setup').innerHTML = '';
 
   try {
     const fb = initFirebase();
@@ -7762,12 +7834,9 @@ async function openSchedule(teamId) {
     setTeamStatus(teamId, _scheduleGames, _scheduleLineups, calError);
     watchScheduleLineups(teamId);   // lineups saved on iOS show up live
 
-    if (calUrl && calError) {
-      syncBar.innerHTML = `
-        <div class="schedule-sync-bar" style="color:var(--attention);">
-          Couldn't sync the calendar (${escHtml(calError.message || 'fetch failed')}). Showing saved lineups only.
-        </div>`;
-    } else if (calUrl) {
+    // League rules setup and a calendar that won't load are setup rows (F23).
+    renderScheduleSetup(team, calUrl ? calError : null);
+    if (calUrl && !calError) {
       syncBar.innerHTML = `
         <div class="schedule-sync-bar">
           <span class="lc-st lc-st--quiet ok"><i></i><span>Last synced just now · ${_scheduleGames.length} game${_scheduleGames.length !== 1 ? 's' : ''} found</span></span>
@@ -7777,10 +7846,7 @@ async function openSchedule(teamId) {
     renderSchedule();
   } catch (e) {
     console.error('Schedule fetch error:', e);
-    container.innerHTML = `<div class="schedule-empty">
-      <div style="font-size:32px;margin-bottom:12px;">📅</div>
-      Could not load schedule.<br><span style="font-size:13px;color:var(--ink-secondary);">${e.message}</span>
-    </div>`;
+    container.innerHTML = lcEmptyHtml({ icon: 'alert', tone: 'alert', title: "Couldn't load the schedule", body: 'Check your connection and try again.' });
   }
 }
 
@@ -7808,12 +7874,12 @@ function renderSchedule() {
   if (_scheduleGames.length === 0 && orphanLineups.length === 0) {
     const team = _userTeams.find(t => t.id === _scheduleTeamId);
     const hasCal = !!(team && team.gameChangerCalendarUrl);
-    container.innerHTML = `<div class="schedule-empty">
-      <div class="sc-empty-ic" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/></svg></div>
-      <div class="sc-empty-t">${hasCal ? 'No games on this calendar yet' : 'No games yet'}</div>
-      <span>Lineups you build and save show up here.${hasCal ? '' : ' Link a GameChanger calendar in Team settings to see the whole season.'}</span>
-      ${_scheduleCanCoach ? `<div style="margin-top:18px;"><button class="btn btn-primary" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build lineup</button></div>` : ''}
-    </div>`;
+    container.innerHTML = '<div class="sc-setup">' + lcEmptyHtml({
+      icon: 'calendar',
+      title: hasCal ? 'No games on this calendar yet' : 'No games yet',
+      body: 'Lineups you build and save show up here.',
+      action: _scheduleCanCoach ? `<button class="btn btn-primary" type="button" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build lineup</button>` : ''
+    }) + scheduleCalendarRowHtml() + '</div>';
     return;
   }
 
@@ -7928,8 +7994,37 @@ function renderSchedule() {
     html += gnLedgerHtml(_scheduleTeamId, roster.length ? roster : gnRosterFromLineups(_scheduleLineups));
   }
   html += scSection('Past games', past, true);
+  html += scheduleCalendarRowHtml();
   html += '</div>';
   container.innerHTML = html;
+}
+
+// The Schedule's setup rows (iOS parity, audit F23). Coaches see League
+// rules until it's saved once; a linked calendar that won't load is the
+// alert row. Team settings (the calendar link) is owner-only on the web.
+function renderScheduleSetup(team, calError) {
+  const el = document.getElementById('schedule-setup');
+  if (!el || !team) return;
+  const id = sbAttr(team.id);
+  const owner = teamRole(team) === 'owner';
+  const rows = [];
+  if (isCoachRole(team) && !team.hasLeagueRules) {
+    rows.push(lcSetupRowHtml({ icon: 'rules', tone: 'featured', title: 'Set up your league rules', body: 'Innings, positions, fair play.', onclick: `navigate('#/team/${id}/rules')` }));
+  }
+  if (calError) {
+    rows.push(lcSetupRowHtml({ icon: 'alert', tone: 'alert', title: "Couldn't load the schedule", body: "Check the team's calendar link.", onclick: owner ? `navigate('#/team/${id}/settings')` : '' }));
+  }
+  el.innerHTML = rows.join('');
+}
+
+// No calendar linked: the row under the list. The owner taps through to
+// Team settings; everyone else reads who can add it.
+function scheduleCalendarRowHtml() {
+  const team = _userTeams.find(t => t.id === _scheduleTeamId);
+  if (!team || team.gameChangerCalendarUrl) return '';
+  return teamRole(team) === 'owner'
+    ? lcSetupRowHtml({ icon: 'calendarPlus', title: 'Add your team schedule', body: "Paste your team's calendar link.", onclick: `navigate('#/team/${sbAttr(team.id)}/settings')` })
+    : lcSetupRowHtml({ icon: 'calendar', title: 'No schedule yet', body: 'The team owner can add the link.' });
 }
 
 // Past games show the latest few until the coach asks for the rest;
@@ -8965,6 +9060,8 @@ async function saveLeagueRulesToFirestore() {
       leagueRules: state.leagueRules,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
+    const savedTeam = _userTeams.find(t => t.id === _activeTeamId);
+    if (savedTeam) savedTeam.hasLeagueRules = true;   // the setup row goes for good
     return true;
   } catch (e) {
     console.error('saveLeagueRulesToFirestore error:', e);
@@ -9064,13 +9161,15 @@ function renderPlayerManagementList() {
     : '<div class="pl-tr pl-hd"><span>Player</span><span>Can play</span></div>';
   container.innerHTML = list.length
     ? head + list.map(p => plRowHtml(p, canEdit)).join('')
-    : `<div class="pl-empty">${canEdit ? 'No players yet. Add your first kid to get started.' : 'No players on this roster yet.'}</div>`;
+    : lcEmptyHtml({ icon: 'personPlus', style: 'inline', title: 'No players yet', body: canEdit ? 'Add your first kid to get started.' : 'Players show up here once a coach adds them.' });
 
   const n = list.length;
   const subEl = document.getElementById('players-team-sub');
-  if (subEl) subEl.textContent = canEdit
-    ? `${n} on the roster. Positions and preference steer auto-fill. Click a kid to edit.`
-    : `${n} on the roster.`;
+  // Counts hide at zero (F27 rule): the empty state below says the rest.
+  if (subEl) subEl.textContent = !n ? 'Your roster'
+    : canEdit
+      ? `${n} on the roster. Positions and preference steer auto-fill. Click a kid to edit.`
+      : `${n} on the roster.`;
   const addBtn = document.getElementById('pl-add-btn');
   if (addBtn) addBtn.style.display = (ALLOW_TEAM_CREATION && canEdit) ? '' : 'none';
 }
