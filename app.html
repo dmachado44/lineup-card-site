@@ -4656,6 +4656,31 @@ let _appMode = 'setup';   // 'setup' | 'lineup' | 'roster' | 'team'
 let _subscriptionActive = false; // true when user has active subscription
 let _currentStep = 1;
 
+// Firestore Timestamp, Date, ISO string or epoch ms → epoch ms (0 if none).
+function lcMillis(v) {
+  if (!v) return 0;
+  if (typeof v.toMillis === 'function') return v.toMillis();
+  if (v instanceof Date) return v.getTime();
+  const n = typeof v === 'number' ? v : Date.parse(v);
+  return isNaN(n) ? 0 : n;
+}
+
+// One subscription means the same thing here as on iPhone: this mirrors the
+// iOS app's User.hasActiveSubscription. A paid plan from either store, the
+// app's own free trial, a grandfathered account still in its free year, or
+// an unexpired promo code all count.
+function hasActiveSubscription(data) {
+  const now = Date.now();
+  if (lcMillis(data.promoExpiresAt) > now) return true;
+  switch (data.subscriptionStatus) {
+    case 'active':        return true;
+    case 'trial':         return lcMillis(data.trialEndDate) > now;
+    case 'grandfathered': return !!data.isGrandfathered
+                            && (!data.subscriptionExpiry || lcMillis(data.subscriptionExpiry) > now);
+    default:              return false;
+  }
+}
+
 function initFirebase() {
   if (_db) return { db: _db, auth: _auth };
   try {
@@ -4829,9 +4854,19 @@ async function checkSubscription(user) {
       });
       _subscriptionActive = false;
     } else {
-      const data   = userDoc.data();
-      const status = data.subscriptionStatus;
-      _subscriptionActive = (status === 'active');
+      const data = userDoc.data();
+      _subscriptionActive = hasActiveSubscription(data);
+
+      // A checkout from /pricing before the first visit here leaves a doc the
+      // Stripe webhook started, without these two. The iOS app reads both.
+      // Fill only what's missing (merge), never overwrite.
+      const missing = {};
+      if (data.email == null) missing.email = user.email || '';
+      if (data.createdAt == null) missing.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      if (Object.keys(missing).length) {
+        fb.db.collection('users').doc(user.uid).set(missing, { merge: true })
+          .catch(e => console.warn('user doc fill skipped:', e));
+      }
     }
 
     // Let everyone in — paywall triggers at lineup creation. Render whatever
