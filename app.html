@@ -14,7 +14,7 @@
   </script>
 
   <!-- ── SEO ── -->
-  <title>Leadoff — the coach web app</title>
+  <title>Leadoff · The coach web app</title>
   <meta name="description" content="Baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and share with your team. Part of Leadoff Pro, free for 7 days." />
   <meta name="keywords" content="youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation tool, coach pitch lineup, youth sports lineup card, baseball lineup auto assign positions" />
   <link rel="canonical" href="https://app.getleadoff.com/app" />
@@ -30,7 +30,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
 
   <!-- ── Open Graph ── -->
-  <meta property="og:title" content="Leadoff — Build a fair lineup in your browser" />
+  <meta property="og:title" content="Build a fair lineup in your browser · Leadoff" />
   <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Part of Leadoff Pro, free for 7 days." />
   <meta property="og:url" content="https://app.getleadoff.com/app" />
   <meta property="og:type" content="website" />
@@ -39,7 +39,7 @@
 
   <!-- ── Twitter Card ── -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Leadoff — Build a fair lineup in your browser" />
+  <meta name="twitter:title" content="Build a fair lineup in your browser · Leadoff" />
   <meta name="twitter:description" content="Lineup builder for youth baseball and softball teams. Auto-assign positions, save game history, and build fair rotations. Part of Leadoff Pro, free for 7 days." />
   <meta name="twitter:image" content="https://getleadoff.com/og.png" />
 
@@ -48,7 +48,7 @@
   {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    "name": "Leadoff — Baseball & Softball Lineup Builder",
+    "name": "Leadoff · Baseball & Softball Lineup Builder",
     "url": "https://app.getleadoff.com/app",
     "description": "An online lineup builder for youth baseball and softball teams. Auto-assign fielding positions, generate batting orders, save past game lineups, and share with your team. Part of Leadoff Pro, with a 7-day free trial.",
     "applicationCategory": "SportsApplication",
@@ -1812,7 +1812,8 @@
       color: var(--accent-down);
       margin-bottom: 20px;
     }
-    .tip-icon { flex-shrink: 0; font-size: 14px; }
+    .tip-icon { flex-shrink: 0; display: inline-flex; color: var(--accent-down); }
+    .tip-icon svg { width: 16px; height: 16px; }
 
     .alert-warn {
       padding: 12px 16px;
@@ -2618,7 +2619,8 @@
       text-align: center;
       padding: 32px 22px;
     }
-    .feedback-success-icon { font-size: 40px; margin-bottom: 12px; }
+    .feedback-success-icon { display: inline-flex; color: var(--accent-down); margin-bottom: 12px; }
+    .feedback-success-icon svg { width: 44px; height: 44px; }
     .feedback-success-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
     .feedback-success-sub { font-size: 14px; color: var(--ink-secondary); line-height: 1.5; }
 
@@ -2747,6 +2749,8 @@
     .gn-ball.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
     .gn-mic { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--accent-wash); color: var(--accent-down); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
     .gn-mic.on { background: var(--accent); color: var(--on-accent); }
+    .gn-mic svg { width: 17px; height: 17px; }
+    .gn-ball svg, .gn-tag svg { width: 13px; height: 13px; flex: none; }
     .gn-hint { font-size: 12px; color: var(--ink-secondary); margin-top: 6px; }
     .gn-hint.listening { color: var(--accent-down); }
     .gn-error { font-size: 13px; color: var(--alert-ink); margin-top: 8px; }
@@ -3845,7 +3849,7 @@
     </div>
     <div class="lc-emph">
       <div class="card-title">Invite code</div>
-      <div class="card-sub">Codes are 8 characters — find yours in the team's settings in the Leadoff iOS app or this site.</div>
+      <div class="card-sub">Codes are 8 characters. Find yours in the team's settings in the Leadoff iOS app or this site.</div>
       <div class="add-player-row">
         <input type="text" id="join-code-input" class="field-code" placeholder="e.g. K7KMHXWN" autocomplete="off" autocapitalize="characters" maxlength="8"
           onkeydown="if(event.key==='Enter') joinTeamWithCode()" />
@@ -4124,7 +4128,7 @@
       <section class="rules-sec" aria-labelledby="rules-pos-h">
         <div class="section-head"><h2 id="rules-pos-h">Field positions</h2><span id="pos-count-badge">9 of 14 on</span></div>
         <div class="card rules-card">
-          <p class="rules-hint">Tap a position to turn it on or off for every lineup.</p>
+          <p class="rules-hint">Turn a position on or off for every lineup.</p>
           <div id="pos-grid"></div>
         </div>
       </section>
@@ -4284,10 +4288,10 @@
       <div id="step3-roster">
         <div class="card">
           <div class="card-title">Roster</div>
-          <div class="card-sub">Add players and tap their preferred positions — the auto-assign uses these to build fair lineups.</div>
+          <div class="card-sub">Add players and pick their preferred positions. Auto-assign uses them to build fair lineups.</div>
 
           <div class="tip">
-            <span class="tip-icon">💡</span>
+            <span class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg></span>
             <span>Click position badges to mark preferred positions for each player. The shuffle algorithm will honor these preferences when assigning fielding spots.</span>
           </div>
 
@@ -4325,7 +4329,7 @@
       <div class="att-pos-row">
         <div class="card">
           <div class="card-title">Who's here</div>
-          <div class="att-count" id="att-count">Tap a kid who can't make it</div>
+          <div class="att-count" id="att-count">Mark anyone who can't make it</div>
           <div class="attendance-grid" id="attendance-grid"></div>
         </div>
       </div>
@@ -4334,7 +4338,7 @@
         <div class="lineup-toolbar">
           <div>
             <div class="card-title mb-0">Batting order &amp; positions</div>
-            <div class="text-muted-sm">Drag rows or innings to reorder · Tap an inning header to copy or clear</div>
+            <div class="text-muted-sm">Drag rows or innings to reorder · Use an inning's header to copy or clear it</div>
           </div>
           <div class="toolbar-spacer"></div>
           <button class="btn btn-ghost btn-sm" type="button" onclick="autoFillLineup()" title="Fill positions and the batting order using your strategy and league rules">
@@ -4531,7 +4535,7 @@
            <div class="gn-mom-box" id="gn-momentum-box"></div>
          </div>
          <div class="gn-mom-foot"><span>← Down</span><span>Ups minus downs in your notes</span><span>Up →</span></div>
-         <div class="gn-mom-line" id="gn-momentum-line">Tap a kid. The green corner is trending up but rated low.</div>
+         <div class="gn-mom-line" id="gn-momentum-line">Pick a kid to see their trend. The green corner is trending up but rated low.</div>
        </div>
        <div class="strategy-col strategy-col-sug" id="gn-suggest-col" style="display:none;">
          <div class="gn-col-head" style="justify-content:flex-start;">
@@ -4574,7 +4578,7 @@
           <div class="modal-title" id="import-prev-title">Import Lineup from Previous Game</div>
           <button class="modal-close" type="button" onclick="closeImportPreviousModal()" aria-label="Close">×</button>
         </div>
-        <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same — only the batting order, attendance, and fielding positions are imported.</div>
+        <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same. Only the batting order, attendance, and fielding positions are imported.</div>
         <div class="modal-body" id="import-prev-list">
           <div class="modal-empty">Loading…</div>
         </div>
@@ -5117,7 +5121,7 @@ function friendlyAuthError(e) {
     'auth/invalid-email':        'Please enter a valid email address.',
     'auth/popup-closed-by-user': 'Sign-in cancelled.',
     'auth/cancelled-cancelled':  'Sign-in cancelled.',
-    'auth/network-request-failed': 'Network error — check your connection.',
+    'auth/network-request-failed': 'Network error. Check your connection.',
     'auth/too-many-requests':    'Too many attempts. Please wait a moment and try again.',
     'auth/operation-not-allowed': 'This sign-in method isn\'t enabled yet. Please use Google or email, or try again shortly.',
   };
@@ -5188,7 +5192,7 @@ async function openShareTeamModal(teamId) {
         <button class="share-card-code" id="share-copy-code-btn" type="button" onclick="copyShareText('code')" aria-label="Copy invite code ${attr(code)}">
           <span class="share-card-kicker" style="margin-top:0">Invite code</span>
           <span class="code">${String(code).trim().split('').map((ch, i) => `<span class="cl" style="--i:${i}">${escHtml(ch)}</span>`).join('')}</span>
-          <span class="tap" aria-live="polite">Tap code to copy</span>
+          <span class="tap" aria-live="polite">Copy code</span>
         </button>
       </div>
     </div>
@@ -5241,10 +5245,10 @@ function copyShareText(kind) {
       btn.classList.add('copied');
       if (tap) tap.innerHTML = '<span class="tap-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Code Copied!';
       clearTimeout(btn._t);
-      btn._t = setTimeout(() => { btn.classList.remove('copied', 'ripple'); if (tap) tap.textContent = 'Tap code to copy'; }, 2000);
+      btn._t = setTimeout(() => { btn.classList.remove('copied', 'ripple'); if (tap) tap.textContent = 'Copy code'; }, 2000);
     } else {
       const label = 'Copy Link';
-      btn.textContent = 'Copied ✓';
+      btn.textContent = 'Copied';
       clearTimeout(btn._t);
       btn._t = setTimeout(() => { btn.textContent = label; }, 1600);
     }
@@ -5264,7 +5268,7 @@ function nativeShareTeam() {
   if (!_shareModalData || !navigator.share) return;
   navigator.share({
     title: 'Join ' + _shareModalData.teamName,
-    text: 'Join ' + _shareModalData.teamName + ' — invite code ' + _shareModalData.code,
+    text: 'Join ' + _shareModalData.teamName + ' on Leadoff. Invite code: ' + _shareModalData.code,
     url: _shareModalData.link
   }).catch(() => {});
 }
@@ -5330,7 +5334,7 @@ async function renderMembersCard() {
 function copyInviteCode() {
   if (!_activeTeamMeta || !_activeTeamMeta.inviteCode) return;
   const btn = document.getElementById('copy-invite-btn');
-  const done = () => { if (btn) { btn.textContent = 'Copied ✓'; setTimeout(() => { btn.textContent = 'Copy invite'; }, 1600); } };
+  const done = () => { if (btn) { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy invite'; }, 1600); } };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(_activeTeamMeta.inviteCode).then(done).catch(() => {});
   }
@@ -6280,10 +6284,10 @@ function parseHash(hash) {
   return { name: 'dashboard' };
 }
 
-// Tab titles follow the brand pattern "Leadoff — <screen>"
-// (README-INTEGRATION §2). No screen = the login-page title.
+// Tab titles read "<screen> · Leadoff", the site's pattern (audit F54).
+// No screen = the login-page title.
 function setDocTitle(screen) {
-  document.title = screen ? 'Leadoff — ' + screen : 'Leadoff — the coach web app';
+  document.title = screen ? screen + ' · Leadoff' : 'Leadoff · The coach web app';
 }
 const _routeTitles = {
   dashboard:    'All teams',
@@ -6405,6 +6409,9 @@ const LC_ICON_PATHS = {
   personPlus: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.4 3.3-5.3 6.5-5.3 1.4 0 2.6.3 3.6.9M18 13v6M15 16h6"/>',
   list: '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
   alert: '<path d="M12 4.5 2.8 19.5h18.4L12 4.5z"/><path d="M12 10v4.2M12 17.2v.1"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>',
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
+  checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/>',
   chev: '<path d="M9 5.5l6.5 6.5L9 18.5"/>'
 };
 function lcIcon(name, strokeWidth) {
@@ -6995,7 +7002,7 @@ function updateStepFooters() {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
     if (step3saveExit) step3saveExit.style.display = 'none';
-    if (step3cont) { step3cont.textContent = 'Save Changes ✓'; step3cont.onclick = saveAndExit; }
+    if (step3cont) { step3cont.textContent = 'Save Changes'; step3cont.onclick = saveAndExit; }
   } else if (_appMode === 'lineup') {
     if (gameInfoSection) gameInfoSection.style.display = '';
     if (rosterSection)   rosterSection.style.display = 'none';
@@ -7009,9 +7016,9 @@ function updateStepFooters() {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
     if (step3back) step3back.style.display = 'none';
-    if (step3cont) { step3cont.textContent = 'Done ✓'; step3cont.onclick = function() { save(); backToDashboard(); }; }
+    if (step3cont) { step3cont.textContent = 'Done'; step3cont.onclick = function() { save(); backToDashboard(); }; }
   } else if (_appMode === 'team') {
-    if (step1cont) { step1cont.textContent = 'Save Team ✓'; step1cont.onclick = function() { saveTeamToFirestore().then(backToDashboard); }; }
+    if (step1cont) { step1cont.textContent = 'Save Team'; step1cont.onclick = function() { saveTeamToFirestore().then(backToDashboard); }; }
   }
 }
 
@@ -8410,7 +8417,7 @@ function gnLatestNoteText(recent, playerId) {
 // Read-only chip row (schedule rows + builder attendance).
 function gnTagsHtml(tags, hadBall) {
   const parts = [];
-  if (hadBall) parts.push('<span class="gn-tag ball">⚾ Game ball</span>');
+  if (hadBall) parts.push('<span class="gn-tag ball">' + lcIcon('ball', 2.2) + 'Game ball</span>');
   tags.forEach(t => parts.push(`<span class="gn-tag ${t.sentiment}">${escHtml(t.label)} ${t.sentiment === 'up' ? '↑' : '↓'}</span>`));
   return parts.length ? `<span class="gn-tags">${parts.join('')}</span>` : '';
 }
@@ -8441,7 +8448,7 @@ function gnLedgerHtml(teamId, players) {
     const cls = `gb-chip${e.count ? ' has' : ''}${e.id === _gnJustToggled ? ' gb-pop' : ''}`;
     if (!_scheduleCanCoach) return `<span class="${cls}">${label}</span>`;
     const hasTally = (Number(tally[e.id]) || 0) > 0;
-    const tip = e.count ? (hasTally ? 'Tap to take this ball back' : 'Tap to hand out another ball') : 'Tap to hand out a game ball';
+    const tip = e.count ? (hasTally ? 'Take this ball back' : 'Hand out another ball') : 'Hand out a game ball';
     return `<button type="button" class="${cls}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}')">${label}</button>`;
   };
   // "Fill the slots": one slot per kid, filled as balls go out.
@@ -8458,7 +8465,7 @@ function gnLedgerHtml(teamId, players) {
     <div class="section-head"><h2>Game balls</h2><span>${summary}</span></div>
     <div class="gb-card">
       ${slots}
-      ${_scheduleCanCoach ? `<p class="gb-hint">Tap a kid to hand out a game ball. Tap again to take it back.</p>` : ''}
+      ${_scheduleCanCoach ? `<p class="gb-hint">Pick a kid to hand out a game ball. Pick them again to take it back.</p>` : ''}
       ${group('Still waiting', waiting)}
       ${group('Got one', got)}
     </div>
@@ -8541,7 +8548,7 @@ function renderGameNotesModal() {
     <div class="gn-card">
       <div class="gn-card-head">
         <div class="gn-card-title">How did the game go?</div>
-        ${dictation ? `<button type="button" class="gn-mic" id="gn-mic" onclick="gnToggleDictation()" aria-label="Dictate">🎤</button>` : ''}
+        ${dictation ? `<button type="button" class="gn-mic" id="gn-mic" onclick="gnToggleDictation()" aria-label="Dictate">${lcIcon('mic')}</button>` : ''}
       </div>
       <textarea class="gn-textarea gn-team-textarea" id="gn-team-note" placeholder="Big moments, what to work on, anything you want to remember." oninput="_gnNotes.teamNote = this.value">${escHtml(_gnNotes.teamNote)}</textarea>
       <div class="gn-hint" id="gn-mic-hint" style="display:none;"></div>
@@ -8558,7 +8565,7 @@ function gnPlayerCardHtml(entry) {
   return `<div class="gn-card" id="gn-card-${escHtml(pid)}">
     <div class="gn-card-head">
       <div class="gn-card-title">${escHtml(entry.name)}</div>
-      <button type="button" class="gn-ball ${hasBall ? 'on' : ''}" onclick="gnToggleBall('${escHtml(pid)}')" aria-pressed="${hasBall}">⚾ Game ball</button>
+      <button type="button" class="gn-ball ${hasBall ? 'on' : ''}" onclick="gnToggleBall('${escHtml(pid)}')" aria-pressed="${hasBall}">${lcIcon('ball', 2.2)}Game ball</button>
     </div>
     <textarea class="gn-textarea" rows="1" placeholder="Add a note" oninput="gnPlayerNote('${escHtml(pid)}').text = this.value">${escHtml(note.text)}</textarea>
     <div class="gn-chips">${GN_AREAS.map(a => {
@@ -8656,7 +8663,7 @@ function gnUpdateDetailButton() {
   const lineup = (_pastLineups || []).find(l => l.id === _viewingLineupId);
   const show = !!(team && isCoachRole(team) && lineup && gnCanTakeNotes(lineup));
   btn.style.display = show ? '' : 'none';
-  if (show) btn.textContent = gnNotesFor(teamId, _viewingLineupId) ? '📝 Game notes' : '📝 Add game notes';
+  if (show) btn.textContent = gnNotesFor(teamId, _viewingLineupId) ? 'Game notes' : 'Add game notes';
 }
 
 // ── Dictation (Web Speech API; Chrome + Safari) ──
@@ -8871,7 +8878,7 @@ function gnRenderMomReadout() {
   const info = _gnMomentumSel && _gnMomInfo[_gnMomentumSel];
   if (!info) {
     el.className = 'gn-mom-line';
-    el.textContent = 'Tap a kid. The green corner is trending up but rated low.';
+    el.textContent = 'Pick a kid to see their trend. The green corner is trending up but rated low.';
     return;
   }
   const span = info.games === 1 ? 'in the last game' : `over the last ${info.games} games`;
@@ -10858,7 +10865,7 @@ function renderFieldPositions() {
             ' ondragend="onFieldDragEnd(event)"' +
             ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
             ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '"' +
-            ' title="Drag to swap or tap to change ' + pos + ' for inning ' + (inningIdx + 1) + '">' +
+            ' title="Drag to swap, or choose who plays ' + pos + ' in inning ' + (inningIdx + 1) + '">' +
             chipInner(pos, player) +
             '</button>';
   });
@@ -10988,7 +10995,7 @@ function buildPosPickerItemsForPosition(pos) {
   const items = [];
   // "Empty" / clear option
   items.push({
-    label: '— Empty (no one here) —',
+    label: 'Empty (no one here)',
     selected: !currentId,
     muted: true,
     onClick: () => assignPlayerToPosition(null, pos)
@@ -11031,7 +11038,7 @@ function buildPosPickerItemsForPlayer(playerId) {
 
   const items = [];
   items.push({
-    label: '— Bench —',
+    label: 'Bench',
     selected: currentPos === 'Bench' || !currentPos,
     muted: true,
     onClick: () => assignPositionToPlayer(playerId, 'Bench')
@@ -12167,7 +12174,7 @@ function renderAttendance() {
   const attending = state.players.filter(p => state.attendance[p.id]);
   // Who's here chips (Oct 30 2026, from the audit board): wash + ink check
   // when in, dimmed when out; the tapped chip pops and the count ticks.
-  countEl.innerHTML = `<strong class="att-num">${attending.length}</strong> of ${state.players.length} here · tap a kid who can't make it`;
+  countEl.innerHTML = `<strong class="att-num">${attending.length}</strong> of ${state.players.length} here · mark anyone who can't make it`;
   const check = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
   grid.innerHTML = state.players.map(p => {
     const here = !!state.attendance[p.id];
@@ -12734,7 +12741,7 @@ function checkConflicts() {
   const unique = [...new Set(conflicts)];
   if (unique.length > 0) {
     alertEl.style.display = '';
-    alertEl.innerHTML = '⚠ ' + unique.slice(0, 3).join('<br>');
+    alertEl.innerHTML = unique.slice(0, 3).join('<br>');
   } else {
     alertEl.style.display = 'none';
   }
@@ -13437,7 +13444,7 @@ function copyLineup(btn) {
   // The button says it worked (no browser alert).
   if (btn) {
     if (!btn._label) btn._label = btn.textContent;
-    btn.textContent = 'Copied ✓';
+    btn.textContent = 'Copied';
     clearTimeout(btn._t);
     btn._t = setTimeout(() => { btn.textContent = btn._label; }, 1600);
   }
@@ -13526,7 +13533,7 @@ async function importTeamByCode_REMOVED() {
     updateStep2Status();
 
     statusEl.className = 'import-status success';
-    statusEl.textContent = `✓ Loaded "${state.teamName}" with ${players.length} player${players.length !== 1 ? 's' : ''}. Save to add this team to your account.`;
+    statusEl.textContent = `Loaded "${state.teamName}" with ${players.length} player${players.length !== 1 ? 's' : ''}. Save to add this team to your account.`;
   } catch(e) {
     console.error('importTeamByCode error:', e);
     statusEl.className = 'import-status error';
@@ -13604,14 +13611,14 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
     <div class="field">
       <label>Message</label>
-      <textarea name="message" id="feedback-message" placeholder="Ideas, bugs, questions — we read everything..."></textarea>
+      <textarea name="message" id="feedback-message" placeholder="Ideas, bugs, questions. We read everything."></textarea>
     </div>
     <button type="submit" class="feedback-send-btn">
       Send Message →
     </button>
   </form>
   <div class="feedback-success" id="feedback-success" style="display:none;">
-    <div class="feedback-success-icon">✅</div>
+    <div class="feedback-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/></svg></div>
     <div class="feedback-success-title">Thanks for reaching out!</div>
     <div class="feedback-success-sub">We read every message and will get back to you soon.</div>
   </div>
