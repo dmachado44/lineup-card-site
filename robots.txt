@@ -1,5 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /for-leagues
 
 Sitemap: https://app.getleadoff.com/sitemap.xml

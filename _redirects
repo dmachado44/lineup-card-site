@@ -4,8 +4,14 @@
 # (which is what Google needs to consolidate duplicate URLs in its index).
 # The trailing ! makes the rule a forced/shadow redirect so it wins
 # even if Netlify would otherwise serve the .html file directly.
-/index.html         /              301!
+/index.html         https://getleadoff.com/   301!
 /pricing.html       /pricing       301!
 /app.html           /app           301!
 /success.html       /success       301!
-/for-leagues.html   /for-leagues   301!
+/for-leagues.html   https://getleadoff.com/   301!
+
+# The app domain's home and league page were stale copies of the marketing
+# site (audit F39, Dan Nov 2 2026). getleadoff.com is the one homepage.
+# /app, /pricing and /success stay here (checkout and the coach app use them).
+/                   https://getleadoff.com/   301!
+/for-leagues        https://getleadoff.com/   301!

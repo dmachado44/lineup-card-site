@@ -1,0 +1,367 @@
+/* COPY of getleadoff-site/public/site.css, written by Brand/tokens/build.js for the
+   app domain's marketing pages (pricing, success). Don't edit here: edit the original
+   and rerun `node Brand/tokens/build.js`. */
+/* ──────────────────────────────────────────────────────────────────────────
+   Leadoff · getleadoff.com shared stylesheet
+   One place for tokens, fonts, base type, nav, buttons, footer and the
+   long-form "prose" scale. Every page links this first; page-specific
+   layout stays in that page's own <style>. Brand source of truth:
+   Brand/BRAND_GUIDELINES.md.
+
+   Layout system (Oct 28): cream canvas, white blocks, ink chrome on buttons
+   only. One wide container for every section (.wrap: max 1920px, fluid
+   gutter), one fluid section space, one fluid type scale.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* ── Fonts (self-hosted, SIL OFL) ── */
+@font-face { font-family: "Sofia Sans Extra Condensed"; font-style: normal; font-weight: 900; font-display: swap; src: url(/fonts/sofia-sans-extra-condensed-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/barlow-semi-condensed-latin-400-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 500; font-display: swap; src: url(/fonts/barlow-semi-condensed-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url(/fonts/barlow-semi-condensed-latin-600-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url(/fonts/barlow-semi-condensed-latin-700-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+
+/* ── Tokens ── */
+/* @tokens:begin · GENERATED from Brand/tokens/tokens.json by Brand/tokens/build.js.
+   Don't edit by hand: change tokens.json and rerun `node Brand/tokens/build.js`.
+   Take every value from these tokens. If one you need is missing, ask Dan
+   before adding it (Brand/DESIGN_RULES.md).
+*/
+:root {
+  /* Surfaces */
+  --page:                  #FAF6EB;  /* the page canvas */
+  --panel:                 #FFFFFF;  /* cards and panels on the page */
+  --band:                  var(--page);  /* marketing: the page band */
+  --block:                 var(--panel);  /* marketing: white blocks on the cream canvas */
+
+  /* Ink */
+  --ink:                   #101613;  /* primary text */
+  --ink-secondary:         #6B6659;  /* secondary text */
+  --warm-dark-ink:         #3C362A;  /* warm near-black on cream-family surfaces and gold */
+
+  /* Signature green */
+  --accent:                #46CF51;  /* a FILL in light mode (2:1 on white); the one interactive color */
+  --accent-down:           #1F7A2A;  /* small green text and icons */
+  --on-accent:             #0B2410;  /* text ON green: never white or cream */
+  --accent-wash:           #DFF5E1;  /* selected states and emblems; never a fill on the cream page */
+
+  /* Sticker chrome */
+  --sticker-cream:         #FFF8E6;  /* the cream sticker face; keeps its fill at night */
+  --on-sticker-cream:      #101613;  /* label on the cream face: the sticker ink, never flips */
+  --sticker-ink:           #101613;  /* sticker border and hard shadow */
+
+  /* Garnish and status */
+  --pennant:               #EC2146;  /* one kicker per screen and alert washes; never the accent */
+  --alert-ink:             #C4173A;  /* error text and borders */
+
+  /* Paper (marketing) */
+  --gold:                  #F0CC3B;  /* full strength, small doses; never touches sky */
+  --sky-wash:              #DDF0FA;  /* large section bands */
+
+  /* Lines: the secondary ink at a set strength (quiet button outline 15%) */
+  --hairline:              color-mix(in srgb, var(--ink-secondary) 18%, transparent);  /* quiet edge: white on white, dense lists */
+  --hairline-strong:       color-mix(in srgb, var(--ink-secondary) 30%, transparent);  /* field rest border, toggle track */
+
+  /* Lines (marketing) */
+  --rule:                  rgba(16,22,19,.16);  /* marketing rules (FAQ dividers) */
+
+  /* Night sections (marketing) */
+  --night:                 #0A0B0D;
+  --night-ink:             #F4F2EC;
+  --night-muted:           #8A919E;
+  --night-body:            #C9CDD3;  /* body copy on a night section */
+  --night-kicker:          #7E858F;
+
+  /* Shadows */
+  --shadow-rgb:            16, 22, 19;  /* THE shadow ink (#101613) as channels: rgba(var(--shadow-rgb), a). Never plain black; scrims aren't shadows */
+
+  /* Elevations (Dan, Nov 1 2026, audit F28): every shadow is one of these. Focus rings, hairline edges and the sticker's hover and press offsets are not elevations */
+  --shadow-sticker:        4px 4px 0 0 var(--sticker-ink);  /* the hard sticker shadow: sticker buttons and the emphasis card (iOS draws it in PCStickerButtonStyle) */
+  --shadow-raised:         0 1px 3px rgba(var(--shadow-rgb), .10);  /* a control above its track or the page: segmented thumb, toggle knob, slider thumb, field position bubbles, a card's hover */
+  --shadow-dialog:         0 14px 40px rgba(var(--shadow-rgb), .18), 0 0 0 1px var(--hairline);  /* anything floating over content: menus, popovers, tooltips, toasts, the save bar, side panels, modals, drag ghosts */
+  --shadow-lift:           0 0 0 1px rgba(var(--shadow-rgb), .08), 0 2px 6px rgba(var(--shadow-rgb), .05), 0 28px 56px -28px rgba(var(--shadow-rgb), .34);  /* product screenshots only: the one blurred shadow on the site */
+
+  /* Fonts */
+  --font-body:             "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
+  --font-display:          "Sofia Sans Extra Condensed", "Barlow Semi Condensed", "Arial Narrow", sans-serif;  /* 900, caps */
+
+  /* Type: App scale (iOS Font.lc*, web --type-*) */
+  --type-title:            26px;  /* display face (.card-title, Font.lcTitle) */
+
+  /* Marketing scale (fluid) */
+  --type-marketing-hero:   clamp(48px, 5.6vw, 104px);
+  --type-marketing-head:   clamp(40px, 4.4vw, 80px);
+  --type-card-head:        clamp(26px, 2.1vw, 38px);
+  --type-lead:             clamp(18px, 1.4vw, 24px);
+  --type-marketing-body:   clamp(16px, 1.15vw, 19px);  /* was --type-body on the site until Nov 1 2026; renamed so one name has one value */
+  --kicker-tracking:       0.14em;
+
+  /* Radius */
+  --radius-card:           20px;  /* cards and grouped panels */
+  --radius-control:        12px;  /* buttons, fields, segmented tracks */
+  --radius-compact:        10px;  /* compact fields, in-row controls */
+  --radius-small:          6px;  /* tags, grid cells */
+  --radius-pill:           80px;  /* badges, chips, status pills; never actionable buttons (iOS: Capsule) */
+  --radius-block:          24px;  /* marketing only: the big white blocks */
+
+  /* Spacing steps (Dan, Nov 1 2026). No 10s or 14s in new work; existing ones round up as their screen is touched. Above 32 the steps are 40, 48 and 64 (56s and 60s go to 64, or 48 in a tight spot); beyond 64 ask Dan. The site's section spacing stays fluid. */
+  --space-2:               2px;
+  --space-4:               4px;
+  --space-6:               6px;
+  --space-8:               8px;
+  --space-12:              12px;
+  --space-16:              16px;
+  --space-20:              20px;
+  --space-24:              24px;
+  --space-32:              32px;
+  --space-40:              40px;
+  --space-48:              48px;
+  --space-64:              64px;
+
+  /* Motion (the house springs; iOS lcSnappy, lcQuick, lcPop) */
+  --ease-snappy:           cubic-bezier(.32, 1.25, .5, 1);  /* panels, sheets, layout; no visible bounce */
+  --dur-snappy:            350ms;
+  --ease-pop:              cubic-bezier(.34, 1.4, .64, 1);  /* anything that answers a tap; about 6% overshoot */
+  --dur-pop:               .6s;
+}
+/* A real spring where the browser can draw one */
+@supports (transition-timing-function: linear(0, 1)) {
+  :root { --ease-pop: linear(0, .07 3%, .27 7%, .53 12%, .78 18%, .94 24%, 1.03 31%, 1.06 37%, 1.05 44%, 1.02 53%, 1 64%, .995 75%, 1); }
+}
+/* @tokens:end */
+
+/* Layout: one container, one gutter, one section space, at every width.
+   Site plumbing, not tokens. */
+:root {
+  --wrap-max: 1920px;
+  --gutter: clamp(20px, 4.6875vw, 90px);
+  --section-rhythm: clamp(72px, 8.333vw, 144px);
+  --head-gap: clamp(32px, 3.6vw, 64px);   /* section head → its content */
+  --grid-gap: clamp(16px, 1.7vw, 28px);   /* between blocks */
+  --nav-h: 72px;
+  --content-max: 1160px;
+  --prose-max: 720px;
+}
+
+/* ── Base ── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--nav-h) + 16px); }
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; }
+.display { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+/* ── Layout ── */
+.wrap { width: 100%; max-width: var(--wrap-max); margin-inline: auto; padding-inline: var(--gutter); }
+.section { margin-top: var(--section-rhythm); }
+.block { background: var(--block); border-radius: var(--radius-block); }
+/* Section heads sit left on the gutter line (the hero is the only centered head) */
+.sec-title { font-size: var(--type-marketing-head); line-height: 0.94; color: var(--ink); max-width: 14em; text-wrap: balance; }
+.kicker + .sec-title { margin-top: 12px; }
+.sec-lead { font-size: var(--type-lead); font-weight: 400; line-height: 1.45; color: var(--warm-dark-ink); max-width: 34em; margin-top: 18px; text-wrap: pretty; }
+
+/* ── StickerButton ── */
+.sticker-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-display); font-weight: 900; text-transform: uppercase; letter-spacing: .02em; line-height: 1;
+  color: var(--ink); background: var(--panel); border: 2px solid var(--sticker-ink); border-radius: var(--radius-control);
+  box-shadow: var(--shadow-sticker); text-decoration: none; cursor: pointer; white-space: nowrap;
+  transition: transform .45s var(--ease-pop), box-shadow .45s var(--ease-pop);
+  font-size: 20px; padding: 15px 28px; min-height: 52px;
+}
+/* The face lifts on hover and sinks on press; the shadow's corner never
+   moves. Press is instant, the release springs back. */
+.sticker-btn:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 0 var(--sticker-ink); color: var(--ink); }
+.sticker-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 0 var(--sticker-ink); transition-duration: .06s; }
+.sticker-btn:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 4px; }
+.sticker-btn.accent { background: var(--accent); color: var(--on-accent); }
+.sticker-btn.accent:hover { color: var(--on-accent); }
+.sticker-btn.cream { background: var(--sticker-cream); color: var(--on-sticker-cream); }
+.sticker-btn.cream:hover { color: var(--on-sticker-cream); }
+.sticker-btn.sm { font-size: 17px; padding: 10px 16px; min-height: 40px; }
+.sticker-btn.lg { font-size: 20px; padding: 15px 28px; min-height: 52px; }
+.sticker-btn svg { flex: none; transform: translateY(-2px); }
+
+/* ── PennantTag ── the app's flag (iOS PennantTag, web app .lc-pennant):
+   a V notch cut into the tail, 38% of the height. Inline, never hanging.
+   The site keeps the display face at marketing size. */
+.pennant {
+  display: inline-block; background: var(--pennant); color: var(--sticker-cream);
+  font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: 13px; letter-spacing: var(--kicker-tracking);
+  padding: 5px 20px 5px 12px;
+  clip-path: polygon(0 0, 100% 0, calc(100% - .75em) 50%, 100% 100%, 0 100%);
+}
+
+/* ── Kicker ── */
+.kicker { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: var(--kicker-tracking); color: var(--accent-down); }
+a.kicker { text-decoration: none; }
+a.kicker:hover { color: var(--ink); }
+
+/* ── Card (emphasis tier: ONE per screen. Everything else is a .block) ── */
+.card { background: var(--panel); border: 2px solid var(--sticker-ink); border-radius: var(--radius-card); box-shadow: var(--shadow-sticker); }
+
+/* ── Nav (shared markup: logo · Guides · Get the app · Build lineups) ──
+   Full-width bar pinned to the top: logo left, actions right, on the same
+   gutter line as every section below it. */
+body > nav {
+  position: sticky; top: 0; z-index: 20;
+  background: rgba(250, 246, 235, 0.92);
+  -webkit-backdrop-filter: saturate(1.4) blur(12px);
+  backdrop-filter: saturate(1.4) blur(12px);
+}
+.nav-bar {
+  display: flex; align-items: center; gap: 20px;
+  max-width: var(--wrap-max); margin-inline: auto;
+  min-height: var(--nav-h);
+  padding: 12px var(--gutter);
+}
+.nav-bar img { height: 32px; width: auto; display: block; }
+.nav-bar .spacer { flex: 1; }
+.nav-bar .nav-link { position: relative; font-size: 16px; font-weight: 700; line-height: 1; color: var(--ink); text-decoration: none; padding: 6px 0 9px; margin-right: 4px; }
+.nav-bar .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease-pop); }
+.nav-bar .nav-link:hover { color: var(--accent-down); }
+.nav-bar .nav-link:hover::after, .nav-bar .nav-link[aria-current="page"]::after { transform: scaleX(1); }
+/* Once the page scrolls, the bar turns white and a hairline fades in under
+   it (no JS; browsers without scroll timelines keep the cream bar). */
+@supports (animation-timeline: scroll()) {
+  body > nav { animation: nav-edge linear both; animation-timeline: scroll(root); animation-range: 0 32px; }
+  @keyframes nav-edge {
+    from { background-color: rgba(250, 246, 235, 0.92); box-shadow: 0 1px 0 rgba(107, 102, 89, 0); }
+    to   { background-color: rgba(255, 255, 255, 0.96); box-shadow: 0 1px 0 var(--hairline); }
+  }
+}
+
+/* ── Footer (identical markup on every page: CTA, four link columns, wordmark).
+   The Guides column's links sit between guides:latest markers that the daily
+   SEO run refreshes on every page. Columns: Play ball · Leadoff · Guides · Get in touch. ── */
+footer { background: var(--night); margin-top: var(--section-rhythm); padding: clamp(64px, 6.7vw, 120px) 0 0; overflow: hidden; }
+.footer-inner { max-width: var(--wrap-max); margin: 0 auto; padding: 0 var(--gutter); }
+.footer-cta { text-align: center; padding-bottom: clamp(64px, 6.1vw, 104px); }
+.footer-cta h2 { font-size: var(--type-marketing-head); line-height: 0.94; color: var(--night-ink); }
+.footer-cta p { font-size: var(--type-lead); font-weight: 400; color: var(--night-muted); margin: 18px auto 30px; max-width: 26em; }
+.footer-cta .cta-row { display: flex; flex-wrap: wrap; gap: 16px; justify-content: center; margin-top: 0; }
+.footer-links {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 40px var(--grid-gap);
+  align-items: start;
+  padding-bottom: 64px;
+}
+.footer-col { display: grid; gap: 14px; align-content: start; font-size: 14px; font-weight: 500; color: var(--night-muted); }
+.footer-col .foot-kicker { font-size: 12px; font-weight: 700; letter-spacing: var(--kicker-tracking); text-transform: uppercase; color: var(--night-kicker); }
+.footer-col a { text-decoration: none; font-size: 15px; font-weight: 600; }
+.footer-col a.light { color: var(--night-ink); }
+.footer-col a.green { color: var(--accent); }
+.footer-col a.muted { color: var(--night-muted); font-weight: 500; }
+.footer-col a.muted:hover, .footer-col a.light:hover { color: var(--accent); }
+.footer-col .tagline-strong { color: var(--night-ink); font-weight: 700; }
+.footer-col .rating { color: var(--gold); }
+.footer-logo { margin-top: 40px; display: flex; justify-content: center; }
+.footer-logo img { width: 96vw; max-width: 1800px; height: auto; display: block; transform: translateY(10%); }
+
+/* ── Prose: guides, the guides hub, privacy, terms ──
+   The reading column stays a comfortable measure; nav, header rule and
+   footer share the wide gutter. Asides and tables are white blocks. */
+.prose { max-width: calc(var(--prose-max) + 2 * var(--gutter)); margin: 0 auto; padding: clamp(40px, 5vw, 88px) var(--gutter) 0; }
+.prose h1 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(40px, 4.4vw, 80px); line-height: 0.94; margin-top: 12px; text-wrap: balance; }
+.prose .meta { font-size: 14px; font-weight: 600; color: var(--ink-secondary); margin-top: 16px; }
+.prose .lede { font-size: var(--type-lead); font-weight: 600; line-height: 1.45; color: var(--ink); margin-top: 22px; max-width: 40em; text-wrap: pretty; }
+.prose h2 { font-family: var(--font-display); font-weight: 900; text-transform: uppercase; font-size: clamp(30px, 2.4vw, 40px); line-height: 0.96; margin: 56px 0 12px; }
+.prose h3 { font-size: 20px; font-weight: 700; margin: 28px 0 8px; }
+.prose p, .prose li { font-size: 18px; font-weight: 400; line-height: 1.65; color: var(--warm-dark-ink); }
+.prose p { margin-top: 14px; }
+.prose ul, .prose ol { margin: 12px 0 0 22px; }
+.prose li { margin-top: 8px; }
+.prose li strong, .prose p strong { color: var(--ink); font-weight: 700; }
+.prose a { color: var(--accent-down); }
+.prose a:hover { color: var(--ink); }
+.prose table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 18px; font-size: 16px; background: var(--block); border-radius: 16px; overflow: hidden; }
+.prose th, .prose td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; color: var(--warm-dark-ink); font-weight: 400; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose th { font-weight: 700; color: var(--ink); background: var(--block); border-bottom: 1px solid var(--rule); }
+.prose .note { background: var(--block); border-radius: var(--radius-card); padding: 20px 24px; margin-top: 24px; font-size: 17px; font-weight: 400; line-height: 1.6; color: var(--warm-dark-ink); }
+.prose .note p { margin-top: 0; }
+.prose .toc { background: var(--block); border-radius: var(--radius-card); padding: 20px 24px; margin-top: 32px; }
+.prose .toc .toc-title { font-size: 12px; font-weight: 700; letter-spacing: var(--kicker-tracking); text-transform: uppercase; color: var(--accent-down); }
+.prose .toc ol { margin: 8px 0 0 20px; }
+.prose .toc li { font-size: 16px; font-weight: 600; line-height: 1.4; margin-top: 8px; }
+.prose .toc a { font-weight: 600; color: var(--ink); text-decoration: none; }
+.prose .toc a:hover { color: var(--accent-down); }
+.prose h2[id] { scroll-margin-top: calc(var(--nav-h) + 24px); }
+.prose .cta-card { margin: 48px 0 8px; padding: 28px 28px 30px; background: var(--sticker-cream); border: 2px solid var(--sticker-ink); border-radius: var(--radius-card); box-shadow: var(--shadow-sticker); }
+.prose .cta-card h2 { margin: 0; font-size: 34px; }
+.prose .cta-card p { color: var(--warm-dark-ink); margin-top: 10px; }
+.prose .cta-card .sticker-btn { margin-top: 18px; }
+.prose .cta-card .fine { font-size: 13px; margin-top: 12px; color: var(--ink-secondary); }
+.prose .related { margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--rule); }
+.prose .related h2 { font-size: 24px; margin-top: 0; }
+.prose .related ul { list-style: none; margin: 10px 0 0; }
+.prose .related a { font-weight: 700; color: var(--ink); text-decoration: none; }
+.prose .related a:hover { color: var(--accent-down); }
+
+/* Guides on wide screens: the article header runs the full width and
+   "On this page" becomes a sticky rail on the left, the same move as the
+   homepage FAQ. Browsers without :has() keep the single column. */
+@media (min-width: 1100px) {
+  .prose:has(> article > .toc) { max-width: calc(1160px + 2 * var(--gutter)); }
+  .prose article:has(> .toc) {
+    display: grid;
+    grid-template-columns: minmax(0, 260px) minmax(0, var(--prose-max));
+    column-gap: clamp(56px, 6vw, 120px);
+    align-items: start;
+  }
+  .prose article:has(> .toc) > * { grid-column: 2; }
+  .prose article:has(> .toc) > :is(.kicker, h1, .meta, .lede) { grid-column: 1 / -1; }
+  .prose article:has(> .toc) > h1 { max-width: 16em; }
+  .prose article:has(> .toc) > .toc {
+    grid-column: 1; grid-row: 5 / span 400;
+    position: sticky; top: calc(var(--nav-h) + 32px);
+    margin-top: 56px; padding: 0; background: none; border-radius: 0;
+  }
+  .prose article:has(> .toc) > .toc ol { list-style: none; margin: 12px 0 0; border-top: 1px solid var(--rule); }
+  .prose article:has(> .toc) > .toc li { margin: 0; border-bottom: 1px solid var(--rule); }
+  .prose article:has(> .toc) > .toc a { display: block; padding: 11px 0; font-size: 15px; }
+  .prose article:has(> .toc) > .toc + h2 { margin-top: 56px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-btn, .nav-bar .nav-link::after { transition: none; }
+}
+
+/* ── Responsive (shared pieces only) ── */
+@media (max-width: 900px) {
+  .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
+}
+/* Phones: short columns side by side, then Guides and Leadoff full width */
+@media (max-width: 560px) {
+  .footer-cta .cta-row { flex-direction: column; align-items: center; }
+  .footer-cta .cta-row .sticker-btn { width: 100%; max-width: 320px; }
+  .footer-links { gap: 36px 20px; padding-bottom: 48px; }
+  .footer-col.col-play { order: 1; }
+  .footer-col.col-contact { order: 2; }
+  .footer-col.col-guides { order: 3; grid-column: 1 / -1; }
+  .footer-col.col-brand { order: 4; grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  :root { --nav-h: 60px; }
+  .nav-bar { gap: 12px; padding-top: 10px; padding-bottom: 10px; }
+  .nav-bar img { height: 28px; width: auto; }
+  .sticker-btn.sm { font-size: 15px; padding: 8px 12px; min-height: 36px; }
+}
+@media (max-width: 560px) {
+  .prose p, .prose li { font-size: 17px; }
+  .prose .cta-card { padding: 22px 20px 24px; }
+  .prose .cta-card .sticker-btn { width: 100%; }
+  .prose table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 480px) {
+  .nav-bar { gap: 10px; }
+  .nav-bar img { height: 24px; width: auto; }
+  .nav-bar .ios-nav-label { display: none; }
+  .sticker-btn.sm { padding: 8px 10px; }
+}

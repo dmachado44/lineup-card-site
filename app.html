@@ -15,7 +15,7 @@
 
   <!-- ── SEO ── -->
   <title>Leadoff — the coach web app</title>
-  <meta name="description" content="Free baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and share with your team. Built for coaches and parents." />
+  <meta name="description" content="Baseball and softball lineup builder for youth teams. Auto-assign fielding positions, set batting orders, save game lineups, and share with your team. Part of Leadoff Pro, free for 7 days." />
   <meta name="keywords" content="youth baseball lineup builder, softball lineup generator, little league lineup maker, batting order generator, fielding rotation tool, coach pitch lineup, youth sports lineup card, baseball lineup auto assign positions" />
   <link rel="canonical" href="https://app.getleadoff.com/app" />
 
@@ -31,7 +31,7 @@
 
   <!-- ── Open Graph ── -->
   <meta property="og:title" content="Leadoff — Build a fair lineup in your browser" />
-  <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Free with your Leadoff account." />
+  <meta property="og:description" content="Auto-assign fielding positions, save game lineups, and build fair rotations for your youth baseball or softball team. Part of Leadoff Pro, free for 7 days." />
   <meta property="og:url" content="https://app.getleadoff.com/app" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://getleadoff.com/og.png" />
@@ -40,7 +40,7 @@
   <!-- ── Twitter Card ── -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Leadoff — Build a fair lineup in your browser" />
-  <meta name="twitter:description" content="Free lineup builder for youth baseball and softball teams. Auto-assign positions, save game history, and build fair rotations. Built for coaches and parents." />
+  <meta name="twitter:description" content="Lineup builder for youth baseball and softball teams. Auto-assign positions, save game history, and build fair rotations. Part of Leadoff Pro, free for 7 days." />
   <meta name="twitter:image" content="https://getleadoff.com/og.png" />
 
   <!-- ── Structured Data ── -->
@@ -50,14 +50,13 @@
     "@type": "SoftwareApplication",
     "name": "Leadoff — Baseball & Softball Lineup Builder",
     "url": "https://app.getleadoff.com/app",
-    "description": "A free online lineup builder for youth baseball and softball teams. Auto-assign fielding positions, generate batting orders, save past game lineups, and share with your team.",
+    "description": "An online lineup builder for youth baseball and softball teams. Auto-assign fielding positions, generate batting orders, save past game lineups, and share with your team. Part of Leadoff Pro, with a 7-day free trial.",
     "applicationCategory": "SportsApplication",
     "operatingSystem": "Web, iOS",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    },
+    "offers": [
+      { "@type": "Offer", "name": "Leadoff Pro, monthly", "price": "2.99", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "Leadoff Pro, yearly", "price": "12.99", "priceCurrency": "USD" }
+    ],
     "creator": {
       "@type": "Organization",
       "name": "Leadoff",
@@ -118,6 +117,7 @@
       --row-hover:             color-mix(in srgb, var(--page) 45%, var(--panel));  /* hoverable rows on a white panel (Dan, Oct 31 2026) */
       --row-press:             var(--gray-5);  /* pressed or selected rows */
       --bench-bg:              var(--sticker-cream);  /* bench rows */
+      --empty-slot:            color-mix(in srgb, var(--sticker-ink) 72%, transparent);  /* an open position on the field view: see-through ink, no ring (Dan, Nov 2 2026, F37) */
 
       /* Warm neutrals: the cream family's grays. Use each only for its job below; no new grays or new uses without asking Dan (Nov 1 2026) */
       --bg-secondary:          #F6F1E3;  /* the soft tan inside a white panel: lineup table headers and batting-order number tiles (both platforms), bench, segmented tracks, hover fills on controls */
@@ -384,8 +384,15 @@
     .auth-card { position: relative; }
     .auth-error { font-size: 14px; color: var(--alert-ink); margin-top: 12px; min-height: 18px; line-height: 1.4; }
     .auth-switch { font-size: 14px; color: var(--ink-secondary); text-align: center; margin-top: 14px; line-height: 1.6; }
-    .auth-switch a { color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.15s; }
-    .auth-switch a:hover { opacity: 0.7; }
+    .auth-switch a, .auth-switch .link-btn { color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.15s; }
+    .auth-switch a:hover, .auth-switch .link-btn:hover { opacity: 0.7; }
+    /* A button that reads as an inline link. Real buttons are in the tab
+       order and announced as buttons; <a onclick> with no href is neither
+       (audit F42). */
+    .link-btn { appearance: none; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+    .link-btn.is-strong { font-weight: 600; }
+    .link-btn:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; border-radius: var(--radius-small); }
+    .auth-error.is-ok { color: var(--accent-down); }
 
     /* ── AUTH VIEW (full-screen) ── */
     #view-auth {
@@ -860,7 +867,7 @@
       transform: translateX(-50%);
       margin-bottom: 10px;
       background: var(--ink);
-      color: #ffffff;
+      color: var(--panel);  /* flips with --ink, like .sb-tip (audit F47) */
       font-size: 11px;
       font-weight: 600;
       padding: 4px 9px;
@@ -1175,12 +1182,12 @@
       border-color: color-mix(in srgb, var(--ink) 20%, transparent);
       box-shadow: var(--shadow-raised);
     }
-    /* Empty slot: black 72% pill, white heavy position code */
+    /* Empty slot: see-through ink, no ring, white heavy position code
+       (--empty-slot, iOS emptySlot; Dan, Nov 2 2026, F37) */
     #lineup-field-view .field-pos-bubble.empty,
     #lineup-allinnings-view .field-pos-bubble.empty {
-      background: rgba(0,0,0,0.72);
+      background: var(--empty-slot);
       border: none;
-      border-style: solid;
       box-shadow: none;
       min-width: 0;
       padding: 8px 14px;
@@ -1313,6 +1320,7 @@
       border-color: var(--accent-down);
       box-shadow: var(--shadow-raised);
     }
+    .allinnings-card:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
     .allinnings-card-header {
       font-size: 13px;
       font-weight: 700;
@@ -1890,6 +1898,7 @@
     .lineup-item:hover { box-shadow: var(--shadow-raised); }
     @media (prefers-color-scheme: dark) { .lineup-item:hover { background: color-mix(in srgb, var(--ink) 6%, var(--panel)); } }
     .lineup-item:active { transform: scale(0.99); }
+    .lineup-item:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--ink); }
     .lineup-item-meta { font-size: 14px; color: var(--ink-secondary); }
@@ -2422,7 +2431,7 @@
       .auth-page-card {
         padding: 40px 24px;
       }
-      .auth-switch a {
+      .auth-switch a, .auth-switch .link-btn {
         display: inline-block;
         padding: 4px 0;
       }
@@ -3696,7 +3705,7 @@
       </button>
     </div>
 
-    <p class="auth-foot">New here? Leadoff is free for your first 3 players. <a href="/pricing">See pricing</a></p>
+    <p class="auth-foot">New here? Building lineups is part of Leadoff Pro, free for 7 days. <a href="/pricing">See pricing</a></p>
   </div>
 
   <!-- ── Panel 2: Email Sign-In / Sign-Up ── -->
@@ -3721,17 +3730,17 @@
     <div class="auth-error" id="auth-error"></div>
 
     <div class="auth-switch" style="margin-top:16px;">
-      <a onclick="toggleResetMode()" id="auth-reset-link" style="cursor:pointer;text-decoration:underline;">Forgot password?</a>
+      <button type="button" class="link-btn" onclick="toggleResetMode()" id="auth-reset-link">Forgot password?</button>
     </div>
 
     <div class="auth-switch" style="margin-top:8px;" id="auth-mode-toggle">
-      <span id="auth-mode-toggle-text">Don't have an account? </span><a onclick="toggleSignUpMode()" id="auth-mode-toggle-link" style="cursor:pointer;text-decoration:underline;font-weight:600;">Create one</a>
+      <span id="auth-mode-toggle-text">Don't have an account? </span><button type="button" class="link-btn is-strong" onclick="toggleSignUpMode()" id="auth-mode-toggle-link">Create one</button>
     </div>
 
     <div class="auth-divider">or</div>
 
     <div class="auth-switch">
-      <a onclick="showProvidersPanel()" style="cursor:pointer;text-decoration:underline;">← Back to all options</a>
+      <button type="button" class="link-btn" onclick="showProvidersPanel()">← Back to all options</button>
     </div>
   </div>
 
@@ -3809,7 +3818,7 @@
       <p class="upgrade-note">Cancel anytime. No charge for 7 days.</p>
 
       <div class="upgrade-footer">
-        Already subscribed to Leadoff on iOS? <a onclick="signOut()" style="cursor:pointer;text-decoration:underline;">Sign in with that account</a>
+        Already subscribed to Leadoff on iOS? <button type="button" class="link-btn" onclick="signOut('/app')">Sign in with that account</button>
       </div>
     </div>
   </div>
@@ -4082,8 +4091,7 @@
             <label>GameChanger schedule</label>
             <div class="calendar-url-row">
               <input type="url" id="team-calendar-url" placeholder="Paste webcal:// link here…" oninput="updateCalendarBtn()" />
-              <button class="btn btn-sm btn-primary" id="btn-add-calendar" onclick="testCalendarSync()" disabled
-                style="opacity:0.4;cursor:not-allowed;">Add Calendar</button>
+              <button class="btn btn-sm btn-primary" id="btn-add-calendar" onclick="testCalendarSync()" disabled>Add Calendar</button>
             </div>
             <div class="cal-helper">Find it in GameChanger → Team → Schedule → Share → Copy Link.</div>
             <div id="calendar-sync-result" style="font-size:13px;"></div>
@@ -4798,9 +4806,7 @@ async function sendPasswordReset() {
   if (!email) { showAuthError('Enter your email address first.'); return; }
   try {
     await fb.auth.sendPasswordResetEmail(email);
-    showAuthError('');
-    document.getElementById('auth-error').style.color = 'var(--accent-down)';
-    document.getElementById('auth-error').textContent = '✓ Reset email sent — check your inbox.';
+    showAuthNotice('Reset email sent. Check your inbox.');
   } catch(e) {
     showAuthError(friendlyAuthError(e));
   }
@@ -4912,10 +4918,12 @@ async function paywallCheckout() {
   }
 }
 
-async function signOut() {
+// Signing out lands on getleadoff.com (the app domain's / redirects there,
+// F39). Switching accounts from the paywall passes '/app' to land on sign-in.
+async function signOut(dest) {
   const fb = initFirebase();
   if (fb) await fb.auth.signOut();
-  window.location.href = '/';
+  window.location.href = dest || 'https://getleadoff.com/';
 }
 
 function toggleAvatarMenu(btn) {
@@ -4943,7 +4951,7 @@ function applyEmailAuthMode() {
   const modeToggleLink = document.getElementById('auth-mode-toggle-link');
   const titleEl        = document.getElementById('auth-email-title');
   const subEl          = document.getElementById('auth-email-sub');
-  document.getElementById('auth-error').textContent = '';
+  showAuthError('');
 
   if (_authMode === 'signup') {
     titleEl.textContent       = 'Create an Account';
@@ -5002,7 +5010,7 @@ function showProvidersPanel() {
   provPanel.classList.remove('auth-fade-in');
   void provPanel.offsetWidth;
   provPanel.classList.add('auth-fade-in');
-  document.getElementById('auth-error').textContent = '';
+  showAuthError('');
   _authMode = 'signin';
 }
 
@@ -5017,7 +5025,16 @@ function toggleResetMode() {
 }
 
 function showAuthError(msg) {
-  document.getElementById('auth-error').textContent = msg;
+  const el = document.getElementById('auth-error');
+  el.classList.remove('is-ok');   // a reset notice never leaves later errors green (F47)
+  el.textContent = msg;
+}
+
+// The one success line the auth card shows (reset email sent).
+function showAuthNotice(msg) {
+  const el = document.getElementById('auth-error');
+  el.classList.add('is-ok');
+  el.textContent = msg;
 }
 
 function friendlyAuthError(e) {
@@ -5332,24 +5349,25 @@ async function joinTeamWithCode() {
 
   // Hard guard: never look up empty/short codes.
   if (code.length < 6) {
-    status.innerHTML = '<span style="color:var(--alert-ink);">Please enter the full invite code.</span>';
+    setLcStatus(status, 'err', 'Enter the full invite code.');
     return;
   }
 
   btn.disabled = true;
-  status.innerHTML = 'Looking up team…';
+  setLcStatus(status, null, 'Looking up team…');
   try {
     const snap = await fb.db.collection('teams')
       .where('inviteCode', '==', code).limit(1).get();
     if (snap.empty) {
-      status.innerHTML = '<span style="color:var(--alert-ink);">No team found for that code. Double-check it and try again.</span>';
+      setLcStatus(status, 'err', 'No team found for that code. Double-check it and try again.');
       btn.disabled = false;
       return;
     }
     const doc = snap.docs[0];
     const d = doc.data();
     if (d.ownerId === uid || (d.memberIds || []).includes(uid)) {
-      status.innerHTML = `You're already on <strong>${escHtml(d.name || 'this team')}</strong>. <a style="text-decoration:underline;cursor:pointer;" onclick="navigate('#/team/${doc.id}/schedule')">Open it →</a>`;
+      status.classList.remove('lc-st', 'ok', 'dr', 'err', 'no');
+      status.innerHTML = `You're already on <strong>${escHtml(d.name || 'this team')}</strong>. <button type="button" class="link-btn" onclick="navigate('#/team/${doc.id}/schedule')">Open it →</button>`;
       btn.disabled = false;
       return;
     }
@@ -5367,12 +5385,12 @@ async function joinTeamWithCode() {
       { merge: true }
     );
 
-    status.innerHTML = `<span style="color:var(--accent-down);">✓ Joined <strong>${escHtml(d.name || 'team')}</strong>!</span>`;
+    setLcStatus(status, 'ok', `Joined ${d.name || 'the team'}.`);
     await loadUserTeams(fb.auth.currentUser);
     navigate('#/team/' + doc.id + '/schedule');
   } catch (e) {
     console.error('joinTeamWithCode error:', e);
-    status.innerHTML = '<span style="color:var(--alert-ink);">Could not join right now — please try again.</span>';
+    setLcStatus(status, 'err', "Couldn't join right now. Try again.");
     btn.disabled = false;
   }
 }
@@ -7278,7 +7296,9 @@ function renderPastLineups() {
     parts.push(playerCount + ' player' + (playerCount !== 1 ? 's' : ''));
 
     return `
-      <div class="lineup-item" onclick="navigate('#/team/${_lineupsTeamId}/lineups/${lineup.id}')">
+      <div class="lineup-item" role="button" tabindex="0"
+           onclick="navigate('#/team/${_lineupsTeamId}/lineups/${lineup.id}')"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();navigate('#/team/${_lineupsTeamId}/lineups/${lineup.id}');}">
         <div class="lineup-item-info">
           <div class="lineup-item-title">${escHtml(title)}</div>
           <div class="lineup-item-meta">${escHtml(parts.join(' · '))}</div>
@@ -7750,15 +7770,7 @@ async function saveCalendarUrl() {
 function updateCalendarBtn() {
   const btn = document.getElementById('btn-add-calendar');
   const url = document.getElementById('team-calendar-url').value.trim();
-  if (url) {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    btn.style.cursor = 'pointer';
-  } else {
-    btn.disabled = true;
-    btn.style.opacity = '0.4';
-    btn.style.cursor = 'not-allowed';
-  }
+  btn.disabled = !url;   // .btn:disabled carries the 0.55 (F47)
 }
 
 // "Add Calendar" button in Team Settings
@@ -7772,7 +7784,6 @@ async function testCalendarSync() {
 
   btn.disabled = true;
   btn.textContent = 'Syncing…';
-  btn.style.opacity = '0.6';
   resultEl.innerHTML = '';
 
   try {
@@ -7784,16 +7795,14 @@ async function testCalendarSync() {
     const upcoming = games.filter(g => g.dateObj >= new Date());
     // Auto-save the URL to Firestore since it's valid
     await saveCalendarUrl();
-    resultEl.innerHTML = `<span style="color:var(--accent);">✓ ${games.length} game${games.length !== 1 ? 's' : ''} synced (${upcoming.length} upcoming)</span>`;
-    btn.textContent = 'Synced ✓';
-    btn.style.opacity = '1';
+    resultEl.innerHTML = `<span class="lc-st ok"><i></i>${games.length} game${games.length === 1 ? '' : 's'} synced, ${upcoming.length} coming up</span>`;
+    btn.textContent = 'Synced';
     // After a moment, switch to "Update" label for re-syncing
     setTimeout(() => { btn.textContent = 'Update Calendar'; btn.disabled = false; }, 2000);
   } catch (e) {
-    resultEl.innerHTML = `<span style="color:var(--alert-ink);">✕ ${e.message}</span>`;
+    resultEl.innerHTML = `<span class="lc-st err"><i></i>${escHtml(e.message)}</span>`;
     btn.disabled = false;
     btn.textContent = 'Add Calendar';
-    btn.style.opacity = '1';
   }
 }
 
@@ -10504,6 +10513,24 @@ const FIELD_POS_COORDS_CRATE = {
   // UTL1/2/3 render in a row below the diamond, not on it.
 };
 
+// Spoken names for screen readers: the player, the inning and the
+// position in words, never a bare "SS" (audit F41; iOS BuilderSpeech).
+const POS_SPOKEN = {
+  P: 'Pitcher', C: 'Catcher', '1B': 'First base', '2B': 'Second base', '3B': 'Third base',
+  SS: 'Shortstop', LF: 'Left field', CF: 'Center field', RF: 'Right field',
+  LCF: 'Left center field', RCF: 'Right center field',
+  UTL1: 'Utility 1', UTL2: 'Utility 2', UTL3: 'Utility 3', Bench: 'Bench'
+};
+function spokenPos(pos) { return pos ? (POS_SPOKEN[pos] || pos) : 'Unassigned'; }
+// "Avery Stone, Shortstop, 3 in the field, 1 on the bench" (+ ", conflict"),
+// or "Shortstop, open" for an empty slot. The two counts are the chip's
+// green and red numbers.
+function fieldChipLabel(pos, player, conflict) {
+  if (!player) return spokenPos(pos) + ', open';
+  const c = fieldBenchCountsFor(player.id);
+  return player.name + ', ' + spokenPos(pos) + ', ' + c.f + ' in the field, ' + c.b + ' on the bench' + (conflict ? ', conflict' : '');
+}
+
 function firstNameOf(name) {
   return String(name || '').trim().split(/\s+/)[0] || '?';
 }
@@ -10614,7 +10641,9 @@ function renderAllInningsView() {
   for (let i = 0; i < innings; i++) {
     const { fieldHtml, utlHtml } = buildInningBubblesHtml(i);
     html +=
-      '<div class="allinnings-card" onclick="jumpToFieldInning(' + i + ')" title="Click to edit inning ' + (i + 1) + '">' +
+      '<div class="allinnings-card" role="button" tabindex="0" aria-label="Edit inning ' + (i + 1) + '" title="Edit inning ' + (i + 1) + '"' +
+        ' onclick="jumpToFieldInning(' + i + ')"' +
+        ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();jumpToFieldInning(' + i + ');}">' +
         '<div class="allinnings-card-header">' +
           '<span>Inning <span class="allinnings-card-num">' + (i + 1) + '</span></span>' +
         '</div>' +
@@ -10747,6 +10776,7 @@ function renderFieldPositions() {
             ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
             ' ondragend="onFieldDragEnd(event)"' +
             ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
+            ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '"' +
             ' title="Drag to swap or tap to change ' + pos + ' for inning ' + (inningIdx + 1) + '">' +
             chipInner(pos, player) +
             '</button>';
@@ -10782,7 +10812,8 @@ function renderFieldPositions() {
                  ' ondragleave="onFieldDragLeave(event)"' +
                  ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
                  ' ondragend="onFieldDragEnd(event)"' +
-                 ' onclick="openFieldPosPicker(\'' + pos + '\', this)">' +
+                 ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
+                 ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '">' +
                  chipInner(pos, player) +
                  '</button>';
     });
@@ -10832,7 +10863,8 @@ function renderFieldBench() {
            ' draggable="true"' +
            ' ondragstart="onFieldDragStart(event,\'bench\',\'' + r.playerId + '\')"' +
            ' ondragend="onFieldDragEnd(event)"' +
-           ' onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)">' +
+           ' onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)"' +
+           ' aria-label="' + sbAttr(fieldChipLabel('Bench', p, false)) + '">' +
            '<span class="field-pos-name">' + escHtml(firstNameOf(p.name)) + '</span>' +
            '<span class="field-pos-counts"><span class="f">' + c.f + '</span><span class="b">' + c.b + '</span></span>' +
            '</button>';
@@ -12236,6 +12268,7 @@ function renderLineupGrid() {
       cells += `
         <td>
           <select class="pos-select ${cls}" data-player="${player.id}" data-inning="${i}"
+                  aria-label="${sbAttr(player.name)}, inning ${i + 1}"
                   onchange="onPosChange('${player.id}',${i},this.value)">
             ${options}
           </select>
@@ -12546,7 +12579,7 @@ function checkConflicts() {
   const attending = state.players.filter(p => state.attendance[p.id]);
 
   // Clear all previous conflict highlights
-  document.querySelectorAll('.pos-select.conflict').forEach(el => el.classList.remove('conflict'));
+  document.querySelectorAll('.pos-select.conflict').forEach(el => { el.classList.remove('conflict'); el.removeAttribute('aria-invalid'); });
 
   // Check 1: two players at the same position in the same inning (the real conflict)
   for (let inning = 0; inning < state.innings; inning++) {
@@ -12568,7 +12601,7 @@ function checkConflicts() {
         // Highlight each conflicting select
         playerIds.forEach(pid => {
           const sel = document.querySelector(`.pos-select[data-player="${pid}"][data-inning="${inning}"]`);
-          if (sel) sel.classList.add('conflict');
+          if (sel) { sel.classList.add('conflict'); sel.setAttribute('aria-invalid', 'true'); }
         });
       }
     });

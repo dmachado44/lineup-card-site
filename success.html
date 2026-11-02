@@ -3,120 +3,126 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Pro — Leadoff</title>
+  <title>Welcome to Pro · Leadoff</title>
   <meta name="robots" content="noindex" />
   <link rel="canonical" href="https://app.getleadoff.com/success" />
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="apple-touch-icon" href="/assets/favicon-180.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/sofia-sans-extra-condensed-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/barlow-semi-condensed-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/site.css">
   <style>
-    /* ── Leadoff design tokens (mirrors index.html) ── */
-    :root {
-      --page-marketing: #FFFFFF;
-      --panel:          #FFFFFF;
-      --ink:            #101613;
-      --ink-secondary:  #6B6659;
-      --accent:         #46CF51;
-      --accent-down:    #1F7A2A;
-      --on-accent:      #0B2410;
-      --sticker-ink:    #101613;
-      --pennant:        #EC2146;
-      --sticker-cream:  #FFF8E6;
-      --font-display: "Sofia Sans Extra Condensed", "Arial Narrow", sans-serif;
-      --font-body: "Barlow Semi Condensed", system-ui, sans-serif;
-      --kicker-tracking: 0.14em;
-      --radius-button: 12px;
-      --radius-card: 20px;
-      --shadow-sticker: 4px 4px 0 0 var(--sticker-ink);
+    /* Post-checkout. Tokens, fonts, nav, sticker buttons, pennant, blocks and
+       footer come from /site.css (a generated copy of getleadoff.com's).
+       This block is the centered white block only. */
+    .skip-link {
+      position: absolute; left: -9999px; top: var(--space-8); z-index: 300;
+      padding: var(--space-12) var(--space-20); border-radius: var(--radius-compact);
+      background: var(--sticker-ink); color: var(--night-ink);
+      font-size: 15px; font-weight: 600; text-decoration: none;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font-body);
-      font-weight: 500;
-      color: var(--ink);
-      background: var(--page-marketing);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 24px;
-      -webkit-font-smoothing: antialiased;
+    .skip-link:focus { left: 50%; transform: translateX(-50%); }
+    :where(a, button):focus-visible { outline: 3px solid var(--accent-down); outline-offset: 3px; }
+    footer :where(a, button):focus-visible, footer .sticker-btn:focus-visible { outline-color: var(--gold); }
+
+    .success { padding-top: clamp(40px, 5vw, 96px); text-align: center; }
+    .success-card {
+      max-width: 520px; margin-inline: auto;
+      padding: var(--space-40) var(--space-40) var(--space-32);
     }
-    .logo { margin-bottom: 32px; }
-    .logo img { height: 44px; display: block; }
-    .card {
-      background: var(--panel);
-      border: 2px solid var(--sticker-ink);
-      border-radius: var(--radius-card);
-      box-shadow: var(--shadow-sticker);
-      text-align: center;
-      max-width: 480px;
-      width: 100%;
-      padding: 40px 36px 32px;
-    }
-    .pennant {
-      display: inline-block;
-      background: var(--pennant);
-      color: var(--sticker-cream);
-      font-family: var(--font-display);
-      font-weight: 900;
-      text-transform: uppercase;
-      font-size: 13px;
-      letter-spacing: var(--kicker-tracking);
-      padding: 5px 20px 5px 12px;
-      clip-path: polygon(0 0, calc(100% - .45em) 0, 100% 50%, calc(100% - .45em) 100%, 0 100%);
-    }
-    .tick {
-      width: 64px; height: 64px; border-radius: 16px;
-      background: var(--accent); color: var(--on-accent);
-      border: 2px solid var(--sticker-ink);
+    .success-tick {
+      width: 64px; height: 64px; margin: var(--space-24) auto var(--space-20);
+      border-radius: var(--radius-control); background: var(--accent); color: var(--on-accent);
       display: flex; align-items: center; justify-content: center;
-      margin: 22px auto 20px;
     }
-    h1 {
-      font-family: var(--font-display);
-      font-weight: 900;
-      text-transform: uppercase;
-      font-size: clamp(40px, 8vw, 52px);
-      line-height: 0.94;
-      margin-bottom: 14px;
+    .success-card h1 { font-size: var(--type-marketing-head); line-height: 0.94; color: var(--ink); }
+    .success-card .lead {
+      font-size: var(--type-marketing-body); line-height: 1.5; color: var(--ink-secondary);
+      margin: var(--space-16) auto var(--space-32); max-width: 30em; text-wrap: pretty;
     }
-    p { font-size: 17px; color: var(--ink-secondary); line-height: 1.5; margin-bottom: 28px; }
-    .sticker-btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      font-family: var(--font-display); font-weight: 900; text-transform: uppercase;
-      letter-spacing: .02em; line-height: 1; font-size: 20px;
-      padding: 15px 28px; min-height: 52px; width: 100%;
-      color: var(--on-accent); background: var(--accent);
-      border: 2px solid var(--sticker-ink); border-radius: var(--radius-button);
-      box-shadow: var(--shadow-sticker); text-decoration: none; cursor: pointer;
-      transition: transform .15s ease, box-shadow .15s ease;
+    .success-card .sticker-btn { width: 100%; }
+    .success-card .note { font-size: 14px; line-height: 1.5; color: var(--ink-secondary); margin-top: var(--space-16); }
+    .success .foot { font-size: 15px; color: var(--ink-secondary); margin-top: var(--space-24); }
+    .success .foot a { color: var(--accent-down); font-weight: 700; text-decoration: none; }
+    .success .foot a:hover { color: var(--ink); }
+    @media (max-width: 560px) {
+      .success-card { padding: var(--space-32) var(--space-24) var(--space-24); }
     }
-    .sticker-btn:hover { transform: translate(-1px,-1px); box-shadow: 5px 5px 0 0 var(--sticker-ink); }
-    .sticker-btn:active { transform: translate(4px,4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
-    .note { font-size: 14px; color: var(--ink-secondary); margin: 16px 0 0; }
-    .foot { font-size: 14px; color: var(--ink-secondary); margin-top: 28px; }
-    .foot a { color: var(--accent-down); font-weight: 700; text-decoration: none; }
-    @media (prefers-reduced-motion: reduce) { .sticker-btn { transition: none; } }
   </style>
 </head>
 <body>
-  <div class="logo">
-    <img src="/assets/leadoff-logo-ink.svg" alt="Leadoff" height="44" />
-  </div>
-  <div class="card">
-    <span class="pennant">Now batting</span>
-    <div class="tick" aria-hidden="true">
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <!-- Nav: getleadoff.com's, with absolute links (this page lives on the app domain) -->
+  <nav>
+    <div class="nav-bar">
+      <a class="nav-logo" href="https://getleadoff.com/"><img src="/assets/leadoff-logo-ink.svg" alt="Leadoff" width="141" height="38"></a>
+      <span class="spacer"></span>
+      <a class="nav-link" href="https://getleadoff.com/guides">Guides</a>
+      <a class="sticker-btn cream sm" data-cta="appstore" data-loc="nav" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener" aria-label="Get the app">
+        <svg width="16" height="19" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788 340c-6 4-109 62-109 190 0 148 130 200 134 201-1 3-21 71-69 141-43 61-88 122-156 122s-86-40-165-40c-77 0-104 41-166 41s-106-57-156-127C43 785 0 665 0 551c0-183 119-280 236-280 62 0 114 41 153 41 37 0 95-43 166-43 27 0 124 2 233 71zM551 156c31-37 53-88 53-139 0-7-1-14-2-17-50 2-110 33-146 75-29 33-56 84-56 136 0 8 1 15 2 18 3 1 8 1 13 1 45 0 102-30 136-74z"/></svg><span class="ios-nav-label">Get the app</span>
+      </a>
+      <a class="sticker-btn accent sm" data-cta="webapp" data-loc="nav" href="/app">Build lineups</a>
     </div>
-    <h1>You're all set.</h1>
-    <p>Pro is active. Unlimited teams, the fair-play lineup engine, strategy slider, game history, sharing, and priority support are ready to go.</p>
-    <a href="/app" class="sticker-btn">Build your lineup</a>
-    <p class="note">Your 7-day free trial has started. You won't be charged until it ends.</p>
-  </div>
-  <p class="foot">Questions? <a href="mailto:hello@getleadoff.com">hello@getleadoff.com</a></p>
+  </nav>
+
+  <main id="main" class="wrap success">
+    <div class="block success-card">
+      <span class="pennant">Now batting</span>
+      <div class="success-tick" aria-hidden="true">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1 class="display">You're all set.</h1>
+      <p class="lead">Pro is active. Unlimited teams, the fair-play lineup engine, strategy slider, game history, sharing, and priority support are ready to go.</p>
+      <a href="/app" class="sticker-btn accent lg">Build your lineup</a>
+      <p class="note">Your 7-day free trial has started. You won't be charged until it ends.</p>
+    </div>
+    <p class="foot">Questions? <a href="mailto:hello@getleadoff.com">hello@getleadoff.com</a></p>
+  </main>
+
+  <!-- Footer: getleadoff.com's (CTA band, four link columns, wordmark), absolute links -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-cta">
+        <h2 class="display">Showtime is one tap away</h2>
+        <p>Free to start. Set the order once and the stands handle the rest.</p>
+        <div class="cta-row">
+          <a class="sticker-btn cream lg" data-cta="appstore" data-loc="footer" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener">
+            <svg width="16" height="19" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788 340c-6 4-109 62-109 190 0 148 130 200 134 201-1 3-21 71-69 141-43 61-88 122-156 122s-86-40-165-40c-77 0-104 41-166 41s-106-57-156-127C43 785 0 665 0 551c0-183 119-280 236-280 62 0 114 41 153 41 37 0 95-43 166-43 27 0 124 2 233 71zM551 156c31-37 53-88 53-139 0-7-1-14-2-17-50 2-110 33-146 75-29 33-56 84-56 136 0 8 1 15 2 18 3 1 8 1 13 1 45 0 102-30 136-74z"/></svg>Get the app
+          </a>
+          <a class="sticker-btn accent lg" data-cta="webapp" data-loc="footer" href="/app">Build lineups</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col col-play">
+          <span class="foot-kicker">Play ball</span>
+          <a class="light" data-cta="appstore" data-loc="footer-links" href="https://apps.apple.com/app/id6743953226" target="_blank" rel="noopener">Get the app</a>
+          <a class="green" data-cta="webapp" data-loc="footer-links" href="/app">Build a lineup on the web&nbsp;↗</a>
+        </div>
+        <div class="footer-col col-brand">
+          <span class="foot-kicker">Leadoff</span>
+          <span>The music. The lineup. <span class="tagline-strong">One place.</span></span>
+          <span>© 2026 Leadoff · getleadoff.com</span>
+          <span class="rating">&#9733; 4.8 on the App Store</span>
+        </div>
+        <div class="footer-col col-guides">
+          <span class="foot-kicker">Guides</span>
+          <a class="muted" href="https://getleadoff.com/guides/walk-up-songs-for-10u-baseball">Walk-Up Songs for 10U Baseball: 25 Picks That Land Fast</a>
+          <a class="muted" href="https://getleadoff.com/guides/little-league-lineup-rules-everyone-bats">Little League Lineup Rules: Does Everyone Have to Bat?</a>
+          <a class="muted" href="https://getleadoff.com/guides/walk-up-song-app-youth-baseball">Walk-Up Song Apps for Youth Baseball: What to Look For</a>
+          <a class="muted" href="https://getleadoff.com/guides">All guides</a>
+        </div>
+        <div class="footer-col col-contact">
+          <span class="foot-kicker">Get in touch</span>
+          <a class="light" href="mailto:hello@getleadoff.com">hello@getleadoff.com</a>
+          <a class="muted" href="https://getleadoff.com/privacy">Privacy Policy</a>
+          <a class="muted" href="https://getleadoff.com/terms">Terms of Service</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-logo">
+      <img src="/assets/leadoff-logo-white.svg" alt="Leadoff" width="2059" height="556" loading="lazy">
+    </div>
+  </footer>
 </body>
 </html>
