@@ -124,7 +124,7 @@
       --gray-5:                #F1ECDD;  /* pressed and selected: --row-press, active nav item, toggles that are on */
       --gray-4:                #D9D4C6;  /* the off toggle track and the player-row hover border */
       --gray-3:                #C9C3B4;  /* faint marks: separators, arrows, taken options, the "down" note dots */
-      --gray:                  #8A8578;  /* muted icons: drag grips, chevrons, the "or" divider */
+      --gray:                  #8A8578;  /* muted icons: chevrons, drag grips, clear buttons, faint marks, the "or" divider */
 
       /* Shadows */
       --shadow-rgb:            16, 22, 19;  /* THE shadow ink (#101613) as channels: rgba(var(--shadow-rgb), a). Never plain black; scrims aren't shadows */
@@ -254,7 +254,7 @@
     }
     .topbar-logo .logo-mark {
       width: 30px; height: 30px;
-      border-radius: 8px;
+      border-radius: var(--radius-small);
       object-fit: cover;
       flex-shrink: 0;
     }
@@ -329,7 +329,7 @@
     }
     .auth-logo .logo-mark {
       width: 34px; height: 34px;
-      border-radius: 8px;
+      border-radius: var(--radius-small);
       object-fit: cover;
       flex-shrink: 0;
     }
@@ -819,7 +819,7 @@
       appearance: none;
       width: 100%;
       height: 8px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       outline: none;
       cursor: pointer;
       min-width: 0;
@@ -856,12 +856,12 @@
     /* Firefox */
     .skill-slider::-moz-range-track {
       height: 8px;
-      border-radius: 999px;
+      border-radius: var(--radius-pill);
       background: var(--gray-5);
     }
     .skill-slider::-moz-range-progress {
       height: 8px;
-      border-radius: 999px 0 0 999px;
+      border-radius: var(--radius-pill) 0 0 var(--radius-pill);
       background: var(--accent);
     }
     .skill-slider::-moz-range-thumb {
@@ -989,7 +989,7 @@
       width: 51px;
       height: 31px;
       background: var(--gray-4);
-      border-radius: 100px;
+      border-radius: var(--radius-pill);
       transition: background 0.2s;
       position: relative;
     }
@@ -1065,7 +1065,7 @@
     .lc-seg--fit { display: inline-flex; }
     .lc-seg > button {
       flex: 1 1 0; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 0 14px; border: none; border-radius: 9px; background: transparent;
+      padding: 0 14px; border: none; border-radius: calc(var(--radius-control) - 3px); background: transparent;
       font: inherit; font-size: 15px; font-weight: 600; line-height: 1; white-space: nowrap; color: var(--ink-secondary); cursor: pointer;
       transition: background-color .2s, color .2s, box-shadow .2s;
     }
@@ -1210,7 +1210,7 @@
       padding: 6px 12px;
       background: var(--panel);
       border: 1px solid var(--hairline);
-      border-radius: 16px;
+      border-radius: var(--radius-compact);
       font-size: 13px;
       font-weight: 500;
       color: var(--ink);
@@ -1266,7 +1266,7 @@
       max-width: 90px;
       padding: 3px 6px;
       border-width: 1.5px;
-      border-radius: 8px;
+      border-radius: var(--radius-compact);
       box-shadow: var(--shadow-raised);
       cursor: default;
     }
@@ -1363,7 +1363,7 @@
     .bat-order {
       width: 32px;
       height: 32px;
-      border-radius: 8px;
+      border-radius: var(--radius-compact);
       background: var(--bg-secondary);
       color: var(--ink);
       font-size: 13px;
@@ -1533,7 +1533,7 @@
     }
     .modal {
       background: var(--panel);
-      border-radius: 14px;
+      border-radius: var(--radius-card);
       width: 100%;
       max-width: 560px;
       max-height: 80vh;
@@ -1859,7 +1859,7 @@
 
     /* ── SCHEDULE VIEW ── */
     .schedule-list { display: flex; flex-direction: column; gap: 32px; }
-    .schedule-sync-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 10px 14px; background: var(--bg-secondary); border-radius: 8px; font-size: 13px; color: var(--ink-secondary); }
+    .schedule-sync-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 10px 14px; background: var(--bg-secondary); border-radius: var(--radius-control); font-size: 13px; color: var(--ink-secondary); }
 
     /* ── STRATEGY SLIDER ── */
     /* strategy uses standard .card padding */
@@ -1869,8 +1869,8 @@
        click-to-jump, keyboard and screen readers all keep working. */
     .strat { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
     .strat-track { position: relative; height: 32px; --p: .5; }
-    .strat-rail { position: absolute; left: 10px; right: 10px; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; background: var(--gray-5); }
-    .strat-fill { position: absolute; left: 10px; top: 50%; height: 6px; margin-top: -3px; border-radius: 3px; background: var(--accent);
+    .strat-rail { position: absolute; left: 10px; right: 10px; top: 50%; height: 6px; margin-top: -3px; border-radius: var(--radius-pill); background: var(--gray-5); }
+    .strat-fill { position: absolute; left: 10px; top: 50%; height: 6px; margin-top: -3px; border-radius: var(--radius-pill); background: var(--accent);
       width: calc(4px + (100% - 28px) * var(--p)); transition: width .18s var(--ease-glide, ease); }
     .strat-stops { position: absolute; left: 14px; right: 14px; top: 50%; pointer-events: none; }
     .strat-stops i { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--hairline-strong); transition: background-color .18s; }
@@ -2038,7 +2038,7 @@
       text-transform: uppercase;
       letter-spacing: 0.3px;
       padding: 2px 7px;
-      border-radius: 99px;
+      border-radius: var(--radius-pill);
       background: var(--accent);
       color: var(--on-accent);
       margin-left: 6px;
@@ -2108,7 +2108,7 @@
     /* Share Team card — mirrors iOS ShareTeamCard (Oct 29, 2026): green
        stage, one sticker card, logo riding the top edge, join QR on a white
        chip, tap-to-copy code under it. The card is the modal's one slab. */
-    .share-stage { background: var(--accent); border-radius: 16px; padding: 56px 20px 20px; }
+    .share-stage { background: var(--accent); border-radius: var(--radius-card); padding: 56px 20px 20px; }
     .share-card {
       position: relative; background: var(--panel); color: var(--ink);
       border: 2px solid var(--sticker-ink); border-radius: var(--radius-card); box-shadow: var(--shadow-sticker);
@@ -2293,7 +2293,7 @@
     .sidebar-nav { padding: 12px 10px 32px; display: flex; flex-direction: column; gap: 2px; }
     .sidebar-link {
       display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: 8px;
+      padding: 10px 12px; border-radius: var(--radius-compact);
       font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer;
     }
     .sidebar-link:hover { background: var(--bg-secondary); }
@@ -2308,7 +2308,7 @@
     .sidebar-team.expanded .sidebar-team-sections { display: flex; }
     .sidebar-sublink {
       display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px 8px 46px; border-radius: 8px;
+      padding: 8px 12px 8px 46px; border-radius: var(--radius-compact);
       font-size: 13px; color: var(--ink-secondary); cursor: pointer;
     }
     .sidebar-sublink:hover { background: var(--bg-secondary); color: var(--ink); }
@@ -2438,7 +2438,7 @@
       background: var(--panel);
       border: 1px solid var(--hairline);
       border-bottom: none;
-      border-radius: 14px 14px 0 0;
+      border-radius: var(--radius-control) var(--radius-control) 0 0;
       cursor: pointer;
       font-size: 15px;
       font-weight: 500;
@@ -2476,7 +2476,7 @@
       max-height: calc(100vh - 40px);
       background: var(--panel);
       border: 1px solid var(--hairline);
-      border-radius: 14px 14px 0 0;
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
       box-shadow: var(--shadow-dialog);
       display: flex;
       flex-direction: column;
@@ -2514,7 +2514,7 @@
       align-items: center;
       justify-content: center;
       line-height: 1;
-      border-radius: 8px;
+      border-radius: var(--radius-compact);
       transition: background 0.15s;
     }
     .feedback-panel-close:hover { background: var(--bg-secondary); color: var(--ink); }
@@ -2569,7 +2569,7 @@
     }
     @media (max-width: 660px) {
       .feedback-tab { right: 16px; padding: 10px 18px; font-size: 14px; }
-      .feedback-panel { right: 0; width: 100%; max-width: 100%; border-radius: 14px 14px 0 0; }
+      .feedback-panel { right: 0; width: 100%; max-width: 100%; border-radius: var(--radius-card) var(--radius-card) 0 0; }
     }
 
     /* ══════════════ CRATE OVERRIDES (load-order: last wins) ══════════════ */
@@ -2679,7 +2679,7 @@
     #lineup-field-view .field-bench {
       background: var(--panel);
       border: 1px solid var(--hairline);
-      border-radius: 16px;
+      border-radius: var(--radius-card);
       padding: 12px;
     }
     #lineup-field-view .field-bench-label {
@@ -2747,7 +2747,7 @@
     .gn-textarea { min-height: 55px; padding: 15px 14px; }
     .gn-team-textarea { min-height: 120px; padding: 12px 14px; }
     .gn-chips { display: flex; gap: 6px; margin-top: 8px; }
-    .gn-chip { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--hairline-strong); background: transparent; color: var(--ink-secondary); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .gn-chip { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 6px 8px; border-radius: var(--radius-compact); border: 1px solid var(--hairline-strong); background: transparent; color: var(--ink-secondary); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
     .gn-chip:hover { background: var(--bg-secondary); }
     .gn-chip.up { background: var(--accent-wash); border-color: transparent; color: var(--accent-down); }
     .gn-chip.down { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); border-color: transparent; color: var(--ink); }
@@ -2830,7 +2830,7 @@
       position: absolute; left: calc(100% + 12px); top: 50%; z-index: 90;
       transform: translate(-4px, -50%); opacity: 0; pointer-events: none;
       background: var(--ink); color: var(--panel); font-size: 13px; font-weight: 600; line-height: 1;
-      padding: 7px 9px; border-radius: 8px; white-space: nowrap;
+      padding: 7px 9px; border-radius: var(--radius-small); white-space: nowrap;
       transition: opacity .12s, transform .12s;
     }
     .sb-toggle:hover .sb-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .35s; }
@@ -2839,7 +2839,7 @@
     .sb-switch { position: relative; margin: 2px 12px 0; flex: none; }
     .sb-team {
       width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px;
-      border: none; border-radius: 14px; background: var(--bg-secondary); color: var(--ink);
+      border: none; border-radius: var(--radius-control); background: var(--bg-secondary); color: var(--ink);
       font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: background .15s;
     }
     .sb-team:hover { background: var(--gray-5); }
@@ -2875,7 +2875,7 @@
        --left aligns it left, --up opens it above (the sidebar foot).
        .lc-menu--fixed is placed by JS (position: fixed). */
     .lc-menu {
-      width: 260px; padding: 6px; border-radius: 14px; z-index: 95;
+      width: 260px; padding: 6px; border-radius: var(--radius-card); z-index: 95;
       background: var(--panel); color: var(--ink);
       box-shadow: var(--shadow-dialog);
     }
@@ -2896,7 +2896,7 @@
     .lc-menu-label { padding: 8px 10px 4px; font-size: var(--type-kicker); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-secondary); }
     .lc-menu-scroll { overflow-y: auto; min-height: 0; }
     .lc-menu-item {
-      width: 100%; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: none; border-radius: 9px;
+      width: 100%; display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 10px; border: none; border-radius: var(--radius-control);
       background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
     }
     .lc-menu-item:hover { background: var(--bg-secondary); }
@@ -2932,7 +2932,7 @@
     .sb-build:hover .sb-plus { transform: rotate(90deg); }
     .sb-item {
       position: relative; display: flex; align-items: center; gap: 12px; height: 42px; margin: 0 12px; padding: 0 16px;
-      border-radius: 11px; color: var(--ink-secondary); font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
+      border-radius: var(--radius-compact); color: var(--ink-secondary); font-size: 15px; font-weight: 600; white-space: nowrap; cursor: pointer;
       transition: background .15s, color .15s;
     }
     .sb-item svg { flex: none; }
@@ -3040,8 +3040,8 @@
       font-family: var(--font-body); font-size: var(--type-kicker); font-weight: 700; line-height: 1.2; letter-spacing: .055em; text-transform: uppercase;
       color: var(--ink-secondary); cursor: default; user-select: none;
     }
-    .wizard-bar .wstep::before { content: ""; display: block; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 14%, transparent); }
-    .wizard-bar .wstep::after { content: ""; position: absolute; left: 0; top: 0; height: 5px; width: 0; border-radius: 3px; background: var(--ink); transition: width .5s var(--ease-glide); }
+    .wizard-bar .wstep::before { content: ""; display: block; height: 5px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--ink) 14%, transparent); }
+    .wizard-bar .wstep::after { content: ""; position: absolute; left: 0; top: 0; height: 5px; width: 0; border-radius: var(--radius-pill); background: var(--ink); transition: width .5s var(--ease-glide); }
     .wizard-bar .wstep.done::after { width: 100%; }
     .wizard-bar .wstep.active::after { width: 50%; }
     .wizard-bar .wstep.active, .wizard-bar .wstep.done { color: var(--ink); }
@@ -3105,7 +3105,7 @@
        out recedes). State class is .on; off is the default. ── */
     .lc-toggle {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      height: 36px; min-width: 46px; padding: 0 12px; border-radius: 18px;
+      height: 36px; min-width: 46px; padding: 0 12px; border-radius: var(--radius-pill);
       border: 1.5px solid color-mix(in srgb, var(--ink) 18%, transparent); background: var(--panel); color: var(--ink-secondary);
       font: inherit; font-size: 15px; font-weight: 600; line-height: 1; white-space: nowrap; cursor: pointer; user-select: none;
       transition: opacity .2s, background-color .2s, border-color .2s, color .2s, transform .12s;
@@ -3133,7 +3133,7 @@
     .lt-more-wrap > .lc-menu { z-index: 30; }
     .bt-toggle { position: relative; }
     .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
-    .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
+    .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-pill); background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
     .bt-dot:empty { display: none; }
 
     /* ── Builder: tools pane (strategy · positions · playing time) ── */
@@ -3176,7 +3176,7 @@
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
       position: fixed; z-index: 45; left: var(--sidebar-w); right: 0; bottom: 24px; margin: 0 auto;
       width: min(760px, calc(100vw - var(--sidebar-w) - 48px));
-      padding: 12px 12px 12px 22px; border-radius: 18px; background: var(--panel);
+      padding: 12px 12px 12px 22px; border-radius: var(--radius-card); background: var(--panel);
       box-shadow: var(--shadow-dialog);
       transform: translateY(170%); visibility: hidden;
       transition: transform .38s var(--ease-snappy), visibility 0s linear .38s, left .32s var(--ease-glide), width .32s var(--ease-glide);
@@ -3189,7 +3189,7 @@
     .settings-save-btn { display: none !important; }
     #view-builder.settings-mode .page { padding-bottom: 140px; }
     @media (max-width: 768px) {
-      #view-builder.settings-mode .save-bar { bottom: 0; width: 100%; border-radius: 18px 18px 0 0; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+      #view-builder.settings-mode .save-bar { bottom: 0; width: 100%; border-radius: var(--radius-card) var(--radius-card) 0 0; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
     }
 
     /* Stateful sticker label: rest → working dots → done check (onboarding Continue states) */
@@ -3255,7 +3255,7 @@
       padding: 5px 14px 5px 8px; clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
     }
     .lc-emph > .lc-pennant { grid-column: 1 / -1; }
-    .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 7px; font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    .lc-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: var(--radius-small); font-size: 13px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
     /* HOME / AWAY (F11, Oct 31 2026): neutral, same as iOS venueChipLabel.
        Venue is a fact, not a state: no green, and never amber (amber means
        "needs attention"). */
@@ -3298,7 +3298,7 @@
     .ng-seg { display: flex; gap: 6px; margin-top: 16px; max-width: 420px; }
     .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink); }
     .ng-seg > div.todo { font-weight: 600; color: var(--ink-secondary); }
-    .ng-seg span { display: block; height: 6px; border-radius: 3px; background: var(--hairline-strong); overflow: hidden; }
+    .ng-seg span { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--hairline-strong); overflow: hidden; }
     .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; animation: ngFill .6s var(--ease-glide) .35s both; }
     .ng-act { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 190px; }
     .ng-act .btn-ghost { min-height: 42px; }
@@ -3335,7 +3335,7 @@
     .ts-head span.ts-sub { display: block; font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head:hover b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .ts-head > span:last-child { min-width: 0; }
-    .ts-next { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: 14px; background: var(--bg-secondary); font-size: 15px; }
+    .ts-next { display: flex; flex-direction: column; gap: 3px; padding: 14px 16px; border-radius: var(--radius-control); background: var(--bg-secondary); font-size: 15px; }
     .ts-k { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-secondary); }
     .ts-v { font-size: 16px; font-weight: 700; }
     .ts-op { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
@@ -3357,7 +3357,7 @@
     .sc-list { background: var(--panel); border-radius: var(--radius-card); padding: 6px; }
     .sc-row {
       display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 20px;
-      padding: 16px 16px 16px 12px; border-radius: 14px; cursor: pointer; position: relative;
+      padding: 16px 16px 16px 12px; border-radius: var(--radius-control); cursor: pointer; position: relative;
       transition: background-color .15s;
     }
     .sc-row + .sc-row::before { content: ""; position: absolute; top: 0; left: 12px; right: 16px; height: 1px; background: var(--hairline); transition: opacity .15s; }
@@ -3447,7 +3447,7 @@
     /* Game balls: one slot per kid fills as balls go out; waiting kids first. */
     .gb-card { display: flex; flex-direction: column; gap: 16px; padding: 20px 22px; border-radius: var(--radius-card); background: var(--panel); }
     .gb-slots { display: flex; gap: 4px; }
-    .gb-slots i { flex: 1; height: 8px; border-radius: 4px; background: var(--hairline-strong); transition: background-color .3s; }
+    .gb-slots i { flex: 1; height: 8px; border-radius: var(--radius-pill); background: var(--hairline-strong); transition: background-color .3s; }
     .gb-slots i.on { background: var(--accent); }
     .gb-hint { margin: -6px 0 0; font-size: 14px; color: var(--ink-secondary); }
     .gb-group { display: flex; flex-direction: column; gap: 10px; }
@@ -3477,7 +3477,7 @@
     .pl-head .players-header-info { position: relative; }
     .pl-head .roster-save-status { position: absolute; left: 0; top: 100%; margin-top: 2px; }
     .players-header { display: none; }
-    .pl-tbl { background: var(--panel); border-radius: 18px; overflow: hidden; }
+    .pl-tbl { background: var(--panel); border-radius: var(--radius-card); overflow: hidden; }
     .pl-tr {
       width: 100%; display: grid; grid-template-columns: minmax(180px, 1.3fr) minmax(200px, 2fr) 110px 20px; gap: 16px; align-items: center;
       padding: 12px 18px; border: none; border-top: 1px solid var(--hairline); background: transparent; font: inherit; color: inherit; text-align: left;
@@ -3533,7 +3533,7 @@
     .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
     .pp-two .player-num-input { width: 100%; flex: none; }
     .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .pp-priv { border-radius: 14px; background: var(--bg-secondary); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+    .pp-priv { border-radius: var(--radius-control); background: var(--bg-secondary); padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
     .pp-privh { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; }
     .pp-privh span { font-weight: 600; color: var(--ink-secondary); }
     .pp-priv .skill { padding-top: 6px; }
@@ -3551,12 +3551,12 @@
     .lc-toast {
       position: fixed; left: 50%; bottom: 24px; z-index: 400; min-width: 280px; max-width: calc(100vw - 32px);
       display: flex; align-items: center; justify-content: space-between; gap: 18px; overflow: hidden;
-      padding: 12px 12px 12px 18px; border-radius: 14px; background: #101613; color: #F5F6F8;
+      padding: 12px 12px 12px 18px; border-radius: var(--radius-control); background: #101613; color: #F5F6F8;
       font-size: 15px; font-weight: 600; box-shadow: var(--shadow-dialog);
       transform: translate(-50%, 160%); visibility: hidden; transition: transform .38s var(--ease-snappy), visibility 0s linear .38s;
     }
     .lc-toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform .38s var(--ease-snappy); }
-    .lc-toast button { border: none; background: transparent; padding: 6px 8px; border-radius: 8px; font: inherit; font-weight: 800; color: var(--accent); cursor: pointer; }
+    .lc-toast button { border: none; background: transparent; padding: 6px 8px; border-radius: var(--radius-compact); font: inherit; font-weight: 800; color: var(--accent); cursor: pointer; }
     .lc-toast button:hover { background: rgba(255,255,255,.08); }
     .lc-toast .lc-toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); transform-origin: left; }
     .lc-toast.show .lc-toast-bar { animation: toastDrain var(--toast-ms, 10000ms) linear both; }
