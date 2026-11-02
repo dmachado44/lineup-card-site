@@ -417,7 +417,7 @@
       width: 100%;
       max-width: 420px;
       box-shadow: var(--shadow-sticker);
-      animation: authCardIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+      animation: authCardIn var(--dur-snappy) var(--ease-snappy) both;
     }
     @keyframes authCardIn {
       from { opacity: 0; transform: translateY(12px) scale(0.98); }
@@ -2558,7 +2558,7 @@
       transform: translateY(100%);
     }
     .feedback-panel.open {
-      animation: feedbackSpringIn 0.55s cubic-bezier(0.25, 0.9, 0.3, 1.02) forwards;
+      animation: feedbackSpringIn var(--dur-snappy) var(--ease-snappy) forwards;
     }
     .feedback-panel.closing {
       animation: feedbackSpringOut 0.25s ease forwards;
@@ -2734,8 +2734,8 @@
       padding: 14px 0;
     }
 
-    /* Motion: the house springs (snappy ~350ms, quick ~250ms) */
-    .modal { transition-timing-function: cubic-bezier(0.32, 1.25, 0.5, 1); }
+    /* Motion: the house springs (Snappy, --dur-snappy) */
+    .modal { transition-timing-function: var(--ease-snappy); }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
@@ -2784,7 +2784,8 @@
        builder tools pane · who's-here chips · save bar on change.
        Motion (F9, Oct 31 2026): the house springs, same feel as iOS and
        getleadoff.com (CRATE_THEME §4b).
-         Snappy  --ease-snappy  things that land: bars, popovers, cards · 380ms
+         Snappy  --ease-snappy  things that land: bars, popovers, cards ·
+                              --dur-snappy (350ms, tokens.json; F52)
                               (iOS lcSnappy, site --ease-snappy)
          Pop     --ease-pop     checks, counts, chips, badges · --dur-pop
                               (iOS lcPop: ~6% overshoot, settled by ~.4s;
@@ -2894,11 +2895,11 @@
     .lc-menu--drop {
       position: absolute; right: 0; top: calc(100% + 8px);
       opacity: 0; transform: scale(.96) translateY(-4px); transform-origin: top right; pointer-events: none; visibility: hidden;
-      transition: opacity .14s, transform .22s var(--ease-snappy), visibility 0s linear .22s;
+      transition: opacity .14s, transform var(--dur-snappy) var(--ease-snappy), visibility 0s linear var(--dur-snappy);
     }
     .lc-menu--left { right: auto; left: 0; transform-origin: top left; }
     .lc-menu--up { right: auto; left: 0; top: auto; bottom: calc(100% + 8px); transform: scale(.96) translateY(4px); transform-origin: bottom left; }
-    .open > .lc-menu--drop { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform .22s var(--ease-snappy); }
+    .open > .lc-menu--drop { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition: opacity .14s, transform var(--dur-snappy) var(--ease-snappy); }
     .lc-menu--fixed { position: fixed; z-index: 250; max-height: 60vh; display: flex; flex-direction: column; }
     .lc-menu-head { padding: 8px 10px 10px; border-bottom: 1px solid var(--hairline); margin-bottom: 6px; }
     .lc-menu-head b { display: block; font-size: 15px; }
@@ -2928,7 +2929,7 @@
     .sb-trow-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
     .sb-trow-txt b { font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-trow-txt span { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-pop-anim .sb-trow { animation: sbRowIn .3s var(--ease-snappy) both; }
+    .sb-pop-anim .sb-trow { animation: sbRowIn var(--dur-snappy) var(--ease-snappy) both; }
 
     /* Build lineup action + sections */
     .sb-build {
@@ -3090,7 +3091,7 @@
       min-height: 80px; padding: 12px 32px calc(12px + env(safe-area-inset-bottom, 0px));
       background: var(--panel); box-shadow: 0 -1px 0 var(--hairline);
       transition: left .32s var(--ease-glide), right .32s var(--ease-glide);
-      animation: barUp .4s var(--ease-snappy) both;
+      animation: barUp var(--dur-snappy) var(--ease-snappy) both;
     }
     /* With Lineup tools open the bar stops at the rail and sits above it, so
        it draws the rail's left hairline down its own right edge. */
@@ -3197,9 +3198,9 @@
       padding: 12px 12px 12px 22px; border-radius: var(--radius-card); background: var(--panel);
       box-shadow: var(--shadow-dialog);
       transform: translateY(170%); visibility: hidden;
-      transition: transform .38s var(--ease-snappy), visibility 0s linear .38s, left .32s var(--ease-glide), width .32s var(--ease-glide);
+      transition: transform var(--dur-snappy) var(--ease-snappy), visibility 0s linear var(--dur-snappy), left .32s var(--ease-glide), width .32s var(--ease-glide);
     }
-    #view-builder.settings-mode .save-bar.show { transform: none; visibility: visible; transition: transform .38s var(--ease-snappy), left .32s var(--ease-glide), width .32s var(--ease-glide); }
+    #view-builder.settings-mode .save-bar.show { transform: none; visibility: visible; transition: transform var(--dur-snappy) var(--ease-snappy), left .32s var(--ease-glide), width .32s var(--ease-glide); }
     .sbar-left { display: flex; align-items: center; gap: 12px; min-width: 0; font-size: 16px; font-weight: 700; white-space: nowrap; }
     .sbar-reset { border: none; background: none; padding: 6px 2px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .sbar-reset:hover { color: var(--ink); }
@@ -3230,12 +3231,14 @@
     .share-card-code .cl { display: inline-block; }
     .share-card-code.ripple .cl { animation: codeHop .47s calc(var(--i) * 40ms) both; }
     .share-card-code .tap { display: inline-flex; align-items: center; gap: 6px; }
-    .share-card-code.copied .tap { color: var(--ink); font-weight: 700; animation: lcRise .25s var(--ease-snappy); }
+    .share-card-code.copied .tap { color: var(--ink); font-weight: 700; animation: lcRise var(--dur-snappy) var(--ease-snappy); }
     .tap-check { width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; animation: lcPopScale var(--dur-pop) var(--ease-pop); }
 
     @keyframes codeHop {
-      0%   { transform: none; animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
-      26%  { transform: translateY(-8px) scale(1.12); animation-timing-function: cubic-bezier(.3, 1.6, .5, 1); }
+      /* Keyframe timing can't read var(), so these are --ease-glide and
+         --ease-pop by value (house curves, F52). */
+      0%   { transform: none; animation-timing-function: cubic-bezier(.3, .9, .3, 1); }
+      26%  { transform: translateY(-8px) scale(1.12); animation-timing-function: cubic-bezier(.34, 1.4, .64, 1); }
       100% { transform: none; }
     }
     @keyframes barUp { from { transform: translateY(100%); } to { transform: none; } }
@@ -3298,7 +3301,7 @@
     .schedule-sync-bar .lc-st { font-weight: inherit; }
     .sbar-left .lc-st { gap: 12px; color: var(--ink); }
     .sbar-left .lc-st.err { color: var(--alert-ink); }
-    .lc-rise { animation: lcRise .4s var(--ease-snappy) both; }
+    .lc-rise { animation: lcRise var(--dur-snappy) var(--ease-snappy) both; }
 
     /* ── Emphasis card (Schedule Next game, All teams Up next) ── */
     .lc-emph {
@@ -3518,7 +3521,7 @@
     .pl-ps em { font-style: normal; font-size: 13px; color: var(--ink-secondary); }
     .pl-pref { font-size: 15px; color: var(--ink-secondary); }
     .pl-chev { color: var(--gray); }
-    .pl-tr.pl-row-in { animation: lcRise .35s var(--ease-snappy) both; }
+    .pl-tr.pl-row-in { animation: lcRise var(--dur-snappy) var(--ease-snappy) both; }
     .pl-tr.pl-row-new { animation: plNew 1.4s var(--ease-glide) both; }
     @keyframes plNew { 0%, 30% { background: var(--accent-wash); } 100% { background: transparent; } }
     @media (max-width: 760px) {
@@ -3571,9 +3574,9 @@
       display: flex; align-items: center; justify-content: space-between; gap: 18px; overflow: hidden;
       padding: 12px 12px 12px 18px; border-radius: var(--radius-control); background: #101613; color: #F5F6F8;
       font-size: 15px; font-weight: 600; box-shadow: var(--shadow-dialog);
-      transform: translate(-50%, 160%); visibility: hidden; transition: transform .38s var(--ease-snappy), visibility 0s linear .38s;
+      transform: translate(-50%, 160%); visibility: hidden; transition: transform var(--dur-snappy) var(--ease-snappy), visibility 0s linear var(--dur-snappy);
     }
-    .lc-toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform .38s var(--ease-snappy); }
+    .lc-toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform var(--dur-snappy) var(--ease-snappy); }
     .lc-toast button { border: none; background: transparent; padding: 6px 8px; border-radius: var(--radius-compact); font: inherit; font-weight: 800; color: var(--accent); cursor: pointer; }
     .lc-toast button:hover { background: rgba(255,255,255,.08); }
     .lc-toast .lc-toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); transform-origin: left; }
@@ -4654,6 +4657,26 @@
 // FEATURE FLAGS
 // ═══════════════════════════════════════════════════
 const ALLOW_TEAM_CREATION = true; // Enable creating/editing teams from the web.
+
+// ═══════════════════════════════════════════════════
+// MOTION IN JS (audit F52)
+// The CSS reduced-motion rule can't reach motion started from script (the
+// field swap fly, Sortable's slide, smooth scrolls), so it asks here. Curves
+// and times come from the token block, never typed in JS.
+// ═══════════════════════════════════════════════════
+function lcReduceMotion() {
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; }
+}
+function lcToken(name, fallback) {
+  try { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback; } catch (e) { return fallback; }
+}
+function lcTokenMs(name, fallback) {
+  const v = lcToken(name, '');
+  const n = parseFloat(v);
+  if (!isFinite(n)) return fallback;
+  return /ms$/.test(v) ? n : /s$/.test(v) ? n * 1000 : n;
+}
+function lcScrollBehavior() { return lcReduceMotion() ? 'auto' : 'smooth'; }
 
 // ═══════════════════════════════════════════════════
 // DIALOG FOCUS (audit F53)
@@ -9218,7 +9241,7 @@ async function checkSettingsCalendar() {
     return { changed: true, url, games: games.length, upcoming: games.filter(g => g.dateObj >= now).length };
   } catch (e) {
     if (res) res.innerHTML = `<span class="field-err">That link didn't load (${escHtml(e.message || 'fetch failed')}). In GameChanger: Team, Schedule, Share, Copy Link.</span>`;
-    if (el) { el.classList.add('is-invalid'); el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus({ preventScroll: true }); }
+    if (el) { el.classList.add('is-invalid'); el.scrollIntoView({ block: 'center', behavior: lcScrollBehavior() }); el.focus({ preventScroll: true }); }
     return { error: e };
   }
 }
@@ -9564,7 +9587,7 @@ function ppAddPlayer() {
   save();
   scheduleRosterSave();
   const row = ppRow(id);
-  if (row) row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  if (row) row.scrollIntoView({ block: 'nearest', behavior: lcScrollBehavior() });
   setTimeout(() => { if (_ppJustAdded === id) _ppJustAdded = null; }, 1500);
   [nameEl, numEl, pronEl].forEach(el => { if (el) el.value = ''; });
   if (nameEl) { nameEl.classList.remove('is-invalid'); nameEl.focus(); }
@@ -11441,8 +11464,10 @@ function cssEscape(s) {
 }
 
 function runSwapAnim(plan) {
-  const FLY_MS = 320;
-  const EASING = 'cubic-bezier(0.4, 0, 0.2, 1)';
+  // Reduce Motion: the bubbles are already in their new spots; skip the fly.
+  if (lcReduceMotion()) return;
+  const FLY_MS = lcTokenMs('--dur-snappy', 350);
+  const EASING = lcToken('--ease-snappy', 'ease');
 
   // Find post-render bubbles where each clone will land
   const srcLandingEl = findFieldElForLanding(plan.srcLanding);
@@ -12349,8 +12374,8 @@ function renderLineupGrid() {
     const headRow = document.getElementById('lineup-thead-row');
     if (headRow) {
       window._inningSortable = Sortable.create(headRow, {
-        animation: 160,
-        easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+        animation: lcReduceMotion() ? 0 : 160,
+        easing: lcToken('--ease-snappy', 'ease'),
         handle: '.inning-th',
         filter: '.player-th',
         preventOnFilter: false,
@@ -12496,8 +12521,8 @@ function renderLineupGrid() {
 
   if (window._lineupSortable) window._lineupSortable.destroy();
   window._lineupSortable = Sortable.create(tbody, {
-    animation: 160,
-    easing: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+    animation: lcReduceMotion() ? 0 : 160,
+    easing: lcToken('--ease-snappy', 'ease'),
     handle: '.drag-grip',
     ghostClass: 'sortable-ghost',
     chosenClass: 'sortable-chosen',
