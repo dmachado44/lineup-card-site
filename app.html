@@ -1081,6 +1081,10 @@
       position: absolute;
       inset: 0;
     }
+
+    /* ── Field position bubble (one definition; audit F22) ──
+       Base chip + states, the all-innings minis, then the Crate screen skin
+       (scoped to the two screen views so #print-sheet keeps the base chip). */
     .field-pos-bubble {
       position: absolute;
       transform: translate(-50%, -50%);
@@ -1114,6 +1118,119 @@
       background: var(--accent-wash) !important;
       transform: translate(-50%, -50%) scale(1.06);
     }
+    /* Brief hide of the real bubble's name during animation */
+    .field-pos-bubble.swap-hidden .field-pos-name,
+    .field-pos-bubble.swap-hidden .field-pos-label { visibility: hidden; }
+    .field-pos-bubble .field-pos-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent-down);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .field-pos-bubble .field-pos-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .field-pos-bubble.empty .field-pos-name { color: var(--ink-secondary); font-weight: 500; }
+    /* Smaller, tighter bubbles for the mini-fields */
+    .allinnings-card .field-pos-bubble {
+      min-width: 50px;
+      max-width: 90px;
+      padding: 3px 6px;
+      border-width: 1.5px;
+      border-radius: var(--radius-compact);
+      box-shadow: var(--shadow-raised);
+      cursor: default;
+    }
+    .allinnings-card .field-pos-bubble:hover {
+      border-color: var(--hairline);
+      box-shadow: var(--shadow-raised);
+    }
+    /* Mini label + name: they must stay above the 600px block, which wins over them */
+    .allinnings-card .field-pos-label { font-size: 9px; margin-bottom: 1px; }
+    .allinnings-card .field-pos-name { font-size: 11px; font-weight: 600; }
+    /* UTL positions inside a card: smaller chips */
+    .allinnings-card .field-utl-row .field-pos-bubble {
+      position: relative; left: auto; top: auto; transform: none;
+    }
+    /* Crate screen skin (scoped to #lineup-field-view / #lineup-allinnings-view) */
+    /* Occupied chip: panel card, radius 10, 8%-ink hairline, soft shadow */
+    #lineup-field-view .field-pos-bubble,
+    #lineup-allinnings-view .field-pos-bubble {
+      border-radius: var(--radius-compact);
+      border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+      background: var(--panel);
+      box-shadow: var(--shadow-raised);
+      min-width: 68px;
+      padding: 7px 12px;
+    }
+    #lineup-field-view .field-pos-bubble:hover {
+      border-color: color-mix(in srgb, var(--ink) 20%, transparent);
+      box-shadow: var(--shadow-raised);
+    }
+    /* Empty slot: black 72% pill, white heavy position code */
+    #lineup-field-view .field-pos-bubble.empty,
+    #lineup-allinnings-view .field-pos-bubble.empty {
+      background: rgba(0,0,0,0.72);
+      border: none;
+      border-style: solid;
+      box-shadow: none;
+      min-width: 0;
+      padding: 8px 14px;
+    }
+    #lineup-field-view .field-pos-bubble.empty .field-pos-label,
+    #lineup-allinnings-view .field-pos-bubble.empty .field-pos-label {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      margin: 0;
+      letter-spacing: 0.02em;
+    }
+    #lineup-field-view .field-pos-bubble .field-pos-name,
+    #lineup-allinnings-view .field-pos-bubble .field-pos-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .field-pos-bubble.swap-hidden .field-pos-counts { visibility: hidden; }
+    /* Conflict: 2px alert border (iOS spec) */
+    #lineup-field-view .field-pos-bubble.conflict,
+    #lineup-allinnings-view .field-pos-bubble.conflict {
+      border: 2px solid var(--alert-ink);
+      background: var(--panel);
+    }
+    /* Drop target: 3px accent ring + scale (quick spring) */
+    #lineup-field-view .field-pos-bubble.drop-target {
+      outline: 3px solid var(--accent);
+      outline-offset: -1px;
+      border-color: transparent !important;
+      background: var(--panel) !important;
+      transform: translate(-50%, -50%) scale(1.08);
+    }
+    #lineup-field-view .field-utl-row .field-pos-bubble.drop-target { transform: scale(1.08); }
+    /* All-innings minis: same system, smaller metrics */
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble {
+      min-width: 0;
+      max-width: 96px;
+      padding: 3px 8px;
+      box-shadow: var(--shadow-raised);
+    }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty { padding: 4px 9px; box-shadow: none; }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty .field-pos-label { font-size: 10px; }
+    #lineup-allinnings-view .allinnings-card .field-pos-bubble .field-pos-name { font-size: 11px; font-weight: 700; }
+    @media (max-width: 600px) {
+      .field-pos-bubble { min-width: 64px; max-width: 110px; padding: 5px 8px; }
+      .field-pos-bubble .field-pos-name { font-size: 12px; }
+      .field-pos-bubble .field-pos-label { font-size: 9px; }
+    }
+
     .field-bench-chip[draggable="true"] { cursor: grab; }
     .field-bench-chip[draggable="true"]:active { cursor: grabbing; }
     .field-bench-chip.dragging { opacity: 0.4; }
@@ -1133,28 +1250,8 @@
       transform: none !important;
       margin: 0 !important;
     }
-    /* Brief hide of the real bubble's name during animation */
-    .field-pos-bubble.swap-hidden .field-pos-name,
-    .field-pos-bubble.swap-hidden .field-pos-label,
+    /* Brief hide of a bench chip during the swap animation */
     .field-bench-chip.swap-hidden { visibility: hidden; }
-    .field-pos-bubble .field-pos-label {
-      font-size: 10px;
-      font-weight: 700;
-      color: var(--accent-down);
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-    .field-pos-bubble .field-pos-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1.2;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .field-pos-bubble.empty .field-pos-name { color: var(--ink-secondary); font-weight: 500; }
 
     .field-bench-wrap { margin-top: 16px; }
     .field-bench-label {
@@ -1232,27 +1329,8 @@
       max-width: 100%;
       margin: 0;
     }
-    /* Smaller, tighter bubbles for the mini-fields */
-    .allinnings-card .field-pos-bubble {
-      min-width: 50px;
-      max-width: 90px;
-      padding: 3px 6px;
-      border-width: 1.5px;
-      border-radius: var(--radius-compact);
-      box-shadow: var(--shadow-raised);
-      cursor: default;
-    }
-    .allinnings-card .field-pos-bubble:hover {
-      border-color: var(--hairline);
-      box-shadow: var(--shadow-raised);
-    }
-    .allinnings-card .field-pos-label { font-size: 9px; margin-bottom: 1px; }
-    .allinnings-card .field-pos-name { font-size: 11px; font-weight: 600; }
-    /* UTL positions inside a card: smaller chips */
+    /* UTL row inside a card */
     .allinnings-card .field-utl-row { margin-top: 6px; gap: 4px; }
-    .allinnings-card .field-utl-row .field-pos-bubble {
-      position: relative; left: auto; top: auto; transform: none;
-    }
     .allinnings-bench-wrap {
       margin-top: 16px;
       padding: 12px 14px;
@@ -1272,18 +1350,14 @@
       justify-content: center;
     }
 
-
-    @media (max-width: 600px) {
-      .field-pos-bubble { min-width: 64px; max-width: 110px; padding: 5px 8px; }
-      .field-pos-bubble .field-pos-name { font-size: 12px; }
-      .field-pos-bubble .field-pos-label { font-size: 9px; }
-    }
     .lineup-wrap {
       overflow-x: auto;
       border: 1px solid var(--hairline);
       border-radius: var(--radius-control);
       background: var(--panel);
     }
+
+    /* ── Lineup table (one definition; audit F22) ── */
     .lineup-table {
       width: 100%;
       border-collapse: collapse;
@@ -1319,6 +1393,37 @@
     }
     .lineup-table th:first-child { background: var(--bg-secondary); }
     .lineup-table tbody tr:hover td:first-child { background: var(--row-hover); }
+    /* Inning header cells: drag-to-reorder + click-for-menu */
+    .lineup-table th.inning-th {
+      padding: 6px 4px;
+      cursor: grab;
+      user-select: none;
+    }
+    .lineup-table th.inning-th:active { cursor: grabbing; }
+    .lineup-table th.inning-th.sortable-ghost { background: var(--bg-secondary); opacity: 0.5; }
+    .lineup-table th.inning-th.sortable-chosen { background: var(--panel); }
+    .lineup-table th.inning-th.sortable-drag { background: var(--panel); opacity: 1; }
+    .lineup-table th.inning-th:hover .inning-grip { opacity: 0.85; }
+    /* Column drag: dim the source column */
+    .lineup-table th.inning-th.col-drag-source { opacity: 0.35; }
+    .lineup-table td.col-drag-source-cell { opacity: 0.35; }
+    /* Touch devices (phones + tablets, any orientation) */
+    @media (pointer: coarse) {
+      .lineup-table th.inning-th { padding: 4px 2px; }
+      .lineup-table { width: auto; min-width: 100%; }
+      .lineup-table th, .lineup-table td {
+        padding: 8px 4px;
+        width: 44px;
+        min-width: 44px;
+      }
+      .lineup-table td:first-child,
+      .lineup-table th:first-child {
+        min-width: 120px;
+        width: 120px;
+        padding-left: 8px;
+        padding-right: 6px;
+      }
+    }
 
     .player-cell {
       display: flex;
@@ -1382,15 +1487,6 @@
     .pos-select option { font-weight: 400; color: var(--ink); }
 
     /* ── Inning header: drag-to-reorder + click-for-menu ── */
-    .lineup-table th.inning-th {
-      padding: 6px 4px;
-      cursor: grab;
-      user-select: none;
-    }
-    .lineup-table th.inning-th:active { cursor: grabbing; }
-    .lineup-table th.inning-th.sortable-ghost { background: var(--bg-secondary); opacity: 0.5; }
-    .lineup-table th.inning-th.sortable-chosen { background: var(--panel); }
-    .lineup-table th.inning-th.sortable-drag { background: var(--panel); opacity: 1; }
     /* The fallback element Sortable creates for forceFallback — hide it; we draw our own column ghost */
     .inning-fallback { opacity: 0 !important; }
     .inning-trigger {
@@ -1424,8 +1520,7 @@
       transition: opacity 0.12s;
       pointer-events: none;
     }
-    .inning-trigger:hover .inning-grip,
-    .lineup-table th.inning-th:hover .inning-grip { opacity: 0.85; }
+    .inning-trigger:hover .inning-grip { opacity: 0.85; }
     .inning-caret {
       display: inline-flex;
       align-items: center;
@@ -1445,9 +1540,7 @@
       color: var(--ink);
     }
 
-    /* Column-drag visuals: dim the source column + show a floating column snapshot */
-    .lineup-table th.inning-th.col-drag-source { opacity: 0.35; }
-    .lineup-table td.col-drag-source-cell { opacity: 0.35; }
+    /* Column-drag visuals: floating column snapshot (the source column dims in the lineup table section) */
 
     .column-drag-ghost {
       position: fixed;
@@ -1615,7 +1708,6 @@
 
 
     @media (pointer: coarse) {
-      .lineup-table th.inning-th { padding: 4px 2px; }
       .inning-trigger { padding: 4px 4px; min-width: 0; gap: 4px; }
       .inning-grip { display: none; } /* hover-only on touch — hide */
       .inning-caret {
@@ -1627,21 +1719,8 @@
       }
     }
 
-    /* ── LINEUP TABLE: TOUCH DEVICES (phones + tablets, any orientation) ── */
+    /* ── LINEUP TABLE CELLS: TOUCH DEVICES (phones + tablets, any orientation) ── */
     @media (pointer: coarse) {
-      .lineup-table { width: auto; min-width: 100%; }
-      .lineup-table th, .lineup-table td {
-        padding: 8px 4px;
-        width: 44px;
-        min-width: 44px;
-      }
-      .lineup-table td:first-child,
-      .lineup-table th:first-child {
-        min-width: 120px;
-        width: 120px;
-        padding-left: 8px;
-        padding-right: 6px;
-      }
       .player-cell .drag-grip { font-size: 12px; }
       .bat-order {
         width: 24px; height: 24px; font-size: 11px; border-radius: var(--radius-small);
@@ -2065,8 +2144,6 @@
     }
 
     /* ── SETTINGS MODE (flat all-in-one edit view) ── */
-    .settings-mode .wizard-bar { display: none; }
-
     /* Split views (iOS parity): Team Settings shows step-1 only;
        League Rules shows step-2 only. */
     .settings-mode.settings-team #step-2 { display: none !important; }
@@ -2569,7 +2646,6 @@
     /* One 20px gutter on mobile-width — everything left-aligns to it */
     @media (max-width: 768px) {
       .topbar { padding: 0 20px; }
-      .wizard-bar { padding: 0 20px; }
       .page { padding: 32px 20px 60px; }
       .dashboard-page { padding: 32px 20px; }
       .players-page { padding: 32px 20px; }
@@ -2581,44 +2657,6 @@
     #lineup-field-view .field-stage,
     #lineup-allinnings-view .field-stage { aspect-ratio: 1.08; }
 
-    /* Occupied chip: panel card, radius 10, 8%-ink hairline, soft shadow */
-    #lineup-field-view .field-pos-bubble,
-    #lineup-allinnings-view .field-pos-bubble {
-      border-radius: var(--radius-compact);
-      border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
-      background: var(--panel);
-      box-shadow: var(--shadow-raised);
-      min-width: 68px;
-      padding: 7px 12px;
-    }
-    #lineup-field-view .field-pos-bubble:hover {
-      border-color: color-mix(in srgb, var(--ink) 20%, transparent);
-      box-shadow: var(--shadow-raised);
-    }
-    /* Empty slot: black 72% pill, white heavy position code */
-    #lineup-field-view .field-pos-bubble.empty,
-    #lineup-allinnings-view .field-pos-bubble.empty {
-      background: rgba(0,0,0,0.72);
-      border: none;
-      border-style: solid;
-      box-shadow: none;
-      min-width: 0;
-      padding: 8px 14px;
-    }
-    #lineup-field-view .field-pos-bubble.empty .field-pos-label,
-    #lineup-allinnings-view .field-pos-bubble.empty .field-pos-label {
-      color: #fff;
-      font-size: 13px;
-      font-weight: 900;
-      margin: 0;
-      letter-spacing: 0.02em;
-    }
-    #lineup-field-view .field-pos-bubble .field-pos-name,
-    #lineup-allinnings-view .field-pos-bubble .field-pos-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--ink);
-    }
     .field-pos-counts {
       display: flex;
       justify-content: center;
@@ -2630,22 +2668,6 @@
     }
     .field-pos-counts .f { color: var(--accent-down); }
     .field-pos-counts .b { color: var(--alert-ink); }
-    .field-pos-bubble.swap-hidden .field-pos-counts { visibility: hidden; }
-    /* Conflict: 2px alert border (iOS spec) */
-    #lineup-field-view .field-pos-bubble.conflict,
-    #lineup-allinnings-view .field-pos-bubble.conflict {
-      border: 2px solid var(--alert-ink);
-      background: var(--panel);
-    }
-    /* Drop target: 3px accent ring + scale (quick spring) */
-    #lineup-field-view .field-pos-bubble.drop-target {
-      outline: 3px solid var(--accent);
-      outline-offset: -1px;
-      border-color: transparent !important;
-      background: var(--panel) !important;
-      transform: translate(-50%, -50%) scale(1.08);
-    }
-    #lineup-field-view .field-utl-row .field-pos-bubble.drop-target { transform: scale(1.08); }
 
     /* Bench: quiet panel card, BENCH kicker, muted page-fill chips */
     #lineup-field-view .field-bench {
@@ -2684,17 +2706,6 @@
       color: var(--ink-secondary);
       padding: 14px 0;
     }
-
-    /* All-innings minis: same system, smaller metrics */
-    #lineup-allinnings-view .allinnings-card .field-pos-bubble {
-      min-width: 0;
-      max-width: 96px;
-      padding: 3px 8px;
-      box-shadow: var(--shadow-raised);
-    }
-    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty { padding: 4px 9px; box-shadow: none; }
-    #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty .field-pos-label { font-size: 10px; }
-    #lineup-allinnings-view .allinnings-card .field-pos-bubble .field-pos-name { font-size: 11px; font-weight: 700; }
 
     /* Motion: the house springs (snappy ~350ms, quick ~250ms) */
     .modal { transition-timing-function: cubic-bezier(0.32, 1.25, 0.5, 1); }
@@ -2995,13 +3006,11 @@
       .dashboard-header-left h1, .players-header-info h1, .settings-header h1 { font-size: var(--type-display-title); }  /* 40, like iOS LCDisplayTitle (F35) */
     }
 
-    /* ── Builder: step row with progress + exit ── */
+    /* ── Wizard step bar (one definition; audit F22) ──
+       The builder step row: progress steps, then the context and exit slots. */
+    .settings-mode .wizard-bar { display: none; }
     body.signed-in .wizard-bar { position: sticky; top: 0; z-index: 40; }
-    @media (max-width: 979px) { body.signed-in .wizard-bar { top: 56px; } }
     .wizard-bar { display: flex; align-items: center; gap: 20px; height: var(--wizard-h); padding: 0 32px; background: var(--panel); border-bottom: none; box-shadow: 0 1px 0 var(--hairline); }
-    .wizard-ctx { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; }
-    .wizard-ctx span { overflow: hidden; text-overflow: ellipsis; }
-    .wizard-ctx .sep { color: var(--gray-3); flex: none; }
     /* Step bar (F13, Oct 31 2026): same as iOS BuilderStepBar. Equal
        segments; a 5px capsule track (ink 14%) fills in ink (done 100%,
        current 50%, ahead 0%) over an 11px bold body caps label tracked
@@ -3021,6 +3030,16 @@
     .wizard-bar .wstep.clickable:hover { color: var(--ink); text-decoration: underline; }
     .wizard-bar .wstep.clickable:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 4px; border-radius: var(--radius-small); }
     .wizard-bar .wstep-num, .wizard-bar .wstep-arrow { display: none; }
+    @media (max-width: 979px) { body.signed-in .wizard-bar { top: 56px; } }
+    @media (max-width: 768px) {
+      .wizard-bar { padding: 0 12px; gap: 10px; }
+      .wizard-bar .wizard-steps { flex: 1 1 auto; overflow: visible; }
+    }
+    @media (prefers-reduced-motion: reduce) { .wizard-bar * { animation: none !important; transition: none !important; } }
+    /* Step row slots: game context on the left, the screen-level exit on the right */
+    .wizard-ctx { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; }
+    .wizard-ctx span { overflow: hidden; text-overflow: ellipsis; }
+    .wizard-ctx .sep { color: var(--gray-3); flex: none; }
     .wizard-end { flex: 1 1 0; display: flex; justify-content: flex-end; }
     .wizard-exit {
       display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: none; border-radius: var(--radius-compact);
@@ -3028,9 +3047,7 @@
     }
     .wizard-exit:hover { background: var(--bg-secondary); color: var(--ink); }
     @media (max-width: 768px) {
-      .wizard-bar { padding: 0 12px; gap: 10px; }
       .wizard-ctx { display: none; }
-      .wizard-bar .wizard-steps { flex: 1 1 auto; overflow: visible; }
       .wizard-end { flex: none; }
       .wizard-exit .wx-lbl { display: none; }
     }
@@ -3201,7 +3218,7 @@
     @keyframes lcBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
     @media (prefers-reduced-motion: reduce) {
-      body.signed-in, .sidebar, .sidebar *, .m-topbar *, .wizard-bar *, .step-actions, .builder-tools, .save-bar,
+      body.signed-in, .sidebar, .sidebar *, .m-topbar *, .step-actions, .builder-tools, .save-bar,
       .lc-toggle, .lc-toggle *, .att-num, .lc-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
         animation: none !important; transition: none !important;
       }
