@@ -544,6 +544,34 @@
     @media (max-width: 600px) { .form-grid, .form-grid.col3 { grid-template-columns: 1fr; } }
     .field { display: flex; flex-direction: column; gap: 8px; }
     .field.full { grid-column: 1 / -1; }
+    /* Phones: one-line fields become label-left rows, like iOS LCFormRow
+       (Dan, Nov 1 2026). 52 tall, label left in ink, value right in
+       secondary ink until focused, a hairline between rows, no box: the caret
+       and the value turning ink carry focus; an error turns the value alert
+       ink with its message under the row. Notes, the calendar link and other
+       full-width fields keep their label above. Wide screens keep labels
+       above everywhere. */
+    @media (max-width: 600px) {
+      .form-grid { gap: 0; }
+      .form-grid > .field:not(.full), .pp-f:has(> input) {
+        flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: var(--space-12); row-gap: 0;
+        min-height: 52px; border-bottom: 1px solid var(--hairline);
+      }
+      .form-grid > .field:not(.full) > label, .pp-f:has(> input) > label { flex: 0 1 auto; max-width: 50%; font-size: var(--type-body); font-weight: 500; }
+      .form-grid > .field:not(.full) > :is(input, select), .pp-f:has(> input) > input {
+        flex: 1 1 0; min-width: 0; height: 52px; padding: 0; border: 0; border-radius: 0; background-color: transparent; box-shadow: none;
+        text-align: right; text-align-last: right; text-overflow: ellipsis; color: var(--ink-secondary);
+      }
+      .form-grid > .field:not(.full) > select { padding-right: 22px; background-position: right 2px center; }
+      .form-grid > .field:not(.full) > :is(input, select):focus, .pp-f:has(> input) > input:focus { color: var(--ink); box-shadow: none; }
+      .form-grid > .field:not(.full) > :is(input, select)[aria-invalid="true"], .pp-f:has(> input) > input[aria-invalid="true"] { color: var(--alert-ink); box-shadow: none; }
+      .form-grid > .field:not(.full) > .field-err { flex-basis: 100%; padding-bottom: var(--space-8); text-align: right; }
+      .form-grid > .field.full { padding-top: var(--space-16); }
+      .pp .pp-two { grid-template-columns: minmax(0, 1fr); gap: 0; }
+      .pp .pp-two .player-num-input { flex: 1 1 0; width: auto; color: var(--accent); font-weight: 800; }  /* jersey numbers stay full accent (locked) */
+      .pp .pp-two .player-num-input::placeholder { font-weight: 500; }
+      .pp-body > .pp-two + .pp-f:has(> input) { margin-top: calc(-1 * var(--space-20)); }  /* one group of rows */
+    }
 
     /* Sentence case — all-caps is reserved for tabs, kickers, sticker labels */
     label {
@@ -3137,7 +3165,7 @@
     .pt-cells i.b { background: var(--hairline-strong); }
     .pt-cells i.e { background: transparent; box-shadow: inset 0 0 0 1.5px var(--hairline-strong); }
     .pt-stat { text-align: right; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
-    .pt-row.low .pt-stat { color: var(--attention); font-weight: 700; }
+    .pt-row.low .pt-stat { color: var(--attention-ink); font-weight: 700; }
     @media (max-width: 979px) {
       #view-builder.tools-on .builder-tools { top: 56px; width: 100%; z-index: 58; }
     }
@@ -3427,8 +3455,8 @@
     .gb-k span { margin-left: 4px; color: var(--ink); }
     .gb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .gb-chip {
-      display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px;
-      border-radius: 999px; border: 1px solid var(--hairline-strong); background: var(--panel);
+      display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px;
+      border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); background: var(--panel);
       font: inherit; font-size: 15px; font-weight: 700; color: var(--ink);
       transition: border-color .15s, background-color .15s, transform .08s;
     }
