@@ -4654,6 +4654,7 @@ let _auth = null;
 let _authMode = 'signin'; // 'signin' | 'signup' | 'reset'
 let _appMode = 'setup';   // 'setup' | 'lineup' | 'roster' | 'team'
 let _subscriptionActive = false; // true when user has active subscription
+let _hasWebBilling = false;      // true when the user has a Stripe customer (web checkout)
 let _currentStep = 1;
 
 // Firestore Timestamp, Date, ISO string or epoch ms → epoch ms (0 if none).
@@ -4856,6 +4857,7 @@ async function checkSubscription(user) {
     } else {
       const data = userDoc.data();
       _subscriptionActive = hasActiveSubscription(data);
+      _hasWebBilling = !!data.stripeCustomerId;
 
       // A checkout from /pricing before the first visit here leaves a doc the
       // Stripe webhook started, without these two. The iOS app reads both.
@@ -4955,6 +4957,39 @@ async function paywallCheckout() {
 
 // Signing out lands on getleadoff.com (the app domain's / redirects there,
 // F39). Switching accounts from the paywall passes '/app' to land on sign-in.
+// Stripe's billing page for a web subscriber: cancel, switch monthly and
+// yearly, update the card, see invoices (audit F71). The function reads the
+// uid from the verified ID token, so it only ever opens your own billing.
+// App Store plans are managed in iPhone Settings, not here.
+let _billingOpening = false;
+async function openBillingPortal() {
+  const user = _auth && _auth.currentUser;
+  if (!user || _billingOpening) return;
+  if (!_hasWebBilling) {
+    showToast(_subscriptionActive
+      ? 'Your plan is billed through the App Store. Manage it in iPhone Settings.'
+      : 'There is no web subscription on this account.', null, null, 6000);
+    return;
+  }
+  _billingOpening = true;
+  showToast('Opening your subscription\u2026');
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch('/.netlify/functions/create-portal-session', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) throw new Error(data.error || ('HTTP ' + res.status));
+    location.href = data.url;
+  } catch (e) {
+    console.error('openBillingPortal:', e);
+    showToast("Couldn't open your subscription. Try again, or email hello@getleadoff.com.", 'Try again', openBillingPortal, 8000);
+  } finally {
+    _billingOpening = false;
+  }
+}
+
 async function signOut(dest) {
   const fb = initFirebase();
   if (fb) await fb.auth.signOut();
@@ -6223,6 +6258,7 @@ function parseHash(hash) {
   if (h === '' || h === '/') return { name: 'dashboard' };
   if (h === '/build')        return { name: 'build' };
   if (h === '/join')         return { name: 'join' };
+  if (h === '/billing' || h === 'billing') return { name: 'billing' };   // iOS Settings links here
   if (h.startsWith('/join/')) return { name: 'join', code: h.slice('/join/'.length) };
   const parts = h.split('/').filter(Boolean);   // ['team','abc','players']
   if (parts[0] === 'team' && parts[1]) {
@@ -6257,6 +6293,7 @@ const _routeTitles = {
   lineupDetail: 'Saved lineup',
   settings:     'Team settings',
   rules:        'League rules',
+  billing:      'Subscription',
 };
 
 async function handleRoute() {
@@ -6295,6 +6332,13 @@ async function handleRoute() {
     case 'lineupDetail': await openPastLineups(m.teamId); viewLineupDetail(m.lineupId); break;
     case 'settings':     _settingsSection = 'team';  await enterBuilder(m.teamId, 'settings', 1); break;
     case 'rules':        _settingsSection = 'rules'; await enterBuilder(m.teamId, 'settings', 1); break;
+    case 'billing':
+      // One-shot: land on the dashboard and open Stripe's billing page, so a
+      // refresh or Back doesn't open it again.
+      history.replaceState(null, '', '#/');
+      showDashboardView();
+      openBillingPortal();
+      break;
     case 'dashboard':
     default:             showDashboardView(); break;
   }
@@ -6347,6 +6391,7 @@ var SB_ICONS = {
   check:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   feedback: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18l-1.5 3 4-1.5H18a2.5 2.5 0 0 0 2.5-2.5V7A2.5 2.5 0 0 0 18 4.5H6A2.5 2.5 0 0 0 3.5 7v8.5"/></svg>',
   link:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>',
+  billing:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
   signout:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>'
 };
 
@@ -6507,6 +6552,7 @@ function renderSidebar() {
         <span class="sb-tip">Account</span>
         <div class="lc-menu lc-menu--drop lc-menu--up" role="menu">
           <div class="lc-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
+          ${_hasWebBilling ? `<button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); openBillingPortal()">${SB_ICONS.billing}Manage subscription</button>` : ''}
           <button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${SB_ICONS.feedback}Send feedback</button>
           <a class="lc-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${SB_ICONS.link}getleadoff.com</a>
           <button class="lc-menu-item danger" type="button" role="menuitem" onclick="signOut()">${SB_ICONS.signout}Sign out</button>
