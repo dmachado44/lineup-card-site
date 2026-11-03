@@ -1330,17 +1330,18 @@
     }
     .lineup-table th:first-child { background: var(--bg-secondary); }
     .lineup-table tbody tr:hover td:first-child { background: var(--row-hover); }
-    /* Inning header cells: drag-to-reorder + click-for-menu */
+    /* Inning header cells: drag-to-reorder + click-for-menu. Two targets
+       (Dan, Nov 3 2026): the grip strip anchored to the cell's left edge
+       drags; the button across the rest of the cell opens the menu. */
     .lineup-table th.inning-th {
       padding: 6px 4px;
-      cursor: grab;
       user-select: none;
     }
-    .lineup-table th.inning-th:active { cursor: grabbing; }
     .lineup-table th.inning-th.sortable-ghost { background: var(--bg-secondary); opacity: 0.5; }
     .lineup-table th.inning-th.sortable-chosen { background: var(--panel); }
     .lineup-table th.inning-th.sortable-drag { background: var(--panel); opacity: 1; }
-    .lineup-table th.inning-th:hover .inning-grip { opacity: 0.85; }
+    .lineup-table th.inning-th:hover .inning-grip,
+    .lineup-table th.inning-th.sortable-chosen .inning-grip { opacity: 0.85; }
     /* Column drag: dim the source column */
     .lineup-table th.inning-th.col-drag-source { opacity: 0.35; }
     .lineup-table td.col-drag-source-cell { opacity: 0.35; }
@@ -1434,13 +1435,19 @@
     /* ── Inning header: drag-to-reorder + click-for-menu ── */
     /* The fallback element Sortable creates for forceFallback — hide it; we draw our own column ghost */
     .inning-fallback { opacity: 0 !important; }
+    /* The head: grip strip (24 wide, full height) on the left, the button
+       filling the rest. Its padding offsets the strip and the caret so the
+       number itself sits centered over the column. */
+    .inning-head { position: relative; display: flex; align-items: stretch; }
     .inning-trigger {
-      display: inline-flex;
+      display: flex;
+      flex: 1;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 6px 10px;
-      min-width: 44px;
+      margin-left: 24px;
+      padding: 6px 30px 6px 26px;
+      min-width: 0;
       background: transparent;
       border: 1px solid transparent;
       border-radius: var(--radius-small);
@@ -1456,16 +1463,25 @@
       border-color: var(--hairline);
     }
     .inning-grip {
-      display: inline-flex;
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 24px;
+      display: flex;
       align-items: center;
+      justify-content: center;
       font-size: 14px;
       line-height: 1;
       color: var(--gray);
+      border-radius: var(--radius-small);
       opacity: 0;
-      transition: opacity 0.12s;
-      pointer-events: none;
+      cursor: grab;
+      transition: opacity 0.12s, background-color 0.12s, color 0.12s;
     }
-    .inning-trigger:hover .inning-grip { opacity: 0.85; }
+    .inning-grip:hover { opacity: 1; color: var(--ink); background: var(--gray-5); }
+    .inning-grip:active,
+    .lineup-table th.inning-th.sortable-chosen .inning-grip { cursor: grabbing; }
     .inning-caret {
       display: inline-flex;
       align-items: center;
@@ -1637,8 +1653,8 @@
 
 
     @media (pointer: coarse) {
-      .inning-trigger { padding: 4px 4px; min-width: 0; gap: 4px; }
-      .inning-grip { display: none; } /* hover-only on touch — hide */
+      .inning-trigger { padding: 4px 4px; margin-left: 0; min-width: 0; gap: 4px; }
+      .inning-grip { display: none; } /* no hover on touch: long-press the header to drag */
       .inning-caret {
         opacity: 1;
         background: transparent;
@@ -13494,14 +13510,18 @@ function renderLineupGrid() {
   let hRow = `<tr id="lineup-thead-row"><th class="player-th">Player</th>`;
   const caretSvg = `<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   for (let i = 1; i <= state.innings; i++) {
-    hRow += `<th class="inning-th" data-inning="${i - 1}" title="Drag to reorder · Click for options">` +
-            `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
-              `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
-              `aria-label="Inning ${i} actions">` +
-              `<span class="inning-grip" aria-hidden="true">⠿</span>` +
-              `<span class="inning-num">${i}</span>` +
-              `<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
-            `</button>` +
+    // Two targets (Dan, Nov 3 2026): the grip strip on the left drags the
+    // inning; the button across the rest opens copy and clear.
+    hRow += `<th class="inning-th" data-inning="${i - 1}">` +
+            `<div class="inning-head">` +
+              `<span class="inning-grip" aria-hidden="true" title="Drag to reorder">⠿</span>` +
+              `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
+                `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
+                `aria-label="Inning ${i} actions" aria-haspopup="menu" title="Copy or clear inning ${i}">` +
+                `<span class="inning-num">${i}</span>` +
+                `<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
+              `</button>` +
+            `</div>` +
             `</th>`;
   }
   hRow += `</tr>`;
@@ -13512,10 +13532,12 @@ function renderLineupGrid() {
   if (state.innings > 1) {
     const headRow = document.getElementById('lineup-thead-row');
     if (headRow) {
+      const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
       window._inningSortable = Sortable.create(headRow, {
         animation: lcReduceMotion() ? 0 : 160,
         easing: lcToken('--ease-snappy', 'ease'),
-        handle: '.inning-th',
+        handle: coarse ? '.inning-th' : '.inning-grip',
+        fallbackTolerance: 4,   // a click that wobbles a few pixels stays a click
         filter: '.player-th',
         preventOnFilter: false,
         forceFallback: true,
