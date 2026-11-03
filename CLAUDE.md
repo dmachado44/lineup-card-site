@@ -76,6 +76,7 @@ The Cowork session built out, in order:
 - **Field view** toggle in step 4: SVG diamond with click-to-pick and drag-and-drop player swaps (HTML5 DnD; click-to-pick is the touch fallback).
 - **All Innings** view: grid of mini-fields, one card per inning. Its Print button prints the Field by Inning printout (see Printouts).
 - Polish: animated flying clones for drag-and-drop swaps (Web Animations API), data-attrs on bubbles for post-render lookups.
+- **Overview** (Nov 3 2026, coach only, `#/team/:id/overview`, placeholder name): the season from saved lineups dated today or earlier, one per game. Tiles, innings by position (green ramp grid), bench, batting order, attendance, game balls. `ovSeasonStats()` is pure; read only except the game-ball ledger (`coachNotes/_season`), which moved here off Schedule on the web (iOS keeps its own). A kid's season starts at their first saved game (players have no join date). Counts the saved plan, not in-game subs.
 
 ## Printouts (shared with the iOS app, Oct 30 2026)
 

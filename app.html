@@ -3389,6 +3389,7 @@
     .ov-games { display: flex; flex-wrap: wrap; gap: var(--space-4); }
     .ov-games i { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
     .ov-games i.off { background: transparent; box-shadow: inset 0 0 0 2px var(--hairline-strong); }
+    .ov-games i.na { visibility: hidden; }
     .ov-foot { margin: 0; font-size: var(--type-caption); color: var(--ink-secondary); }
     @media (max-width: 979px) {
       .ov-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
@@ -7790,7 +7791,6 @@ let _scheduleTeamName = '';
 let _scheduleCanCoach = true;   // members get a read-only schedule
 let _scheduleGames = [];
 let _scheduleLineups = [];
-let _scheduleRoster = [];       // Game Balls ledger roster (coach only)
 
 // Parse ICS text into an array of event objects
 function parseICS(icsText) {
@@ -8071,7 +8071,13 @@ function ovSeasonStats(lineups, roster, today) {
       });
     });
   });
-  rows.forEach(r => { r.present = games.map((g, i) => !!r.present[i]); });
+  // Players carry no join date, so a kid's season starts at their first
+  // saved game: one who joined for the last 6 of 8 is "6 of 6" (Dan, Nov 3).
+  rows.forEach(r => {
+    r.present = games.map((g, i) => !!r.present[i]);
+    r.firstGame = r.present.indexOf(true);
+    r.eligible = r.firstGame < 0 ? 0 : games.length - r.firstGame;
+  });
 
   const cols = POS_GRID_ORDER.filter(p => POS_GRID_BASE.includes(p) || used.has(p));
   const ord = r => (typeof r.order === 'number' ? r.order : 1e6);
@@ -8182,8 +8188,9 @@ function ovPlayed(s) { return s.rows.filter(r => r.games); }
 
 function ovTilesHtml(s) {
   const kids = s.rows.length;
-  const absences = s.rows.reduce((n, r) => n + (s.games - r.games), 0);
-  const pct = Math.round(100 * (kids * s.games - absences) / (kids * s.games));
+  const eligible = s.rows.reduce((n, r) => n + r.eligible, 0);
+  const absences = s.rows.reduce((n, r) => n + (r.eligible - r.games), 0);
+  const pct = eligible ? Math.round(100 * (eligible - absences) / eligible) : 100;
   const played = ovPlayed(s);
   const benchAvg = played.length ? played.reduce((n, r) => n + r.bench, 0) / played.length : 0;
   const benchMax = played.reduce((m, r) => Math.max(m, r.bench), 0);
@@ -8306,21 +8313,28 @@ function ovBattingHtml(s) {
 }
 
 function ovAttendanceHtml(s) {
-  const missed = s.rows.filter(r => r.games < s.games);
-  const worst = missed.slice().sort((a, b) => a.games - b.games)[0];
+  const out = r => r.eligible - r.games;
+  const missed = s.rows.filter(r => out(r) > 0);
+  const most = missed.reduce((m, r) => Math.max(m, out(r)), 0);
+  const worst = missed.filter(r => out(r) === most);
   const lede = !missed.length ? 'Everyone has made every game.'
     : `${ovPlural(missed.length, 'kid')} ${missed.length > 1 ? 'have' : 'has'} missed a game.`
-      + (worst && s.games - worst.games > 1 && missed.filter(r => r.games === worst.games).length === 1
-        ? ` ${escHtml(worst.short)} has missed ${s.games - worst.games}.` : '');
+      + (most > 1 && worst.length === 1 ? ` ${escHtml(worst[0].short)} has missed ${most}.` : '');
   const first = s.gameList[0], last = s.gameList[s.gameList.length - 1];
   const w = `width:${s.games * 18 - 4}px;max-width:100%`;   // the dots' own width, so the dates sit over them
   const axis = `<li class="ov-row ov-row--att ov-axis" aria-hidden="true"><span></span><span class="ov-axis-l kicker" style="${w}"><span>${ovShortDate(first.day)}</span><span>${s.games > 1 ? ovShortDate(last.day) : ''}</span></span><span></span></li>`;
   const gameLabel = g => ovShortDate(g.day) + (g.opponent ? ' vs ' + g.opponent : '');
-  const items = s.rows.map(r => `<li class="ov-row ov-row--att">
+  // Games before a kid's first one hold their place without a dot.
+  const dot = (r, p, i) => i < r.firstGame || r.firstGame < 0
+    ? '<i class="na"></i>'
+    : `<i class="${p ? '' : 'off'}" title="${sbAttr(gameLabel(s.gameList[i]) + (p ? ': played' : ': missed'))}"></i>`;
+  const items = s.rows.map(r => r.eligible
+    ? `<li class="ov-row ov-row--att">
       <span class="ov-name">${escHtml(r.short)}</span>
-      <span class="ov-games" aria-hidden="true" style="${w}">${r.present.map((p, i) => `<i class="${p ? '' : 'off'}" title="${sbAttr(gameLabel(s.gameList[i]) + (p ? ': played' : ': missed'))}"></i>`).join('')}</span>
-      <span class="ov-val">${r.games}<span class="ov-aside"> of ${s.games}</span><span class="sr-only"> games</span></span>
-    </li>`).join('');
+      <span class="ov-games" aria-hidden="true" style="${w}">${r.present.map((p, i) => dot(r, p, i)).join('')}</span>
+      <span class="ov-val">${r.games}<span class="ov-aside"> of ${r.eligible}</span><span class="sr-only"> games</span></span>
+    </li>`
+    : `<li class="ov-row ov-row--att"><span class="ov-name">${escHtml(r.short)}</span><span class="ov-aside">No games yet</span><span></span></li>`).join('');
   return `<section class="ov-sec" aria-label="Attendance">
     <div class="section-head"><h2>Attendance</h2><span>${ovPlural(s.games, 'game')}</span></div>
     <div class="ov-card"><p class="ov-lede">${lede}</p><ul class="ov-rows">${axis}${items}</ul></div>
@@ -8362,17 +8376,11 @@ async function openSchedule(teamId) {
     // Netlify functions) must not blank the saved lineups — it degrades to
     // a sync-bar warning and the Firestore half still renders.
     let calError = null;
-    const [icsText, lineupSnap, , rosterSnap] = await Promise.all([
+    const [icsText, lineupSnap] = await Promise.all([
       calUrl ? fetchSchedule(calUrl).catch(e => { calError = e; return null; }) : Promise.resolve(null),
       fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null),
-      loadCoachNotes(teamId),   // Game Notes (coach only; members resolve to {})
-      // Roster for the Game Balls ledger so every kid shows, played or not
-      // (read-only; a lineup-derived list stays the fallback).
-      (fb && _scheduleCanCoach) ? fb.db.collection('teams').doc(teamId).collection('players').get().catch(() => null) : Promise.resolve(null)
+      loadCoachNotes(teamId)    // Game Notes (coach only; members resolve to {})
     ]);
-    _scheduleRoster = rosterSnap
-      ? rosterSnap.docs.map(d => ({ id: d.id, name: (d.data() || {}).name || '' })).filter(p => p.name)
-      : [];
     _scheduleGames = icsText
       ? filterGames(parseICS(icsText), getCalendarName(icsText))
       : [];
@@ -8539,11 +8547,6 @@ function renderSchedule() {
   let html = '<div class="schedule-list">';
   if (ng) html += scheduleNextHtml(ng);
   html += scSection(ng ? 'Coming up' : 'Upcoming games', comingUp, false);
-  if (_scheduleCanCoach) {
-    const roster = _scheduleRoster.length ? _scheduleRoster
-      : ((_activeTeamId === _scheduleTeamId && state && state.players) ? state.players : []);
-    html += gnLedgerHtml(_scheduleTeamId, roster.length ? roster : gnRosterFromLineups(_scheduleLineups));
-  }
   html += scSection('Past games', past, true);
   html += scheduleCalendarRowHtml();
   html += '</div>';
@@ -8584,14 +8587,6 @@ const SC_PAST_PREVIEW = 4;
 var _schedShowAllPast = false;
 // Baseball mark for game balls (product copy stays emoji-free).
 const LC_BALL_SVG = '<svg class="lc-ball" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.47"/><path d="M4.4 3.1c1.3 1.3 2 3 2 4.9s-.7 3.6-2 4.9M11.6 3.1c-1.3 1.3-2 3-2 4.9s.7 3.6 2 4.9" fill="none" stroke="currentColor" stroke-width="1.47" stroke-linecap="round"/></svg>';
-
-// Roster fallback for the ledger when the builder's state isn't loaded for
-// this team: every player id/name seen across saved lineups.
-function gnRosterFromLineups(lineups) {
-  const seen = {};
-  (lineups || []).forEach(l => (l.players || []).forEach(p => { const k = rosterDocIdFor(p.playerId); if (k && !seen[k]) seen[k] = { id: k, name: p.name || '' }; }));
-  return Object.values(seen);
-}
 
 // Auto-fill game details from a schedule game and jump into lineup builder.
 // Three flavors based on what already exists for this game:
@@ -8739,9 +8734,10 @@ const GN_RECENT_GAMES = 3;
 // teamId → { lineupId → notes }. Loaded once per team visit (schedule,
 // lineup detail, builder); refreshed in place after a save.
 const _coachNotes = {};
-// teamId → { playerId → n }: game balls handed out from the Schedule tab's
-// ledger without a game attached (Dan, Oct 26). Lives in the same
-// coach-only collection as one doc, coachNotes/_season.
+// teamId → { playerId → n }: game balls handed out from the ledger without
+// a game attached (Dan, Oct 26). Lives in the same coach-only collection as
+// one doc, coachNotes/_season. On the web the ledger lives on Overview
+// (moved off Schedule Nov 3 2026); iOS keeps its own.
 const _gnTally = {};
 const GN_SEASON_DOC = '_season';
 
@@ -8864,9 +8860,8 @@ function gnBallCounts(teamId) {
   return counts;
 }
 
-// canEditArg: Overview passes true (coach only); Schedule uses its role.
-function gnLedgerHtml(teamId, players, canEditArg) {
-  const canEdit = canEditArg === undefined ? _scheduleCanCoach : canEditArg;
+// The season ledger on Overview (coach only, so it can always hand out).
+function gnLedgerHtml(teamId, players, canEdit) {
   const all = Object.values(_coachNotes[teamId] || {});
   const tally = _gnTally[teamId] || {};
   // Coaches always get the card (it's how balls are handed out); members
@@ -8914,14 +8909,11 @@ function gnLedgerHtml(teamId, players, canEditArg) {
 // Balls recorded on a specific game (Game Notes) are never touched here.
 let _gnTallyBusy = false;
 var _gnJustToggled = null;
-async function gnToggleTallyBall(playerId, teamIdArg) {
-  const teamId = teamIdArg || _scheduleTeamId;
+async function gnToggleTallyBall(playerId, teamId) {
   const team = _userTeams.find(t => t.id === teamId);
   const fb = initFirebase();
   if (!fb || !teamId || !team || !isCoachRole(team) || _gnTallyBusy) return;
-  // Overview and Schedule share the ledger; redraw whichever is showing.
-  const ov = document.getElementById('view-overview');
-  const rerender = () => (ov && ov.classList.contains('active') && _ovTeamId === teamId) ? renderOverview() : renderSchedule();
+  const rerender = () => { if (_ovTeamId === teamId) renderOverview(); };
   const tally = Object.assign({}, _gnTally[teamId] || {});
   const n = Number(tally[playerId]) || 0;
   if (n > 0) { if (n === 1) delete tally[playerId]; else tally[playerId] = n - 1; }
