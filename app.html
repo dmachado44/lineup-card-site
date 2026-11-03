@@ -7988,7 +7988,6 @@ async function testCalendarSync() {
 let _ovTeamId = null;
 let _ovLineups = [];
 let _ovRoster = [];
-const POS_GRID_BASE = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
 const POS_GRID_ORDER = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'LCF', 'CF', 'RCF', 'RF', 'UTL'];
 
 function posGridFull(p) { return p === 'UTL' ? 'Utility' : (POS_FULL[p] || p); }
@@ -8079,7 +8078,9 @@ function ovSeasonStats(lineups, roster, today) {
     r.eligible = r.firstGame < 0 ? 0 : games.length - r.firstGame;
   });
 
-  const cols = POS_GRID_ORDER.filter(p => POS_GRID_BASE.includes(p) || used.has(p));
+  // Only the spots this team uses: a 10-player preset with LCF and RCF
+  // never fills CF, so CF would be an empty column (live data, Nov 3).
+  const cols = POS_GRID_ORDER.filter(p => used.has(p));
   const ord = r => (typeof r.order === 'number' ? r.order : 1e6);
   rows.sort((a, b) => (ord(a) - ord(b)) || a.name.localeCompare(b.name));
   return {
@@ -8212,7 +8213,7 @@ function ovPositionsHtml(s) {
     ? 'Every kid has played 6 or more spots.'
     : `${spread} of ${played.length} kids have played 6 or more spots.`;
   // Spots a few kids haven't tried yet (all-but-a-few), fewest first.
-  const gaps = POS_GRID_BASE
+  const gaps = s.cols.filter(p => p !== 'UTL')
     .map(p => ({ p, kids: played.filter(r => !r.counts[p]) }))
     .filter(g => g.kids.length && g.kids.length <= 3)
     .sort((a, b) => a.kids.length - b.kids.length)
