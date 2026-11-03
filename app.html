@@ -2571,7 +2571,8 @@
     }
     @media (min-width: 980px) { .sb-toggle { display: grid; } }
     .sb-toggle:hover { background: var(--bg-secondary); color: var(--ink); }
-    .sb-toggle .sb-ltile { position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; opacity: 0; transition: opacity .15s; }
+    /* The rail's top tile is the web app icon (assets/favicon.svg, master Brand/logo/web-app-icon.svg; Nov 2 2026) */
+    .sb-toggle .sb-ltile { position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; border-radius: var(--radius-compact); opacity: 0; transition: opacity .15s; }
     .sb-toggle .sb-pico { transition: opacity .15s, transform .32s var(--ease-glide); }
     .sidebar :focus-visible, .m-topbar :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
 
