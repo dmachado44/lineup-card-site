@@ -1942,12 +1942,16 @@
        wash, accent-down ring): the kids' names and number tiles, the innings'
        headers, the cells where they cross, and the field view's drop-target
        ring on the spot a batter moves to. Using it, or Undo, shows the change
-       land: rows slide to their new spots (Snappy), swapped cells trade
-       places (the field view's fly), number tiles pop (Pop), and everything
-       it touched holds the wash, then fades (the new-row fill, 1.4s Glide).
-       Siblings stagger 70ms (--sg-d). Reduce Motion: nothing moves and nothing fades (the
-       global rule makes animations instant); the wash just shows for about
-       1.5s, then clears. */
+       land, slower than a tap answer so the eye can follow it (Dan, Nov 3
+       2026): rows slide to their new spots and swapped cells trade places
+       (the field view's fly) on the Glide curve over the Pop duration
+       (600ms: long ease-out, no overshoot); innings and kids follow 120ms
+       apart (--sg-d, the stagger drop-in's 70 to 150ms range); a moved row's
+       number tile pops (Pop) as it lands (--sg-land); everything it touched
+       holds the wash through the move, then fades (the new-row fill,
+       stretched to 2.4s). Reduce Motion: nothing moves and nothing fades
+       (the global rule makes animations instant); the wash just shows for
+       about 1.5s, then clears. */
     .lineup-table tbody tr.sg-hl > td:first-child,
     .lineup-table th.inning-th.sg-hl { background: var(--accent-wash); transition: background-color .2s ease; }
     .lineup-table th.inning-th.sg-hl .inning-num { color: var(--accent-down); }
@@ -1960,9 +1964,9 @@
     .bat-order.sg-slot { outline: 2px solid var(--accent-down); outline-offset: 1px; }
     .field-inning-tab.sg-hl:not(.active) { background: var(--accent-wash); color: var(--accent-down); }
     #lineup-allinnings-view .allinnings-card.sg-hl { border-color: var(--accent-down); }
-    @keyframes sgFill { 0%, 30% { background-color: var(--accent-wash); } }
-    @keyframes sgTile { 0%, 30% { background-color: var(--accent); color: var(--on-accent); } }
-    @keyframes sgEdge { 0%, 30% { border-color: var(--accent-down); } }
+    @keyframes sgFill { 0%, 35% { background-color: var(--accent-wash); } }
+    @keyframes sgTile { 0%, 35% { background-color: var(--accent); color: var(--on-accent); } }
+    @keyframes sgEdge { 0%, 35% { border-color: var(--accent-down); } }
     @keyframes sgPop { from { transform: scale(.8); } }
     .lineup-table tbody tr.sg-flash-row > td,
     .lineup-table tbody td.sg-flash,
@@ -1971,9 +1975,9 @@
     #lineup-field-view .field-pos-bubble.sg-flash,
     #lineup-allinnings-view .field-pos-bubble.sg-flash,
     #lineup-field-view .field-bench-chip.sg-flash,
-    .field-inning-tab.sg-flash:not(.active) { animation: sgFill 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
-    #lineup-allinnings-view .allinnings-card.sg-flash { animation: sgEdge 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
-    .bat-order.sg-flash { animation: sgPop var(--dur-pop) var(--ease-pop) var(--sg-d, 0ms) backwards, sgTile 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    .field-inning-tab.sg-flash:not(.active) { animation: sgFill 2.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    #lineup-allinnings-view .allinnings-card.sg-flash { animation: sgEdge 2.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    .bat-order.sg-flash { animation: sgPop var(--dur-pop) var(--ease-pop) calc(var(--sg-d, 0ms) + var(--sg-land, 0ms)) backwards, sgTile 2.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
     .gn-sug-acts > .sg-pop { animation: sgPop var(--dur-pop) var(--ease-pop); transform-origin: left center; }
     .pos-select.sg-hidden { color: transparent; }
     /* The card list reorders as a FLIP (sgListFlip): a used card slides to
@@ -9815,6 +9819,12 @@ function sgFxBefore(c, used) {
   return { t, tops };
 }
 
+// The table's moves: the Glide curve over the Pop duration (600ms), slower
+// and softer than Snappy so a coach can follow the change; innings and kids
+// follow 120ms apart.
+const SG_STAGGER = 120;
+function sgMoveTiming() { return { DUR: lcTokenMs('--dur-pop', 600), EASE: lcToken('--ease-glide', 'ease-out') }; }
+
 // After it: mark what changed (the wash), slide the rows, fly the swapped
 // cells. When the change landed under the builder's bars or off screen, the
 // page scrolls it into sight first and the feedback plays when it arrives.
@@ -9823,9 +9833,9 @@ function sgFxAfter(fx) {
   const still = lcReduceMotion();
   const show = () => {
     let last = 0;
-    els.forEach(([el, cls, step]) => { el.style.setProperty('--sg-d', (still ? 0 : step * 70) + 'ms'); el.classList.add(cls); last = Math.max(last, step); });
+    els.forEach(([el, cls, step]) => { el.style.setProperty('--sg-d', (still ? 0 : step * SG_STAGGER) + 'ms'); el.classList.add(cls); last = Math.max(last, step); });
     if (!still) sgFlyCells(fx.t);
-    setTimeout(() => els.forEach(([el, cls]) => el.classList.remove(cls)), 1500 + last * 70);
+    setTimeout(() => els.forEach(([el, cls]) => el.classList.remove(cls)), still ? 1500 : 2500 + last * SG_STAGGER);
   };
   if (!still && fx.t.cells.length) sgHideCells(fx.t);   // the values arrive by the fly
   const dy = sgScrollNeeded(els);
@@ -9874,17 +9884,18 @@ function sgHideCells(t) {
   setTimeout(() => els.forEach(el => el.classList.remove('sg-hidden')), 2000);   // never left hidden
 }
 
-// Batting order: every row that moved slides from where it was (Snappy);
-// the kids the card moved ride above the rows they pass.
+// Batting order: every row that moved slides from where it was; the kids
+// the card moved ride above the rows they pass, and their number tiles pop
+// as they land (--sg-land, read by .bat-order.sg-flash).
 function sgSlideRows(fx) {
   if (!fx.tops.size) return;
-  const DUR = lcTokenMs('--dur-snappy', 350), EASE = lcToken('--ease-snappy', 'ease');
+  const { DUR, EASE } = sgMoveTiming();
   document.querySelectorAll('#lineup-tbody tr[data-player-id]').forEach(tr => {
     const was = fx.tops.get(tr.dataset.playerId);
     const dy = was == null ? 0 : was - tr.getBoundingClientRect().top;
     if (Math.abs(dy) < 1) return;
     const lift = fx.t.rows.includes(tr.dataset.playerId);
-    if (lift) { tr.style.position = 'relative'; tr.style.zIndex = '3'; }
+    if (lift) { tr.style.position = 'relative'; tr.style.zIndex = '3'; tr.style.setProperty('--sg-land', Math.round(DUR * .4) + 'ms'); }
     const anim = tr.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: DUR, easing: EASE });
     const done = () => { tr.style.position = ''; tr.style.zIndex = ''; };
     if (lift) anim.finished.then(done, done);
@@ -9892,10 +9903,11 @@ function sgSlideRows(fx) {
 }
 
 // Swapped innings: each kid's new spot flies in from the other kid's cell,
-// the same fly as the field view's swap. Only when both cells are in sight.
+// the field view's swap fly at the table's pace. Only when both cells are
+// in sight.
 function sgFlyCells(t) {
   if (!t.cells.length) return;
-  const DUR = lcTokenMs('--dur-snappy', 350), EASE = lcToken('--ease-snappy', 'ease');
+  const { DUR, EASE } = sgMoveTiming();
   const tb = document.getElementById('lineup-tbody');
   const sel = (id, i) => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`);
   // On screen and on top (not scrolled under the name column or a pane).
@@ -9925,10 +9937,10 @@ function sgFlyCells(t) {
       to.classList.add('sg-hidden');
       const anim = fly.animate(
         [{ transform: 'none' }, { transform: `translate(${dest.left - from.left}px, ${dest.top - from.top}px)` }],
-        { duration: DUR, easing: EASE, delay: k * 70, fill: 'both' });
+        { duration: DUR, easing: EASE, delay: k * SG_STAGGER, fill: 'both' });
       const done = () => { fly.remove(); to.classList.remove('sg-hidden'); };
       anim.finished.then(done, done);
-      setTimeout(done, DUR + k * 70 + 150);   // in case .finished never settles
+      setTimeout(done, DUR + k * SG_STAGGER + 150);   // in case .finished never settles
     });
   });
 }
