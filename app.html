@@ -473,6 +473,9 @@
 
     /* ── FORMS ── */
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    /* Game info's quiet delete (Dan, Nov 3 2026): its own row under the
+       fields, never beside a primary. */
+    .gi-delete { display: flex; justify-content: flex-start; margin-top: var(--space-24); padding-top: var(--space-16); border-top: 1px solid var(--hairline); }
     @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
     .field { display: flex; flex-direction: column; gap: 8px; }
     .field.full { grid-column: 1 / -1; }
@@ -4284,6 +4287,9 @@
               <textarea id="game-notes" placeholder="Any special notes for this game..."></textarea>
             </div>
           </div>
+          <div class="gi-delete" id="gi-delete-row" style="display:none;">
+            <button type="button" class="btn btn-danger btn-sm" id="gi-delete-btn" onclick="deleteCurrentGame()">Delete game</button>
+          </div>
         </div>
       </div>
 
@@ -5739,7 +5745,11 @@ function loadTeamStatus(team) {
       : Promise.resolve([]),
     fb
       ? fb.db.collection('teams').doc(team.id).collection('lineups').get()
-          .then(s => s.docs.map(d => Object.assign({ id: d.id }, d.data())))
+          .then(s => {
+            const list = s.docs.map(d => Object.assign({ id: d.id }, d.data()));
+            if (!s.metadata.fromCache) pruneDraftsOfDeletedLineups(team.id, list);
+            return list;
+          })
           .catch(() => (cur && cur.lineups) || [])
       : Promise.resolve([]),
     loadCloudDrafts(team.id)
@@ -6281,12 +6291,18 @@ function watchScheduleLineups(teamId) {
     .onSnapshot(s => {
       if (_scheduleTeamId !== teamId) return;
       const next = s.docs.map(d => Object.assign({ id: d.id }, d.data()));
-      if (JSON.stringify(next) === JSON.stringify(_scheduleLineups)) return;
+      const pruned = !s.metadata.fromCache && pruneDraftsOfDeletedLineups(teamId, next);
+      if (!pruned && JSON.stringify(next) === JSON.stringify(_scheduleLineups)) return;
       _scheduleLineups = next;
       const st = _teamStatus[teamId];
       setTeamStatus(teamId, st ? st.games : _scheduleGames, next, st ? st.calError : null);
       const v = document.getElementById('view-schedule');
       if (v && v.classList.contains('active')) renderSchedule();
+      // A post or delete on another device usually moved a coaches' draft too.
+      loadCloudDrafts(teamId).then(() => {
+        const sv = document.getElementById('view-schedule');
+        if (_scheduleTeamId === teamId && sv && sv.classList.contains('active')) renderSchedule();
+      });
     }, e => console.warn('Live sync paused (lineups):', e && e.message));
 }
 
@@ -6296,6 +6312,14 @@ document.addEventListener('visibilitychange', () => {
   Object.keys(_teamStatus).forEach(invalidateTeamStatus);
   const dash = document.getElementById('view-dashboard');
   if (dash && dash.classList.contains('active')) renderDashboard();
+  // Schedule: lineups are live already; the coaches' drafts aren't.
+  const sched = document.getElementById('view-schedule');
+  const teamId = _scheduleTeamId;
+  if (teamId && sched && sched.classList.contains('active')) {
+    loadCloudDrafts(teamId).then(() => {
+      if (_scheduleTeamId === teamId && sched.classList.contains('active')) renderSchedule();
+    });
+  }
 });
 
 // ═══════════════════════════════════════════════════
@@ -7187,6 +7211,7 @@ function updateStepFooters() {
     // already saves for the team as you go, so this just exports.
     const step4finish = document.getElementById('step4-finish');
     if (step4finish) step4finish.textContent = state.editingLineupDocId ? 'Export' : 'Post & export';
+    updateGameDeleteRow();
   } else if (_appMode === 'roster') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
@@ -8504,6 +8529,7 @@ async function openSchedule(teamId) {
     _scheduleLineups = lineupSnap
       ? lineupSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
       : [];
+    if (lineupSnap && !lineupSnap.metadata.fromCache) pruneDraftsOfDeletedLineups(teamId, _scheduleLineups);
     // Same read All teams makes; share it so the dashboard doesn't refetch.
     setTeamStatus(teamId, _scheduleGames, _scheduleLineups, calError);
     watchScheduleLineups(teamId);   // lineups saved on iOS show up live
@@ -8592,7 +8618,10 @@ function renderSchedule() {
     const idx = lineupOnly ? -1 : _scheduleGames.indexOf(entry);
     const matched = lineupOnly ? entry._lineup
       : _scheduleLineups.find(l => l.opponent === entry.opponent && l.gameDate === entry.date);
-    const draftHit = (!lineupOnly && _scheduleCanCoach) ? findDraftForScheduleGame(_scheduleTeamId, entry) : null;
+    const anyDraft = (!lineupOnly && _scheduleCanCoach) ? findDraftForScheduleGame(_scheduleTeamId, entry) : null;
+    // A coaches' draft is a new lineup; once the game has a posted one
+    // (here or on iOS), the posted lineup is what the row shows.
+    const draftHit = anyDraft && !(matched && anyDraft.draft.cloud) ? anyDraft : null;
     const hasDate = entry.dateObj.getTime() > 0;
     const dow = hasDate ? entry.dateObj.toLocaleDateString('en-US', { weekday: 'short' }) : '';
     const md = hasDate ? entry.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date';
@@ -11482,6 +11511,7 @@ function relativeTimeShort(ts) {
 }
 
 function updateDraftSavedIndicator(saving) {
+  updateGameDeleteRow();
   // There are two slots — one in step 3 footer, one in step 4 footer —
   // and only the visible one matters, but updating both is cheap.
   const els = [
@@ -11559,6 +11589,121 @@ function saveDraftAndExit() {
   if (back) navigate(back);
   else if (_scheduleTeamId && _scheduleTeamId === _activeTeamId) navigate('#/team/' + _activeTeamId + '/schedule');
   else backToDashboard();
+}
+
+// ═══════════════════════════════════════════════════
+// DELETE GAME (Dan, Nov 3 2026): on Game info, coaches only. Deletes the
+// posted lineup (teams/{id}/lineups/{doc}) and every draft of the game:
+// this device's and the coaches' copy. A game from the calendar stays on
+// the calendar, so there it reads "Delete lineup". iOS deletes the same
+// way (Dugout long-press), and each app clears drafts of lineups the
+// other deleted (pruneDraftsOfDeletedLineups), so a game deleted on one
+// can't come back as a draft on the other. Game notes are kept.
+// ═══════════════════════════════════════════════════
+function currentGameOnCalendar() {
+  const norm = v => String(v || '').toLowerCase().trim();
+  const st = _teamStatus[_activeTeamId];
+  const games = (_scheduleTeamId === _activeTeamId && _scheduleGames.length) ? _scheduleGames : ((st && st.games) || []);
+  return !!state.gameDate && games.some(g => g.date === state.gameDate && norm(g.opponent) === norm(state.opponent));
+}
+
+// Shown once there's something to delete: a posted lineup, or a draft of
+// this game (coaches' or this device's).
+function updateGameDeleteRow() {
+  const row = document.getElementById('gi-delete-row');
+  const btn = document.getElementById('gi-delete-btn');
+  if (!row || !btn) return;
+  const team = _userTeams.find(t => t.id === _activeTeamId);
+  const key = getCurrentDraftKey();
+  const saved = !!state.editingLineupDocId || !!state.cloudDraftId || !!(key && readAllDrafts()[key]);
+  const show = _appMode === 'lineup' && !!team && isCoachRole(team) && saved;
+  row.style.display = show ? '' : 'none';
+  if (show && !btn.disabled) btn.textContent = currentGameOnCalendar() ? 'Delete lineup' : 'Delete game';
+}
+
+async function deleteCurrentGame() {
+  const teamId = _activeTeamId;
+  const team = _userTeams.find(t => t.id === teamId);
+  if (!team || !isCoachRole(team)) return;
+  const onCal = currentGameOnCalendar();
+  const label = onCal ? 'Delete lineup' : 'Delete game';
+  if (!confirm(onCal
+    ? 'Delete this lineup? It\'s removed on every device. The game stays on your calendar.'
+    : 'Delete this game? Its lineup is removed on every device.')) return;
+
+  const btn = document.getElementById('gi-delete-btn');
+  const statusEl = document.getElementById('draft-saved-status-step3');
+  if (btn) { btn.disabled = true; btn.textContent = 'Deleting…'; }
+  // Stop every pending save first, so nothing writes the game back.
+  if (_draftSaveTimer) { clearTimeout(_draftSaveTimer); _draftSaveTimer = null; }
+  if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; }
+  _autoAgain = false;
+  for (let i = 0; _autoBusy && i < 60; i++) await new Promise(r => setTimeout(r, 50));
+
+  const lineupId = state.editingLineupDocId;
+  const key = getCurrentDraftKey();
+  const fb = initFirebase();
+  if (lineupId) {
+    try {
+      if (!fb) throw new Error('offline');
+      await fb.db.collection('teams').doc(teamId).collection('lineups').doc(lineupId).delete();
+    } catch (e) {
+      console.warn('Delete game failed:', e && e.message);
+      if (btn) { btn.disabled = false; btn.textContent = label; }
+      if (statusEl) setLcStatus(statusEl, 'err', "Couldn't delete. Check your connection.");
+      return;
+    }
+  }
+
+  // Every draft of the game: this device's, and the coaches' copies.
+  const all = readAllDrafts();
+  let changed = false;
+  Object.keys(all).forEach(k => {
+    const d = all[k];
+    if (d && d.teamId === teamId && (k === key || (lineupId && d.editingLineupDocId === lineupId))) { delete all[k]; changed = true; }
+  });
+  if (changed) writeAllDrafts(all);
+  const cloud = _cloudDrafts[teamId] || {};
+  const cloudIds = Object.keys(cloud).filter(k => k === key).map(k => cloud[k].cloudDraftId);
+  if (state.cloudDraftId) cloudIds.push(state.cloudDraftId);
+  Array.from(new Set(cloudIds.filter(Boolean))).forEach(id => deleteCloudDraft(teamId, id));
+
+  if (lineupId) _scheduleLineups = _scheduleLineups.filter(l => l.id !== lineupId);
+  invalidateTeamStatus(teamId);
+
+  // Leave the builder empty so nothing saves on the way out.
+  state.lineup = []; state.attendance = {};
+  state.gameName = ''; state.opponent = ''; state.gameDate = ''; state.gameTime = '';
+  state.gameLocation = ''; state.gameNotes = '';
+  state.editingLineupDocId = null; resetAutoSave();
+  _draftLastSavedAt = null;
+  syncBuilderFormFromState();
+  if (btn) { btn.disabled = false; btn.textContent = label; }
+
+  const back = _builderReturn;
+  _builderReturn = null;
+  navigate(back || ('#/team/' + teamId + '/schedule'));
+}
+
+// This device's draft of a posted lineup that's since been deleted (here,
+// on iOS, or by another coach) would bring the game back as a draft: drop
+// it. Callers pass a list the server just sent (never a cache), so a
+// lineup that failed to load can't cost a draft. True when anything went.
+function pruneDraftsOfDeletedLineups(teamId, lineups) {
+  if (!teamId || !Array.isArray(lineups)) return false;
+  const ids = new Set(lineups.map(l => l.id));
+  const all = readAllDrafts();
+  let changed = false;
+  Object.keys(all).forEach(k => {
+    const d = all[k];
+    if (d && d.teamId === teamId && d.editingLineupDocId && !ids.has(d.editingLineupDocId)
+        && d.editingLineupDocId !== state.editingLineupDocId) {
+      delete all[k];
+      changed = true;
+    }
+  });
+  if (changed) writeAllDrafts(all);
+  return changed;
 }
 
 function discardCurrentDraft() {
