@@ -13517,7 +13517,7 @@ function renderLineupGrid() {
               `<span class="inning-grip" aria-hidden="true" title="Drag to reorder">⠿</span>` +
               `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
                 `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
-                `aria-label="Inning ${i} actions" aria-haspopup="menu" title="Copy or clear inning ${i}">` +
+                `aria-label="Inning ${i} actions" aria-haspopup="menu" aria-expanded="false" title="Copy or clear inning ${i}">` +
                 `<span class="inning-num">${i}</span>` +
                 `<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
               `</button>` +
@@ -13878,6 +13878,12 @@ function _ensureInningMenuEl() {
 
 function openInningMenu(inningIdx, triggerEl) {
   const menu = _ensureInningMenuEl();
+  // The header button is a toggle: the same inning again closes the menu;
+  // another inning's moves it there.
+  if (menu.style.display !== 'none' && menu.dataset.inning === String(inningIdx)) { closeInningMenu(); return; }
+  menu.dataset.inning = String(inningIdx);
+  document.querySelectorAll('.inning-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  if (triggerEl) triggerEl.setAttribute('aria-expanded', 'true');
 
   // Build menu content
   let html = `<div class="lc-menu-label">Inning ${inningIdx + 1}</div>`;
@@ -13962,7 +13968,8 @@ function _inningMenuKeyHandler(e) {
 
 function closeInningMenu() {
   const menu = document.getElementById('inning-menu');
-  if (menu) menu.style.display = 'none';
+  if (menu) { menu.style.display = 'none'; delete menu.dataset.inning; }
+  document.querySelectorAll('.inning-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
   document.removeEventListener('mousedown', _inningMenuOutsideHandler);
   document.removeEventListener('touchstart', _inningMenuOutsideHandler);
   document.removeEventListener('keydown', _inningMenuKeyHandler);
