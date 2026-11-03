@@ -7989,6 +7989,9 @@ let _ovTeamId = null;
 let _ovLineups = [];
 let _ovRoster = [];
 const POS_GRID_ORDER = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'LCF', 'CF', 'RCF', 'RF', 'UTL'];
+// Infield vs outfield (Dan, Nov 3 2026). UTL1-3 count as outfield: they're
+// the extra fielders of a 10 to 12 player game.
+const OV_INFIELD = new Set(['P', 'C', '1B', '2B', '3B', 'SS']);
 
 function posGridFull(p) { return p === 'UTL' ? 'Utility' : (POS_FULL[p] || p); }
 
@@ -8023,7 +8026,7 @@ function ovSeasonStats(lineups, roster, today) {
   (roster || []).forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
   const rows = (roster || []).map(p => ({
     id: p.id, name: p.name, short: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), order: p.order,
-    counts: {}, gamesAt: {}, field: 0, bench: 0, games: 0,
+    counts: {}, gamesAt: {}, field: 0, infield: 0, outfield: 0, bench: 0, games: 0,
     spots: [], ledOff: 0, battedLast: 0, backToBack: 0, present: []
   }));
   const byId = new Map(rows.map(r => [r.id, r]));
@@ -8064,6 +8067,7 @@ function ovSeasonStats(lineups, roster, today) {
         if (!POS_GRID_ORDER.includes(pos)) return;   // '' = unassigned
         row.counts[pos] = (row.counts[pos] || 0) + 1;
         row.field++;
+        if (OV_INFIELD.has(pos)) row.infield++; else row.outfield++;
         used.add(pos);
         if (!seen.has(pos)) { seen.add(pos); row.gamesAt[pos] = (row.gamesAt[pos] || 0) + 1; }
         if (row.counts[pos] > maxCell) maxCell = row.counts[pos];
@@ -8213,19 +8217,28 @@ function ovPositionsHtml(s) {
     ? 'Every kid has played 6 or more spots.'
     : `${spread} of ${played.length} kids have played 6 or more spots.`;
   // Spots a few kids haven't tried yet (all-but-a-few), fewest first.
+  const noIF = played.filter(r => r.field && !r.infield), noOF = played.filter(r => r.field && !r.outfield);
+  // A kid with no infield at all is named once, not under every infield spot.
   const gaps = s.cols.filter(p => p !== 'UTL')
-    .map(p => ({ p, kids: played.filter(r => !r.counts[p]) }))
+    .map(p => ({ p, kids: played.filter(r => !r.counts[p] && !(OV_INFIELD.has(p) ? noIF : noOF).includes(r)) }))
     .filter(g => g.kids.length && g.kids.length <= 3)
     .sort((a, b) => a.kids.length - b.kids.length)
     .slice(0, 3);
-  const gapLine = gaps.length
-    ? `<p class="ov-gaps">Not yet: ${gaps.map(g => `<b>${posGridFull(g.p)}</b> ${escHtml(ovList(g.kids.map(r => r.short)))}`).join(' · ')}</p>`
+  // Kids who've only played one side of the field come first.
+  const sides = [['Infield', noIF], ['Outfield', noOF]]
+    .filter(([, kids]) => kids.length && kids.length <= 3)
+    .map(([label, kids]) => ({ label, kids }));
+  const notYet = sides.concat(gaps.map(g => ({ label: posGridFull(g.p), kids: g.kids }))).slice(0, 3);
+  const gapLine = notYet.length
+    ? `<p class="ov-gaps">Not yet: ${notYet.map(g => `<b>${g.label}</b> ${escHtml(ovList(g.kids.map(r => r.short)))}`).join(' · ')}</p>`
     : '';
 
   const step = c => Math.min(3, Math.ceil(3 * c / s.maxCell));
   const head = '<tr><th scope="col" class="pos-name kicker">Player</th>'
     + s.cols.map(p => `<th scope="col" class="kicker" title="${sbAttr(posGridFull(p))}"><span aria-hidden="true">${p}</span><span class="sr-only">${posGridFull(p)}</span></th>`).join('')
-    + '<th scope="col" class="pos-tot kicker">Field</th><th scope="col" class="kicker">Bench</th><th scope="col" class="kicker">Games</th></tr>';
+    + '<th scope="col" class="pos-tot kicker">Infield</th>'
+    + `<th scope="col" class="kicker"${s.cols.includes('UTL') ? ' title="Outfield, including utility spots"' : ''}>Outfield</th>`
+    + '<th scope="col" class="kicker">Bench</th><th scope="col" class="kicker">Games</th></tr>';
   const body = s.rows.map(r => {
     const cells = s.cols.map(p => {
       const c = r.counts[p] || 0;
@@ -8237,7 +8250,8 @@ function ovPositionsHtml(s) {
         : `<td title="${sbAttr(tip)}"><span class="pos-0" aria-hidden="true"></span><span class="sr-only">0</span></td>`;
     }).join('');
     return `<tr><th scope="row" class="pos-name">${escHtml(r.name)}</th>${cells}`
-      + `<td class="pos-sum pos-tot" title="${sbAttr(r.name + ': ' + ovPlural(r.field, 'inning') + ' in the field')}">${r.field}</td>`
+      + `<td class="pos-sum pos-tot" title="${sbAttr(r.name + ': ' + ovPlural(r.infield, 'inning') + ' in the infield')}">${r.infield}</td>`
+      + `<td class="pos-sum" title="${sbAttr(r.name + ': ' + ovPlural(r.outfield, 'inning') + ' in the outfield')}">${r.outfield}</td>`
       + `<td class="pos-sum b" title="${sbAttr(r.name + ': ' + ovPlural(r.bench, 'inning') + ' on the bench')}">${r.bench}</td>`
       + `<td class="pos-sum" title="${sbAttr(r.name + ': ' + ovPlural(r.games, 'game'))}">${r.games}</td></tr>`;
   }).join('');
