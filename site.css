@@ -64,12 +64,16 @@
   /* Lines (marketing) */
   --rule:                  rgba(16,22,19,.16);  /* marketing rules (FAQ dividers) */
 
+  /* Warm neutrals: the cream family's grays. Use each only for its job below; no new grays or new uses without asking Dan (Nov 1 2026) */
+  --bg-secondary:          #F6F1E3;  /* the soft tan inside a white panel: lineup table headers and batting-order number tiles (both platforms), bench, segmented tracks, hover fills on controls (the site's FAQ plus, F62) */
+
   /* Night sections (marketing) */
   --night:                 #0A0B0D;
   --night-ink:             #F4F2EC;
   --night-muted:           #8A919E;
   --night-body:            #C9CDD3;  /* body copy on a night section */
   --night-kicker:          #7E858F;
+  --night-rule:            color-mix(in srgb, var(--night-ink) 22%, transparent);  /* edges on night panels (the DJ board's at-bat buttons and ring track); the night twin of --rule (Dan, Nov 2 2026, audit F62) */
 
   /* Shadows */
   --shadow-rgb:            16, 22, 19;  /* THE shadow ink (#101613) as channels: rgba(var(--shadow-rgb), a). Never plain black; scrims aren't shadows */
@@ -84,10 +88,7 @@
   --font-body:             "Barlow Semi Condensed", -apple-system, system-ui, sans-serif;
   --font-display:          "Sofia Sans Extra Condensed", "Barlow Semi Condensed", "Arial Narrow", sans-serif;  /* 900, caps */
 
-  /* Type: App scale (iOS Font.lc*, web --type-*) */
-  --type-title:            26px;  /* display face (.card-title, Font.lcTitle) */
-
-  /* Marketing scale (fluid) */
+  /* Type: Marketing scale (fluid) */
   --type-marketing-hero:   clamp(48px, 5.6vw, 104px);
   --type-marketing-head:   clamp(40px, 4.4vw, 80px);
   --type-card-head:        clamp(26px, 2.1vw, 38px);
@@ -260,7 +261,7 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
 .footer-col a.muted { color: var(--night-muted); font-weight: 500; }
 .footer-col a.muted:hover, .footer-col a.light:hover { color: var(--accent); }
 .footer-col .tagline-strong { color: var(--night-ink); font-weight: 700; }
-.footer-col .rating { color: var(--gold); }
+.footer-col .rating .star { color: var(--gold); }   /* gold colors the star only, never text (F60) */
 .footer-logo { margin-top: 40px; display: flex; justify-content: center; }
 .footer-logo img { width: 96vw; max-width: 1800px; height: auto; display: block; transform: translateY(10%); }
 
@@ -280,7 +281,7 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
 .prose li strong, .prose p strong { color: var(--ink); font-weight: 700; }
 .prose a { color: var(--accent-down); }
 .prose a:hover { color: var(--ink); }
-.prose table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 18px; font-size: 16px; background: var(--block); border-radius: 16px; overflow: hidden; }
+.prose table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 18px; font-size: 16px; background: var(--block); border-radius: var(--radius-card); overflow: hidden; }
 .prose th, .prose td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--hairline); vertical-align: top; color: var(--warm-dark-ink); font-weight: 400; }
 .prose tr:last-child td { border-bottom: 0; }
 .prose th { font-weight: 700; color: var(--ink); background: var(--block); border-bottom: 1px solid var(--rule); }
@@ -329,8 +330,86 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
   .prose article:has(> .toc) > .toc + h2 { margin-top: 56px; }
 }
 
+/* ── Song previews (guides) ──
+   Song tables built by seo/song-previews.mjs: artwork, title over artist, a
+   play circle and Apple's "Listen on Apple Music" badge on every row (Apple's
+   preview terms put a badge next to each preview). The play circle is the iOS
+   Atmosphere row control: hairline circle, 44 hit area, stop in green ink
+   while playing, plus the progress ring as the preview's clock. Player:
+   /song-preview.js. The badge never moves or scales (other brands' marks). */
+.prose table.songs td { vertical-align: middle; }
+.prose table.songs .num { width: 1%; padding-right: 0; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink-secondary); }
+.prose table.songs .listen { width: 1%; white-space: nowrap; }
+.song-id { display: flex; align-items: center; gap: var(--space-12); min-width: 0; }
+.song-art { flex: none; display: block; width: 44px; height: 44px; border-radius: var(--radius-small); object-fit: cover; background: var(--hairline); }
+.song-text { display: flex; flex-direction: column; min-width: 0; }
+.song-title { font-weight: 700; color: var(--ink); line-height: 1.3; }
+.song-artist { font-size: 14px; line-height: 1.35; color: var(--ink-secondary); }
+.song-meta { display: none; }
+.listen-row { display: flex; align-items: center; gap: var(--space-8); }
+.no-preview { font-size: 14px; color: var(--ink-secondary); }
+
+.preview-btn {
+  position: relative; flex: none; width: 44px; height: 44px; padding: 0; margin: 0;
+  border: 0; border-radius: 50%; background: none; color: var(--ink); cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform var(--dur-pop) var(--ease-pop);
+}
+.preview-btn:active { transform: scale(.94); transition-duration: 0s; }
+.preview-btn:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
+.preview-btn svg { position: absolute; inset: 0; width: 44px; height: 44px; overflow: visible; }
+.preview-btn .ring-rest { fill: var(--panel); stroke: var(--hairline); stroke-width: 1; }
+.preview-btn .ring-track { fill: none; stroke: color-mix(in srgb, var(--ink-secondary) 14%, transparent); stroke-width: 2.5; opacity: 0; }
+.preview-btn .ring-clock {
+  fill: none; stroke: var(--accent-down); stroke-width: 2.5; stroke-linecap: round;
+  stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0;
+  transform: rotate(-90deg); transform-origin: 22px 22px;
+}
+.preview-btn .glyph-play { fill: var(--ink); }
+.preview-btn .glyph-stop { fill: var(--accent-down); opacity: 0; }
+.preview-btn:hover .ring-rest { stroke: var(--hairline-strong); }
+.preview-btn[data-state="loading"] .ring-rest,
+.preview-btn[data-state="playing"] .ring-rest { stroke: transparent; }
+.preview-btn[data-state="loading"] .ring-track,
+.preview-btn[data-state="playing"] .ring-track,
+.preview-btn[data-state="playing"] .ring-clock { opacity: 1; }
+.preview-btn[data-state="loading"] .glyph-play { opacity: .4; }
+.preview-btn[data-state="playing"] .glyph-play { opacity: 0; }
+.preview-btn[data-state="playing"] .glyph-stop { opacity: 1; }
+
+.am-badge { display: inline-flex; flex: none; padding: var(--space-4); }  /* clear space: Apple asks for a tenth of the badge height */
+.am-badge img { display: block; width: 135px; height: 30px; max-width: none; }  /* Apple's 30px digital minimum; max-width: none keeps the table from squeezing it */
+.prose .preview-note { font-size: 14px; line-height: 1.5; color: var(--ink-secondary); margin-top: var(--space-12); }
+
+/* Phones: each row stacks (number, art, title over artist over the stats,
+   play circle on the right, badge under the text). No sideways scroll. */
+@media (max-width: 560px) {
+  .prose table.songs { display: block; overflow: visible; white-space: normal; }
+  .prose table.songs thead { display: none; }
+  .prose table.songs tbody { display: block; }
+  .prose table.songs tr {
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto;
+    column-gap: var(--space-12); row-gap: var(--space-8); align-items: center;
+    padding: var(--space-12) var(--space-16); border-bottom: 1px solid var(--hairline);
+  }
+  .prose table.songs tr:last-child { border-bottom: 0; }
+  .prose table.songs td { display: block; padding: 0; border: 0; }
+  .prose table.songs td[data-label] { display: none; }
+  .prose table.songs .num { grid-column: 1; grid-row: 1; width: auto; min-width: 1.2em; }
+  .prose table.songs .song { grid-column: 2; grid-row: 1; }
+  .prose table.songs tr:not(:has(.num)) .song { grid-column: 1 / 3; }
+  .prose table.songs .listen,
+  .prose table.songs .listen-row { display: contents; }
+  .prose table.songs .preview-btn { grid-column: 3; grid-row: 1; }
+  .prose table.songs .am-badge,
+  .prose table.songs .no-preview { grid-column: 2 / 4; grid-row: 2; justify-self: start; margin-left: calc(44px + var(--space-12) - var(--space-4)); }
+  .prose table.songs .no-preview { margin-left: calc(44px + var(--space-12)); }
+  .prose table.songs tr:not(:has(.num)) :is(.am-badge, .no-preview) { grid-column: 1 / 4; }
+  .song-meta { display: block; font-size: 14px; line-height: 1.35; color: var(--ink-secondary); margin-top: var(--space-2); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sticker-btn, .nav-bar .nav-link::after { transition: none; }
+  .sticker-btn, .preview-btn, .nav-bar .nav-link::after { transition: none; }
 }
 
 /* ── Responsive (shared pieces only) ── */
