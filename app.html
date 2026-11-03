@@ -1928,11 +1928,14 @@
     .gn-pick-sw.up { background: var(--accent); } .gn-pick-sw.down { background: var(--gray-3); } .gn-pick-sw.flat { background: var(--panel); }
     .gn-pick-sub { margin-top: 3px; }
     @media (prefers-reduced-motion: reduce) { .gn-dot { transition: none; } .gn-dot:hover { transform: none; } }
-    /* A suggestion (F56): tag and line, the CTA a small sticker under the
-       line, and Dismiss a quiet close in the corner, away from the CTA. */
-    .gn-sug { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px 10px; padding: 10px 48px 12px 10px; border-radius: var(--radius-compact); background: var(--page); }
+    /* A suggestion (F56; Nov 3 2026): tag and line, a quiet "Use suggestion"
+       under the line (then Used + Undo in the same card), and Dismiss a quiet
+       close in the corner, away from the action. */
+    #gn-suggest-list { display: flex; flex-direction: column; gap: var(--space-8); }
+    .gn-sug { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-6); padding: var(--space-12) var(--space-48) var(--space-12) var(--space-12); border-radius: var(--radius-compact); background: var(--page); }
     .gn-sug-text { min-width: 0; font-size: 14px; line-height: 1.3; }
-    .gn-sug-cta, .gn-sug-done { grid-column: 2; justify-self: start; }
+    .gn-sug-acts { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-2); }
+    .gn-sug.is-used { padding-right: var(--space-12); }
     .gn-sug-x { position: absolute; top: 6px; right: 6px; }
     .gn-count { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--pennant); color: var(--sticker-cream); font: 900 var(--type-kicker) var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
 
@@ -2541,7 +2544,7 @@
     .gn-tags { display: inline-flex; flex-wrap: wrap; gap: 4px; }
     .gn-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: var(--radius-small); font-size: 11px; font-weight: 700; line-height: 1.4; }
     .gn-tag.up { background: var(--accent-wash); color: var(--accent-down); }
-    .gn-tag.down { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); color: var(--ink); }
+    .gn-tag.down, .gn-tag.flat { background: color-mix(in srgb, var(--ink-secondary) 14%, transparent); color: var(--ink); }
     .gn-tag.ball { background: var(--accent); color: var(--on-accent); }
 
     /* ══════════════════════════════════════════════════════════════════
@@ -4459,7 +4462,7 @@
          <div class="gn-col-head" style="justify-content:flex-start;">
            <div class="gn-col-title">Suggestions</div>
            <span class="gn-count" id="gn-suggest-count">0 new</span>
-           <span class="gn-col-sub" style="margin-left:auto;">From your game notes</span>
+           <span class="gn-col-sub" id="gn-suggest-src" style="margin-left:auto;">From past games</span>
          </div>
          <div id="gn-suggest-list"></div>
        </div>
@@ -6904,6 +6907,11 @@ async function enterBuilder(teamId, mode, startStep) {
     // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
     // back if the user is genuinely editing an existing lineup.
     if (mode === 'lineup') state.editingLineupDocId = null;
+    if (mode === 'lineup') {
+      _sgApplied = {};
+      // The season so far, for suggestions and season-aware auto-assign.
+      if (teamId) sgLoadSeason(teamId).then(() => { if (_activeTeamId === teamId && typeof renderStrategyInsights === 'function') renderStrategyInsights(); });
+    }
     // Game Notes for the attendance step (coach only; one read per team).
     if (mode === 'lineup' && teamId && !_coachNotes[teamId]) {
       loadCoachNotes(teamId).then(() => { if (_activeTeamId === teamId && typeof renderAttendance === 'function' && document.getElementById('attendance-grid')) renderAttendance(); });
@@ -9190,8 +9198,8 @@ function gnStreak(gamesDesc, playerId, area, sentiment) {
   return n;
 }
 
-// Pure: returns up to 3 suggestions, highest-value first. Thresholds are
-// the knobs to tune; nothing here writes.
+// Pure: every Game Notes suggestion; renderSuggestions ranks, caps and
+// drops dismissed ones. Thresholds are the knobs to tune; nothing here writes.
 function gnComputeSuggestions(teamId, players, gameDate, excludeLineupId) {
   const all = Object.values(_coachNotes[teamId] || {})
     .filter(n => n.id !== excludeLineupId && n.gameDate && (!gameDate || n.gameDate < gameDate))
@@ -9212,15 +9220,15 @@ function gnComputeSuggestions(teamId, players, gameDate, excludeLineupId) {
     const fldUp = gnStreak(all, pid, 'fielding', 'up');
     const pitUp = gnStreak(all, pid, 'pitching', 'up');
     const focDown = gnStreak(all, pid, 'focus', 'down');
-    if (hitUp >= 3 && (skills.contact || 5) < 10) {
+    if (hitUp >= 2 && (skills.contact || 5) < 10) {
       out.push({ id: `bump:${pid}:${latestId}`, rank: 0, pid, tag: 'Hitting ↑', tagCls: 'up', player: first(p.name),
-        text: `up ${hitUp} straight. Bump Contact ${skills.contact} → ${skills.contact + 1}?`, cta: 'Bump', doneLabel: 'Bumped', action: 'bump' });
+        text: `up ${hitUp} straight. Bump Contact ${skills.contact} → ${skills.contact + 1}?`, action: 'bump' });
     }
-    if (hitDown >= 3) {
+    if (hitDown >= 2) {
       out.push({ id: `lower:${pid}:${latestId}`, rank: 1, pid, tag: 'Hitting ↓', tagCls: 'down', player: first(p.name),
-        text: `down ${hitDown} straight. Move lower in the order?`, cta: 'Move', doneLabel: 'Moved', action: 'lower' });
+        text: `down ${hitDown} straight. Move lower in the order?`, action: 'lower' });
     }
-    if (fldUp >= 3 && !balls.has(pid)) {
+    if (fldUp >= 2 && !balls.has(pid)) {
       out.push({ id: `ball:${pid}:${latestId}`, rank: 2, pid, tag: 'Fielding ↑', tagCls: 'up', player: first(p.name),
         text: `up ${fldUp} straight, no game ball yet.`, cta: 'Noted', doneLabel: 'Noted', action: 'note' });
     }
@@ -9233,8 +9241,364 @@ function gnComputeSuggestions(teamId, players, gameDate, excludeLineupId) {
         text: `down ${focDown} straight. Pair him with a steady kid?`, cta: 'Noted', doneLabel: 'Noted', action: 'note' });
     }
   });
+  return out;
+}
+
+// ── Smart suggestions (Nov 3 2026) ──
+// One list in Lineup tools > Suggestions, from two sources: the season so far
+// (saved lineups before this game, counted like Overview) and Game Notes
+// streaks. Nothing changes until the coach taps "Use suggestion"; the card
+// then offers Undo. Changes stay in today's lineup until the coach saves it.
+// The same season data makes auto-assign rotate kids across games (sgWeight).
+const _sgLineups = {};          // teamId → saved lineups (one read per builder visit)
+let _sgCache = { key: '', val: null };
+let _sgCards = [];              // pending cards on screen
+let _sgApplied = {};            // id → { card, undo, key } for this builder session
+
+async function sgLoadSeason(teamId) {
+  const fb = initFirebase();
+  if (!fb || !teamId) return;
+  try {
+    const snap = await fb.db.collection('teams').doc(teamId).collection('lineups').get();
+    _sgLineups[teamId] = snap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    _sgCache.key = '';
+  } catch (e) {
+    console.warn('Season data unavailable:', e && e.code ? e.code : e);
+  }
+}
+
+// The season before this game: lineups dated before it, never this one.
+function sgSeason() {
+  const teamId = _activeTeamId;
+  const lineups = teamId ? _sgLineups[teamId] : null;
+  if (!lineups || _appMode !== 'lineup') return null;
+  const cutoff = state.gameDate || localISODate();
+  const editing = state.editingLineupDocId || '';
+  const key = [teamId, cutoff, editing, lineups.length, state.players.map(p => p.id).join(',')].join('|');
+  if (_sgCache.key === key) return _sgCache.val;
+  const prior = lineups.filter(l => l.id !== editing && posLineupDay(l) && posLineupDay(l) < cutoff);
+  const roster = state.players.map(p => ({ id: rosterDocIdFor(p.id), name: p.name, order: p.order }));
+  const s = ovSeasonStats(prior, roster, cutoff);
+  const byDoc = new Map(s.rows.map(r => [r.id, r]));
+  const byLocal = new Map();
+  state.players.forEach(p => { const r = byDoc.get(rosterDocIdFor(p.id)); if (r) byLocal.set(p.id, r); });
+  _sgCache = { key, val: s.games ? { s, byLocal } : null };
+  return _sgCache.val;
+}
+
+// How much the season counts in auto-assign: all of it at Pure fairness,
+// half at Balanced (the default), none at Full competitive.
+function sgWeight() { return 1 - ((state.strategyLevel || 3) - 1) / 4; }
+
+// Lower = this kid has played this spot (and this side of the field) less.
+function sgSpotScore(row, pos) {
+  if (!row || !row.field) return 0;
+  const key = /^UTL\d$/.test(pos) ? 'UTL' : pos;
+  const side = OV_INFIELD.has(key) ? row.infield : row.outfield;
+  return (row.counts[key] || 0) / row.field + 0.5 * side / row.field;
+}
+
+// Where a kid should bat to even out the season: 0 = top, 1 = bottom.
+function sgBatTarget(season, localId) {
+  const r = season && season.byLocal.get(localId);
+  if (!r || !r.spots.length) return 0.5;
+  const avg = r.spots.reduce((a, b) => a + b, 0) / r.spots.length;
+  return 1 - Math.min(1, (avg - 1) / Math.max(1, season.s.maxSpot - 1));
+}
+
+function sgGameKey() { return [_activeTeamId, state.gameDate || '', state.editingLineupDocId || ''].join('|'); }
+
+// Today's lineup rows for kids who are here, in batting order.
+function sgTodayRows() {
+  return state.lineup.filter(r => state.attendance[r.playerId] && state.players.some(p => p.id === r.playerId));
+}
+function sgSetOrder(rows) {
+  const rest = state.lineup.filter(r => !rows.includes(r));
+  state.lineup = rows.concat(rest);
+}
+function sgRules() {
+  return {
+    maxSame: state.leagueRules.maxSamePosition || 0,
+    noB2B: state.leagueRules.allowBackToBack === false,
+    pitching: { canReturn: state.leagueRules.pitcherCanReturn !== false, maxInnings: state.leagueRules.maxInningsPitched || 0 }
+  };
+}
+// A swap is only offered when it breaks no league rule the lineup keeps now.
+function sgSwapOk(rowA, rowB, innings) {
+  const R = sgRules();
+  const v = p => rowViolationCount(p, R.maxSame, R.noB2B, R.pitching);
+  const a = rowA.positions.slice(), b = rowB.positions.slice();
+  const before = v(a) + v(b);
+  innings.forEach(i => { const t = a[i]; a[i] = b[i]; b[i] = t; });
+  return v(a) + v(b) <= before;
+}
+function sgInningsText(innings) {
+  const n = innings.map(i => i + 1);
+  return (n.length > 1 ? 'innings ' : 'inning ') + ovList(n.map(String));
+}
+
+// Pure on state + season: cards from the season so far.
+function sgSeasonCards(season) {
+  const s = season.s;
+  const rows = sgTodayRows();
+  const out = [];
+  if (!rows.length) return out;
+  const day = state.gameDate || localISODate();
+  const n = Math.min(rows.length, effectiveBattingCap(rows.length));
+  const third = Math.max(1, Math.round(n / 3));
+  const seasonLow = s.maxSpot - Math.max(1, Math.round(s.maxSpot / 3)) + 1;   // first spot of the season's bottom third
+  const prior = id => { const r = season.byLocal.get(id); return r && r.games >= 2 ? r : null; };
+  const name = id => { const r = season.byLocal.get(id); const p = state.players.find(x => x.id === id); return r ? r.short : (p ? gnFirstName(p.name) : ''); };
+  const player = id => state.players.find(p => p.id === id) || {};
+  const doc = id => rosterDocIdFor(id);
+  const hasPositions = rows.some(r => (r.positions || []).some(v => v && v !== 'Bench'));
+
+  // Batting: always near the bottom, and still there today.
+  rows.slice(0, n).forEach((row, idx) => {
+    const r = prior(row.playerId);
+    if (!r || idx < n - third || !r.spots.every(x => x >= seasonLow)) return;
+    const to = Math.min(idx, Math.floor(n / 3));
+    out.push({ id: `bottom:${doc(row.playerId)}:${day}`, rank: 10, kids: [doc(row.playerId)], tag: 'Batting order', player: name(row.playerId),
+      text: `batted ${ovOrdinal(Math.min.apply(null, r.spots))} or lower in all ${r.spots.length} games. Move up to ${ovOrdinal(to + 1)}?`,
+      action: 'move', move: { id: row.playerId, to } });
+  });
+
+  // Batting: the same kid keeps leading off.
+  const lead = rows[0], lr = prior(lead.playerId);
+  if (n > 2 && lr && lr.ledOff >= 2 && lr.ledOff / lr.games >= 0.6) {
+    const led = id => { const r = season.byLocal.get(id); return r ? r.ledOff : 0; };
+    const cand = rows.slice(1, Math.max(2, Math.ceil(n / 2)))
+      .filter(x => led(x.playerId) < lr.ledOff)
+      .sort((a, b) => led(a.playerId) - led(b.playerId))[0];
+    if (cand) {
+      out.push({ id: `leadoff:${doc(lead.playerId)}:${day}`, rank: 11, kids: [doc(lead.playerId), doc(cand.playerId)], tag: 'Batting order', player: name(lead.playerId),
+        text: `led off ${lr.ledOff} of ${lr.games} games. Let ${name(cand.playerId)} lead off today?`,
+        action: 'swapOrder', a: lead.playerId, b: cand.playerId });
+    }
+  }
+
+  if (!hasPositions) return out;
+  const pos = (row, i) => (row.positions || [])[i] || '';
+  const isIF = p => OV_INFIELD.has(p);
+  const isOF = p => !!p && p !== 'Bench' && !OV_INFIELD.has(p);
+
+  // Field balance: an infield-heavy kid and an outfield-heavy kid trade a couple innings.
+  const share = id => { const r = prior(id); return r && r.field >= 6 ? r.infield / r.field : null; };
+  const pool = rows.map(x => ({ row: x, sh: share(x.playerId) })).filter(x => x.sh !== null);
+  const heavyIF = pool.filter(x => x.sh >= 0.7 && player(x.row.playerId).fieldPriority !== 'infield').sort((a, b) => b.sh - a.sh);
+  const heavyOF = pool.filter(x => x.sh <= 0.5 && player(x.row.playerId).fieldPriority !== 'outfield').sort((a, b) => a.sh - b.sh);
+  // Several pairs, best first, so another pair can show when a kid already has a card.
+  let pairs = 0;
+  for (const A of heavyIF) {
+    for (const B of heavyOF) {
+      if (pairs >= 6) continue;
+      const innings = [];
+      for (let i = 0; i < state.innings && innings.length < 2; i++) {
+        const pa = pos(A.row, i), pb = pos(B.row, i);
+        if (isIF(pa) && pa !== 'P' && pa !== 'C' && isOF(pb) && sgSwapOk(A.row, B.row, innings.concat(i))) innings.push(i);
+      }
+      if (!innings.length) continue;
+      const ra = prior(A.row.playerId), rb = prior(B.row.playerId);
+      out.push({ id: `field:${doc(A.row.playerId)}:${doc(B.row.playerId)}:${day}`, rank: 13, kids: [doc(A.row.playerId), doc(B.row.playerId)], tag: 'Field balance', player: name(A.row.playerId),
+        text: `${ra.infield} of ${ra.field} innings in the infield, ${name(B.row.playerId)} ${rb.infield} of ${rb.field}. Swap them in ${sgInningsText(innings)}?`,
+        action: 'swapInnings', a: A.row.playerId, b: B.row.playerId, innings });
+      pairs++;
+    }
+  }
+
+  // Bench: the kid who has sat the most sits again today.
+  const sat = rows.map(x => ({ row: x, r: prior(x.playerId) })).filter(x => x.r);
+  if (sat.length) {
+    const avg = sat.reduce((t, x) => t + x.r.bench, 0) / sat.length;
+    const most = sat.filter(x => x.r.bench >= avg + 2 && (x.row.positions || []).includes('Bench')).sort((a, b) => b.r.bench - a.r.bench)[0];
+    if (most) {
+      const partners = sat.filter(x => x !== most && x.r.bench <= most.r.bench - 2).sort((a, b) => a.r.bench - b.r.bench);
+      let found = null;
+      for (let i = 0; i < state.innings && !found; i++) {
+        if (pos(most.row, i) !== 'Bench') continue;
+        const pr = partners.find(x => { const p = pos(x.row, i); return p && p !== 'Bench' && p !== 'P' && p !== 'C' && sgSwapOk(most.row, x.row, [i]); });
+        if (pr) found = { pr, i };
+      }
+      if (found) {
+        out.push({ id: `bench:${doc(most.row.playerId)}:${day}`, rank: 14, kids: [doc(most.row.playerId), doc(found.pr.row.playerId)], tag: 'Bench', player: name(most.row.playerId),
+          text: `has sat ${ovPlural(most.r.bench, 'inning')}, the most on the team. Swap with ${name(found.pr.row.playerId)} in inning ${found.i + 1}?`,
+          action: 'swapInnings', a: most.row.playerId, b: found.pr.row.playerId, innings: [found.i] });
+      }
+    }
+  }
+
+  // Pitcher and catcher: rotating spots a kid hasn't had a turn at yet.
+  [['P', 'pitched', 'Pitch', 16], ['C', 'caught', 'Catch', 17]].forEach(([spot, did, verb, rank]) => {
+    if (!s.cols.includes(spot) || s.rows.filter(r => r.counts[spot]).length < 3) return;   // a specialist spot on this team
+    let found = 0;
+    rows.forEach(row => {
+      if (found >= 3) return;
+      const r = prior(row.playerId);
+      if (!r || r.counts[spot] || player(row.playerId).fieldPriority === 'outfield' || (row.positions || []).includes(spot)) return false;
+      for (let i = state.innings - 1; i >= 0; i--) {
+        const mine = pos(row, i);
+        if (!mine || mine === 'Bench' || mine === 'P' || mine === 'C') continue;
+        const other = rows.find(x => pos(x, i) === spot);
+        if (!other || !sgSwapOk(row, other, [i])) continue;
+        out.push({ id: `${spot}:${doc(row.playerId)}:${day}`, rank, kids: [doc(row.playerId), doc(other.playerId)], tag: spot === 'P' ? 'Pitching' : 'Catching', player: name(row.playerId),
+          text: `hasn't ${did} yet. ${verb} inning ${i + 1} today?`,
+          action: 'swapInnings', a: row.playerId, b: other.playerId, innings: [i] });
+        found++;
+        return;
+      }
+    });
+  });
+  return out;
+}
+
+function sgAllCards() {
+  const season = sgSeason();
+  const cards = season ? sgSeasonCards(season) : [];
+  const NOTE_RANK = { lower: 12, bump: 15 };
+  gnComputeSuggestions(_activeTeamId, state.players, state.gameDate || '', state.editingLineupDocId || null).forEach(c => {
+    cards.push(Object.assign(c, { rank: c.action in NOTE_RANK ? NOTE_RANK[c.action] : 18 + c.rank, kids: [c.pid] }));
+  });
+  return cards.sort((a, b) => a.rank - b.rank);
+}
+
+function sgCardHtml(c, used) {
+  const id = sbAttr(c.id);
+  const tag = escHtml(c.tag).replace(/ ([↑↓])$/, (m, a) => lcIcon(a === '↑' ? 'arrowUp' : 'arrowDown'));
+  const acts = used
+    ? `<span class="lc-st ok"><i></i>${c.action === 'bump' ? 'Bumped' : 'Used'}</span><button type="button" class="btn btn-ghost btn-sm" onclick="sgUndo('${id}')">Undo</button>`
+    : c.action === 'note'
+      ? `<button type="button" class="btn btn-ghost btn-sm" onclick="sgDismiss('${id}')">Got it</button>`
+      : `<button type="button" class="btn btn-ghost btn-sm" onclick="sgUse('${id}')">Use suggestion</button>`;
+  return `<div class="gn-sug${used ? ' is-used' : ''}" id="gn-sug-${id}">
+      <span class="gn-tag ${c.tagCls || 'flat'}">${tag}</span>
+      <div class="gn-sug-text"><strong>${escHtml(c.player)}</strong> · ${escHtml(c.text)}</div>
+      <div class="gn-sug-acts">${acts}</div>
+      ${used ? '' : `<button type="button" class="lc-close lc-close--sm gn-sug-x" onclick="sgDismiss('${id}')" aria-label="Dismiss: ${escHtml(c.player)}">${lcIcon('x')}</button>`}
+    </div>`;
+}
+
+// Up to 5 new cards, one per kid, after the ones used this session.
+function renderSuggestions() {
+  const list = document.getElementById('gn-suggest-list');
+  const col = document.getElementById('gn-suggest-col');
+  if (!list || !col || col.style.display === 'none') { updateToolsBadge(); return; }
   const dismissed = gnReadDismissed();
-  return out.filter(s => !dismissed[s.id]).sort((a, b) => a.rank - b.rank).slice(0, 3);
+  const key = sgGameKey();
+  const applied = Object.values(_sgApplied).filter(a => a.key === key);
+  const taken = new Set();
+  applied.forEach(a => a.card.kids.forEach(k => taken.add(k)));
+  const pending = [];
+  sgAllCards().forEach(c => {
+    if (pending.length >= 5 || dismissed[c.id] || _sgApplied[c.id] || c.kids.some(k => taken.has(k))) return;
+    c.kids.forEach(k => taken.add(k));
+    pending.push(c);
+  });
+  _sgCards = pending;
+  const count = document.getElementById('gn-suggest-count');
+  count.textContent = pending.length + ' new';
+  count.style.display = pending.length ? '' : 'none';   // counts hide at zero
+  list.innerHTML = applied.map(a => sgCardHtml(a.card, true)).join('') + pending.map(c => sgCardHtml(c, false)).join('')
+    || lcEmptyHtml({ style: 'inline', body: 'Nothing to flag right now. Suggestions come from past games and your notes.' });
+  updateToolsBadge();
+}
+
+function sgApplyMove(id, to) {
+  const rows = sgTodayRows();
+  const from = rows.findIndex(r => r.playerId === id);
+  if (from < 0) return null;
+  const [row] = rows.splice(from, 1);
+  rows.splice(Math.min(to, rows.length), 0, row);
+  sgSetOrder(rows);
+  return { type: 'move', id, to: from };
+}
+function sgApplySwapOrder(a, b) {
+  const rows = sgTodayRows();
+  const ia = rows.findIndex(r => r.playerId === a), ib = rows.findIndex(r => r.playerId === b);
+  if (ia < 0 || ib < 0) return null;
+  [rows[ia], rows[ib]] = [rows[ib], rows[ia]];
+  sgSetOrder(rows);
+  return { type: 'swapOrder', a, b };
+}
+function sgApplySwapInnings(a, b, innings) {
+  const ra = state.lineup.find(r => r.playerId === a), rb = state.lineup.find(r => r.playerId === b);
+  if (!ra || !rb) return null;
+  innings.forEach(i => { const t = ra.positions[i]; ra.positions[i] = rb.positions[i]; rb.positions[i] = t; });
+  return { type: 'swapInnings', a, b, innings, after: innings.map(i => [ra.positions[i], rb.positions[i]]) };
+}
+// Undo only the cells still holding what the suggestion put there.
+function sgUndoSwapInnings(u) {
+  const ra = state.lineup.find(r => r.playerId === u.a), rb = state.lineup.find(r => r.playerId === u.b);
+  if (!ra || !rb) return;
+  u.innings.forEach((i, k) => {
+    if (ra.positions[i] === u.after[k][0] && rb.positions[i] === u.after[k][1]) { ra.positions[i] = u.after[k][1]; rb.positions[i] = u.after[k][0]; }
+  });
+}
+// Contact +1 for a kid on a hitting streak: a roster write (coach field
+// only, write contract v2), the same path as the Players page slider.
+function sgSetContact(pid, value) {
+  const p = state.players.find(x => rosterDocIdFor(x.id) === pid);
+  if (!p) return null;
+  p.battingSkills = Object.assign({ power: 5, contact: 5, speed: 5 }, p.battingSkills || {});
+  const prev = p.battingSkills.contact || 5;
+  p.battingSkills.contact = Math.max(1, Math.min(10, value(prev)));
+  markPlayerDirty(p.id, 'battingSkills');
+  save();
+  scheduleRosterSave();
+  return prev;
+}
+
+function sgAfterChange(lineupChanged) {
+  if (lineupChanged) {
+    renderLineupGrid();
+    renderPlayingTimeSummary();   // redraws the cards too
+    checkConflicts();
+    save();
+  } else {
+    renderStrategyInsights();
+  }
+}
+
+function sgUse(id) {
+  const c = _sgCards.find(x => x.id === id);
+  if (!c) return;
+  let undo = null;
+  if (c.action === 'move') undo = sgApplyMove(c.move.id, c.move.to);
+  else if (c.action === 'swapOrder') undo = sgApplySwapOrder(c.a, c.b);
+  else if (c.action === 'swapInnings') undo = sgApplySwapInnings(c.a, c.b, c.innings);
+  else if (c.action === 'lower') {
+    const rows = sgTodayRows();
+    const row = rows.find(r => rosterDocIdFor(r.playerId) === c.pid);
+    if (row) undo = sgApplyMove(row.playerId, rows.length - 1);
+  } else if (c.action === 'bump') {
+    const prev = sgSetContact(c.pid, v => v + 1);
+    if (prev != null) { undo = { type: 'bump', pid: c.pid, prev }; gnDismiss(id); }
+  }
+  if (!undo) return;
+  _sgApplied[id] = { card: c, undo, key: sgGameKey() };
+  sgAfterChange(undo.type !== 'bump');
+}
+
+function sgUndo(id) {
+  const a = _sgApplied[id];
+  if (!a) return;
+  const u = a.undo;
+  if (u.type === 'move') sgApplyMove(u.id, u.to);
+  else if (u.type === 'swapOrder') sgApplySwapOrder(u.a, u.b);
+  else if (u.type === 'swapInnings') sgUndoSwapInnings(u);
+  else if (u.type === 'bump') { sgSetContact(u.pid, () => u.prev); gnUndismiss(id); }
+  delete _sgApplied[id];
+  sgAfterChange(u.type !== 'bump');
+}
+
+function sgDismiss(id) {
+  gnDismiss(id);
+  renderSuggestions();
+}
+
+function gnUndismiss(id) {
+  const d = gnReadDismissed();
+  delete d[id];
+  try { localStorage.setItem(GN_DISMISS_KEY, JSON.stringify(d)); } catch (e) {}
 }
 
 function renderStrategyInsights() {
@@ -9245,10 +9609,17 @@ function renderStrategyInsights() {
   const teamId = _activeTeamId;
   const team = _userTeams.find(t => t.id === teamId);
   const notes = teamId ? _coachNotes[teamId] : null;
-  const show = !!(team && isCoachRole(team) && notes && Object.keys(notes).length && _appMode === 'lineup');
-  grid.classList.toggle('has-insights', show);
+  const hasNotes = !!(notes && Object.keys(notes).length);
+  const coach = !!(team && isCoachRole(team) && _appMode === 'lineup');
+  const season = coach ? sgSeason() : null;
+  const show = coach && hasNotes;               // momentum needs notes
+  const showSug = coach && (hasNotes || !!season);
+  grid.classList.toggle('has-insights', show || showSug);
   momCol.style.display = show ? '' : 'none';
-  sugCol.style.display = show ? '' : 'none';
+  sugCol.style.display = showSug ? '' : 'none';
+  const src = document.getElementById('gn-suggest-src');
+  if (src) src.textContent = hasNotes && season ? 'From past games and notes' : hasNotes ? 'From your game notes' : 'From past games';
+  renderSuggestions();
   if (!show) return;
 
   // Momentum (all areas) over the last 3 games vs. the coach's rating avg
@@ -9281,21 +9652,7 @@ function renderStrategyInsights() {
   }
   gnRenderMomReadout();
 
-  // Suggestions
-  const list = document.getElementById('gn-suggest-list');
-  const sugg = gnComputeSuggestions(teamId, state.players, state.gameDate || '', state.editingLineupDocId || null);
-  _gnSuggestions = sugg;
-  document.getElementById('gn-suggest-count').textContent = sugg.length + ' new';
-  list.innerHTML = sugg.length ? sugg.map(s => `
-    <div class="gn-sug" id="gn-sug-${escHtml(s.id)}">
-      <span class="gn-tag ${s.tagCls}">${escHtml(s.tag).replace(/ ([↑↓])$/, (m, a) => lcIcon(a === '↑' ? 'arrowUp' : 'arrowDown'))}</span>
-      <div class="gn-sug-text"><strong>${escHtml(s.player)}</strong> · ${escHtml(s.text)}</div>
-      <button type="button" class="btn btn-primary btn-sm gn-sug-cta" onclick="gnAcceptSuggestion('${escHtml(s.id)}')">${escHtml(s.cta)}</button>
-      <button type="button" class="lc-close lc-close--sm gn-sug-x" onclick="gnDismissSuggestion('${escHtml(s.id)}')" aria-label="Dismiss: ${escHtml(s.player)}">${lcIcon('x')}</button>
-    </div>`).join('')
-    : lcEmptyHtml({ style: 'inline', body: 'Nothing to flag yet. Patterns show up after 2–3 games of notes.' });
 }
-let _gnSuggestions = [];
 
 let _gnMomInfo = {};
 let _gnMomObserver = null;
@@ -9353,51 +9710,6 @@ function gnRenderMomReadout() {
 function gnPickMomentum(pid) {
   _gnMomentumSel = _gnMomentumSel === pid ? null : pid;
   renderStrategyInsights();
-}
-
-function gnMarkDone(id, label) {
-  gnDismiss(id);
-  const row = document.getElementById('gn-sug-' + id);
-  if (row) {
-    row.querySelectorAll('.gn-sug-cta, .gn-sug-x').forEach(b => b.remove());
-    const done = document.createElement('span');
-    done.className = 'lc-st gn-sug-done' + (label === 'Skipped' ? '' : ' ok');
-    done.innerHTML = '<i></i>' + escHtml(label);
-    row.appendChild(done);
-  }
-  const left = _gnSuggestions.filter(s => !gnReadDismissed()[s.id]).length;
-  const c = document.getElementById('gn-suggest-count'); if (c) c.textContent = left + ' new';
-}
-
-function gnDismissSuggestion(id) {
-  const s = _gnSuggestions.find(x => x.id === id);
-  gnMarkDone(id, s && s.action === 'note' ? 'Noted' : 'Skipped');
-}
-
-async function gnAcceptSuggestion(id) {
-  const s = _gnSuggestions.find(x => x.id === id);
-  if (!s) return;
-  if (s.action === 'bump') {
-    const p = state.players.find(x => rosterDocIdFor(x.id) === s.pid);
-    if (p) {
-      p.battingSkills = Object.assign({ power: 5, contact: 5, speed: 5 }, p.battingSkills || {});
-      p.battingSkills.contact = Math.min(10, (p.battingSkills.contact || 5) + 1);
-      save();
-      // Coach-safe roster upsert (merge; coach fields only) — the same path
-      // the Players page uses for skill edits.
-      if (typeof saveRosterOnlyToFirestore === 'function') { try { await saveRosterOnlyToFirestore(); } catch (e) { console.warn('Bump save failed', e); } }
-    }
-  } else if (s.action === 'lower') {
-    const idx = state.lineup.findIndex(r => rosterDocIdFor(r.playerId) === s.pid);
-    if (idx >= 0) {
-      const [row] = state.lineup.splice(idx, 1);
-      state.lineup.push(row);
-      save();
-      if (typeof renderLineupGrid === 'function') renderLineupGrid();
-    }
-  }
-  gnMarkDone(id, s.doneLabel);
-  if (s.action === 'bump') renderStrategyInsights();   // the dot moves up
 }
 
 function gnStopDictation(keepHint) {
@@ -13394,12 +13706,20 @@ function shuffleBatting() {
   const strategy = state.strategyLevel || 3;
   const competitiveBias = (strategy - 1) / 4; // 0.0 (fairness) → 1.0 (full competitive)
   const battingN = effectiveBattingCap(attending.length);
+  // Season balance (Nov 3 2026): kids who batted low move up, and leadoff
+  // goes around. Full strength at Pure fairness, half at Balanced, off at 5.
+  const season = sgSeason();
+  const sw = season ? sgWeight() : 0;
+  const ledRate = p => { const r = season && season.byLocal.get(p.id); return r && r.games ? r.ledOff / r.games : 0; };
+  _sgApplied = {};   // a new order: earlier cards no longer apply
 
   let order;
 
   if (strategy === 1) {
-    // Pure random — skills have no influence at all
-    order = [...attending].sort(() => Math.random() - 0.5);
+    // Pure fairness — no skills. With a season, rotate: low batters go up.
+    order = season
+      ? [...attending].map(p => ({ p, v: sgBatTarget(season, p.id) + ledRate(p) * 0.3 + Math.random() * 0.25 })).sort((a, b) => a.v - b.v).map(x => x.p)
+      : [...attending].sort(() => Math.random() - 0.5);
   } else {
     // Slot weights are computed for the CAPPED order size; players beyond
     // the cap are appended below it (they field, they don't bat).
@@ -13424,7 +13744,9 @@ function shuffleBatting() {
         // Jitter shrinks to 0 at strategy 5. Max jitter (5) is half the
         // skill scale so skills still dominate at strategy 3.
         const jitter = Math.random() * 5 * (1 - competitiveBias);
-        const score  = skillScore + jitter;
+        const f = n > 1 ? slotIdx / (n - 1) : 0;
+        const fit = sw ? -4 * sw * Math.abs(f - sgBatTarget(season, player.id)) - (slotIdx === 0 ? 2 * sw * ledRate(player) : 0) : 0;
+        const score  = skillScore + jitter + fit;
         if (score > bestScore) { bestScore = score; bestPlayer = player; }
       }
       assigned[slotIdx] = bestPlayer;
@@ -13456,9 +13778,9 @@ function shuffleBatting() {
 // LINEUP STRATEGY SLIDER
 // ═══════════════════════════════════════════════════
 const STRATEGY_LEVELS = {
-  1: ['Pure fairness', 'Random fielding rotations and batting order.'],
-  2: ['Light optimization', 'A little skill weighting for fielding and batting.'],
-  3: ['Balanced', 'Skill preferences guide fielding and the batting order.'],
+  1: ['Pure fairness', 'Everyone rotates through spots and batting turns, game to game.'],
+  2: ['Light optimization', 'A little skill weighting. Spots and batting turns still rotate game to game.'],
+  3: ['Balanced', 'Skills guide the lineup, and spots and batting turns rotate game to game.'],
   4: ['Competitive', 'Top fielders at key spots. Batting order follows Power, Contact and Speed.'],
   5: ['Full competitive', 'MLB-style batting order that protects your power hitter and avoids back-to-back strikeout risk.']
 };
@@ -13523,6 +13845,12 @@ function shuffleFielding() {
     maxInnings: state.leagueRules.maxInningsPitched || 0
   };
 
+  // Season balance (Nov 3 2026): least-played spots first, and kids who
+  // sat the most this season sit less. Weighted like the batting order.
+  const season = sgSeason();
+  const sw = season ? sgWeight() : 0;
+  _sgApplied = {};   // a new fielding plan: earlier cards no longer apply
+
   // Try multiple candidates; pick the one with fewest violations, then best balance.
   const ATTEMPTS = 25;
   let best = null;
@@ -13530,7 +13858,7 @@ function shuffleFielding() {
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const candidate = buildFieldingAttempt(
-      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching
+      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw
     );
     repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack, pitching);
     const score = scoreFieldingCandidate(candidate, attending, maxSame, noBackToBack, pitching);
@@ -13558,11 +13886,15 @@ function shuffleFielding() {
 // Rules are enforced strictly per-inning. If a player has no legal position this
 // inning (e.g., higher-priority players claimed all the valid spots), we defer
 // them to a second pass and let the repair step untangle it.
-function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching) {
+function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw) {
   const result = {};
   attending.forEach(p => { result[p.id] = Array(numInnings).fill(''); });
 
   const maxStrGlobal = Math.max(...attending.map(p => playerStrengthScore(p)), 1);
+  // Bench innings per game this season, 0 to 1 across today's kids.
+  const benchRate = {};
+  attending.forEach(p => { const r = season && season.byLocal.get(p.id); benchRate[p.id] = r && r.games ? r.bench / r.games : 0; });
+  const maxRate = Math.max(...Object.values(benchRate), 0) || 1;
 
   for (let inning = 0; inning < numInnings; inning++) {
     // Count how many field innings each player has been assigned so far
@@ -13582,8 +13914,8 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
         const fairB = 1 - (fieldCount[b.id] / maxField);
         const strA = playerStrengthScore(a) / maxStrGlobal;
         const strB = playerStrengthScore(b) / maxStrGlobal;
-        const scoreA = (1 - competitiveBias) * fairA + competitiveBias * strA;
-        const scoreB = (1 - competitiveBias) * fairB + competitiveBias * strB;
+        const scoreA = (1 - competitiveBias) * fairA + competitiveBias * strA + (sw || 0) * 0.35 * benchRate[a.id] / maxRate;
+        const scoreB = (1 - competitiveBias) * fairB + competitiveBias * strB + (sw || 0) * 0.35 * benchRate[b.id] / maxRate;
         return scoreB - scoreA;
       });
 
@@ -13641,7 +13973,12 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
         ? preferred
         : (preferred.length > 0 && Math.random() < 0.3 ? preferred : zonePool);
 
-      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      // Season balance: most of the time take the spot this kid has
+      // played least this season (and the side of the field they've had less).
+      const seasonRow = sw && season ? season.byLocal.get(player.id) : null;
+      const chosen = seasonRow && seasonRow.field && Math.random() < sw
+        ? pool.map(p => ({ p, v: sgSpotScore(seasonRow, p) + Math.random() * 0.1 })).sort((a, b) => a.v - b.v)[0].p
+        : pool[Math.floor(Math.random() * pool.length)];
       result[player.id][inning] = chosen;
       takenPositions.add(chosen);
     });
@@ -13876,6 +14213,7 @@ function renderPlayingTimeSummary() {
         <span class="pt-stat">${played} of ${state.innings}</span>
       </div>`;
   }).join('') || lcEmptyHtml({ style: 'inline', body: 'Mark who\'s here to see playing time.' });
+  if (typeof renderSuggestions === 'function') renderSuggestions();
 }
 
 // ═══════════════════════════════════════════════════
