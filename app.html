@@ -1937,6 +1937,62 @@
     .gn-sug-acts { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-2); }
     .gn-sug.is-used { padding-right: var(--space-12); }
     .gn-sug-x { position: absolute; top: 6px; right: 6px; }
+    /* Suggestion preview and feedback (Dan, Nov 3 2026). Hovering or focusing
+       a card marks what it would change in the selected-state look (accent
+       wash, accent-down ring): the kids' names and number tiles, the innings'
+       headers, the cells where they cross, and the field view's drop-target
+       ring on the spot a batter moves to. Using it, or Undo, shows the change
+       land: rows slide to their new spots (Snappy), swapped cells trade
+       places (the field view's fly), number tiles pop (Pop), and everything
+       it touched holds the wash, then fades (the new-row fill, 1.4s Glide).
+       Siblings stagger 70ms (--sg-d). Reduce Motion: nothing moves and nothing fades (the
+       global rule makes animations instant); the wash just shows for about
+       1.5s, then clears. */
+    .lineup-table tbody tr.sg-hl > td:first-child,
+    .lineup-table th.inning-th.sg-hl { background: var(--accent-wash); transition: background-color .2s ease; }
+    .lineup-table th.inning-th.sg-hl .inning-num { color: var(--accent-down); }
+    .pos-select.sg-hl,
+    #lineup-field-view .field-pos-bubble.sg-hl,
+    #lineup-allinnings-view .field-pos-bubble.sg-hl,
+    #lineup-field-view .field-bench-chip.sg-hl { background-color: var(--accent-wash); outline: 2px solid var(--accent-down); outline-offset: -1px; transition: background-color .2s ease; }
+    .pos-select.sg-hl { color: var(--accent-down); }
+    .bat-order.sg-hl { background: var(--accent); color: var(--on-accent); transition: background-color .2s ease, color .2s ease; }
+    .bat-order.sg-slot { outline: 2px solid var(--accent-down); outline-offset: 1px; }
+    .field-inning-tab.sg-hl:not(.active) { background: var(--accent-wash); color: var(--accent-down); }
+    #lineup-allinnings-view .allinnings-card.sg-hl { border-color: var(--accent-down); }
+    @keyframes sgFill { 0%, 30% { background-color: var(--accent-wash); } }
+    @keyframes sgTile { 0%, 30% { background-color: var(--accent); color: var(--on-accent); } }
+    @keyframes sgEdge { 0%, 30% { border-color: var(--accent-down); } }
+    @keyframes sgPop { from { transform: scale(.8); } }
+    .lineup-table tbody tr.sg-flash-row > td,
+    .lineup-table tbody td.sg-flash,
+    .lineup-table th.inning-th.sg-flash,
+    .pos-select.sg-flash,
+    #lineup-field-view .field-pos-bubble.sg-flash,
+    #lineup-allinnings-view .field-pos-bubble.sg-flash,
+    #lineup-field-view .field-bench-chip.sg-flash,
+    .field-inning-tab.sg-flash:not(.active) { animation: sgFill 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    #lineup-allinnings-view .allinnings-card.sg-flash { animation: sgEdge 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    .bat-order.sg-flash { animation: sgPop var(--dur-pop) var(--ease-pop) var(--sg-d, 0ms) backwards, sgTile 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
+    .gn-sug-acts > .sg-pop { animation: sgPop var(--dur-pop) var(--ease-pop); transform-origin: left center; }
+    .pos-select.sg-hidden { color: transparent; }
+    .sg-fly {
+      position: fixed; z-index: 500; pointer-events: none; display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+      border-radius: var(--radius-small); background: var(--accent-wash); color: var(--accent-down);
+      outline: 2px solid var(--accent-down); outline-offset: -1px; box-shadow: var(--shadow-raised); will-change: transform;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lineup-table tbody tr.sg-flash-row > td,
+      .lineup-table tbody td.sg-flash,
+      .lineup-table th.inning-th.sg-flash,
+      .pos-select.sg-flash,
+      #lineup-field-view .field-pos-bubble.sg-flash,
+      #lineup-allinnings-view .field-pos-bubble.sg-flash,
+      #lineup-field-view .field-bench-chip.sg-flash,
+      .field-inning-tab.sg-flash:not(.active) { background-color: var(--accent-wash); }
+      .bat-order.sg-flash { background: var(--accent); color: var(--on-accent); }
+      #lineup-allinnings-view .allinnings-card.sg-flash { border-color: var(--accent-down); }
+    }
     .gn-count { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--pennant); color: var(--sticker-cream); font: 900 var(--type-kicker) var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
 
     /* Calendar URL field in Team Settings */
@@ -9254,6 +9310,8 @@ const _sgLineups = {};          // teamId → saved lineups (one read per builde
 let _sgCache = { key: '', val: null };
 let _sgCards = [];              // pending cards on screen
 let _sgApplied = {};            // id → { card, undo, key } for this builder session
+let _sgHl = [];                 // [el, class] marked by the card being previewed
+let _sgHold = null;             // the card just used or undone: no preview until the pointer or focus leaves it
 
 async function sgLoadSeason(teamId) {
   const fb = initFirebase();
@@ -9469,7 +9527,7 @@ function sgCardHtml(c, used) {
     : c.action === 'note'
       ? `<button type="button" class="btn btn-ghost btn-sm" onclick="sgDismiss('${id}')">Got it</button>`
       : `<button type="button" class="btn btn-ghost btn-sm" onclick="sgUse('${id}')">Use suggestion</button>`;
-  return `<div class="gn-sug${used ? ' is-used' : ''}" id="gn-sug-${id}">
+  return `<div class="gn-sug${used ? ' is-used' : ''}" id="gn-sug-${id}" data-sg="${id}">
       <span class="gn-tag ${c.tagCls || 'flat'}">${tag}</span>
       <div class="gn-sug-text"><strong>${escHtml(c.player)}</strong> · ${escHtml(c.text)}</div>
       <div class="gn-sug-acts">${acts}</div>
@@ -9481,7 +9539,9 @@ function sgCardHtml(c, used) {
 function renderSuggestions() {
   const list = document.getElementById('gn-suggest-list');
   const col = document.getElementById('gn-suggest-col');
+  sgPreview(null);   // the cards are about to be redrawn
   if (!list || !col || col.style.display === 'none') { updateToolsBadge(); return; }
+  sgBindPreview(list);
   const dismissed = gnReadDismissed();
   const key = sgGameKey();
   const applied = Object.values(_sgApplied).filter(a => a.key === key);
@@ -9497,7 +9557,9 @@ function renderSuggestions() {
   const count = document.getElementById('gn-suggest-count');
   count.textContent = pending.length + ' new';
   count.style.display = pending.length ? '' : 'none';   // counts hide at zero
-  list.innerHTML = applied.map(a => sgCardHtml(a.card, true)).join('') + pending.map(c => sgCardHtml(c, false)).join('')
+  const shown = applied.map(a => ({ c: a.card, used: true })).concat(pending.map(c => ({ c, used: false })))
+    .sort((x, y) => x.c.rank - y.c.rank);   // a used card keeps its place
+  list.innerHTML = shown.map(x => sgCardHtml(x.c, x.used)).join('')
     || lcEmptyHtml({ style: 'inline', body: 'Nothing to flag right now. Suggestions come from past games and your notes.' });
   updateToolsBadge();
 }
@@ -9561,6 +9623,9 @@ function sgAfterChange(lineupChanged) {
 function sgUse(id) {
   const c = _sgCards.find(x => x.id === id);
   if (!c) return;
+  sgPreview(null);
+  const fx = sgFxBefore(c, false);
+  const refocus = sgHasFocus();
   let undo = null;
   if (c.action === 'move') undo = sgApplyMove(c.move.id, c.move.to);
   else if (c.action === 'swapOrder') undo = sgApplySwapOrder(c.a, c.b);
@@ -9576,23 +9641,274 @@ function sgUse(id) {
   if (!undo) return;
   _sgApplied[id] = { card: c, undo, key: sgGameKey() };
   sgAfterChange(undo.type !== 'bump');
+  _sgHold = id;
+  if (undo.type !== 'bump') sgFxAfter(fx);
+  sgPopAction(id, refocus);
 }
 
 function sgUndo(id) {
   const a = _sgApplied[id];
   if (!a) return;
   const u = a.undo;
+  sgPreview(null);
+  const fx = sgFxBefore(a.card, true);
+  const refocus = sgHasFocus();
   if (u.type === 'move') sgApplyMove(u.id, u.to);
   else if (u.type === 'swapOrder') sgApplySwapOrder(u.a, u.b);
   else if (u.type === 'swapInnings') sgUndoSwapInnings(u);
   else if (u.type === 'bump') { sgSetContact(u.pid, () => u.prev); gnUndismiss(id); }
   delete _sgApplied[id];
   sgAfterChange(u.type !== 'bump');
+  _sgHold = id;
+  if (u.type !== 'bump') sgFxAfter(fx);
+  sgPopAction(id, refocus);
 }
 
 function sgDismiss(id) {
+  sgPreview(null);
   gnDismiss(id);
   renderSuggestions();
+}
+
+// ── Suggestion preview and feedback (Dan, Nov 3 2026) ──
+// What a card touches in the lineup: the kids' rows, the innings' columns,
+// the cells where they cross, and (before it's used) the spot a batter
+// moves to. used: the card is applied, so the lineup already shows it.
+function sgTargets(c, used) {
+  const t = { rows: [], innings: [], cells: [], slots: [], order: false };
+  if (c.action === 'swapInnings') {
+    t.rows = [c.a, c.b];
+    t.innings = c.innings.slice();
+    t.cells = c.innings.reduce((all, i) => all.concat([[c.a, i], [c.b, i]]), []);
+  } else if (c.action === 'move') {
+    t.rows = [c.move.id];
+    t.order = true;
+    if (!used) t.slots = [c.move.to];
+  } else if (c.action === 'swapOrder') {
+    t.rows = [c.a, c.b];
+    t.order = true;
+  } else {
+    // Game-notes cards carry the roster id.
+    const p = state.players.find(x => rosterDocIdFor(x.id) === c.pid);
+    if (p) t.rows = [p.id];
+    if (c.action === 'lower') { t.order = true; if (!used) t.slots = [sgTodayRows().length - 1]; }
+  }
+  return t;
+}
+
+// A kid's chip in one inning of a field view (scope: the view or one card).
+function sgFieldEl(scope, id, i) {
+  if (!scope) return null;
+  const row = state.lineup.find(r => r.playerId === id);
+  const pos = row && (row.positions || [])[i];
+  return pos && pos !== 'Bench'
+    ? scope.querySelector(`.field-pos-bubble[data-pos="${cssEscape(pos)}"]`)
+    : scope.querySelector(`.field-bench-chip[data-bench-player="${cssEscape(id)}"]`);
+}
+
+// [element, class, stagger step] for everything a card touches in the list,
+// field and all-innings views. kind 'hl' previews; 'fx' marks what changed.
+function sgTargetEls(t, kind) {
+  const out = [];
+  const add = (el, cls, step) => { if (el) out.push([el, cls, step || 0]); };
+  const fx = kind === 'fx';
+  const mark = fx ? 'sg-flash' : 'sg-hl';
+  const tb = document.getElementById('lineup-tbody');
+  const cellsAt = i => t.cells.filter(c => c[1] === i).map(c => c[0]);
+  t.rows.forEach((id, k) => {
+    const row = tb && tb.querySelector(`tr[data-player-id="${cssEscape(id)}"]`);
+    if (!row) return;
+    if (!fx) add(row, 'sg-hl', k);
+    else add(t.order ? row : row.cells[0], t.order ? 'sg-flash-row' : 'sg-flash', k);
+    if (t.order) add(row.querySelector('.bat-order'), mark, k);
+  });
+  if (!fx && tb) t.slots.forEach(i => {
+    const row = tb.rows[i];
+    if (row && !t.rows.includes(row.dataset.playerId)) add(row.querySelector('.bat-order'), 'sg-slot');
+  });
+  const fieldView = document.getElementById('lineup-field-view');
+  const tabs = document.querySelectorAll('#field-inning-tabs .field-inning-tab');
+  const cards = document.querySelectorAll('#allinnings-grid .allinnings-card');
+  t.innings.forEach((i, k) => {
+    add(document.querySelector(`#lineup-thead th.inning-th[data-inning="${i}"]`), mark, k);
+    cellsAt(i).forEach(id => add(tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`), mark, k));
+    add(tabs[i], mark, k);
+    if (i === _fieldInning) cellsAt(i).forEach(id => add(sgFieldEl(fieldView, id, i), mark, k));
+    if (cards[i]) { add(cards[i], mark, k); cellsAt(i).forEach(id => add(sgFieldEl(cards[i], id, i), mark, k)); }
+  });
+  return out;
+}
+
+function sgPreview(id) {
+  _sgHl.forEach(([el, cls]) => el.classList.remove(cls));
+  _sgHl = [];
+  const a = id ? _sgApplied[id] : null;
+  const c = a ? a.card : id ? _sgCards.find(x => x.id === id) : null;
+  if (!c) return;
+  _sgHl = sgTargetEls(sgTargets(c, !!a), 'hl');
+  _sgHl.forEach(([el, cls]) => el.classList.add(cls));
+}
+// Mouse and keyboard both preview; bound once on the list.
+function sgBindPreview(list) {
+  if (list.dataset.sgBound) return;
+  list.dataset.sgBound = '1';
+  const card = el => (el && el.closest) ? el.closest('#gn-suggest-list .gn-sug') : null;
+  list.addEventListener('mouseover', e => {
+    const c = card(e.target);
+    if (c && c !== card(e.relatedTarget) && c.dataset.sg !== _sgHold) sgPreview(c.dataset.sg);
+  });
+  list.addEventListener('mouseout', e => {
+    const c = card(e.target);
+    if (!c || c === card(e.relatedTarget)) return;
+    if (c.dataset.sg === _sgHold) _sgHold = null;
+    sgPreview(null);
+  });
+  list.addEventListener('focusin', e => { const c = card(e.target); if (c && c.dataset.sg !== _sgHold) sgPreview(c.dataset.sg); });
+  list.addEventListener('focusout', e => {
+    const from = card(e.target), to = card(e.relatedTarget);
+    if (from && from !== to && from.dataset.sg === _sgHold) _sgHold = null;
+    if (!to) sgPreview(null);
+  });
+}
+function sgHasFocus() {
+  const el = document.activeElement;
+  return !!(el && el.closest && el.closest('#gn-suggest-list'));
+}
+
+// Before a change: where every row sits, for the slide.
+function sgFxBefore(c, used) {
+  const t = sgTargets(c, used);
+  const tops = new Map();
+  if (t.order) document.querySelectorAll('#lineup-tbody tr[data-player-id]').forEach(tr => tops.set(tr.dataset.playerId, tr.getBoundingClientRect().top));
+  return { t, tops };
+}
+
+// After it: mark what changed (the wash), slide the rows, fly the swapped
+// cells. When the change landed under the builder's bars or off screen, the
+// page scrolls it into sight first and the feedback plays when it arrives.
+function sgFxAfter(fx) {
+  const els = sgTargetEls(fx.t, 'fx');
+  const still = lcReduceMotion();
+  const show = () => {
+    let last = 0;
+    els.forEach(([el, cls, step]) => { el.style.setProperty('--sg-d', (still ? 0 : step * 70) + 'ms'); el.classList.add(cls); last = Math.max(last, step); });
+    if (!still) sgFlyCells(fx.t);
+    setTimeout(() => els.forEach(([el, cls]) => el.classList.remove(cls)), 1500 + last * 70);
+  };
+  if (!still && fx.t.cells.length) sgHideCells(fx.t);   // the values arrive by the fly
+  const dy = sgScrollNeeded(els);
+  if (!dy) {
+    if (!still) sgSlideRows(fx);
+    show();
+    return;
+  }
+  window.scrollBy({ top: dy, behavior: still ? 'auto' : 'smooth' });
+  if (still) { show(); return; }
+  let done = false;
+  const go = () => {
+    if (done) return;
+    done = true;
+    document.removeEventListener('scrollend', go);
+    show();
+  };
+  document.addEventListener('scrollend', go);
+  setTimeout(go, 600);   // no scrollend (Safari), or nothing left to scroll
+}
+
+// How far to scroll so the rows and cells a change touched sit in the part
+// of the window the builder's bars don't cover (0 when they already do).
+function sgScrollNeeded(els) {
+  const rects = els.map(e => e[0]).filter(el => !el.matches('th, .field-inning-tab') && el.getClientRects().length).map(el => el.getBoundingClientRect());
+  if (!rects.length) return 0;
+  let top = 0, bottom = window.innerHeight;
+  document.querySelectorAll('.wizard-bar, #view-builder.active .step-actions').forEach(bar => {
+    const pos = getComputedStyle(bar).position;
+    if (pos !== 'fixed' && pos !== 'sticky') return;
+    const r = bar.getBoundingClientRect();
+    if (!r.height || r.bottom <= 0 || r.top >= window.innerHeight) return;
+    if (r.top < window.innerHeight / 2) top = Math.max(top, r.bottom); else bottom = Math.min(bottom, r.top);
+  });
+  const lo = Math.min.apply(null, rects.map(r => r.top)), hi = Math.max.apply(null, rects.map(r => r.bottom));
+  if (lo >= top && hi <= bottom) return 0;
+  const room = bottom - top;
+  return hi - lo <= room - 32 ? Math.round((lo + hi) / 2 - (top + bottom) / 2) : Math.round(lo - top - 16);
+}
+
+// The swapped cells' new values hide until their fly lands.
+function sgHideCells(t) {
+  const tb = document.getElementById('lineup-tbody');
+  const els = t.cells.map(([id, i]) => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`)).filter(Boolean);
+  els.forEach(el => el.classList.add('sg-hidden'));
+  setTimeout(() => els.forEach(el => el.classList.remove('sg-hidden')), 2000);   // never left hidden
+}
+
+// Batting order: every row that moved slides from where it was (Snappy);
+// the kids the card moved ride above the rows they pass.
+function sgSlideRows(fx) {
+  if (!fx.tops.size) return;
+  const DUR = lcTokenMs('--dur-snappy', 350), EASE = lcToken('--ease-snappy', 'ease');
+  document.querySelectorAll('#lineup-tbody tr[data-player-id]').forEach(tr => {
+    const was = fx.tops.get(tr.dataset.playerId);
+    const dy = was == null ? 0 : was - tr.getBoundingClientRect().top;
+    if (Math.abs(dy) < 1) return;
+    const lift = fx.t.rows.includes(tr.dataset.playerId);
+    if (lift) { tr.style.position = 'relative'; tr.style.zIndex = '3'; }
+    const anim = tr.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: DUR, easing: EASE });
+    const done = () => { tr.style.position = ''; tr.style.zIndex = ''; };
+    if (lift) anim.finished.then(done, done);
+  });
+}
+
+// Swapped innings: each kid's new spot flies in from the other kid's cell,
+// the same fly as the field view's swap. Only when both cells are in sight.
+function sgFlyCells(t) {
+  if (!t.cells.length) return;
+  const DUR = lcTokenMs('--dur-snappy', 350), EASE = lcToken('--ease-snappy', 'ease');
+  const tb = document.getElementById('lineup-tbody');
+  const sel = (id, i) => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`);
+  // On screen and on top (not scrolled under the name column or a pane).
+  const seen = el => {
+    const r = el && el.getBoundingClientRect();
+    if (!r || !r.width) return null;
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return hit && (hit === el || el.contains(hit)) ? r : null;
+  };
+  t.innings.forEach((i, k) => {
+    const [a, b] = t.cells.filter(c => c[1] === i).map(c => sel(c[0], i));
+    // Measure with the values showing so the hit test sees the cells.
+    [a, b].forEach(el => el && el.classList.remove('sg-hidden'));
+    const ra = seen(a), rb = seen(b);
+    if (!ra || !rb) return;
+    [[a, rb, ra], [b, ra, rb]].forEach(([to, from, dest]) => {
+      const cs = getComputedStyle(to);
+      const fly = document.createElement('div');
+      fly.className = 'sg-fly';
+      fly.textContent = to.selectedIndex >= 0 ? to.options[to.selectedIndex].text : '';
+      Object.assign(fly.style, {
+        left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px',
+        fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
+        paddingLeft: cs.paddingLeft, justifyContent: cs.textAlign === 'center' ? 'center' : 'flex-start'
+      });
+      document.body.appendChild(fly);
+      to.classList.add('sg-hidden');
+      const anim = fly.animate(
+        [{ transform: 'none' }, { transform: `translate(${dest.left - from.left}px, ${dest.top - from.top}px)` }],
+        { duration: DUR, easing: EASE, delay: k * 70, fill: 'both' });
+      const done = () => { fly.remove(); to.classList.remove('sg-hidden'); };
+      anim.finished.then(done, done);
+      setTimeout(done, DUR + k * 70 + 150);   // in case .finished never settles
+    });
+  });
+}
+
+// The card's action swapped in place (Used and Undo, or back): it pops.
+// Focus goes to the card's new button when it was on the one that went away.
+function sgPopAction(id, refocus) {
+  const card = document.getElementById('gn-sug-' + id);
+  const el = card && card.querySelector('.gn-sug-acts > *');
+  if (el) el.classList.add('sg-pop');
+  const btn = card && card.querySelector('.gn-sug-acts .btn');
+  if (refocus && btn) btn.focus({ preventScroll: true });
 }
 
 function gnUndismiss(id) {
