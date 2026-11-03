@@ -2571,7 +2571,7 @@
     }
     @media (min-width: 980px) { .sb-toggle { display: grid; } }
     .sb-toggle:hover { background: var(--bg-secondary); color: var(--ink); }
-    /* The rail's top tile is the web app icon (assets/favicon.svg, master Brand/logo/web-app-icon.svg; Nov 2 2026) */
+    /* The collapsed rail's top tile is the L (assets/web-app-icon.svg, master Brand/logo/web-app-icon.svg): it stands in for the wordmark (Dan, Nov 2 2026) */
     .sb-toggle .sb-ltile { position: absolute; left: 4px; top: 4px; width: 32px; height: 32px; border-radius: var(--radius-compact); opacity: 0; transition: opacity .15s; }
     .sb-toggle .sb-pico { transition: opacity .15s, transform .32s var(--ease-glide); }
     .sidebar :focus-visible, .m-topbar :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
@@ -3418,7 +3418,7 @@
       </picture>
     </a>
     <button class="sb-toggle" id="sb-toggle" type="button" onclick="toggleSidebarRail()" aria-label="Collapse sidebar" aria-expanded="true">
-      <img class="sb-ltile" src="assets/favicon.svg" alt="">
+      <img class="sb-ltile" src="assets/web-app-icon.svg" alt="">
       <svg class="sb-pico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/><path d="M15.5 10l-2 2 2 2"/></svg>
       <span class="sb-tip" id="sb-toggle-tip">Collapse sidebar <kbd>[</kbd></span>
     </button>
