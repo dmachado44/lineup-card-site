@@ -4016,9 +4016,9 @@
     </div>
     <div class="wizard-end">
       <!-- The screen-level exit lives up here, never beside the primary (Oct 2026) -->
-      <button class="wizard-exit" id="wizard-exit" type="button" onclick="saveDraftAndExit()" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>
-        <span class="wx-lbl">Save draft &amp; exit</span>
+      <!-- Autosave (Dan, Nov 3 2026): every change saves itself, so the exit is a plain close -->
+      <button class="lc-close" id="wizard-exit" type="button" onclick="saveDraftAndExit()" aria-label="Close" title="Close" style="display:none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
   </div>
@@ -4453,7 +4453,7 @@
         <div class="step-actions">
           <div class="draft-status lc-st" id="draft-saved-status"></div>
           <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
-          <button class="btn btn-cta btn-lg lc-next" onclick="goToStep5()">Save &amp; Export</button>
+          <button id="step4-finish" class="btn btn-cta btn-lg lc-next" onclick="goToStep5()">Post &amp; export</button>
         </div>
       </div>
     </div>
@@ -5741,7 +5741,8 @@ function loadTeamStatus(team) {
       ? fb.db.collection('teams').doc(team.id).collection('lineups').get()
           .then(s => s.docs.map(d => Object.assign({ id: d.id }, d.data())))
           .catch(() => (cur && cur.lineups) || [])
-      : Promise.resolve([])
+      : Promise.resolve([]),
+    loadCloudDrafts(team.id)
   ]).then(([games, lineups]) => {
     setTeamStatus(team.id, games, lineups, calError);
     return _teamStatus[team.id];
@@ -5778,7 +5779,7 @@ function computeNextGame(teamId, games, lineups) {
     const d = at(l.gameDate, l.gameTime); if (!d || dayOf(l.gameDate) < today) return;
     entries.push({ lineup: l, dateObj: d, date: l.gameDate, time: l.gameTime || '', opponent: l.opponent || '', isHome: null, location: l.gameLocation || '', title: l.gameName || (l.opponent ? 'vs ' + l.opponent : 'Game lineup') });
   });
-  const drafts = readAllDrafts();
+  const drafts = readDraftsFor(teamId);
   Object.keys(drafts).forEach(key => {
     const dr = drafts[key];
     if (!dr || dr.teamId !== teamId) return;
@@ -5858,7 +5859,7 @@ async function openNextGame(teamId, what, from) {
   } else {
     await enterBuilder(teamId, 'lineup', 3);
     if (!_builderOpen) return;
-    if (e.draft) {
+    if (e.draft && !draftOlderThanLineup(e.draft, e.lineup)) {
       applyDraftToState(e.draft);
       try { _draftLastSavedAt = new Date(e.draft.updatedAt).getTime(); } catch (x) {}
       updateDraftSavedIndicator();
@@ -6991,7 +6992,7 @@ async function enterBuilder(teamId, mode, startStep) {
     // Each new builder session starts without an "editing existing lineup"
     // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
     // back if the user is genuinely editing an existing lineup.
-    if (mode === 'lineup') state.editingLineupDocId = null;
+    if (mode === 'lineup') state.editingLineupDocId = null; resetAutoSave();
     if (mode === 'lineup') {
       _sgApplied = {};
       // The season so far, for suggestions and season-aware auto-assign.
@@ -7039,7 +7040,7 @@ function resetForNewTeam() {
   state.attendance = {};
   state.gamePositions = [];
   state.lineup = [];
-  state.editingLineupDocId = null;
+  state.editingLineupDocId = null; resetAutoSave();
 
   // Sync all form fields to blank
   const textFields = ['team-name','team-level','team-age-group','team-notes','team-calendar-url',
@@ -7182,6 +7183,10 @@ function updateStepFooters() {
     // Save Draft & Exit only makes sense while a lineup is in progress.
     if (step3saveDraft) step3saveDraft.style.display = '';
     if (step4saveDraft) step4saveDraft.style.display = '';
+    // A new lineup is a coaches' draft until it's posted; a posted one
+    // already saves for the team as you go, so this just exports.
+    const step4finish = document.getElementById('step4-finish');
+    if (step4finish) step4finish.textContent = state.editingLineupDocId ? 'Export' : 'Post & export';
   } else if (_appMode === 'roster') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
@@ -7634,9 +7639,10 @@ function editCurrentLineupDetail() {
     // Gate-at-the-door: if the paywall intercepted, don't touch builder state.
     if (!_builderOpen) return;
     // Prefer a draft if the user already has one going for this game
-    const all = readAllDrafts();
+    // (unless the lineup was saved after it, here or on iOS)
+    const all = readDraftsFor(teamId);
     const key = getDraftKey(teamId, lineup.gameDate, lineup.opponent);
-    if (key && all[key]) {
+    if (key && all[key] && !draftOlderThanLineup(all[key], lineup)) {
       applyDraftToState(all[key]);
       try { _draftLastSavedAt = new Date(all[key].updatedAt).getTime(); } catch(e) {}
       updateDraftSavedIndicator();
@@ -8487,7 +8493,8 @@ async function openSchedule(teamId) {
     const [icsText, lineupSnap] = await Promise.all([
       calUrl ? fetchSchedule(calUrl).catch(e => { calError = e; return null; }) : Promise.resolve(null),
       fb ? fb.db.collection('teams').doc(teamId).collection('lineups').get() : Promise.resolve(null),
-      loadCoachNotes(teamId)    // Game Notes (coach only; members resolve to {})
+      loadCoachNotes(teamId),   // Game Notes (coach only; members resolve to {})
+      loadCloudDrafts(teamId)   // coaches' drafts from any device (coach only)
     ]);
     _scheduleGames = icsText
       ? filterGames(parseICS(icsText), getCalendarName(icsText))
@@ -8711,8 +8718,10 @@ async function createLineupFromSchedule(gameIndex) {
   if (!_builderOpen) return;
 
   // 1) Resume an in-progress draft for this exact game, if one exists
+  // (unless the posted lineup was saved after it, here or on iOS)
+  const posted = (Array.isArray(_scheduleLineups) ? _scheduleLineups : []).find(l => lineupMatchesGame(l, game));
   const draftHit = findDraftForScheduleGame(_scheduleTeamId, game);
-  if (draftHit) {
+  if (draftHit && !draftOlderThanLineup(draftHit.draft, posted)) {
     applyDraftToState(draftHit.draft);
     try { _draftLastSavedAt = new Date(draftHit.draft.updatedAt).getTime(); } catch(e) {}
     updateDraftSavedIndicator();
@@ -8743,7 +8752,7 @@ async function createLineupFromSchedule(gameIndex) {
   state.gameDate = game.date;
   state.gameTime = game.time;
   state.gameLocation = game.location || '';
-  state.editingLineupDocId = null;
+  state.editingLineupDocId = null; resetAutoSave();
   save();
 }
 
@@ -8777,6 +8786,11 @@ function loadSavedLineupIntoBuilder(lineup) {
   const saved = new Set(state.lineup.map(r => r.playerId));
   state.attendance = {};
   state.players.forEach(p => { state.attendance[p.id] = saved.has(p.id); });
+  // Autosave writes only what changes from here.
+  state.cloudDraftId = null;
+  _draftKeyInUse = getDraftKey(_activeTeamId, state.gameDate, state.opponent);
+  _autoBaseline = JSON.stringify(lineupFieldsFromState());
+  _autoSavedAt = null; _autoError = false; _cloudDraftJson = null; _cloudDraftIsNew = false;
   syncBuilderFormFromState();
 }
 
@@ -11054,7 +11068,7 @@ function init() {
       state.gamePositions = [];
       state.lineup     = [];
       // editingLineupDocId is per-builder-session; never persist across reloads
-      state.editingLineupDocId = null;
+      state.editingLineupDocId = null; resetAutoSave();
 
       if (document.getElementById('team-name')) document.getElementById('team-name').value = state.teamName || '';
       if (document.getElementById('team-year')) document.getElementById('team-year').value = state.teamYear || new Date().getFullYear();
@@ -11150,6 +11164,7 @@ function buildDraftRecord() {
         }))
       : [],
     editingLineupDocId: state.editingLineupDocId || null,
+    cloudDraftId: state.cloudDraftId || null,
     updatedAt: new Date().toISOString()
   };
 }
@@ -11171,6 +11186,12 @@ function flushDraftSave() {
   // Nothing to save yet: clear the "Saving draft…" hint instead of leaving it up.
   if (!key || !draftHasContent()) { updateDraftSavedIndicator(); return false; }
   const all = readAllDrafts();
+  if (!state.editingLineupDocId) ensureDraftId();
+  // The opponent or date changed (a schedule change): the draft moves to
+  // its new key instead of leaving a copy behind under the old one.
+  const prev = _draftKeyInUse && _draftKeyInUse !== key ? all[_draftKeyInUse] : null;
+  if (prev && ((prev.cloudDraftId && prev.cloudDraftId === state.cloudDraftId) || (prev.editingLineupDocId && prev.editingLineupDocId === state.editingLineupDocId))) delete all[_draftKeyInUse];
+  _draftKeyInUse = key;
   all[key] = buildDraftRecord();
   writeAllDrafts(all);
   _draftLastSavedAt = Date.now();
@@ -11188,6 +11209,7 @@ function markLineupDirty() {
   }, 600);
   // Show "Saving…" hint immediately (only when there's a draft to save)
   updateDraftSavedIndicator(!!getCurrentDraftKey() && draftHasContent());
+  scheduleAutoSave();
 }
 
 function clearDraftForCurrent() {
@@ -11205,6 +11227,181 @@ function clearDraftForCurrent() {
   updateDraftSavedIndicator();
 }
 
+// ═══════════════════════════════════════════════════
+// AUTOSAVE (Dan, Nov 3 2026): every change saves itself.
+//   Posted lineup (editingLineupDocId): writes straight through to
+//     teams/{id}/lineups/{doc} (merge, lineup fields only), so iOS and every
+//     device see it. Never writes a lineup with nobody here.
+//   New lineup: a coaches-only draft at teams/{id}/lineupDrafts/{draftId}
+//     (rules: owner/coach read and write, like coachNotes). It follows the
+//     coach to any device and goes to the team at Post & export, which
+//     deletes it. Until those rules are deployed the write is denied and
+//     the draft stays on this device, as before.
+//   This device's draft (localStorage) is still written first, so nothing
+//   is lost offline.
+// ═══════════════════════════════════════════════════
+var _autoTimer = null, _autoBusy = false, _autoAgain = false;
+var _autoBaseline = null;     // posted lineup: the shared fields as last written or loaded
+var _autoSavedAt = null;      // last shared save (team or coaches)
+var _autoError = false;
+var _cloudDraftsOff = false;  // lineupDrafts rules not deployed (permission-denied)
+var _cloudDraftJson = null;
+var _cloudDraftIsNew = false;
+var _draftKeyInUse = null;
+var _cloudDrafts = {};        // teamId → { draft key → record } (coaches only)
+
+function resetAutoSave() {
+  state.cloudDraftId = null;
+  _autoBaseline = null; _autoSavedAt = null; _autoError = false;
+  _cloudDraftJson = null; _cloudDraftIsNew = false; _draftKeyInUse = null;
+  if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; }
+}
+
+// One id per draft from its first save, so a draft stays one draft when its
+// opponent or date changes, on this device and in the coaches' copy.
+function ensureDraftId() {
+  if (!state.cloudDraftId) {
+    state.cloudDraftId = 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    _cloudDraftIsNew = true;
+  }
+  return state.cloudDraftId;
+}
+
+function autoSaveApplies() {
+  const team = _userTeams.find(t => t.id === _activeTeamId);
+  if (_appMode !== 'lineup' || !team || !isCoachRole(team)) return false;
+  return !!state.editingLineupDocId || (!_cloudDraftsOff && draftHasContent());
+}
+
+function scheduleAutoSave() {
+  if (_appMode !== 'lineup' || _currentStep < 3) return;
+  if (_autoTimer) clearTimeout(_autoTimer);
+  _autoTimer = setTimeout(() => { _autoTimer = null; flushAutoSave(); }, 1200);
+}
+
+// The coaches' draft as stored: roster doc ids (they cross devices) and
+// names (a fallback when a kid's id doesn't resolve).
+function cloudDraftFromState() {
+  const doc = id => rosterDocIdFor(id) || id;
+  const nameOf = id => { const p = state.players.find(x => x.id === id); return p ? p.name : ''; };
+  const attendance = {};
+  Object.keys(state.attendance || {}).forEach(k => { attendance[doc(k)] = !!state.attendance[k]; });
+  return {
+    gameName: state.gameName || '', opponent: state.opponent || '', gameDate: state.gameDate || '',
+    gameTime: state.gameTime || '', gameLocation: state.gameLocation || '', gameNotes: state.gameNotes || '',
+    innings: state.innings || 6, strategyLevel: state.strategyLevel || 3,
+    gamePositions: Array.isArray(state.gamePositions) ? state.gamePositions.slice() : [],
+    attendance,
+    lineup: (state.lineup || []).map(r => ({ playerId: doc(r.playerId), name: nameOf(r.playerId), positions: Array.isArray(r.positions) ? r.positions.slice() : [] }))
+  };
+}
+
+async function flushAutoSave() {
+  if (_autoBusy) { _autoAgain = true; return; }
+  const teamId = _activeTeamId;
+  const fb = initFirebase();
+  if (!fb || !fb.auth.currentUser || !teamId || !autoSaveApplies()) { updateDraftSavedIndicator(); return; }
+  const uid = fb.auth.currentUser.uid;
+  const now = firebase.firestore.FieldValue.serverTimestamp();
+  _autoBusy = true;
+  try {
+    if (state.editingLineupDocId) {
+      const id = state.editingLineupDocId;
+      const fields = lineupFieldsFromState();
+      const json = JSON.stringify(fields);
+      if (!fields.players.length || json === _autoBaseline) return;
+      await fb.db.collection('teams').doc(teamId).collection('lineups').doc(id)
+        .set(Object.assign({}, fields, { updatedAt: now, updatedBy: uid }), { merge: true });
+      if (state.editingLineupDocId === id) _autoBaseline = json;
+      _autoSavedAt = Date.now(); _autoError = false;
+      cacheScheduleLineup(teamId, id, fields);
+      // The shared copy is current: this device's copy would only go stale.
+      if (state.editingLineupDocId === id && !_draftSaveTimer) clearDraftForCurrent();
+    } else {
+      const rec = cloudDraftFromState();
+      const json = JSON.stringify(rec);
+      if (json === _cloudDraftJson) return;
+      const id = ensureDraftId();
+      const isNew = _cloudDraftIsNew;
+      await fb.db.collection('teams').doc(teamId).collection('lineupDrafts').doc(id)
+        .set(Object.assign({}, rec, { updatedAt: now, updatedBy: uid }, isNew ? { createdAt: now, createdBy: uid } : {}), { merge: true });
+      _cloudDraftIsNew = false;
+      _cloudDraftJson = json; _autoSavedAt = Date.now(); _autoError = false;
+      const key = getDraftKey(teamId, rec.gameDate, rec.opponent);
+      const map = _cloudDrafts[teamId] = _cloudDrafts[teamId] || {};
+      Object.keys(map).forEach(k => { if (map[k].cloudDraftId === id) delete map[k]; });
+      if (key) map[key] = Object.assign({ teamId, editingLineupDocId: null, cloudDraftId: id, updatedAt: new Date().toISOString(), cloud: true }, rec);
+    }
+  } catch (e) {
+    if (e && e.code === 'permission-denied' && !state.editingLineupDocId) _cloudDraftsOff = true;   // drafts stay on this device
+    else { _autoError = true; console.warn('Autosave failed:', e && e.message); }
+  } finally {
+    _autoBusy = false;
+    updateDraftSavedIndicator();
+    if (_autoAgain) { _autoAgain = false; flushAutoSave(); }
+  }
+}
+
+// Keep Schedule's lineup list current after a save, so its rows update
+// without a refetch.
+function cacheScheduleLineup(teamId, id, fields) {
+  invalidateTeamStatus(teamId);
+  if (!id || !Array.isArray(_scheduleLineups) || _scheduleTeamId !== teamId) return;
+  const idx = _scheduleLineups.findIndex(l => l.id === id);
+  const cached = Object.assign({}, idx === -1 ? {} : _scheduleLineups[idx], fields, { id });
+  if (idx === -1) _scheduleLineups.push(cached);
+  else _scheduleLineups[idx] = cached;
+}
+
+// Coaches' drafts for a team (coach only; one read per Schedule or team
+// status load). Permission-denied means the rules aren't deployed yet.
+async function loadCloudDrafts(teamId) {
+  const team = _userTeams.find(t => t.id === teamId);
+  const fb = initFirebase();
+  if (!fb || !team || !isCoachRole(team) || _cloudDraftsOff) return;
+  try {
+    const snap = await fb.db.collection('teams').doc(teamId).collection('lineupDrafts').get();
+    const map = {};
+    snap.docs.forEach(doc => {
+      const d = doc.data() || {};
+      const at = d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date(0).toISOString();
+      const rec = Object.assign({}, d, { teamId, editingLineupDocId: null, cloudDraftId: doc.id, updatedAt: at, cloud: true });
+      const key = getDraftKey(teamId, rec.gameDate, rec.opponent);
+      if (key && (!map[key] || map[key].updatedAt < rec.updatedAt)) map[key] = rec;
+    });
+    _cloudDrafts[teamId] = map;
+  } catch (e) {
+    if (e && e.code === 'permission-denied') _cloudDraftsOff = true;
+  }
+}
+
+function deleteCloudDraft(teamId, id) {
+  if (!teamId || !id) return;
+  const map = _cloudDrafts[teamId];
+  if (map) Object.keys(map).forEach(k => { if (map[k].cloudDraftId === id) delete map[k]; });
+  const fb = initFirebase();
+  if (!fb || _cloudDraftsOff) return;
+  fb.db.collection('teams').doc(teamId).collection('lineupDrafts').doc(id).delete().catch(() => {});
+}
+
+// This device's drafts and the coaches' drafts for a team, newest per game.
+function readDraftsFor(teamId) {
+  const out = {};
+  const local = readAllDrafts();
+  Object.keys(local).forEach(k => { if (local[k] && local[k].teamId === teamId) out[k] = local[k]; });
+  const cloud = _cloudDrafts[teamId] || {};
+  Object.keys(cloud).forEach(k => { if (!out[k] || String(out[k].updatedAt || '') < String(cloud[k].updatedAt || '')) out[k] = cloud[k]; });
+  return out;
+}
+
+// A draft of a posted lineup that the shared lineup has moved past (saved
+// since, here or on another device) is stale: open the lineup instead.
+function draftOlderThanLineup(draft, lineup) {
+  if (!draft || !lineup || !draft.editingLineupDocId || draft.editingLineupDocId !== lineup.id) return false;
+  const t = lineup.updatedAt && lineup.updatedAt.toMillis ? lineup.updatedAt.toMillis() : 0;
+  return !!t && t > new Date(draft.updatedAt).getTime();
+}
+
 function loadDraftByKey(key) {
   if (!key) return null;
   const all = readAllDrafts();
@@ -11215,7 +11412,7 @@ function findDraftForScheduleGame(teamId, game) {
   if (!teamId || !game) return null;
   const key = getDraftKey(teamId, game.date, game.opponent);
   if (!key) return null;
-  const all = readAllDrafts();
+  const all = readDraftsFor(teamId);
   return all[key] ? { key, draft: all[key] } : null;
 }
 
@@ -11231,13 +11428,21 @@ function applyDraftToState(d) {
   state.strategyLevel = d.strategyLevel || 3;
   state.gamePositions = Array.isArray(d.gamePositions) ? d.gamePositions.slice() : [];
   state.attendance = Object.assign({}, d.attendance || {});
+  // Coaches' drafts carry roster doc ids (they cross devices); this
+  // device's carry local ids. Both resolve to the roster loaded here.
+  const local = (id, name) => resolveLocalPlayerId(id, name) || id;
+  state.attendance = {};
+  Object.keys(d.attendance || {}).forEach(k => { state.attendance[local(k)] = d.attendance[k]; });
   state.lineup = Array.isArray(d.lineup)
     ? d.lineup.map(r => ({
-        playerId: r.playerId,
+        playerId: local(r.playerId, r.name),
         positions: Array.isArray(r.positions) ? r.positions.slice() : []
       }))
     : [];
   state.editingLineupDocId = d.editingLineupDocId || null;
+  state.cloudDraftId = d.cloudDraftId || null;
+  _draftKeyInUse = getDraftKey(_activeTeamId, d.gameDate, d.opponent);
+  _autoBaseline = null; _cloudDraftJson = null; _cloudDraftIsNew = false; _autoSavedAt = null; _autoError = false;
   syncBuilderFormFromState();
 }
 
@@ -11282,11 +11487,23 @@ function updateDraftSavedIndicator(saving) {
   ].filter(Boolean);
   if (!els.length) return;
   const inLineup = (_appMode === 'lineup' && _currentStep >= 3);
+  const team = _userTeams.find(t => t.id === _activeTeamId);
+  const shared = autoSaveApplies();
+  const pending = !!(_autoTimer || _autoBusy) && shared;
   els.forEach(el => {
     if (!inLineup) { setLcStatus(el, '', ''); return; }
-    // Saving reads neutral (F12), like iOS; saved goes green.
-    if (saving) { setLcStatus(el, '', 'Saving draft…'); return; }
-    if (_draftLastSavedAt) setLcStatus(el, 'ok', 'Draft saved ' + relativeTimeShort(_draftLastSavedAt));
+    // Saving reads neutral (F12), like iOS; saved goes green. The words say
+    // where it's saved: for the team (posted), for coaches (a draft that
+    // follows you to any device), or only on this device.
+    if (saving || pending) { setLcStatus(el, '', 'Saving…'); return; }
+    if (_autoError) { setLcStatus(el, 'err', "Couldn't save. Check your connection."); return; }
+    if (state.editingLineupDocId) {
+      if (!lineupFieldsFromState().players.length) { setLcStatus(el, 'dr', "Mark who's here to save"); return; }
+      setLcStatus(el, 'ok', 'Saved to ' + (team ? team.name : 'your team') + (_autoSavedAt ? ' · ' + relativeTimeShort(_autoSavedAt) : ''));
+      return;
+    }
+    if (shared && _autoSavedAt) { setLcStatus(el, 'ok', 'Draft saved for coaches · ' + relativeTimeShort(_autoSavedAt)); return; }
+    if (_draftLastSavedAt) setLcStatus(el, 'ok', 'Draft saved on this device · ' + relativeTimeShort(_draftLastSavedAt));
     else setLcStatus(el, '', '');
   });
 }
@@ -11301,6 +11518,7 @@ window.addEventListener('beforeunload', () => {
     _draftSaveTimer = null;
     flushDraftSave();
   }
+  if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; flushAutoSave(); }
 });
 
 // Wire up game-info inputs (step 3) so typing triggers auto-save.
@@ -11328,6 +11546,9 @@ function saveDraftAndExit() {
     state.gameNotes    = document.getElementById('game-notes').value.trim();
   }
   flushDraftSave();
+  // The shared save finishes in the background (Firestore keeps the write).
+  if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; }
+  flushAutoSave();
   // Back to where the build started: All teams, else this team's schedule
   // (routed, so the page and the sidebar both re-render), else the dashboard.
   const back = _builderReturn;
@@ -11340,10 +11561,11 @@ function saveDraftAndExit() {
 function discardCurrentDraft() {
   if (!confirm('Discard this draft? Any unsaved lineup changes will be lost.')) return;
   clearDraftForCurrent();
+  if (state.cloudDraftId) deleteCloudDraft(_activeTeamId, state.cloudDraftId);
   // Wipe the in-memory lineup so we don't immediately re-create the draft
   state.lineup = [];
   state.attendance = {};
-  state.editingLineupDocId = null;
+  state.editingLineupDocId = null; resetAutoSave();
   goToStep1();
 }
 
@@ -13176,7 +13398,7 @@ function goToStep1() {
   // to create a new lineup doc, not merge into the one we just printed.
   // (The previous draft is already cleared when Save & Export succeeded.)
   if (_appMode === 'lineup') {
-    state.editingLineupDocId = null;
+    state.editingLineupDocId = null; resetAutoSave();
   }
   setStep(1);
 }
@@ -13324,22 +13546,15 @@ function resolveLocalPlayerId(savedId, savedName) {
   return null;
 }
 
-async function saveLineupToFirestore() {
-  const fb = initFirebase();
-  if (!fb || !_activeTeamId) return false;
-
-  const attending = state.players.filter(p => state.attendance[p.id]);
+// The lineup's shared fields, from the builder: only fields the web is
+// authoritative for (never unknown iOS fields). Save & Export and autosave
+// both write exactly this, with merge:true.
+function lineupFieldsFromState() {
   const activeLineup = state.lineup.filter(r => {
     const p = state.players.find(p => p.id === r.playerId);
     return p && state.attendance[p.id];
   });
-
-  if (activeLineup.length === 0) return false;
-
-  // Build the doc with only fields the web is authoritative for.
-  // Don't echo unknown iOS fields. Always write with merge:true so we never
-  // clobber data the iOS app may have set on the same doc.
-  const lineupData = {
+  return {
     gameName:     state.gameName || '',
     opponent:     state.opponent || '',
     gameDate:     state.gameDate || '',
@@ -13357,10 +13572,22 @@ async function saveLineupToFirestore() {
         batOrder:  idx + 1,
         positions: row.positions || []
       };
-    }),
+    })
+  };
+}
+
+async function saveLineupToFirestore() {
+  const fb = initFirebase();
+  if (!fb || !_activeTeamId) return false;
+
+  const fields = lineupFieldsFromState();
+  if (fields.players.length === 0) return false;
+
+  // Always merge:true so we never clobber data iOS set on the same doc.
+  const lineupData = Object.assign({}, fields, {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: fb.auth.currentUser ? fb.auth.currentUser.uid : ''
-  };
+  });
 
   try {
     const lineupsCol = fb.db.collection('teams').doc(_activeTeamId).collection('lineups');
@@ -13376,27 +13603,13 @@ async function saveLineupToFirestore() {
       await newRef.set(lineupData, { merge: true });
       state.editingLineupDocId = newRef.id;
     }
-    // The lineup is now committed — drop the working draft for this game.
+    // The lineup is now committed: drop the working drafts for this game
+    // (this device's and the coaches' shared one).
     clearDraftForCurrent();
-    invalidateTeamStatus(_activeTeamId);
-    // Refresh the in-memory schedule lineup cache so the badge updates
-    // immediately if the user navigates back to Schedule.
-    if (Array.isArray(_scheduleLineups) && _scheduleTeamId === _activeTeamId) {
-      const idx = _scheduleLineups.findIndex(l => l.id === state.editingLineupDocId);
-      const cached = {
-        id: state.editingLineupDocId,
-        gameName: lineupData.gameName,
-        opponent: lineupData.opponent,
-        gameDate: lineupData.gameDate,
-        gameTime: lineupData.gameTime,
-        gameLocation: lineupData.gameLocation,
-        gameNotes: lineupData.gameNotes,
-        innings: lineupData.innings,
-        players: lineupData.players
-      };
-      if (idx === -1) _scheduleLineups.push(cached);
-      else _scheduleLineups[idx] = cached;
-    }
+    if (state.cloudDraftId) { deleteCloudDraft(_activeTeamId, state.cloudDraftId); state.cloudDraftId = null; }
+    _autoBaseline = JSON.stringify(fields);
+    _autoSavedAt = Date.now(); _autoError = false;
+    cacheScheduleLineup(_activeTeamId, state.editingLineupDocId, fields);
     return true;
   } catch(e) {
     console.error('Failed to save lineup:', e);
