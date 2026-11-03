@@ -1944,7 +1944,8 @@
        ring on the spot a batter moves to. Using it, or Undo, shows the change
        land, slower than a tap answer so the eye can follow it (Dan, Nov 3
        2026): rows slide to their new spots and swapped cells trade places
-       (the field view's fly) on the Glide curve over the Pop duration
+       (the field view's fly, in the table, the field view and each inning
+       of All innings) on the Glide curve over the Pop duration
        (600ms: long ease-out, no overshoot); innings and kids follow 120ms
        apart (--sg-d, the stagger drop-in's 70 to 150ms range); a moved row's
        number tile pops (Pop) as it lands (--sg-land); everything it touched
@@ -9811,9 +9812,12 @@ function sgHasFocus() {
   return !!(el && el.closest && el.closest('#gn-suggest-list'));
 }
 
-// Before a change: where every row sits, for the slide.
+// Before a change: where every row sits, for the slide. The field view
+// shows one inning: when it isn't one the card changes, it switches to the
+// first one that is, so the swap plays where the coach can see it.
 function sgFxBefore(c, used) {
   const t = sgTargets(c, used);
+  if (_lineupViewMode === 'field' && t.innings.length && !t.innings.includes(_fieldInning)) _fieldInning = t.innings[0];
   const tops = new Map();
   if (t.order) document.querySelectorAll('#lineup-tbody tr[data-player-id]').forEach(tr => tops.set(tr.dataset.playerId, tr.getBoundingClientRect().top));
   return { t, tops };
@@ -9831,13 +9835,14 @@ function sgMoveTiming() { return { DUR: lcTokenMs('--dur-pop', 600), EASE: lcTok
 function sgFxAfter(fx) {
   const els = sgTargetEls(fx.t, 'fx');
   const still = lcReduceMotion();
+  const pairs = still ? [] : sgSwapPairs(fx.t);
   const show = () => {
     let last = 0;
     els.forEach(([el, cls, step]) => { el.style.setProperty('--sg-d', (still ? 0 : step * SG_STAGGER) + 'ms'); el.classList.add(cls); last = Math.max(last, step); });
-    if (!still) sgFlyCells(fx.t);
+    sgFlyPairs(pairs);
     setTimeout(() => els.forEach(([el, cls]) => el.classList.remove(cls)), still ? 1500 : 2500 + last * SG_STAGGER);
   };
-  if (!still && fx.t.cells.length) sgHideCells(fx.t);   // the values arrive by the fly
+  sgHidePairs(pairs);   // the values arrive by the fly
   const dy = sgScrollNeeded(els);
   if (!dy) {
     if (!still) sgSlideRows(fx);
@@ -9876,14 +9881,6 @@ function sgScrollNeeded(els) {
   return hi - lo <= room - 32 ? Math.round((lo + hi) / 2 - (top + bottom) / 2) : Math.round(lo - top - 16);
 }
 
-// The swapped cells' new values hide until their fly lands.
-function sgHideCells(t) {
-  const tb = document.getElementById('lineup-tbody');
-  const els = t.cells.map(([id, i]) => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`)).filter(Boolean);
-  els.forEach(el => el.classList.add('sg-hidden'));
-  setTimeout(() => els.forEach(el => el.classList.remove('sg-hidden')), 2000);   // never left hidden
-}
-
 // Batting order: every row that moved slides from where it was; the kids
 // the card moved ride above the rows they pass, and their number tiles pop
 // as they land (--sg-land, read by .bat-order.sg-flash).
@@ -9902,47 +9899,106 @@ function sgSlideRows(fx) {
   });
 }
 
-// Swapped innings: each kid's new spot flies in from the other kid's cell,
-// the field view's swap fly at the table's pace. Only when both cells are
-// in sight.
-function sgFlyCells(t) {
-  if (!t.cells.length) return;
-  const { DUR, EASE } = sgMoveTiming();
+// Swapped innings, in every view that shows them: the two kids' cells in
+// the table, their chips in the field view (the inning it shows) and on each
+// inning's card in All innings. Each pair is the two kids' new spots; each
+// flies in from the other's, the field view's swap fly at the table's pace.
+function sgSwapPairs(t) {
+  const out = [];
   const tb = document.getElementById('lineup-tbody');
-  const sel = (id, i) => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`);
-  // On screen and on top (not scrolled under the name column or a pane).
-  const seen = el => {
-    const r = el && el.getBoundingClientRect();
-    if (!r || !r.width) return null;
-    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
-    return hit && (hit === el || el.contains(hit)) ? r : null;
-  };
+  const fieldView = document.getElementById('lineup-field-view');
+  const cards = document.querySelectorAll('#allinnings-grid .allinnings-card');
   t.innings.forEach((i, k) => {
-    const [a, b] = t.cells.filter(c => c[1] === i).map(c => sel(c[0], i));
-    // Measure with the values showing so the hit test sees the cells.
-    [a, b].forEach(el => el && el.classList.remove('sg-hidden'));
-    const ra = seen(a), rb = seen(b);
-    if (!ra || !rb) return;
-    [[a, rb, ra], [b, ra, rb]].forEach(([to, from, dest]) => {
-      const cs = getComputedStyle(to);
-      const fly = document.createElement('div');
-      fly.className = 'sg-fly';
-      fly.textContent = to.selectedIndex >= 0 ? to.options[to.selectedIndex].text : '';
-      Object.assign(fly.style, {
-        left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px',
-        fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
-        paddingLeft: cs.paddingLeft, justifyContent: cs.textAlign === 'center' ? 'center' : 'flex-start'
+    const ids = t.cells.filter(c => c[1] === i).map(c => c[0]);
+    if (ids.length !== 2) return;
+    const cell = id => tb && tb.querySelector(`.pos-select[data-player="${cssEscape(id)}"][data-inning="${i}"]`);
+    out.push({ a: cell(ids[0]), b: cell(ids[1]), k, chip: false });
+    if (i === _fieldInning && fieldView) out.push({ a: sgFieldEl(fieldView, ids[0], i), b: sgFieldEl(fieldView, ids[1], i), k, chip: true, scope: fieldView });
+    if (cards[i]) out.push({ a: sgFieldEl(cards[i], ids[0], i), b: sgFieldEl(cards[i], ids[1], i), k, chip: true, scope: cards[i] });
+  });
+  return out.filter(p => (p.a && p.a.getClientRects().length) || (p.b && p.b.getClientRects().length));
+}
+function sgHideClass(p) { return p.chip ? 'swap-hidden' : 'sg-hidden'; }
+
+// The new values hide until their fly lands (never left hidden).
+function sgHidePairs(pairs) {
+  const hidden = [];
+  pairs.forEach(p => {
+    if (!p.a || !p.b) return;
+    [p.a, p.b].forEach(el => { el.classList.add(sgHideClass(p)); hidden.push([el, sgHideClass(p)]); });
+  });
+  if (hidden.length) setTimeout(() => hidden.forEach(([el, cls]) => el.classList.remove(cls)), 2500);
+}
+
+// On screen and on top (not scrolled under the name column or a pane).
+function sgSeen(el) {
+  const r = el && el.getBoundingClientRect();
+  if (!r || !r.width) return null;
+  const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+  return hit && (hit === el || el.contains(hit)) ? r : null;
+}
+
+function sgFlyPairs(pairs) {
+  if (!pairs.length) return;
+  const { DUR, EASE } = sgMoveTiming();
+  pairs.forEach(p => {
+    const hide = sgHideClass(p);
+    // Measure with the values showing so the hit test sees them.
+    [p.a, p.b].forEach(el => el && el.classList.remove(hide));
+    const ra = sgSeen(p.a), rb = sgSeen(p.b);
+    if (!ra || !rb) {
+      // All innings shows no bench, so a swap with a benched kid has one
+      // chip: it pops (Pop) with its new name instead.
+      if (p.chip) [p.a, p.b].forEach(el => {
+        if (el && sgSeen(el)) el.animate([{ scale: .8 }, { scale: 1 }], { duration: lcTokenMs('--dur-pop', 600), easing: lcToken('--ease-pop', 'ease-out'), delay: p.k * SG_STAGGER, fill: 'backwards' });
       });
-      document.body.appendChild(fly);
-      to.classList.add('sg-hidden');
-      const anim = fly.animate(
-        [{ transform: 'none' }, { transform: `translate(${dest.left - from.left}px, ${dest.top - from.top}px)` }],
-        { duration: DUR, easing: EASE, delay: k * SG_STAGGER, fill: 'both' });
-      const done = () => { fly.remove(); to.classList.remove('sg-hidden'); };
+      return;
+    }
+    [[p.a, rb, ra], [p.b, ra, rb]].forEach(([to, from, dest]) => {
+      const fly = p.chip ? sgChipFly(to, from, dest, p.scope) : sgCellFly(to, from);
+      const dx = p.chip ? (dest.left + dest.width / 2) - (from.left + from.width / 2) : dest.left - from.left;
+      const dy = p.chip ? (dest.top + dest.height / 2) - (from.top + from.height / 2) : dest.top - from.top;
+      to.classList.add(hide);
+      const anim = fly.animate([{ transform: 'none' }, { transform: `translate(${dx}px, ${dy}px)` }],
+        { duration: DUR, easing: EASE, delay: p.k * SG_STAGGER, fill: 'both' });
+      const done = () => { fly.remove(); to.classList.remove(hide); };
       anim.finished.then(done, done);
-      setTimeout(done, DUR + k * SG_STAGGER + 150);   // in case .finished never settles
+      setTimeout(done, DUR + p.k * SG_STAGGER + 150);   // in case .finished never settles
     });
   });
+}
+
+// A table cell's value in the highlight look, starting over the other cell.
+function sgCellFly(to, from) {
+  const cs = getComputedStyle(to);
+  const fly = document.createElement('div');
+  fly.className = 'sg-fly';
+  fly.textContent = to.selectedIndex >= 0 ? to.options[to.selectedIndex].text : '';
+  Object.assign(fly.style, {
+    left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px',
+    fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
+    paddingLeft: cs.paddingLeft, justifyContent: cs.textAlign === 'center' ? 'center' : 'flex-start'
+  });
+  document.body.appendChild(fly);
+  return fly;
+}
+
+// A copy of a kid's chip (its own size, centered over the other kid's
+// spot), inside the same view so the Crate chip styles still apply. Lifted
+// on the dialog shadow like the field view's own swap fly.
+function sgChipFly(to, from, dest, scope) {
+  const fly = to.cloneNode(true);
+  ['id', 'data-pos', 'data-bench-player', 'onclick', 'ondragstart', 'ondragover', 'ondragleave', 'ondrop', 'ondragend', 'draggable', 'title'].forEach(a => fly.removeAttribute(a));
+  fly.classList.remove('sg-flash', 'sg-hl', 'swap-hidden', 'drop-target', 'dragging');
+  fly.setAttribute('aria-hidden', 'true');
+  fly.inert = true;
+  Object.assign(fly.style, {
+    position: 'fixed', margin: '0', transform: 'none', boxSizing: 'border-box', zIndex: '500', pointerEvents: 'none',
+    left: (from.left + from.width / 2 - dest.width / 2) + 'px', top: (from.top + from.height / 2 - dest.height / 2) + 'px',
+    width: dest.width + 'px', height: dest.height + 'px', boxShadow: 'var(--shadow-dialog)'
+  });
+  scope.appendChild(fly);
+  return fly;
 }
 
 // Before the list redraws: where each card sits, and the card itself (a
@@ -11890,7 +11946,7 @@ function buildInningBubblesHtml(inningIdx) {
     const inner = empty
       ? '<div class="field-pos-label">' + escHtml(pos) + '</div>'
       : '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>';
-    return '<div class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
+    return '<div data-pos="' + sbAttr(pos) + '" class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
   };
 
   let fieldHtml = '';
