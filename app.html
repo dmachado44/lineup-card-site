@@ -3312,6 +3312,97 @@
       .pl-tr .pl-ps, .pl-tr .pl-pref, .pl-tr.pl-hd { display: none; }
     }
 
+    /* ── OVERVIEW (coach only; Dan, Nov 3 2026): the season at a glance.
+       First section, innings by position. ──
+       Innings at each spot, from saved lineups. One sequential ramp: the
+       accent mixed into the panel at 30 / 62 / 100. The count is printed in
+       every cell, so color is never the only cue. */
+    #view-overview { display: none; }
+    #view-overview.active { display: block; }
+    #view-overview {
+      --pos-h1: color-mix(in srgb, var(--accent) 30%, var(--panel));
+      --pos-h2: color-mix(in srgb, var(--accent) 62%, var(--panel));
+      --pos-h3: var(--accent);
+    }
+    .pos-card { background: var(--panel); border-radius: var(--radius-card); overflow: hidden; }
+    .pos-scroll { overflow-x: auto; }
+    .pos-tbl { width: 100%; border-collapse: collapse; font-size: var(--type-sub); font-variant-numeric: tabular-nums; }
+    .pos-tbl th, .pos-tbl td { padding: var(--space-6) var(--space-4); text-align: center; border-bottom: 1px solid var(--hairline); min-width: 44px; }
+    .pos-tbl tbody tr:last-child > * { border-bottom: none; }
+    .pos-tbl thead th { background: var(--bg-secondary); color: var(--ink-secondary); padding: var(--space-12) var(--space-4); }
+    .pos-tbl .pos-name {
+      position: sticky; left: 0; z-index: 1; background: var(--panel);
+      text-align: left; min-width: 180px; padding: var(--space-8) var(--space-16) var(--space-8) var(--space-20);
+      font-weight: 600; white-space: nowrap;
+    }
+    .pos-tbl thead .pos-name { background: var(--bg-secondary); }
+    .pos-tbl tbody tr:hover > * { background: var(--row-hover); }
+    .pos-tbl .pos-tot { border-left: 1px solid var(--hairline); }
+    .pos-tbl td.pos-sum { min-width: 56px; font-weight: 600; }
+    .pos-tbl td.pos-sum.b { color: var(--ink-secondary); }
+    .pos-tbl td.pos-sum:last-child, .pos-tbl thead th:last-child { padding-right: var(--space-16); }
+    .pos-h { display: inline-grid; place-items: center; min-width: 32px; height: 28px; padding: 0 var(--space-6); border-radius: var(--radius-small); font-weight: 700; }
+    .pos-h.h1 { background: var(--pos-h1); }
+    .pos-h.h2 { background: var(--pos-h2); }
+    .pos-h.h3 { background: var(--pos-h3); color: var(--on-accent); }
+    .pos-0 { display: inline-block; width: 4px; height: 4px; border-radius: 50%; background: var(--gray-3); vertical-align: middle; }
+    .pos-key { display: inline-flex; align-items: center; gap: var(--space-6); }
+    .pos-key i { width: 16px; height: 12px; border-radius: 2px; }
+    .pos-key i.h1 { background: var(--pos-h1); }
+    .pos-key i.h2 { background: var(--pos-h2); }
+    .pos-key i.h3 { background: var(--pos-h3); }
+    /* Sections: one quiet card each, a plain-language lede on top, then one
+       row per kid with a small mark. iOS takes these as rows (FotMob, Me+). */
+    .ov-sec { display: flex; flex-direction: column; gap: var(--space-12); min-width: 0; margin-bottom: var(--space-32); }
+    .ov-sec > .section-head, .ov-pair > .sc-sec > .section-head { margin: 0; }
+    .ov-pair { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: var(--space-24); }
+    .ov-pair > .sc-sec { margin-bottom: var(--space-32); min-width: 0; }
+    @media (min-width: 1280px) { .ov-pair { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+    .ov-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-16); margin-bottom: var(--space-32); }
+    .ov-tile { background: var(--panel); border-radius: var(--radius-card); padding: var(--space-16) var(--space-20); display: flex; flex-direction: column; gap: var(--space-6); min-width: 0; }
+    .ov-tile b { font-family: var(--font-display); font-weight: 900; font-size: var(--type-content-title); line-height: 1; color: var(--ink); }
+    .ov-tile-s { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); }
+    .ov-card { background: var(--panel); border-radius: var(--radius-card); padding: var(--space-20) var(--space-24); }
+    .ov-lede { margin: 0 0 var(--space-12); font-size: var(--type-headline); font-weight: 700; color: var(--ink); }
+    .pos-card .ov-card-hd { padding: var(--space-20) var(--space-24) var(--space-16); }
+    .pos-card .ov-lede { margin: 0; }
+    .ov-gaps { margin: var(--space-6) 0 0; font-size: var(--type-sub); color: var(--ink-secondary); }
+    .ov-gaps b { color: var(--ink); font-weight: 600; }
+    .ov-rows { list-style: none; margin: 0; padding: 0; }
+    .ov-row { display: grid; align-items: center; column-gap: var(--space-12); padding: var(--space-6) 0; font-size: var(--type-sub); min-height: 32px; }
+    .ov-row--bench { grid-template-columns: 112px minmax(0, 1fr) 32px 132px; }
+    .ov-row--bat { grid-template-columns: 112px minmax(0, 1fr) 40px 72px; }
+    .ov-row--att { grid-template-columns: 112px minmax(0, 1fr) 56px; }
+    .ov-axis { padding: 0 0 var(--space-4); min-height: 0; }
+    .ov-axis-l { display: flex; justify-content: space-between; }
+    .ov-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ov-val { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .ov-aside { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
+    .ov-flag { font-size: var(--type-caption); font-weight: 700; color: var(--attention-ink); white-space: nowrap; }
+    .ov-bar { height: 8px; border-radius: var(--radius-pill); background: var(--hairline); overflow: hidden; }
+    .ov-bar i { display: block; height: 100%; border-radius: var(--radius-pill); background: var(--accent); }
+    .ov-track { position: relative; height: 20px; margin: 0 var(--space-6); }
+    .ov-track::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px; border-radius: var(--radius-pill); background: var(--hairline); }
+    .ov-range { position: absolute; top: 50%; height: 4px; margin-top: -2px; border-radius: var(--radius-pill); background: var(--hairline-strong); }
+    .ov-tick { position: absolute; top: 50%; width: 2px; height: 10px; margin: -5px 0 0 -1px; border-radius: 2px; background: var(--gray-3); }
+    .ov-dot { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--panel); }
+    .ov-games { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+    .ov-games i { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
+    .ov-games i.off { background: transparent; box-shadow: inset 0 0 0 2px var(--hairline-strong); }
+    .ov-foot { margin: 0; font-size: var(--type-caption); color: var(--ink-secondary); }
+    @media (max-width: 979px) {
+      .ov-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-12); }
+      .ov-card, .pos-card .ov-card-hd { padding-left: var(--space-16); padding-right: var(--space-16); }
+      .ov-row--bench { grid-template-columns: 88px minmax(0, 1fr) 28px; }
+      .ov-row--bench .ov-flag { grid-column: 2 / -1; }
+      .ov-row--bat { grid-template-columns: 88px minmax(0, 1fr) 36px; }
+      .ov-row--bat .ov-aside { grid-column: 2 / -1; }
+      .ov-row--att { grid-template-columns: 88px minmax(0, 1fr) 48px; }
+    }
+    @media (max-width: 979px), (pointer: coarse) {
+      .pos-tbl .pos-name { min-width: 120px; padding-left: var(--space-12); padding-right: var(--space-8); }
+    }
+
     .pp {
       position: fixed; top: 0; right: 0; bottom: 0; z-index: 46; width: var(--pp-w); max-width: 100%;
       background: var(--panel); box-shadow: -1px 0 0 var(--hairline);
@@ -3733,6 +3824,32 @@
     <div id="schedule-setup" class="sc-setup"></div>
     <div id="schedule-sync-status"></div>
     <div id="schedule-list-container"></div>
+  </div>
+</div>
+
+<!-- ══════════════ VIEW: OVERVIEW (coach only) ══════════════ -->
+<div id="view-overview">
+  <div class="topbar">
+    <a class="topbar-logo" href="#" onclick="backToDashboard(); return false;">
+      <picture>
+        <source srcset="assets/leadoff-logo-white.svg" media="(prefers-color-scheme: dark)">
+        <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
+      </picture>
+    </a>
+    <div class="topbar-spacer"></div>
+    <div id="topbar-auth-overview"></div>
+  </div>
+
+  <div class="dashboard-page">
+    <div class="dashboard-header">
+      <div class="dashboard-header-left">
+        <div class="page-crumb"></div>
+        <h1>Overview</h1>
+        <p class="dashboard-sub" id="overview-sub">Your season so far, from saved lineups</p>
+      </div>
+    </div>
+
+    <div id="overview-container"></div>
   </div>
 </div>
 
@@ -5920,7 +6037,8 @@ function hydrateTeamDoc(teamData, opts) {
 // it's saved, and the lineup builder keeps its session (it re-reads on entry).
 // Listeners never write.
 var _live = { uid: null, owned: null, joined: null, ownedDocs: null, joinedDocs: null,
-              players: null, playersTeam: null, lineups: null, lineupsTeam: null };
+              players: null, playersTeam: null, lineups: null, lineupsTeam: null,
+              ov: null, ovTeam: null };
 
 function startLiveSync(user) {
   const fb = initFirebase();
@@ -5935,15 +6053,16 @@ function startLiveSync(user) {
     .onSnapshot(s => { _live.joinedDocs = docsById(s); applyLiveTeams(); }, quiet('joined teams'));
   if (_activeTeamId) watchTeamPlayers(_activeTeamId);
   if (_scheduleTeamId) watchScheduleLineups(_scheduleTeamId);
+  if (_ovTeamId) watchOverviewLineups(_ovTeamId);
 }
 
 function stopLiveSync() {
-  ['owned', 'joined', 'players', 'lineups'].forEach(k => {
+  ['owned', 'joined', 'players', 'lineups', 'ov'].forEach(k => {
     if (typeof _live[k] === 'function') { try { _live[k](); } catch (e) {} }
     _live[k] = null;
   });
   _live.uid = null; _live.ownedDocs = null; _live.joinedDocs = null;
-  _live.playersTeam = null; _live.lineupsTeam = null;
+  _live.playersTeam = null; _live.lineupsTeam = null; _live.ovTeam = null;
 }
 
 // Both team queries must report before the list is rebuilt, or a team would
@@ -6100,6 +6219,7 @@ function showView(view) {
   document.getElementById('view-lineups').classList.remove('active');
   document.getElementById('view-schedule').classList.remove('active');
   document.getElementById('view-players').classList.remove('active');
+  document.getElementById('view-overview').classList.remove('active');
   document.getElementById('view-join').classList.remove('active');
 
   if (view === 'join') document.getElementById('view-join').classList.add('active');
@@ -6110,6 +6230,7 @@ function showView(view) {
   if (view === 'lineups') document.getElementById('view-lineups').classList.add('active');
   if (view === 'schedule') document.getElementById('view-schedule').classList.add('active');
   if (view === 'players') document.getElementById('view-players').classList.add('active');
+  if (view === 'overview') document.getElementById('view-overview').classList.add('active');
   if (view !== 'players' && _ppOpen) closePlayerPanel();
   syncBuilderTools();
 }
@@ -6122,6 +6243,7 @@ function showView(view) {
 //   #/                          → dashboard (teams)
 //   #/team/:id/players          → roster
 //   #/team/:id/schedule         → schedule
+//   #/team/:id/overview         → the season at a glance (coach only)
 //   #/team/:id/lineups          → past lineups (list)
 //   #/team/:id/lineups/:lid     → a saved lineup (detail)
 //   #/team/:id/settings         → team / league settings
@@ -6152,6 +6274,7 @@ function parseHash(hash) {
     switch (parts[2]) {
       case 'players':  return { name: 'players',  teamId };
       case 'schedule': return { name: 'schedule', teamId };
+      case 'overview': return { name: 'overview', teamId };
       case 'settings': return { name: 'settings', teamId };
       case 'rules':    return { name: 'rules',    teamId };
       case 'lineups':
@@ -6175,6 +6298,7 @@ const _routeTitles = {
   dashboard:    'All teams',
   players:      'Players',
   schedule:     'Schedule',
+  overview:     'Overview',
   join:         'Join a team',
   lineupDetail: 'Saved lineup',
   settings:     'Team settings',
@@ -6214,6 +6338,16 @@ async function handleRoute() {
   switch (m.name) {
     case 'players':      await openPlayerManagement(m.teamId); break;
     case 'schedule':     await openSchedule(m.teamId); break;
+    case 'overview': {
+      // Coach only: a member who lands here (old link, lost role) gets the schedule.
+      const pt = _userTeams.find(t => t.id === m.teamId);
+      if (pt && !isCoachRole(pt)) {
+        history.replaceState(null, '', '#/team/' + m.teamId + '/schedule');
+        m.name = 'schedule';
+        await openSchedule(m.teamId);
+      } else await openOverview(m.teamId);
+      break;
+    }
     case 'join':         openJoinTeam(m.code); break;
     case 'lineupDetail': await openPastLineups(m.teamId); viewLineupDetail(m.lineupId); break;
     case 'settings':     _settingsSection = 'team';  await enterBuilder(m.teamId, 'settings', 1); break;
@@ -6268,6 +6402,7 @@ var SB_ICONS = {
   players:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.8 20c.9-3.4 3.3-5.2 6.2-5.2s5.3 1.8 6.2 5.2"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.9c1.8.6 3 2.2 3.6 5.1"/></svg>',
   rules:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
   settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>',
+  overview: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>',
   share:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5M20 14v.5M17 20h3v-3M14 18v2"/></svg>',
   grid:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
   plus:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -6420,6 +6555,7 @@ function renderSidebar() {
       : `<div style="height:14px"></div>`;
     html += sbItem(`navigate('#/team/${sbAttr(team.id)}/schedule')`, SB_ICONS.schedule, 'Schedule', onTeam && (section === 'schedule' || section === 'lineupDetail'));
     html += sbItem(`navigate('#/team/${sbAttr(team.id)}/players')`, SB_ICONS.players, 'Players', onTeam && section === 'players');
+    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/overview')`, SB_ICONS.overview, 'Overview', onTeam && section === 'overview');
     if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/rules')`, SB_ICONS.rules, 'League rules', onTeam && section === 'rules');
     if (teamRole(team) === 'owner') html += sbItem(`navigate('#/team/${sbAttr(team.id)}/settings')`, SB_ICONS.settings, 'Team settings', onTeam && section === 'settings');
   } else {
@@ -6486,8 +6622,8 @@ function switchToTeam(id) {
   if (!team) return;
   lsSet(LS_LAST_TEAM, id);
   const r = parseHash(location.hash);
-  let sec = ['players', 'schedule', 'rules', 'settings'].includes(r.name) ? r.name : 'schedule';
-  if (sec === 'rules' && !isCoachRole(team)) sec = 'schedule';
+  let sec = ['players', 'schedule', 'overview', 'rules', 'settings'].includes(r.name) ? r.name : 'schedule';
+  if ((sec === 'rules' || sec === 'overview') && !isCoachRole(team)) sec = 'schedule';
   if (sec === 'settings' && teamRole(team) !== 'owner') sec = 'schedule';
   navigate('#/team/' + id + '/' + sec);
 }
@@ -7838,6 +7974,359 @@ async function testCalendarSync() {
 // this page now covers BOTH the GameChanger calendar (when linked) and the
 // team's saved lineups — past games and their lineups live here, so the
 // separate "Past Lineups" page is gone from the nav.
+// ═══════════════════════════════════════════════════
+// OVERVIEW (coach only)
+// ───────────────────────────────────────────────────
+// The season at a glance (Dan, Nov 3 2026): where every kid has played,
+// bench time, batting order, attendance and game balls. Built from the
+// team's saved lineups whose game day is today or earlier, one lineup per
+// game. It counts the saved plan; subs made during a game aren't tracked
+// (a later feature). Read-only except the game-ball ledger, which is the
+// same one Schedule shows (coachNotes/_season). UTL1-3 share one column.
+// The name is a placeholder; more sections will land here.
+// ═══════════════════════════════════════════════════
+let _ovTeamId = null;
+let _ovLineups = [];
+let _ovRoster = [];
+const POS_GRID_BASE = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF'];
+const POS_GRID_ORDER = ['P', 'C', '1B', '2B', '3B', 'SS', 'LF', 'LCF', 'CF', 'RCF', 'RF', 'UTL'];
+
+function posGridFull(p) { return p === 'UTL' ? 'Utility' : (POS_FULL[p] || p); }
+
+// A saved lineup's game day as YYYY-MM-DD: its gameDate, else the day it
+// was first saved. '' when neither is known.
+function posLineupDay(l) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(l.gameDate || '')) return l.gameDate;
+  const ms = lcMillis(l.createdAt);
+  return ms ? localISODate(new Date(ms)) : '';
+}
+
+// Pure: saved lineups + roster → the season. today is YYYY-MM-DD.
+function ovSeasonStats(lineups, roster, today) {
+  const norm = s => String(s || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  // One lineup per game: a game saved twice (two devices, an older copy)
+  // keeps its latest save.
+  const byGame = new Map();
+  (lineups || []).forEach(l => {
+    const day = posLineupDay(l);
+    if (!day || day > today || !Array.isArray(l.players) || !l.players.length) return;
+    const key = /^\d{4}-\d{2}-\d{2}$/.test(l.gameDate || '')
+      ? [day, norm(l.opponent), l.gameTime || ''].join('|')
+      : 'id:' + l.id;
+    const at = lcMillis(l.updatedAt) || lcMillis(l.createdAt);
+    const prev = byGame.get(key);
+    if (!prev || at > prev.at) byGame.set(key, { l, at, day });
+  });
+  const games = Array.from(byGame.values()).sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : 0));
+
+  // First names, full names where two kids share one (Game balls' rule).
+  const firsts = {};
+  (roster || []).forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
+  const rows = (roster || []).map(p => ({
+    id: p.id, name: p.name, short: firsts[gnFirstName(p.name)] > 1 ? p.name : gnFirstName(p.name), order: p.order,
+    counts: {}, gamesAt: {}, field: 0, bench: 0, games: 0,
+    spots: [], ledOff: 0, battedLast: 0, backToBack: 0, present: []
+  }));
+  const byId = new Map(rows.map(r => [r.id, r]));
+  // Name fallback for older lineups, same as resolveLocalPlayerId: a name
+  // two kids share never guesses.
+  const byName = new Map();
+  rows.forEach(r => { const k = norm(r.name); byName.set(k, byName.has(k) ? null : r); });
+  const used = new Set();
+  let maxCell = 0, maxSpot = 1, lastDay = '';
+
+  games.forEach(({ l, day }, gi) => {
+    if (day > lastDay) lastDay = day;
+    const innings = Number(l.innings) > 0 ? Number(l.innings) : undefined;
+    // Batting spot: batOrder when saved, else the list position.
+    const entries = l.players.map((e, i) => ({ e: e || {}, spot: Number(e && e.batOrder) > 0 ? Number(e.batOrder) : i + 1 }));
+    const lastSpot = Math.max.apply(null, entries.map(x => x.spot));
+    if (lastSpot > maxSpot) maxSpot = lastSpot;
+    const seenRows = new Set();
+    entries.forEach(({ e, spot }) => {
+      const row = byId.get(rosterDocIdFor(e.playerId)) || byName.get(norm(e.name)) || null;
+      if (!row || seenRows.has(row)) return;   // off the roster now, or listed twice
+      seenRows.add(row);
+      row.games++;
+      row.present[gi] = true;
+      row.spots.push(spot);
+      if (spot === 1) row.ledOff++;
+      if (spot === lastSpot && entries.length > 1) row.battedLast++;
+      const seen = new Set();
+      let sitting = 0;   // bench innings in a row
+      (Array.isArray(e.positions) ? e.positions : []).slice(0, innings).forEach(v => {
+        if (v === 'Bench') {
+          row.bench++;
+          if (++sitting === 2) row.backToBack++;   // one per stretch of 2+
+          return;
+        }
+        sitting = 0;
+        const pos = /^UTL\d$/.test(v || '') ? 'UTL' : v;
+        if (!POS_GRID_ORDER.includes(pos)) return;   // '' = unassigned
+        row.counts[pos] = (row.counts[pos] || 0) + 1;
+        row.field++;
+        used.add(pos);
+        if (!seen.has(pos)) { seen.add(pos); row.gamesAt[pos] = (row.gamesAt[pos] || 0) + 1; }
+        if (row.counts[pos] > maxCell) maxCell = row.counts[pos];
+      });
+    });
+  });
+  rows.forEach(r => { r.present = games.map((g, i) => !!r.present[i]); });
+
+  const cols = POS_GRID_ORDER.filter(p => POS_GRID_BASE.includes(p) || used.has(p));
+  const ord = r => (typeof r.order === 'number' ? r.order : 1e6);
+  rows.sort((a, b) => (ord(a) - ord(b)) || a.name.localeCompare(b.name));
+  return {
+    games: games.length, lastDay, cols, rows, maxCell, maxSpot,
+    gameList: games.map(g => ({ day: g.day, opponent: g.l.opponent || '', name: g.l.gameName || '' }))
+  };
+}
+
+// "Reef", "Reef and Ivy", "Reef, Ivy and Leo"
+function ovList(names) {
+  if (names.length < 2) return names.join('');
+  return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+}
+function ovPlural(n, w) { return n + ' ' + w + (n !== 1 ? 's' : ''); }
+function ovDec(n) { return (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, ''); }
+function ovOrdinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+function ovShortDate(day) { return new Date(day + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); }
+
+async function openOverview(teamId) {
+  const team = _userTeams.find(t => t.id === teamId);
+  if (!team) return;
+  _ovTeamId = teamId;
+
+  const authEl = document.getElementById('topbar-auth');
+  const ovAuthEl = document.getElementById('topbar-auth-overview');
+  if (authEl && ovAuthEl) ovAuthEl.innerHTML = authEl.innerHTML;
+
+  showView('overview');
+  window.scrollTo(0, 0);
+  const box = document.getElementById('overview-container');
+  box.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading your season…' });
+
+  const fb = initFirebase();
+  if (!fb) return;
+  try {
+    const ref = fb.db.collection('teams').doc(teamId);
+    const [lineupSnap, rosterSnap] = await Promise.all([
+      ref.collection('lineups').get(),
+      ref.collection('players').get(),
+      loadCoachNotes(teamId)   // game balls (coach only)
+    ]);
+    if (_ovTeamId !== teamId) return;   // switched teams mid-read
+    _ovLineups = lineupSnap.docs.map(d => Object.assign({ id: d.id }, d.data()));
+    _ovRoster = rosterSnap.docs.map(d => {
+      const x = d.data() || {};
+      return { id: d.id, name: x.name || '', order: typeof x.order === 'number' ? x.order : null };
+    }).filter(p => p.name);
+    renderOverview();
+    watchOverviewLineups(teamId);   // lineups saved on iOS count right away
+  } catch (e) {
+    console.error('Overview load failed:', e);
+    box.innerHTML = lcEmptyHtml({ icon: 'alert', tone: 'alert', title: "Couldn't load your season", body: 'Check your connection and try again.' });
+  }
+}
+
+// Read-only listener, like the schedule's: never writes.
+function watchOverviewLineups(teamId) {
+  if (!_live.uid || !teamId) return;
+  if (_live.ovTeam === teamId && _live.ov) return;
+  if (typeof _live.ov === 'function') { try { _live.ov(); } catch (e) {} }
+  const fb = initFirebase();
+  if (!fb) return;
+  _live.ovTeam = teamId;
+  _live.ov = fb.db.collection('teams').doc(teamId).collection('lineups')
+    .onSnapshot(s => {
+      if (_ovTeamId !== teamId) return;
+      _ovLineups = s.docs.map(d => Object.assign({ id: d.id }, d.data()));
+      const v = document.getElementById('view-overview');
+      if (v && v.classList.contains('active')) renderOverview();
+    }, e => console.warn('Live sync paused (overview):', e && e.message));
+}
+
+function renderOverview() {
+  const box = document.getElementById('overview-container');
+  if (!box) return;
+  const s = ovSeasonStats(_ovLineups, _ovRoster, localISODate());
+
+  if (!s.games) {
+    box.innerHTML = lcEmptyHtml({
+      icon: 'list',
+      title: 'No games played yet',
+      body: 'Lineups you save count here once their game day comes.',
+      action: `<button class="btn btn-primary" type="button" onclick="enterBuilder('${sbAttr(_ovTeamId)}', 'lineup', 3)">Build lineup</button>`
+    });
+    return;
+  }
+  if (!s.rows.length) {
+    box.innerHTML = lcEmptyHtml({
+      icon: 'personPlus',
+      title: 'No players yet',
+      body: 'Add your roster to see where everyone has played.',
+      action: `<button class="btn btn-primary" type="button" onclick="navigate('#/team/${sbAttr(_ovTeamId)}/players')">Go to Players</button>`
+    });
+    return;
+  }
+
+  box.innerHTML = ovTilesHtml(s)
+    + ovPositionsHtml(s)
+    + `<div class="ov-pair">${ovBenchHtml(s)}${ovBattingHtml(s)}</div>`
+    + `<div class="ov-pair">${ovAttendanceHtml(s)}${gnLedgerHtml(_ovTeamId, _ovRoster, true)}</div>`
+    + `<p class="ov-foot">Counts lineups saved for games through ${ovShortDate(s.lastDay)}, not subs made during a game.</p>`;
+}
+
+// Kids who've played at least one game.
+function ovPlayed(s) { return s.rows.filter(r => r.games); }
+
+function ovTilesHtml(s) {
+  const kids = s.rows.length;
+  const absences = s.rows.reduce((n, r) => n + (s.games - r.games), 0);
+  const pct = Math.round(100 * (kids * s.games - absences) / (kids * s.games));
+  const played = ovPlayed(s);
+  const benchAvg = played.length ? played.reduce((n, r) => n + r.bench, 0) / played.length : 0;
+  const benchMax = played.reduce((m, r) => Math.max(m, r.bench), 0);
+  const balls = gnBallCounts(_ovTeamId);
+  const got = s.rows.filter(r => (balls[r.id] || 0) > 0).length;
+  const tile = (k, v, sub) => `<div class="ov-tile"><span class="kicker">${k}</span><b>${v}</b><span class="ov-tile-s">${sub}</span></div>`;
+  return `<div class="ov-tiles">`
+    + tile('Games played', s.games, 'through ' + ovShortDate(s.lastDay))
+    + tile('Attendance', pct + '%', absences ? ovPlural(absences, 'absence') : 'Full squad every game')
+    + tile('Bench per kid', ovDec(benchAvg), benchMax ? 'innings, most is ' + benchMax : 'innings')
+    + tile('Game balls', `${got} of ${kids}`, got === kids ? 'Every kid has one' : `${kids - got} still waiting`)
+    + `</div>`;
+}
+
+function ovPositionsHtml(s) {
+  const played = ovPlayed(s);
+  const spread = played.filter(r => Object.keys(r.counts).length >= 6).length;
+  const lede = spread === played.length
+    ? 'Every kid has played 6 or more spots.'
+    : `${spread} of ${played.length} kids have played 6 or more spots.`;
+  // Spots a few kids haven't tried yet (all-but-a-few), fewest first.
+  const gaps = POS_GRID_BASE
+    .map(p => ({ p, kids: played.filter(r => !r.counts[p]) }))
+    .filter(g => g.kids.length && g.kids.length <= 3)
+    .sort((a, b) => a.kids.length - b.kids.length)
+    .slice(0, 3);
+  const gapLine = gaps.length
+    ? `<p class="ov-gaps">Not yet: ${gaps.map(g => `<b>${posGridFull(g.p)}</b> ${escHtml(ovList(g.kids.map(r => r.short)))}`).join(' · ')}</p>`
+    : '';
+
+  const step = c => Math.min(3, Math.ceil(3 * c / s.maxCell));
+  const head = '<tr><th scope="col" class="pos-name kicker">Player</th>'
+    + s.cols.map(p => `<th scope="col" class="kicker" title="${sbAttr(posGridFull(p))}"><span aria-hidden="true">${p}</span><span class="sr-only">${posGridFull(p)}</span></th>`).join('')
+    + '<th scope="col" class="pos-tot kicker">Field</th><th scope="col" class="kicker">Bench</th><th scope="col" class="kicker">Games</th></tr>';
+  const body = s.rows.map(r => {
+    const cells = s.cols.map(p => {
+      const c = r.counts[p] || 0;
+      const tip = c
+        ? `${r.name}, ${posGridFull(p)}: ${ovPlural(c, 'inning')} in ${ovPlural(r.gamesAt[p] || 0, 'game')}`
+        : `${r.name}, ${posGridFull(p)}: not yet`;
+      return c
+        ? `<td title="${sbAttr(tip)}"><span class="pos-h h${step(c)}">${c}</span></td>`
+        : `<td title="${sbAttr(tip)}"><span class="pos-0" aria-hidden="true"></span><span class="sr-only">0</span></td>`;
+    }).join('');
+    return `<tr><th scope="row" class="pos-name">${escHtml(r.name)}</th>${cells}`
+      + `<td class="pos-sum pos-tot" title="${sbAttr(r.name + ': ' + ovPlural(r.field, 'inning') + ' in the field')}">${r.field}</td>`
+      + `<td class="pos-sum b" title="${sbAttr(r.name + ': ' + ovPlural(r.bench, 'inning') + ' on the bench')}">${r.bench}</td>`
+      + `<td class="pos-sum" title="${sbAttr(r.name + ': ' + ovPlural(r.games, 'game'))}">${r.games}</td></tr>`;
+  }).join('');
+
+  return `<section class="ov-sec" aria-label="Innings by position">
+    <div class="section-head"><h2>Innings by position</h2><span class="pos-key" aria-hidden="true">Fewer<i class="h1"></i><i class="h2"></i><i class="h3"></i>More</span></div>
+    <div class="pos-card">
+      <div class="ov-card-hd"><p class="ov-lede">${lede}</p>${gapLine}</div>
+      <div class="pos-scroll">
+        <table class="pos-tbl">
+          <caption class="sr-only">Innings each player has played at each position this season</caption>
+          <thead>${head}</thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>
+    </div>
+  </section>`;
+}
+
+function ovBenchHtml(s) {
+  const rows = ovPlayed(s).slice().sort((a, b) => (b.bench - a.bench) || a.name.localeCompare(b.name));
+  if (!rows.length) return '';
+  const max = rows[0].bench, min = rows[rows.length - 1].bench;
+  const avg = rows.reduce((n, r) => n + r.bench, 0) / rows.length;
+  const top = rows.filter(r => r.bench === max).map(r => r.short);
+  const lede = !max ? 'Nobody has sat yet.'
+    : max - min <= 1 ? `Bench time is even: everyone has sat ${min === max ? min : min + ' or ' + max} innings.`
+    : top.length > 3 ? `${top.length} kids have sat the most, ${ovPlural(max, 'inning')} each.`
+    : `${ovList(top)} ${top.length > 1 ? 'have' : 'has'} sat the most, ${ovPlural(max, 'inning')}${top.length > 1 ? ' each' : ''}.`;
+  const items = rows.map(r => {
+    const flag = r.backToBack
+      ? `<span class="ov-flag">Sat back to back${r.backToBack > 1 ? ' ×' + r.backToBack : ''}</span>`
+      : '<span></span>';
+    return `<li class="ov-row ov-row--bench">
+      <span class="ov-name">${escHtml(r.short)}</span>
+      <span class="ov-bar" aria-hidden="true"><i style="width:${max ? Math.round(100 * r.bench / max) : 0}%"></i></span>
+      <span class="ov-val">${r.bench}<span class="sr-only"> innings on the bench</span></span>
+      ${flag}
+    </li>`;
+  }).join('');
+  return `<section class="ov-sec" aria-label="Bench">
+    <div class="section-head"><h2>Bench</h2><span>Avg ${ovDec(avg)} innings</span></div>
+    <div class="ov-card"><p class="ov-lede">${lede}</p><ul class="ov-rows">${items}</ul></div>
+  </section>`;
+}
+
+function ovBattingHtml(s) {
+  const avgOf = r => r.spots.reduce((n, x) => n + x, 0) / r.spots.length;
+  const rows = ovPlayed(s).slice().sort((a, b) => (avgOf(a) - avgOf(b)) || a.name.localeCompare(b.name));
+  if (!rows.length) return '';
+  const N = Math.max(2, s.maxSpot);
+  const at = spot => (100 * (spot - 1) / (N - 1)).toFixed(2) + '%';
+  const most = rows.reduce((m, r) => Math.max(m, r.ledOff), 0);
+  const leaders = rows.filter(r => r.ledOff === most).map(r => r.short);
+  const lede = !most ? 'Nobody has led off yet.'
+    : leaders.length > 3 ? `${leaders.length} kids have led off ${ovPlural(most, 'time')} each.`
+    : `${ovList(leaders)} ${leaders.length > 1 ? 'have' : 'has'} led off the most, ${most} of ${s.games} games.`;
+  const axis = `<li class="ov-row ov-row--bat ov-axis" aria-hidden="true"><span></span><span class="ov-axis-l kicker"><span>1st</span><span>${ovOrdinal(N)}</span></span><span class="ov-val kicker">Avg</span><span></span></li>`;
+  const items = rows.map(r => {
+    const lo = Math.min.apply(null, r.spots), hi = Math.max.apply(null, r.spots);
+    const ticks = r.spots.map(x => `<i class="ov-tick" style="left:${at(x)}"></i>`).join('');
+    const tip = `${r.name}: batted ${r.spots.map(ovOrdinal).join(', ')}`;
+    return `<li class="ov-row ov-row--bat" title="${sbAttr(tip)}">
+      <span class="ov-name">${escHtml(r.short)}</span>
+      <span class="ov-track" aria-hidden="true"><i class="ov-range" style="left:${at(lo)};width:calc(${at(hi)} - ${at(lo)})"></i>${ticks}<i class="ov-dot" style="left:${at(avgOf(r))}"></i></span>
+      <span class="ov-val"><span class="sr-only">average spot </span>${avgOf(r).toFixed(1)}</span>
+      <span class="ov-aside">${r.ledOff ? 'Led off ' + r.ledOff : ''}</span>
+    </li>`;
+  }).join('');
+  return `<section class="ov-sec" aria-label="Batting order">
+    <div class="section-head"><h2>Batting order</h2><span>Average spot</span></div>
+    <div class="ov-card"><p class="ov-lede">${lede}</p><ul class="ov-rows">${axis}${items}</ul></div>
+  </section>`;
+}
+
+function ovAttendanceHtml(s) {
+  const missed = s.rows.filter(r => r.games < s.games);
+  const worst = missed.slice().sort((a, b) => a.games - b.games)[0];
+  const lede = !missed.length ? 'Everyone has made every game.'
+    : `${ovPlural(missed.length, 'kid')} ${missed.length > 1 ? 'have' : 'has'} missed a game.`
+      + (worst && s.games - worst.games > 1 && missed.filter(r => r.games === worst.games).length === 1
+        ? ` ${escHtml(worst.short)} has missed ${s.games - worst.games}.` : '');
+  const first = s.gameList[0], last = s.gameList[s.gameList.length - 1];
+  const w = `width:${s.games * 18 - 4}px;max-width:100%`;   // the dots' own width, so the dates sit over them
+  const axis = `<li class="ov-row ov-row--att ov-axis" aria-hidden="true"><span></span><span class="ov-axis-l kicker" style="${w}"><span>${ovShortDate(first.day)}</span><span>${s.games > 1 ? ovShortDate(last.day) : ''}</span></span><span></span></li>`;
+  const gameLabel = g => ovShortDate(g.day) + (g.opponent ? ' vs ' + g.opponent : '');
+  const items = s.rows.map(r => `<li class="ov-row ov-row--att">
+      <span class="ov-name">${escHtml(r.short)}</span>
+      <span class="ov-games" aria-hidden="true" style="${w}">${r.present.map((p, i) => `<i class="${p ? '' : 'off'}" title="${sbAttr(gameLabel(s.gameList[i]) + (p ? ': played' : ': missed'))}"></i>`).join('')}</span>
+      <span class="ov-val">${r.games}<span class="ov-aside"> of ${s.games}</span><span class="sr-only"> games</span></span>
+    </li>`).join('');
+  return `<section class="ov-sec" aria-label="Attendance">
+    <div class="section-head"><h2>Attendance</h2><span>${ovPlural(s.games, 'game')}</span></div>
+    <div class="ov-card"><p class="ov-lede">${lede}</p><ul class="ov-rows">${axis}${items}</ul></div>
+  </section>`;
+}
+
 async function openSchedule(teamId) {
   const team = _userTeams.find(t => t.id === teamId);
   if (!team) return;
@@ -8363,18 +8852,27 @@ function gnTagsHtml(tags, hadBall) {
 }
 
 // Season ledger: who has a ball, who is still waiting. Coach only.
-function gnLedgerHtml(teamId, players) {
+// Balls per kid: one per game it was given on (Game Notes) plus the season
+// tally. Notes are keyed by bare roster doc ids (iOS writes them that way);
+// the web builder's in-memory roster uses imp_/p_ prefixed ids, so every
+// comparison goes through rosterDocIdFor().
+function gnBallCounts(teamId) {
+  const counts = {};
+  Object.values(_coachNotes[teamId] || {}).forEach(n => { if (n.gameBallPlayerId) { const k = rosterDocIdFor(n.gameBallPlayerId); counts[k] = (counts[k] || 0) + 1; } });
+  const tally = _gnTally[teamId] || {};
+  Object.keys(tally).forEach(k => { const n = Number(tally[k]) || 0; if (n > 0) counts[rosterDocIdFor(k)] = (counts[rosterDocIdFor(k)] || 0) + n; });
+  return counts;
+}
+
+// canEditArg: Overview passes true (coach only); Schedule uses its role.
+function gnLedgerHtml(teamId, players, canEditArg) {
+  const canEdit = canEditArg === undefined ? _scheduleCanCoach : canEditArg;
   const all = Object.values(_coachNotes[teamId] || {});
   const tally = _gnTally[teamId] || {};
   // Coaches always get the card (it's how balls are handed out); members
   // only see it once a ball exists.
-  if (!_scheduleCanCoach && !all.some(n => n.gameBallPlayerId) && !Object.keys(tally).length) return '';
-  // Notes are keyed by bare roster doc ids (iOS writes them that way);
-  // the web builder's in-memory roster uses imp_/p_ prefixed ids, so
-  // every comparison goes through rosterDocIdFor().
-  const counts = {};
-  all.forEach(n => { if (n.gameBallPlayerId) { const k = rosterDocIdFor(n.gameBallPlayerId); counts[k] = (counts[k] || 0) + 1; } });
-  Object.keys(tally).forEach(k => { const n = Number(tally[k]) || 0; if (n > 0) counts[rosterDocIdFor(k)] = (counts[rosterDocIdFor(k)] || 0) + n; });
+  if (!canEdit && !all.some(n => n.gameBallPlayerId) && !Object.keys(tally).length) return '';
+  const counts = gnBallCounts(teamId);
   const firsts = {};
   players.forEach(p => { const f = gnFirstName(p.name); firsts[f] = (firsts[f] || 0) + 1; });
   const entries = players
@@ -8386,10 +8884,10 @@ function gnLedgerHtml(teamId, players) {
   const chip = e => {
     const label = `${e.count ? LC_BALL_SVG : ''}<span>${escHtml(e.name)}</span>${e.count > 1 ? `<b class="gb-x">×${e.count}</b>` : ''}`;
     const cls = `lc-toggle gb-chip${e.count ? ' on' : ''}${e.id === _gnJustToggled ? ' pop' : ''}`;
-    if (!_scheduleCanCoach) return `<span class="${cls}">${label}</span>`;
+    if (!canEdit) return `<span class="${cls}">${label}</span>`;
     const hasTally = (Number(tally[e.id]) || 0) > 0;
     const tip = e.count ? (hasTally ? 'Take this ball back' : 'Hand out another ball') : 'Hand out a game ball';
-    return `<button type="button" class="${cls}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}')">${label}</button>`;
+    return `<button type="button" class="${cls}" title="${tip}" aria-pressed="${e.count ? 'true' : 'false'}" onclick="gnToggleTallyBall('${escHtml(e.id)}', '${sbAttr(teamId)}')">${label}</button>`;
   };
   // "Fill the slots": one slot per kid, filled as balls go out.
   const slots = entries.length
@@ -8405,7 +8903,7 @@ function gnLedgerHtml(teamId, players) {
     <div class="section-head"><h2>Game balls</h2><span>${summary}</span></div>
     <div class="gb-card">
       ${slots}
-      ${_scheduleCanCoach ? `<p class="gb-hint">Who earned a game ball?</p>` : ''}
+      ${canEdit ? `<p class="gb-hint">Who earned a game ball?</p>` : ''}
       ${group('Still waiting', waiting)}
       ${group('Got one', got)}
     </div>
@@ -8416,10 +8914,14 @@ function gnLedgerHtml(teamId, players) {
 // Balls recorded on a specific game (Game Notes) are never touched here.
 let _gnTallyBusy = false;
 var _gnJustToggled = null;
-async function gnToggleTallyBall(playerId) {
-  const teamId = _scheduleTeamId;
+async function gnToggleTallyBall(playerId, teamIdArg) {
+  const teamId = teamIdArg || _scheduleTeamId;
+  const team = _userTeams.find(t => t.id === teamId);
   const fb = initFirebase();
-  if (!fb || !teamId || !_scheduleCanCoach || _gnTallyBusy) return;
+  if (!fb || !teamId || !team || !isCoachRole(team) || _gnTallyBusy) return;
+  // Overview and Schedule share the ledger; redraw whichever is showing.
+  const ov = document.getElementById('view-overview');
+  const rerender = () => (ov && ov.classList.contains('active') && _ovTeamId === teamId) ? renderOverview() : renderSchedule();
   const tally = Object.assign({}, _gnTally[teamId] || {});
   const n = Number(tally[playerId]) || 0;
   if (n > 0) { if (n === 1) delete tally[playerId]; else tally[playerId] = n - 1; }
@@ -8429,7 +8931,7 @@ async function gnToggleTallyBall(playerId) {
   setTimeout(() => { if (_gnJustToggled === playerId) _gnJustToggled = null; }, 800);
   const prev = _gnTally[teamId];
   _gnTally[teamId] = tally;          // optimistic
-  renderSchedule();
+  rerender();
   try {
     await fb.db.collection('teams').doc(teamId).collection('coachNotes').doc(GN_SEASON_DOC).set({
       kind: 'season',
@@ -8440,7 +8942,7 @@ async function gnToggleTallyBall(playerId) {
   } catch (e) {
     console.error('Game ball tally save failed:', e);
     _gnTally[teamId] = prev;
-    renderSchedule();
+    rerender();
   } finally {
     _gnTallyBusy = false;
   }
@@ -9506,12 +10008,12 @@ function renderMobileTabs() {
   const builder = document.getElementById('view-builder');
   const lineupBuilder = _builderOpen && builder && builder.classList.contains('active') && !builder.classList.contains('settings-mode');
   const team = route.teamId ? _userTeams.find(t => t.id === route.teamId) : null;
-  const show = !!team && !lineupBuilder && ['schedule', 'players', 'lineupDetail', 'rules', 'settings'].includes(route.name);
+  const show = !!team && !lineupBuilder && ['schedule', 'players', 'overview', 'lineupDetail', 'rules', 'settings'].includes(route.name);
   document.body.classList.toggle('has-mtabs', show);
   if (!show) { el.innerHTML = ''; return; }
   const id = sbAttr(team.id);
   const tabs = [['schedule', 'Schedule'], ['players', 'Players']];
-  if (isCoachRole(team)) tabs.push(['rules', 'Rules']);
+  if (isCoachRole(team)) tabs.push(['overview', 'Overview'], ['rules', 'Rules']);
   if (teamRole(team) === 'owner') tabs.push(['settings', 'Settings']);
   const cur = route.name === 'lineupDetail' ? 'schedule' : route.name;
   el.innerHTML = tabs.map(([k, l]) =>
