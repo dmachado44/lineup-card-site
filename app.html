@@ -1931,7 +1931,7 @@
     /* A suggestion (F56; Nov 3 2026): tag and line, a quiet "Use suggestion"
        under the line (then Used + Undo in the same card), and Dismiss a quiet
        close in the corner, away from the action. */
-    #gn-suggest-list { display: flex; flex-direction: column; gap: var(--space-8); }
+    #gn-suggest-list { position: relative; display: flex; flex-direction: column; gap: var(--space-8); }
     .gn-sug { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-6); padding: var(--space-12) var(--space-48) var(--space-12) var(--space-12); border-radius: var(--radius-compact); background: var(--page); }
     .gn-sug-text { min-width: 0; font-size: 14px; line-height: 1.3; }
     .gn-sug-acts { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-2); }
@@ -1976,6 +1976,14 @@
     .bat-order.sg-flash { animation: sgPop var(--dur-pop) var(--ease-pop) var(--sg-d, 0ms) backwards, sgTile 1.4s var(--ease-glide) var(--sg-d, 0ms) backwards; }
     .gn-sug-acts > .sg-pop { animation: sgPop var(--dur-pop) var(--ease-pop); transform-origin: left center; }
     .pos-select.sg-hidden { color: transparent; }
+    /* The card list reorders as a FLIP (sgListFlip): a used card slides to
+       the top on Snappy, lifted on the raised shadow while it travels; the
+       cards it passes shift down with it, 100ms after the tap (the house
+       beat). A dismissed card leaves as a quick exit (lifts .3em, fades,
+       160ms ease-in) from where it sat (.sg-ghost) while the rest close the
+       gap; a new card rises in on Pop.
+       Reduce Motion: the list just redraws. */
+    .gn-sug.sg-ghost { position: absolute; left: 0; right: 0; margin: 0; pointer-events: none; }
     .sg-fly {
       position: fixed; z-index: 500; pointer-events: none; display: flex; align-items: center; overflow: hidden; white-space: nowrap;
       border-radius: var(--radius-small); background: var(--accent-wash); color: var(--accent-down);
@@ -9312,6 +9320,7 @@ let _sgCards = [];              // pending cards on screen
 let _sgApplied = {};            // id → { card, undo, key } for this builder session
 let _sgHl = [];                 // [el, class] marked by the card being previewed
 let _sgHold = null;             // the card just used or undone: no preview until the pointer or focus leaves it
+let _sgQuiet = false;           // the list just moved under the pointer: no preview until it really moves
 
 async function sgLoadSeason(teamId) {
   const fb = initFirebase();
@@ -9557,9 +9566,8 @@ function renderSuggestions() {
   const count = document.getElementById('gn-suggest-count');
   count.textContent = pending.length + ' new';
   count.style.display = pending.length ? '' : 'none';   // counts hide at zero
-  const shown = applied.map(a => ({ c: a.card, used: true })).concat(pending.map(c => ({ c, used: false })))
-    .sort((x, y) => x.c.rank - y.c.rank);   // a used card keeps its place
-  list.innerHTML = shown.map(x => sgCardHtml(x.c, x.used)).join('')
+  // Used cards sit on top, newest first; sgListFlip slides them there.
+  list.innerHTML = applied.slice().reverse().map(a => sgCardHtml(a.card, true)).join('') + pending.map(c => sgCardHtml(c, false)).join('')
     || lcEmptyHtml({ style: 'inline', body: 'Nothing to flag right now. Suggestions come from past games and your notes.' });
   updateToolsBadge();
 }
@@ -9625,6 +9633,7 @@ function sgUse(id) {
   if (!c) return;
   sgPreview(null);
   const fx = sgFxBefore(c, false);
+  const cards = sgListBefore();
   const refocus = sgHasFocus();
   let undo = null;
   if (c.action === 'move') undo = sgApplyMove(c.move.id, c.move.to);
@@ -9642,8 +9651,10 @@ function sgUse(id) {
   _sgApplied[id] = { card: c, undo, key: sgGameKey() };
   sgAfterChange(undo.type !== 'bump');
   _sgHold = id;
+  _sgQuiet = true;
   if (undo.type !== 'bump') sgFxAfter(fx);
   sgPopAction(id, refocus);
+  sgListFlip(cards, id);
 }
 
 function sgUndo(id) {
@@ -9652,6 +9663,7 @@ function sgUndo(id) {
   const u = a.undo;
   sgPreview(null);
   const fx = sgFxBefore(a.card, true);
+  const cards = sgListBefore();
   const refocus = sgHasFocus();
   if (u.type === 'move') sgApplyMove(u.id, u.to);
   else if (u.type === 'swapOrder') sgApplySwapOrder(u.a, u.b);
@@ -9660,14 +9672,26 @@ function sgUndo(id) {
   delete _sgApplied[id];
   sgAfterChange(u.type !== 'bump');
   _sgHold = id;
+  _sgQuiet = true;
   if (u.type !== 'bump') sgFxAfter(fx);
   sgPopAction(id, refocus);
+  sgListFlip(cards, id);
 }
 
 function sgDismiss(id) {
   sgPreview(null);
+  const cards = sgListBefore();
+  const refocus = sgHasFocus();
+  const at = Array.from(cards.keys()).indexOf(id);
   gnDismiss(id);
   renderSuggestions();
+  _sgQuiet = true;
+  sgListFlip(cards, null);
+  // Focus moves to the card that took its place (or the one above).
+  const left = document.querySelectorAll('#gn-suggest-list .gn-sug[data-sg]');
+  const next = left[Math.min(at, left.length - 1)];
+  const btn = next && next.querySelector('.gn-sug-acts .btn');
+  if (refocus && btn) btn.focus({ preventScroll: true });
 }
 
 // ── Suggestion preview and feedback (Dan, Nov 3 2026) ──
@@ -9755,9 +9779,17 @@ function sgBindPreview(list) {
   const card = el => (el && el.closest) ? el.closest('#gn-suggest-list .gn-sug') : null;
   list.addEventListener('mouseover', e => {
     const c = card(e.target);
-    if (c && c !== card(e.relatedTarget) && c.dataset.sg !== _sgHold) sgPreview(c.dataset.sg);
+    if (c && c !== card(e.relatedTarget) && c.dataset.sg !== _sgHold && !_sgQuiet) sgPreview(c.dataset.sg);
+  });
+  // A card that slid under a still pointer waits for the pointer to move.
+  list.addEventListener('mousemove', e => {
+    if (!_sgQuiet || !(e.movementX || e.movementY)) return;
+    _sgQuiet = false;
+    const c = card(e.target);
+    if (c && c.dataset.sg !== _sgHold) sgPreview(c.dataset.sg);
   });
   list.addEventListener('mouseout', e => {
+    if (!list.contains(e.relatedTarget)) _sgQuiet = false;
     const c = card(e.target);
     if (!c || c === card(e.relatedTarget)) return;
     if (c.dataset.sg === _sgHold) _sgHold = null;
@@ -9899,6 +9931,79 @@ function sgFlyCells(t) {
       setTimeout(done, DUR + k * 70 + 150);   // in case .finished never settles
     });
   });
+}
+
+// Before the list redraws: where each card sits, and the card itself (a
+// card that leaves fades out from its old spot).
+function sgListBefore() {
+  const m = new Map();
+  document.querySelectorAll('#gn-suggest-list .gn-sug[data-sg]').forEach(el => {
+    m.set(el.dataset.sg, { el, top: el.getBoundingClientRect().top, off: el.offsetTop });
+  });
+  return m;
+}
+
+// After it: cards that moved slide from where they were (Snappy); the card
+// that was used or undone rides above the rest, lifted while it travels.
+// Cards that left lift and fade out (a quick exit). Moves start 100ms in,
+// the house beat after a content swap or exit begins, so the tap registers
+// ("Used" pops in place) before the card travels. New cards rise in on Pop
+// once the others have landed.
+function sgListFlip(before, movedId) {
+  const list = document.getElementById('gn-suggest-list');
+  if (!list || !before.size || lcReduceMotion()) return;
+  const DUR = lcTokenMs('--dur-snappy', 350), EASE = lcToken('--ease-snappy', 'ease');
+  const wait = 100;
+  const now = new Map();
+  list.querySelectorAll('.gn-sug[data-sg]').forEach(el => now.set(el.dataset.sg, el));
+  before.forEach((b, id) => {
+    if (now.has(id)) return;
+    const ghost = b.el;
+    ghost.removeAttribute('id');
+    ghost.removeAttribute('data-sg');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.inert = true;
+    ghost.classList.add('sg-ghost');
+    ghost.style.top = b.off + 'px';
+    list.insertBefore(ghost, list.firstChild);   // under the cards that slide over it
+    const gone = () => ghost.remove();
+    ghost.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-.3em)' }],
+      { duration: 160, easing: 'ease-in', fill: 'forwards' }).finished.then(gone, gone);
+  });
+  const lift = lcToken('--shadow-raised', '');
+  let moves = false;
+  now.forEach((el, id) => {
+    const b = before.get(id);
+    if (!b) return;
+    const at = el.getBoundingClientRect();   // where it lands
+    const dy = b.top - at.top;
+    if (Math.abs(dy) < 1) return;
+    moves = true;
+    const moved = id === movedId;
+    if (moved) el.style.zIndex = '1';
+    const slide = el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }],
+      { duration: DUR, easing: EASE, delay: wait, fill: 'backwards' });
+    if (!moved) return;
+    if (lift) el.animate([{ boxShadow: lift }, { boxShadow: lift, offset: .7 }, { boxShadow: 'none' }], { duration: DUR + wait });
+    const done = () => { el.style.zIndex = ''; };
+    slide.finished.then(done, done);
+    sgKeepInPane(el, at);
+  });
+  now.forEach((el, id) => {
+    if (before.has(id)) return;
+    el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }],
+      { duration: lcTokenMs('--dur-pop', 600), easing: lcToken('--ease-pop', 'ease-out'), delay: wait + (moves ? 140 : 0), fill: 'backwards' });
+  });
+}
+
+// The moved card stays in sight: if its new spot is scrolled out of the
+// tools pane, the pane follows it.
+function sgKeepInPane(el, r) {
+  const pane = el.closest('.bt-body');
+  if (!pane) return;
+  const p = pane.getBoundingClientRect();
+  const dy = r.top < p.top + 12 ? r.top - p.top - 12 : r.bottom > p.bottom - 12 ? r.bottom - p.bottom + 12 : 0;
+  if (dy) pane.scrollBy({ top: dy, behavior: 'smooth' });
 }
 
 // The card's action swapped in place (Used and Undo, or back): it pops.
