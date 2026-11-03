@@ -109,7 +109,7 @@
 
       /* Lines: the secondary ink at a set strength (quiet button outline 15%) */
       --hairline:              color-mix(in srgb, var(--ink-secondary) 18%, transparent);  /* quiet edge: white on white, dense lists */
-      --hairline-strong:       color-mix(in srgb, var(--ink-secondary) 30%, transparent);  /* field rest border, toggle track */
+      --hairline-strong:       color-mix(in srgb, var(--ink-secondary) 30%, transparent);  /* field rest border (the off toggle track is --gray-4, F66) */
 
       /* Fields and rows (web app) */
       --field-fill:            var(--panel);  /* field on the cream page */
@@ -125,6 +125,11 @@
       --gray-4:                #D9D4C6;  /* the off toggle track and the player-row hover border */
       --gray-3:                #C9C3B4;  /* faint marks: separators, arrows, taken options, the "down" note dots */
       --gray:                  #8A8578;  /* muted icons: chevrons, drag grips, clear buttons, faint marks, the "or" divider */
+
+      /* Night sections (marketing) */
+      --night:                 #0A0B0D;  /* always dark, both themes: night bands, the footer, the web's undo toast (F62) */
+      --night-ink:             #F4F2EC;
+      --night-rule:            color-mix(in srgb, var(--night-ink) 22%, transparent);  /* edges on night panels (the DJ board's at-bat buttons and ring track); the night twin of --rule (Dan, Nov 2 2026, audit F62) */
 
       /* Shadows */
       --shadow-rgb:            16, 22, 19;  /* THE shadow ink (#101613) as channels: rgba(var(--shadow-rgb), a). Never plain black; scrims aren't shadows */
@@ -143,7 +148,7 @@
       --type-content-title:    34px;  /* display face */
       --type-title:            26px;  /* display face (.card-title, Font.lcTitle) */
       --type-sticker:          17px;  /* sticker button labels */
-      --type-tab:              16px;
+      --type-tab:              15px;  /* 600: team and page tabs (web .m-tab; iOS team tabs, F66) */
       --type-section:          17px;  /* section headers, 600, secondary ink */
       --type-headline:         17px;  /* 700 */
       --type-body:             17px;  /* 500; also field text */
@@ -211,9 +216,6 @@
     /* Team theming: emblem and badge only, never the accent. Set at runtime
        per team, so these stay out of the token file. */
     :root {
-      --team-primary: #000000;
-      --team-secondary: var(--accent-wash);
-      --team-logo: none;
     }
 
     body {
@@ -252,12 +254,6 @@
       align-items: center;
       gap: 8px;
     }
-    .topbar-logo .logo-mark {
-      width: 30px; height: 30px;
-      border-radius: var(--radius-small);
-      object-fit: cover;
-      flex-shrink: 0;
-    }
     /* ── Leadoff brand chrome ──
        Wordmark rules (README-INTEGRATION §1): ink colorway on light/cream
        surfaces, white colorway in dark mode (swapped via <picture>, never
@@ -265,76 +261,14 @@
        3.28:1 aspect that means a 32px height minimum. */
     .brand-wordmark { display: block; height: 32px; width: auto; }
     .topbar-logo picture, .sidebar-brand picture { display: block; line-height: 0; }
-    .topbar-divider { width: 1px; height: 18px; background: var(--hairline); }
     .topbar-spacer { flex: 1; }
 
     /* ── AUTH TOPBAR ── */
     .topbar-auth { display: flex; align-items: center; gap: 10px; }
     .topbar .sb-av { width: 30px; height: 30px; font-size: 12px; }
-    .topbar-user-name {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--ink);
-      max-width: 140px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .topbar-signout {
-      font-size: 12px;
-      color: var(--ink-secondary);
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-      text-decoration: underline;
-    }
-    .topbar-signout:hover { color: var(--ink); }
 
-    .topbar-back {
-      font-size: 14px;
-      color: var(--ink);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      cursor: pointer;
-      background: none;
-      border: none;
-      padding: 0;
-    }
-    .topbar-back:hover { opacity: 0.7; }
 
     /* ── AUTH MODAL ── */
-    .auth-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.45);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
-    }
-    .auth-overlay.hidden { display: none; }
-    .auth-card {
-      background: var(--panel);
-      border-radius: var(--radius-card);
-      padding: 40px 36px;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: var(--shadow-dialog);
-    }
-    .auth-logo {
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 24px;
-    }
-    .auth-logo .logo-mark {
-      width: 34px; height: 34px;
-      border-radius: var(--radius-small);
-      object-fit: cover;
-      flex-shrink: 0;
-    }
-    .auth-logo-name { font-weight: 700; font-size: 17px; }
-    .auth-sub { font-size: 13px; color: var(--ink-secondary); margin-bottom: 28px; line-height: 1.5; }
     .auth-providers { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
     /* Provider buttons are sticker buttons (README-INTEGRATION §3): green
        primary + cream secondaries. Cream face keeps its fill in dark mode,
@@ -352,16 +286,6 @@
       content: ''; flex: 1; height: 1px; background: var(--hairline);
     }
     .auth-email-fields { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
-    .auth-email-actions { display: flex; gap: 8px; }
-    .auth-email-actions .btn { flex: 1; font-size: 15px; }
-    .auth-close {
-      position: absolute; top: 16px; right: 16px;
-      background: none; border: none;
-      font-size: 22px; color: var(--ink-secondary);
-      cursor: pointer; line-height: 1;
-    }
-    .auth-close:hover { color: var(--ink); }
-    .auth-card { position: relative; }
     .auth-error { font-size: 14px; color: var(--alert-ink); margin-top: 12px; min-height: 18px; line-height: 1.4; }
     .auth-switch { font-size: 14px; color: var(--ink-secondary); text-align: center; margin-top: 14px; line-height: 1.6; }
     .auth-switch a, .auth-switch .link-btn { color: var(--ink); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; transition: opacity 0.15s; }
@@ -459,25 +383,11 @@
     }
     .auth-page-credit a { color: var(--ink-secondary); text-decoration: none; font-weight: 600; }
     .auth-page-credit a:hover { color: var(--ink); }
-    .beta-tag {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.8px;
-      background: var(--accent);
-      color: var(--on-accent);
-      padding: 3px 8px;
-      border-radius: var(--radius-card);
-      vertical-align: middle;
-      position: relative;
-      top: -2px;
-    }
     .auth-page-title {
-      font-size: 26px;
-      font-weight: 700;
+      font-size: var(--type-title);
+      line-height: 1;
       text-align: center;
       margin-bottom: 8px;
-      letter-spacing: -0.4px;
     }
     .auth-page-sub {
       font-size: 15px;
@@ -527,8 +437,7 @@
 
     /* ── FORMS ── */
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    .form-grid.col3 { grid-template-columns: 1fr 1fr 1fr; }
-    @media (max-width: 600px) { .form-grid, .form-grid.col3 { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
     .field { display: flex; flex-direction: column; gap: 8px; }
     .field.full { grid-column: 1 / -1; }
 
@@ -677,7 +586,7 @@
        variant (sticker vs hairline vs danger have different fonts/borders) */
     .btn { min-height: 48px; }
     .btn-sm { padding: 8px 18px; font-size: 15px; min-height: 40px; }
-    .btn-lg { padding: 14px 34px; font-size: 19px; min-height: 54px; }
+    .btn-lg { padding: 16px 32px; font-size: var(--type-sticker); min-height: 54px; }
     .btn-icon { padding: 7px 10px; border-radius: var(--radius-control); min-height: 0; }
     /* Full-width sticker (auth providers, the paywall CTA, feedback Send). */
     .btn-block { display: flex; width: 100%; }
@@ -756,18 +665,6 @@
     /* Ported from 21st.dev "slider-with-labels-and-tooltip" (OriginUI) —
        8px rounded track, white thumb with 2px accent border, dark tooltip
        bubble above the thumb while dragging or focused. */
-    .skills-row {
-      align-items: center;
-      /* Breathing room above the sliders so the tooltip bubble has space
-         to render without clipping against the "Prioritize" row above. */
-      padding-top: 22px;
-    }
-    .skills-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 20px;
-      flex: 1;
-    }
     .skill {
       display: flex;
       align-items: center;
@@ -897,10 +794,6 @@
       min-width: 20px;
       text-align: right;
       font-variant-numeric: tabular-nums;
-    }
-    @media (max-width: 820px) {
-      .skills-grid { grid-template-columns: 1fr; gap: 10px; }
-      .skills-row { padding-top: 26px; }
     }
 
     .add-player-row {
@@ -1536,9 +1429,8 @@
       align-items: center;
       justify-content: center;
       font-size: 11px;
-      color: var(--ink-secondary);
-      opacity: 0.7;
-      transition: opacity 0.1s, color 0.1s;
+      color: var(--gray);
+      transition: color 0.1s;
       line-height: 1;
       width: 14px;
       height: 14px;
@@ -1599,7 +1491,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.4);   /* the dialog scrim (DESIGN_RULES: 40 and 25) */
       z-index: 300;
       display: flex;
       align-items: center;
@@ -1624,7 +1516,7 @@
       gap: 12px;
       padding: 18px 20px 4px;
     }
-    .modal-title { font-weight: 600; font-size: 18px; flex: 1; }
+    .modal-title { font-size: var(--type-title); line-height: 1; flex: 1; }
     .modal-sub {
       padding: 4px 20px 14px;
       color: var(--ink-secondary);
@@ -1632,12 +1524,6 @@
       line-height: 1.4;
     }
     .modal-body { overflow-y: auto; padding: 4px 20px 20px; }
-    .modal-empty {
-      text-align: center;
-      padding: 40px 16px;
-      color: var(--ink-secondary);
-      font-size: 14px;
-    }
 
     .import-item {
       display: flex;
@@ -1665,7 +1551,7 @@
       white-space: nowrap;
     }
     .import-item-meta { font-size: 12px; color: var(--ink-secondary); }
-    .import-item-arrow { font-size: 18px; color: var(--gray-3); }
+    .import-item-arrow { font-size: 18px; color: var(--gray); }
 
     /* Image-export option cards */
     .image-export-options {
@@ -1779,19 +1665,6 @@
     }
 
     /* ── SUMMARY ── */
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .summary-card {
-      background: var(--bg-secondary);
-      border: 1px solid var(--hairline);
-      border-radius: var(--radius-control);
-      padding: 16px;
-    }
-    .summary-player-name { font-weight: 600; font-size: 14px; margin-bottom: 8px; }
-    .summary-stat { font-size: 13px; color: var(--ink-secondary); margin-bottom: 4px; }
 
     .tip {
       display: flex;
@@ -1843,7 +1716,7 @@
       gap: 16px;
       flex-wrap: wrap;
     }
-    .export-title { font-size: 28px; font-weight: 600; letter-spacing: -0.4px; }
+    .export-title { font-size: var(--type-content-title); line-height: 1; }
     .export-meta { font-size: 15px; color: var(--ink-secondary); margin-top: 6px; }
 
 
@@ -1895,7 +1768,7 @@
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--ink); }
     .lineup-item-meta { font-size: 14px; color: var(--ink-secondary); }
-    .lineup-item-arrow { font-size: 18px; color: var(--ink-secondary); }
+    .lineup-item-arrow { font-size: 18px; color: var(--gray); }
     .lineup-detail-grid {
       width: 100%; border-collapse: collapse;
       font-size: 14px;
@@ -1929,7 +1802,7 @@
     .strat-stops i { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--hairline-strong); transition: background-color .18s; }
     .strat-stops i:nth-child(1) { left: 0; } .strat-stops i:nth-child(2) { left: 25%; } .strat-stops i:nth-child(3) { left: 50%; }
     .strat-stops i:nth-child(4) { left: 75%; } .strat-stops i:nth-child(5) { left: 100%; }
-    .strat-stops i.on { background: rgba(16,22,19,.28); }
+    .strat-stops i.on { background: var(--hairline-strong); }
     @media (prefers-color-scheme: dark) { .strat-rail { background: color-mix(in srgb, var(--ink) 14%, transparent); } }
     .strategy-slider {
       -webkit-appearance: none; appearance: none; position: absolute; inset: 0; width: 100%; height: 32px; margin: 0;
@@ -1991,7 +1864,7 @@
     @media (prefers-color-scheme: dark) { .gn-mom-zone span { color: var(--accent); } }
     .gn-mom-box::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 1px dashed var(--hairline-strong); }
     .gn-mom-box::after { content: ""; position: absolute; top: 50%; left: 0; right: 0; border-top: 1px dashed var(--hairline-strong); }
-    .gn-dot { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 10px var(--font-body); border: 1.5px solid var(--ink); cursor: pointer; padding: 0; z-index: 1; transition: transform .12s var(--ease-pop, ease), opacity .18s; }
+    .gn-dot { position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 var(--type-kicker) var(--font-body); border: 1.5px solid var(--ink); cursor: pointer; padding: 0; z-index: 1; transition: transform .12s var(--ease-pop, ease), opacity .18s; }
     .gn-dot:hover { transform: scale(1.12); z-index: 3; }
     .gn-dot:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; z-index: 3; }
     .gn-mom-box.has-sel .gn-dot:not(.sel) { opacity: .45; }
@@ -2017,8 +1890,7 @@
     .gn-sug-text { min-width: 0; font-size: 14px; line-height: 1.3; }
     .gn-sug-cta, .gn-sug-done { grid-column: 2; justify-self: start; }
     .gn-sug-x { position: absolute; top: 6px; right: 6px; }
-    .gn-count { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--pennant); color: #FFF8E6; font: 900 10px var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
-    .gn-sug-empty { font-size: 13px; color: var(--ink-secondary); padding: 8px 0; }
+    .gn-count { display: inline-flex; align-items: center; padding: 1px 8px; border-radius: var(--radius-pill); background: var(--pennant); color: var(--sticker-cream); font: 900 var(--type-kicker) var(--font-display); letter-spacing: .1em; text-transform: uppercase; }
 
     /* Calendar URL field in Team Settings */
     .calendar-url-row { display: flex; gap: 10px; align-items: stretch; }
@@ -2071,11 +1943,11 @@
     }
     .upgrade-icon {
       margin-bottom: 16px;
+      color: var(--accent-down);
     }
     .upgrade-title {
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-size: var(--type-title);
+      line-height: 1;
       margin-bottom: 8px;
     }
     .upgrade-sub {
@@ -2230,30 +2102,6 @@
       flex-wrap: wrap;
       margin-bottom: 48px;
     }
-    .settings-save-btn {
-      padding: 10px 24px;
-      border-radius: var(--radius-control);
-      border: 2px solid var(--sticker-ink);
-      box-shadow: var(--shadow-sticker);
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: 16px;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
-      cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-      white-space: nowrap;
-      background: var(--accent);
-      color: var(--on-accent);
-      flex-shrink: 0;
-    }
-    .settings-save-btn:hover { filter: brightness(1.04); }
-    .settings-save-btn:active { transform: translate(4px, 4px); box-shadow: 0 0 0 0 var(--sticker-ink); }
-    .settings-save-btn.inactive {
-      opacity: 0.55;
-      cursor: default;
-      pointer-events: none;
-    }
 
     /* ── PLAYER MANAGEMENT VIEW ── */
     #view-players { display: none; }
@@ -2261,9 +2109,6 @@
     #view-join { display: none; }
     #view-join.active { display: block; }
     .players-page { max-width: 1440px; margin: 0 auto; padding: 32px 40px; }
-    .players-header {
-      margin-bottom: 48px;
-    }
     .players-header-info h1 {
       font-size: 36px;
       font-weight: 600;
@@ -2279,7 +2124,6 @@
 
     /* The top-bar back button is not used in the builder; navigation is handled
        by the side nav. */
-    #view-builder .topbar-back { display: none; }
 
     /* ════════════════ SIDE NAV ════════════════ */
     /* Fixed rail on desktop; off-canvas drawer on mobile. Only present once
@@ -2317,40 +2161,8 @@
     .sidebar-foot a:hover { color: var(--ink); }
     .sidebar-close { display: none; }
     .sidebar-nav { padding: 12px 10px 32px; display: flex; flex-direction: column; gap: 2px; }
-    .sidebar-link {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 12px; border-radius: var(--radius-compact);
-      font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer;
-    }
-    .sidebar-link:hover { background: var(--bg-secondary); }
-    .sidebar-link.active { background: var(--bg-secondary); color: var(--ink); font-weight: 600; }
-    .sidebar-link .sidebar-ico { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
-    .sidebar-team { display: flex; flex-direction: column; }
-    .sidebar-team-logo { width: 24px; height: 24px; border-radius: var(--radius-small); flex-shrink: 0; object-fit: cover; }
-    .sidebar-team-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sidebar-team-chev { color: var(--ink-secondary); font-size: 14px; transition: transform 0.15s; flex-shrink: 0; }
-    .sidebar-team.expanded .sidebar-team-chev { transform: rotate(90deg); }
-    .sidebar-team-sections { display: none; flex-direction: column; gap: 1px; padding: 2px 0 8px; }
-    .sidebar-team.expanded .sidebar-team-sections { display: flex; }
-    .sidebar-sublink {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px 12px 8px 46px; border-radius: var(--radius-compact);
-      font-size: 13px; color: var(--ink-secondary); cursor: pointer;
-    }
-    .sidebar-sublink:hover { background: var(--bg-secondary); color: var(--ink); }
-    .sidebar-sublink.active { background: var(--bg-secondary); color: var(--ink); font-weight: 600; }
-    .sidebar-sublink.new-lineup { color: var(--accent); font-weight: 600; }
 
     /* Mobile hamburger + overlay (hidden on desktop) */
-    .sidebar-hamburger {
-      display: none;
-      position: fixed; top: 12px; left: 12px; z-index: 70;
-      width: 40px; height: 40px; border-radius: var(--radius-compact);
-      background: var(--panel); border: 1px solid var(--hairline);
-      font-size: 18px; line-height: 1; cursor: pointer;
-      align-items: center; justify-content: center;
-    }
-    .signed-in .sidebar-hamburger { display: none; }
     .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 59; }
 
     /* Brand lives in the sidebar once signed in, so hide the per-view topbar logo */
@@ -2365,7 +2177,6 @@
       body.sidebar-open .sidebar { transform: translateX(0); }
       body.sidebar-open .sidebar-overlay { display: block; }
       .sidebar-close { display: inline-grid; }
-      .signed-in .sidebar-hamburger { display: flex; }
     }
 
     /* Settings save footer */
@@ -2414,16 +2225,9 @@
     .text-muted-sm { font-size: 13px; color: var(--ink-secondary); }
     .flex-row { display: flex; align-items: center; }
     .flex-row.gap-sm { gap: 8px; }
-    .flex-row.gap-md { gap: 12px; }
-    .flex-row.gap-lg { gap: 16px; }
     .flex-wrap { flex-wrap: wrap; }
-    .flex-1 { flex: 1; }
     .mb-0 { margin-bottom: 0; }
-    .mb-sm { margin-bottom: 8px; }
-    .mb-md { margin-bottom: 16px; }
     .mb-lg { margin-bottom: 24px; }
-    .mt-sm { margin-top: 8px; }
-    .mt-md { margin-top: 14px; }
 
     /* ── AVATAR DROPDOWN ── */
     .avatar-menu-wrap {
@@ -2549,7 +2353,7 @@
     }
     .feedback-success-icon { display: inline-flex; color: var(--accent-down); margin-bottom: 12px; }
     .feedback-success-icon svg { width: 44px; height: 44px; }
-    .feedback-success-title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .feedback-success-title { font-size: var(--type-headline); font-weight: 700; margin-bottom: 6px; }
     .feedback-success-sub { font-size: 14px; color: var(--ink-secondary); line-height: 1.5; }
 
     @media print {
@@ -2565,9 +2369,7 @@
     /* Hero/title surfaces wear the display face (heavy, compressed). Display
        titles are caps, like the page titles (F55, Nov 2 2026); source text
        stays sentence case. The logo names are a wordmark, not a title. */
-    .dashboard-header-left h1, .players-header-info h1, .settings-header h1,
-    .auth-page-title, .upgrade-title, .export-title,
-    .modal-title, .auth-logo-name, .auth-page-logo .logo-name {
+    .dashboard-header-left h1, .players-header-info h1, .settings-header h1, .auth-page-title, .upgrade-title, .export-title, .modal-title {
       font-family: var(--font-display);
       font-weight: 900;
       letter-spacing: 0.01em;
@@ -2732,7 +2534,6 @@
     /* Per-view top bars retire once signed in: brand, team and account live
        in the sidebar (desktop) or the one phone top bar (below 980px). */
     body.signed-in .topbar { display: none; }
-    .sidebar-hamburger, body.signed-in .sidebar-hamburger { display: none !important; }
     body.signed-in .feedback-tab { display: none; }
     /* The closed feedback panel parks below the fold; its shadow used to peek over the bottom edge. */
     .feedback-panel:not(.open):not(.closing) { visibility: hidden; }
@@ -2759,6 +2560,7 @@
     .sidebar :focus-visible, .m-topbar :focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
 
     /* Tooltips (rail only, plus the toggle) */
+    .sb-tip kbd { font: inherit; }
     .sb-tip {
       position: absolute; left: calc(100% + 12px); top: 50%; z-index: 90;
       transform: translate(-4px, -50%); opacity: 0; pointer-events: none;
@@ -2794,7 +2596,7 @@
     .sb-team-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; transition: opacity .14s .16s; }
     .sb-team-name { font-size: 16px; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .sb-team-sub { font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .sb-chev { flex: none; color: var(--ink-secondary); transition: opacity .14s .16s; }
+    .sb-chev { flex: none; color: var(--gray); transition: opacity .14s .16s; }
     /* ── Menu (F12, Oct 31 2026): THE popover menu ──
        One surface for every menu and picker: the team switcher, the
        account menu, the lineup toolbar's More, the legacy topbar avatar,
@@ -3072,7 +2874,7 @@
     .lt-more-wrap > .lc-menu { z-index: 30; }
     .bt-toggle { position: relative; }
     .bt-toggle[aria-pressed="true"] { background: var(--gray-5); border-color: var(--hairline-strong); }
-    .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-pill); background: var(--pennant); color: #FFF8E6; font: 900 11px/18px var(--font-display); text-align: center; letter-spacing: .04em; }
+    .bt-dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: var(--radius-pill); background: var(--pennant); color: var(--sticker-cream); font: 900 var(--type-kicker)/18px var(--font-display); text-align: center; letter-spacing: .04em; }
     .bt-dot:empty { display: none; }
 
     /* ── Builder: tools pane (strategy · positions · playing time) ── */
@@ -3084,7 +2886,7 @@
     }
     body.tools-visible #view-builder.tools-on .builder-tools { transform: none; visibility: visible; transition: transform .32s var(--ease-glide); }
     .bt-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 12px 24px; }
-    .bt-title { font-family: var(--font-display); font-weight: 900; font-size: 26px; line-height: 1; text-transform: uppercase; }
+    .bt-title { font-family: var(--font-display); font-weight: 900; font-size: var(--type-title); line-height: 1; text-transform: uppercase; }
     .bt-sub { font-size: 14px; color: var(--ink-secondary); margin-top: 4px; }
     .bt-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 26px; }
     .bt-sec { display: flex; flex-direction: column; gap: 10px; }
@@ -3122,7 +2924,6 @@
     .sbar-reset { border: none; background: none; padding: 6px 2px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-secondary); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .sbar-reset:hover { color: var(--ink); }
     .save-bar.is-work .sbar-reset, .save-bar.is-done .sbar-reset { visibility: hidden; }
-    .settings-save-btn { display: none !important; }
     #view-builder.settings-mode .page { padding-bottom: 140px; }
     @media (max-width: 768px) {
       #view-builder.settings-mode .save-bar { bottom: 0; width: 100%; border-radius: var(--radius-card) var(--radius-card) 0 0; padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
@@ -3232,7 +3033,7 @@
     .ng-dow { color: var(--ink-secondary); }
     .ng-md { font-family: var(--font-display); font-weight: 900; font-size: 46px; line-height: .9; text-transform: uppercase; }
     .ng-tm { font-size: var(--type-headline); font-weight: 700; margin-top: 4px; }
-    .ng-op { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+    .ng-op { font-size: var(--type-title); font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
     .ng-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 8px; font-size: 15px; color: var(--ink-secondary); }
     .ng-seg { display: flex; gap: 6px; margin-top: 16px; max-width: 420px; }
     .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink); }
@@ -3241,7 +3042,6 @@
     .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; animation: ngFill .6s var(--ease-glide) .35s both; }
     .ng-act { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 190px; }
     .ng-act .btn-ghost { min-height: 42px; }
-    .ng-wait { font-size: 15px; color: var(--ink-secondary); max-width: 220px; }
     @keyframes ngFill { from { transform: scaleX(0); } to { transform: none; } }
     @media (max-width: 760px) {
       .lc-emph { padding: 20px 18px; }
@@ -3259,7 +3059,7 @@
     .dash-hk { color: var(--ink-secondary); }
     .dash-hk a { color: inherit; text-decoration: none; }
     .dash-hk a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
-    .dash-ht { font-size: 30px; font-weight: 700; line-height: 1.1; margin-top: 4px; overflow-wrap: anywhere; }
+    .dash-ht { font-size: var(--type-title); font-weight: 700; line-height: 1.1; margin-top: 4px; overflow-wrap: anywhere; }
     @media (max-width: 760px) {
       .dash-hero { grid-template-columns: auto minmax(0, 1fr); gap: 14px 16px; }
       .dash-hero .ng-act { grid-column: 1 / -1; }
@@ -3270,7 +3070,7 @@
     .ts-card { display: flex; flex-direction: column; gap: 16px; padding: 20px; border-radius: var(--radius-card); background: var(--panel); }
     .ts-head { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 0; border: none; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
     .ts-head .sb-badge { --ring: 2px; width: 42px; height: 42px; font-size: 18px; }
-    .ts-head b { display: block; font-size: 18px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ts-head b { display: block; font-size: var(--type-headline); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head span.ts-sub { display: block; font-size: 13px; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ts-head:hover b { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--hairline-strong); }
     .ts-head > span:last-child { min-width: 0; }
@@ -3329,7 +3129,7 @@
     .sc-go svg { transition: transform var(--dur-pop) var(--ease-pop); }
     .sc-row:hover .sc-go { border-color: var(--ink); }
     .sc-row:hover .sc-go svg { transform: translateX(2px); }
-    .sc-row.past .sc-date { opacity: .7; }
+    .sc-row.past .sc-md { color: var(--ink-secondary); }
     .sc-row.past .sc-md { color: var(--ink-secondary); }
     .sc-more { align-self: flex-start; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -3404,7 +3204,6 @@
     .pl-head .dashboard-sub { margin: 0; }
     .pl-head .players-header-info { position: relative; }
     .pl-head .roster-save-status { position: absolute; left: 0; top: 100%; margin-top: 2px; }
-    .players-header { display: none; }
     .pl-tbl { background: var(--panel); border-radius: var(--radius-card); overflow: hidden; }
     .pl-tr {
       width: 100%; display: grid; grid-template-columns: minmax(180px, 1.3fr) minmax(200px, 2fr) 110px 20px; gap: 16px; align-items: center;
@@ -3428,7 +3227,6 @@
     .pl-ps em { font-style: normal; font-size: 13px; color: var(--ink-secondary); }
     .pl-pref { font-size: 15px; color: var(--ink-secondary); }
     .pl-chev { color: var(--gray); }
-    .pl-tr.pl-row-in { animation: lcRise var(--dur-snappy) var(--ease-snappy) both; }
     .pl-tr.pl-row-new { animation: plNew 1.4s var(--ease-glide) both; }
     @keyframes plNew { 0%, 30% { background: var(--accent-wash); } 100% { background: transparent; } }
     @media (max-width: 760px) {
@@ -3453,7 +3251,7 @@
     .pp-hd { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 24px 8px; }
     .pp-saved { font-size: 13px; min-width: 0; }
     .pp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 24px 32px; display: flex; flex-direction: column; gap: 20px; }
-    .pp-name { font-size: 30px; font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
+    .pp-name { font-size: var(--type-title); font-weight: 700; line-height: 1.1; overflow-wrap: anywhere; }
     .pp-f { display: flex; flex-direction: column; gap: 8px; }
     .pp-lb { font-size: 15px; font-weight: 600; color: var(--ink); }
     .pp-two { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 12px; }
@@ -3476,14 +3274,14 @@
        showToast(text, actionLabel, onAction, ms). Sits above modals. */
     .lc-toast {
       position: fixed; left: 50%; bottom: 24px; z-index: 400; min-width: 280px; max-width: calc(100vw - 32px);
-      display: flex; align-items: center; justify-content: space-between; gap: 18px; overflow: hidden;
-      padding: 12px 12px 12px 18px; border-radius: var(--radius-control); background: #101613; color: #F5F6F8;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; overflow: hidden;
+      padding: 12px 12px 12px 16px; border-radius: var(--radius-control); background: var(--night); color: var(--night-ink);
       font-size: 15px; font-weight: 600; box-shadow: var(--shadow-dialog);
       transform: translate(-50%, 160%); visibility: hidden; transition: transform var(--dur-snappy) var(--ease-snappy), visibility 0s linear var(--dur-snappy);
     }
     .lc-toast.show { transform: translate(-50%, 0); visibility: visible; transition: transform var(--dur-snappy) var(--ease-snappy); }
     .lc-toast button { border: none; background: transparent; padding: 6px 8px; border-radius: var(--radius-compact); font: inherit; font-weight: 800; color: var(--accent); cursor: pointer; }
-    .lc-toast button:hover { background: rgba(255,255,255,.08); }
+    .lc-toast button:hover { background: var(--night-rule); }
     .lc-toast .lc-toast-bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--accent); transform-origin: left; }
     .lc-toast.show .lc-toast-bar { animation: toastDrain var(--toast-ms, 10000ms) linear both; }
     @keyframes toastDrain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
@@ -3498,7 +3296,7 @@
         background: var(--panel); box-shadow: 0 1px 0 var(--hairline); overflow-x: auto; scrollbar-width: none;
       }
       .m-tabs::-webkit-scrollbar { display: none; }
-      .m-tab { position: relative; flex: none; height: 44px; padding: 0 12px; border: none; background: transparent; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-secondary); cursor: pointer; white-space: nowrap; }
+      .m-tab { position: relative; flex: none; height: 44px; padding: 0 12px; border: none; background: transparent; font: inherit; font-size: var(--type-tab); font-weight: 600; color: var(--ink-secondary); cursor: pointer; white-space: nowrap; }
       .m-tab.on { color: var(--ink); font-weight: 700; }
       .m-tab.on::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px; border-radius: 2px; background: var(--ink); animation: mTabIn .25s var(--ease-glide); }
       .m-tab:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
@@ -3550,7 +3348,7 @@
     .lc-setup-row-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-2); }
     .lc-setup-row-t { font-size: var(--type-headline); font-weight: 700; color: var(--ink); }
     .lc-setup-row-b { font-size: var(--type-sub); font-weight: 500; color: var(--ink-secondary); }
-    .lc-setup-row-chev { flex: none; display: grid; color: var(--ink-secondary); opacity: .6; }
+    .lc-setup-row-chev { flex: none; display: grid; color: var(--gray); }
     .lc-setup-row-chev svg { width: 14px; height: 14px; }
     @media (prefers-reduced-motion: reduce) { button.lc-setup-row { transition: opacity .15s ease; } button.lc-setup-row:active { transform: none; } }
 
@@ -3562,7 +3360,6 @@
 <body>
 
 <!-- ══════════════ SIDE NAV ══════════════ -->
-<button class="sidebar-hamburger" id="sidebar-hamburger" onclick="toggleSidebarDrawer()" aria-label="Open navigation">☰</button>
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebarDrawer()"></div>
 <aside class="sidebar" id="sidebar" aria-label="Team navigation">
   <div class="sidebar-head">
@@ -3575,7 +3372,7 @@
     <button class="sb-toggle" id="sb-toggle" type="button" onclick="toggleSidebarRail()" aria-label="Collapse sidebar" aria-expanded="true">
       <img class="sb-ltile" src="assets/favicon.svg" alt="">
       <svg class="sb-pico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/><path d="M15.5 10l-2 2 2 2"/></svg>
-      <span class="sb-tip" id="sb-toggle-tip">Collapse sidebar <kbd style="font:inherit;opacity:.6">[</kbd></span>
+      <span class="sb-tip" id="sb-toggle-tip">Collapse sidebar <kbd>[</kbd></span>
     </button>
     <button class="lc-close sidebar-close" type="button" onclick="closeSidebarDrawer()" aria-label="Close navigation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   </div>
@@ -3727,7 +3524,7 @@
   <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
     <div class="upgrade-card">
       <div class="upgrade-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#1F7A2A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
       </div>
       <h2 class="upgrade-title" id="paywall-title">Unlock Lineup Builder</h2>
       <p class="upgrade-sub" id="paywall-message">Generate balanced lineups, auto-assign positions, and manage game day. Try it free for 7 days.</p>
@@ -3952,7 +3749,6 @@
         <h1>Team / League Settings</h1>
         <p class="dashboard-sub">Set field positions, game rules, and roster defaults.</p>
       </div>
-      <button class="settings-save-btn inactive" id="settings-save-btn" onclick="settingsSave()">Save Changes</button>
     </div>
 
     <!-- ══════════════ STEP 1: TEAM SETUP ══════════════ -->
@@ -4506,7 +4302,7 @@
         </div>
         <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same. Only the batting order, attendance, and fielding positions are imported.</div>
         <div class="modal-body" id="import-prev-list">
-          <div class="modal-empty">Loading…</div>
+          <div class="lc-empty lc-empty--inline"><p class="lc-empty-b">Loading…</p></div>
         </div>
       </div>
     </div>
@@ -5178,14 +4974,14 @@ async function openShareTeamModal(teamId) {
   const modal = document.getElementById('share-team-modal');
   const body = document.getElementById('share-team-body');
   document.getElementById('share-team-title').textContent = 'Share ' + (team.name || 'team');
-  body.innerHTML = '<div class="modal-empty">Loading…</div>';
+  body.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading…' });
   modal.style.display = '';
   document.body.style.overflow = 'hidden';
   lcDialogOpen(modal, closeShareTeamModal);
 
   const code = team.inviteCode || await ensureTeamInviteCode(team);
   if (!code) {
-    body.innerHTML = '<div class="modal-empty">This team doesn\'t have an invite code yet. Ask the team owner to open Team / League Settings to generate one.</div>';
+    body.innerHTML = lcEmptyHtml({ style: 'inline', icon: 'personPlus', title: 'No invite code yet', body: 'Ask the team owner to open Team / League Settings to make one.' });
     return;
   }
   const link = joinLinkForCode(code);
@@ -5237,7 +5033,7 @@ function joinQrSvg(code, size) {
     return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" shape-rendering="crispEdges"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#101613"/></svg>`;
   } catch (e) {
     console.error('joinQrSvg failed:', e);
-    return `<div style="width:${size}px;height:${size}px;display:grid;place-items:center;color:#6B6659;font-size:13px;">QR unavailable</div>`;
+    return `<div style="width:${size}px;height:${size}px;display:grid;place-items:center;color:var(--ink-secondary);font-size:var(--type-caption);">QR unavailable</div>`;
   }
 }
 
@@ -5323,7 +5119,7 @@ async function renderMembersCard() {
          <span class="invite-code-value" id="invite-code-value">${escHtml(meta.inviteCode)}</span>
          <button class="btn btn-ghost btn-sm" id="copy-invite-btn" onclick="copyInviteCode()">Copy invite</button>
        </div>`
-    : `<div class="text-muted-sm">No invite code yet.</div>`;
+    : lcEmptyHtml({ style: 'inline', body: 'No invite code yet.' });
 
   const ids = [...new Set([meta.ownerId, ...(meta.memberIds || [])])].filter(Boolean);
   const nameFor = id => (meta.memberNames && meta.memberNames[id])
@@ -5883,17 +5679,8 @@ async function selectTeam(teamId, closeDropdown = true) {
 
     // Apply team theming to the builder
     const currentTeam = _userTeams.find(t => t.id === teamId);
-    // Set accent color to team color (falls back to default teal/green via CSS)
-    // Crate rule: ONE signature color per screen — the grass green accent is
-    // never overridden. Team color is demoted to emblem/badge use only.
-    const teamColor = currentTeam && currentTeam.primaryColor ? currentTeam.primaryColor : '';
-    if (teamColor) {
-      document.documentElement.style.setProperty('--team-primary', teamColor);
-      document.documentElement.style.setProperty('--team-secondary', teamColor + '33');
-    } else {
-      document.documentElement.style.removeProperty('--team-primary');
-      document.documentElement.style.removeProperty('--team-secondary');
-    }
+    // Crate rule: ONE signature color per screen. The grass green accent is
+    // never overridden by team color (the old --team-* vars had no reader).
     if (currentTeam) {
       // The "Create Lineup" header lives in each step's action row; set its
       // subtitle (team · sport · season) across all of them.
@@ -6679,7 +6466,7 @@ function syncRailUi() {
   const t = document.getElementById('sb-toggle');
   if (t) { t.setAttribute('aria-label', label); t.setAttribute('aria-expanded', on ? 'false' : 'true'); }
   const tip = document.getElementById('sb-toggle-tip');
-  if (tip) tip.innerHTML = label + ' <kbd style="font:inherit;opacity:.6">[</kbd>';
+  if (tip) tip.innerHTML = label + ' <kbd>[</kbd>';
   const et = document.getElementById('sb-edge-tip');
   if (et) et.textContent = on ? 'Click to expand' : 'Click to collapse';
 }
@@ -8860,7 +8647,7 @@ function renderStrategyInsights() {
       <button type="button" class="btn btn-primary btn-sm gn-sug-cta" onclick="gnAcceptSuggestion('${escHtml(s.id)}')">${escHtml(s.cta)}</button>
       <button type="button" class="lc-close lc-close--sm gn-sug-x" onclick="gnDismissSuggestion('${escHtml(s.id)}')" aria-label="Dismiss: ${escHtml(s.player)}">${lcIcon('x', 2.4)}</button>
     </div>`).join('')
-    : '<div class="gn-sug-empty">Nothing to flag yet. Patterns show up after 2–3 games of notes.</div>';
+    : lcEmptyHtml({ style: 'inline', body: 'Nothing to flag yet. Patterns show up after 2–3 games of notes.' });
 }
 let _gnSuggestions = [];
 
@@ -9024,16 +8811,12 @@ function setSaveBar(phase, msg) {   // 'hidden' | 'dirty' | 'work' | 'done' | 'e
 function markSettingsDirty() {
   _settingsDirty = true;
   _settingsRev++;
-  const btn = document.getElementById('settings-save-btn');
-  if (btn) btn.classList.remove('inactive');
   if (!_settingsSaving) setSaveBar('dirty');
 }
 
 function resetSettingsDirty() {
   _settingsDirty = false;
   _settingsDirtyKeys.clear();
-  const btn = document.getElementById('settings-save-btn');
-  if (btn) btn.classList.add('inactive');
   setSaveBar('hidden');
 }
 
@@ -10122,12 +9905,12 @@ async function openImportPreviousModal() {
   // Escape, focus and Tab: the shared dialog helper (F53)
   lcDialogOpen(modal, closeImportPreviousModal);
 
-  list.innerHTML = '<div class="modal-empty">Loading past lineups…</div>';
+  list.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading past lineups…' });
 
   try {
     const fb = initFirebase();
     if (!fb || !_activeTeamId) {
-      list.innerHTML = '<div class="modal-empty">No team selected.</div>';
+      list.innerHTML = lcEmptyHtml({ style: 'inline', body: 'No team selected.' });
       return;
     }
     const snap = await fb.db.collection('teams').doc(_activeTeamId)
@@ -10138,7 +9921,7 @@ async function openImportPreviousModal() {
       .filter(l => !state.editingLineupDocId || l.id !== state.editingLineupDocId);
 
     if (!lineups.length) {
-      list.innerHTML = '<div class="modal-empty">No past lineups for this team yet. Save a lineup once and you\'ll be able to reuse it next time.</div>';
+      list.innerHTML = lcEmptyHtml({ style: 'inline', icon: 'list', title: 'No past lineups yet', body: 'Save a lineup once and you\'ll be able to reuse it next time.' });
       return;
     }
 
@@ -10179,7 +9962,7 @@ async function openImportPreviousModal() {
     }).join('');
   } catch (e) {
     console.error('Failed to load past lineups for import:', e);
-    list.innerHTML = '<div class="modal-empty">Failed to load past lineups. Please try again.</div>';
+    list.innerHTML = lcEmptyHtml({ style: 'inline', icon: 'alert', tone: 'alert', body: 'Couldn\'t load past lineups. Try again.' });
   }
 }
 
@@ -12399,7 +12182,7 @@ function renderLineupGrid() {
   });
 
   if (activeLineup.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="${state.innings + 1}" style="text-align:center;padding:24px;color:var(--ink-secondary);font-size:13px;">No players attending. Mark players as attending above.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="${state.innings + 1}">${lcEmptyHtml({ style: 'inline', body: 'No players attending. Mark who\'s here above.' })}</td></tr>`;
   }
 
   // Keyboard path for the order (F49): same move as a drag, then focus
@@ -13445,7 +13228,7 @@ function renderPlayingTimeSummary() {
         ${ptCellsHtml(row)}
         <span class="pt-stat">${played} of ${state.innings}</span>
       </div>`;
-  }).join('') || '<div class="gn-sug-empty">Mark who\'s here to see playing time.</div>';
+  }).join('') || lcEmptyHtml({ style: 'inline', body: 'Mark who\'s here to see playing time.' });
 }
 
 // ═══════════════════════════════════════════════════
@@ -13509,97 +13292,6 @@ function copyLineup(btn) {
     btn.textContent = 'Copied';
     clearTimeout(btn._t);
     btn._t = setTimeout(() => { btn.textContent = btn._label; }, 1600);
-  }
-}
-
-// ═══════════════════════════════════════════════════
-// UTILS — importTeamByCode removed; sharing is handled in the iOS app
-// ═══════════════════════════════════════════════════
-async function importTeamByCode_REMOVED() {
-  const codeInput = document.getElementById('team-import-code');
-  const statusEl  = document.getElementById('import-status');
-  const code = codeInput.value.trim().toUpperCase();
-
-  if (!code) {
-    statusEl.className = 'import-status error';
-    statusEl.textContent = 'Please enter an invite code.';
-    return;
-  }
-
-  const fb = initFirebase();
-  if (!fb) {
-    statusEl.className = 'import-status error';
-    statusEl.textContent = 'Firebase is not configured yet.';
-    return;
-  }
-
-  if (!fb.auth.currentUser || fb.auth.currentUser.isAnonymous) {
-    statusEl.className = 'import-status loading';
-    statusEl.textContent = 'Please sign in to import your team…';
-    return;
-  }
-
-  statusEl.className = 'import-status loading';
-  statusEl.textContent = 'Looking up team…';
-
-  try {
-    const snap = await fb.db.collection('teams')
-      .where('inviteCode', '==', code)
-      .limit(1)
-      .get();
-
-    if (snap.empty) {
-      statusEl.className = 'import-status error';
-      statusEl.textContent = `No team found for code "${code}". Double-check the code in the Leadoff iOS app.`;
-      return;
-    }
-
-    const teamDoc = snap.docs[0];
-    const teamData = teamDoc.data();
-    const playerSnap = await fb.db.collection('teams').doc(teamDoc.id).collection('players').get();
-
-    const players = playerSnap.docs.map(doc => {
-      const d = doc.data();
-      return {
-        id: 'imp_' + doc.id,
-        name: d.name || 'Unknown',
-        prefPos: [],
-        gender: 'M'
-      };
-    });
-
-    state.teamName     = teamData.name || state.teamName;
-    state.teamSport    = teamData.sport || state.teamSport;
-    state.teamLevel    = teamData.level || state.teamLevel;
-    state.teamAgeGroup = teamData.ageGroup || state.teamAgeGroup;
-    state.teamNotes    = teamData.notes || state.teamNotes;
-    state.players      = players;
-    state.attendance   = {};
-    state.lineup       = [];
-    players.forEach(p => { state.attendance[p.id] = true; });
-
-    // SAFETY: clear _activeTeamId so that saving after an import always
-    // creates a NEW team in the web builder rather than writing back to
-    // the iOS source team and potentially overwriting its data.
-    _activeTeamId = null;
-
-    const setField = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    setField('team-name', state.teamName);
-    setField('team-sport', state.teamSport);
-    setField('team-level', state.teamLevel);
-    setField('team-age-group', state.teamAgeGroup);
-    setField('team-notes', state.teamNotes);
-
-    save();
-    renderPlayerList();
-    updateStep2Status();
-
-    statusEl.className = 'import-status success';
-    statusEl.textContent = `Loaded "${state.teamName}" with ${players.length} player${players.length !== 1 ? 's' : ''}. Save to add this team to your account.`;
-  } catch(e) {
-    console.error('importTeamByCode error:', e);
-    statusEl.className = 'import-status error';
-    statusEl.textContent = 'Error importing team. Please try again.';
   }
 }
 
