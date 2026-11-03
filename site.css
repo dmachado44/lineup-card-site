@@ -10,7 +10,10 @@
 
    Layout system (Oct 28): cream canvas, white blocks, ink chrome on buttons
    only. One wide container for every section (.wrap: max 1920px, fluid
-   gutter), one fluid section space, one fluid type scale.
+   gutter), one fluid section space, one fluid type scale. Container widths
+   are tokens (--wrap-max, --content-max, --prose-max); from the xl breakpoint
+   (1600px, Nov 2 2026) long reads step up a type size and their column
+   grows with it.
    ────────────────────────────────────────────────────────────────────────── */
 
 /* ── Fonts (self-hosted, SIL OFL) ── */
@@ -118,11 +121,25 @@
   --space-48:              48px;
   --space-64:              64px;
 
+  /* Breakpoints (type the number in @media): rail 1100px · xl 1600px */
+
+  /* Layout: Containers (Dan, Nov 2 2026). A token with an xl value switches to it from the xl breakpoint up */
+  --wrap-max:              1920px;  /* every marketing section */
+  --content-max:           1160px;  /* xl 1280px · a guide with its On this page rail */
+  --prose-max:             720px;  /* xl 800px · the reading column. At xl the body steps 18 to 20px and the column grows with it, so a line holds at about 40em */
+
   /* Motion (the house springs; iOS lcSnappy, lcQuick, lcPop) */
   --ease-snappy:           cubic-bezier(.32, 1.25, .5, 1);  /* panels, sheets, layout; no visible bounce */
   --dur-snappy:            350ms;
   --ease-pop:              cubic-bezier(.34, 1.4, .64, 1);  /* anything that answers a tap; about 6% overshoot */
   --dur-pop:               .6s;
+}
+/* xl: 1600px and up (tokens.json breakpoint) */
+@media (min-width: 1600px) {
+  :root {
+    --content-max:           1280px;
+    --prose-max:             800px;
+  }
 }
 /* A real spring where the browser can draw one */
 @supports (transition-timing-function: linear(0, 1)) {
@@ -131,16 +148,14 @@
 /* @tokens:end */
 
 /* Layout: one container, one gutter, one section space, at every width.
-   Site plumbing, not tokens. */
+   Site plumbing, not tokens. The container widths (--wrap-max,
+   --content-max, --prose-max) are tokens, in the generated block above. */
 :root {
-  --wrap-max: 1920px;
   --gutter: clamp(20px, 4.6875vw, 90px);
   --section-rhythm: clamp(72px, 8.333vw, 144px);
   --head-gap: clamp(32px, 3.6vw, 64px);   /* section head → its content */
   --grid-gap: clamp(16px, 1.7vw, 28px);   /* between blocks */
   --nav-h: 72px;
-  --content-max: 1160px;
-  --prose-max: 720px;
 }
 
 /* ── Base ── */
@@ -309,7 +324,7 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
    "On this page" becomes a sticky rail on the left, the same move as the
    homepage FAQ. Browsers without :has() keep the single column. */
 @media (min-width: 1100px) {
-  .prose:has(> article > .toc) { max-width: calc(1160px + 2 * var(--gutter)); }
+  .prose:has(> article > .toc) { max-width: calc(var(--content-max) + 2 * var(--gutter)); }
   .prose article:has(> .toc) {
     display: grid;
     grid-template-columns: minmax(0, 260px) minmax(0, var(--prose-max));
@@ -328,6 +343,20 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
   .prose article:has(> .toc) > .toc li { margin: 0; border-bottom: 1px solid var(--rule); }
   .prose article:has(> .toc) > .toc a { display: block; padding: 11px 0; font-size: 15px; }
   .prose article:has(> .toc) > .toc + h2 { margin-top: 56px; }
+}
+
+/* xl, 1600px and up (tokens.json breakpoint; Dan, Nov 2 2026): long reads
+   step up one type size and the column grows with them (--prose-max 720 to
+   800, --content-max 1160 to 1280), so a line keeps the same count of
+   characters. Never widen a reading column at the same type size
+   (DESIGN_RULES, Type and layout). */
+@media (min-width: 1600px) {
+  .prose p, .prose li { font-size: 20px; }
+  .prose h3 { font-size: 22px; }
+  .prose table { font-size: 17px; }
+  .prose .note { font-size: 18px; }
+  .prose article:has(> .toc) { grid-template-columns: minmax(0, 300px) minmax(0, var(--prose-max)); }
+  .prose article:has(> .toc) > .toc a { font-size: 16px; }
 }
 
 /* ── Song previews (guides) ──
