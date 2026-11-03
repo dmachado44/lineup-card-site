@@ -8760,12 +8760,14 @@ async function createLineupFromSchedule(gameIndex) {
 // and re-save into the same doc.
 function loadSavedLineupIntoBuilder(lineup) {
   if (!lineup) return;
-  state.gameName     = lineup.gameName || '';
-  state.opponent     = lineup.opponent || '';
+  // Trimmed and normalized the way the form reads them back, so opening a
+  // lineup is never itself a change for autosave to write.
+  state.gameName     = (lineup.gameName || '').trim();
+  state.opponent     = (lineup.opponent || '').trim();
   state.gameDate     = lineup.gameDate || '';
-  state.gameTime     = lineup.gameTime || '';
-  state.gameLocation = lineup.gameLocation || '';
-  state.gameNotes    = lineup.gameNotes || '';
+  state.gameTime     = to24hTime(lineup.gameTime) || lineup.gameTime || '';
+  state.gameLocation = (lineup.gameLocation || '').trim();
+  state.gameNotes    = (lineup.gameNotes || '').trim();
   state.innings      = lineup.innings || 6;
   state.editingLineupDocId = lineup.id;
   // Reconstruct lineup rows from the saved players array (already sorted by batOrder)
@@ -11106,7 +11108,8 @@ function save() {
   state.gameName = document.getElementById('game-name').value.trim();
   state.opponent = document.getElementById('opponent').value.trim();
   state.gameDate = document.getElementById('game-date').value;
-  state.gameTime = document.getElementById('game-time').value;
+  const timeIn = document.getElementById('game-time').value;
+  if (timeIn || to24hTime(state.gameTime) || !state.gameTime) state.gameTime = timeIn;
   state.gameLocation = document.getElementById('game-location').value.trim();
   state.gameNotes = document.getElementById('game-notes').value.trim();
   try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch(e) {}
@@ -11421,7 +11424,7 @@ function applyDraftToState(d) {
   state.gameName = d.gameName || '';
   state.opponent = d.opponent || '';
   state.gameDate = d.gameDate || '';
-  state.gameTime = d.gameTime || '';
+  state.gameTime = to24hTime(d.gameTime) || d.gameTime || '';
   state.gameLocation = d.gameLocation || '';
   state.gameNotes = d.gameNotes || '';
   state.innings = d.innings || 6;
@@ -15034,8 +15037,26 @@ function formatDate(d) {
   return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
+// Game times arrive as "13:00" (the web's time field) or "1:00 PM" (iOS,
+// GameTimeFormat). The form's <input type="time"> only holds "HH:mm", so
+// every time is normalized on the way in; "" when it can't be read ("TBD").
+function to24hTime(t) {
+  const s = String(t || '').trim();
+  if (!s) return '';
+  let m = /^(\d{1,2}):(\d{2})(?::\d{2})?$/.exec(s);
+  if (m && +m[1] < 24) return String(+m[1]).padStart(2, '0') + ':' + m[2];
+  m = /^(\d{1,2})(?::(\d{2}))?\s*([ap])\.?\s*m?\.?$/i.exec(s);
+  if (m && +m[1] >= 1 && +m[1] <= 12) {
+    const h = (+m[1] % 12) + (/p/i.test(m[3]) ? 12 : 0);
+    return String(h).padStart(2, '0') + ':' + (m[2] || '00');
+  }
+  return '';
+}
+
 function formatTime(t) {
   if (!t) return '';
+  if (!to24hTime(t)) return String(t);   // a note like "TBD" shows as written
+  t = to24hTime(t);
   const [h, m] = t.split(':');
   const hour = parseInt(h);
   const min = m || '00';
