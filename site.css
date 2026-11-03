@@ -99,6 +99,10 @@
   --type-marketing-body:   clamp(16px, 1.15vw, 19px);  /* was --type-body on the site until Nov 1 2026; renamed so one name has one value */
   --kicker-tracking:       0.14em;
 
+  /* Icon weight (Dan, Nov 2 2026; F78). Strokes are on the 24 grid; iOS SF Symbols take Font.lcIcon (semibold) or Font.lcIconHeavy (black) */
+  --icon-stroke:           2.2;  /* every UI icon: nav, tools, closes, chevrons, header actions, emblems (iOS .semibold) */
+  --icon-stroke-heavy:     4;  /* an icon on a fill: a sticker face, a solid dot or badge (iOS .black, the display face's weight) */
+
   /* Radius */
   --radius-card:           20px;  /* cards and grouped panels */
   --radius-control:        12px;  /* buttons, fields, segmented tracks */

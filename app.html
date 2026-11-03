@@ -157,6 +157,10 @@
       --type-caption:          13px;  /* 600 */
       --type-kicker:           11px;  /* 800 kerned caps */
 
+      /* Icon weight (Dan, Nov 2 2026; F78). Strokes are on the 24 grid; iOS SF Symbols take Font.lcIcon (semibold) or Font.lcIconHeavy (black) */
+      --icon-stroke:           2.2;  /* every UI icon: nav, tools, closes, chevrons, header actions, emblems (iOS .semibold) */
+      --icon-stroke-heavy:     4;  /* an icon on a fill: a sticker face, a solid dot or badge (iOS .black, the display face's weight) */
+
       /* Radius */
       --radius-card:           20px;  /* cards and grouped panels */
       --radius-control:        12px;  /* buttons, fields, segmented tracks */
@@ -307,6 +311,29 @@
        (audit F42). */
     .link-btn { appearance: none; background: none; border: 0; padding: 0; margin: 0; font: inherit; color: inherit; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
     .link-btn.is-strong { font-weight: 600; }
+
+    /* ── ICON WEIGHT (F78, Dan Nov 2 2026) ──
+       Every UI icon draws at one weight: --icon-stroke on the 24 grid, like
+       iOS Font.lcIcon (semibold). An icon on a fill (a sticker face, a solid
+       check dot, the add badge) takes --icon-stroke-heavy, the display face's
+       weight, like iOS Font.lcIconHeavy (black) and the iOS Export arrow.
+       These rules override the stroke-width each SVG still carries. */
+    svg[stroke="currentColor"][viewBox="0 0 24 24"] { stroke-width: var(--icon-stroke); }
+    .btn:not(.btn-ghost):not(.btn-back):not(.btn-danger) svg[stroke="currentColor"],
+    .sb-plus svg[stroke="currentColor"], .lc-toggle-check svg[stroke="currentColor"], .tap-check svg[stroke="currentColor"] { stroke-width: var(--icon-stroke-heavy); }
+    /* Arrows in buttons and links are drawn icons, never a text glyph (F78):
+       .lc-next puts one after the label, .lc-back before it. 1em square, so
+       it follows the label's size; heavy on a sticker, the icon weight
+       elsewhere. Arrows inside a sentence stay text. */
+    .lc-next::after, .lc-back::before {
+      content: ''; flex: none; width: 1em; height: 1em; background: currentColor;
+      -webkit-mask: var(--lc-arrow) center / contain no-repeat; mask: var(--lc-arrow) center / contain no-repeat;
+    }
+    .lc-next { --lc-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E"); }
+    .lc-back { --lc-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E"); }
+    .btn:not(.btn-ghost):not(.btn-back):not(.btn-danger).lc-next { --lc-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E"); }
+    .btn:not(.btn-ghost):not(.btn-back):not(.btn-danger).lc-back { --lc-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E"); }
+    .link-btn.lc-next, .link-btn.lc-back { display: inline-flex; align-items: center; gap: .35em; vertical-align: bottom; }
     .link-btn:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; border-radius: var(--radius-small); }
     .auth-error.is-ok { color: var(--accent-down); }
 
@@ -597,6 +624,7 @@
     .btn-sm { padding: 8px 18px; font-size: 15px; min-height: 40px; }
     .btn-lg { padding: 16px 32px; font-size: var(--type-sticker); min-height: 54px; }
     .btn-icon { padding: 7px 10px; border-radius: var(--radius-control); min-height: 0; }
+    .btn-icon svg { width: 16px; height: 16px; }
     /* Full-width sticker (auth providers, the paywall CTA, feedback Send). */
     .btn-block { display: flex; width: 100%; }
 
@@ -1565,7 +1593,8 @@
       white-space: nowrap;
     }
     .import-item-meta { font-size: 12px; color: var(--ink-secondary); }
-    .import-item-arrow { font-size: 18px; color: var(--gray); }
+    .import-item-arrow { display: grid; color: var(--gray); }
+    .import-item-arrow svg, .lineup-item-arrow svg { width: 18px; height: 18px; }
 
     /* Image-export option cards */
     .image-export-options {
@@ -1782,7 +1811,7 @@
     .lineup-item-info { display: flex; flex-direction: column; gap: 2px; }
     .lineup-item-title { font-size: 16px; font-weight: 600; color: var(--ink); }
     .lineup-item-meta { font-size: 14px; color: var(--ink-secondary); }
-    .lineup-item-arrow { font-size: 18px; color: var(--gray); }
+    .lineup-item-arrow { display: grid; color: var(--gray); }
     .lineup-detail-grid {
       width: 100%; border-collapse: collapse;
       font-size: 14px;
@@ -2503,7 +2532,7 @@
     .gn-mic { width: 34px; height: 34px; border-radius: 50%; border: none; background: var(--accent-wash); color: var(--accent-down); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
     .gn-mic.on { background: var(--accent); color: var(--on-accent); }
     .gn-mic svg { width: 17px; height: 17px; }
-    .gn-ball svg, .gn-tag svg { width: 13px; height: 13px; flex: none; }
+    .gn-ball svg, .gn-tag svg, .gn-chip svg { width: 13px; height: 13px; flex: none; }
     .gn-hint { font-size: 12px; color: var(--ink-secondary); margin-top: 6px; }
     .gn-hint.listening { color: var(--accent-down); }
     .gn-error { font-size: 13px; color: var(--alert-ink); margin-top: 8px; }
@@ -3513,7 +3542,7 @@
     <div class="auth-divider">or</div>
 
     <div class="auth-switch">
-      <button type="button" class="link-btn" onclick="showProvidersPanel()">← Back to all options</button>
+      <button type="button" class="link-btn lc-back" onclick="showProvidersPanel()">Back to all options</button>
     </div>
   </div>
 
@@ -3882,7 +3911,7 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
-          <button id="step1-continue" class="btn btn-primary btn-lg" onclick="goToStep2()">Continue to League Rules →</button>
+          <button id="step1-continue" class="btn btn-primary btn-lg lc-next" onclick="goToStep2()">Continue to League Rules</button>
         </div>
       </div>
     </div>
@@ -4009,7 +4038,7 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions">
-          <button class="btn btn-primary btn-lg" onclick="goToStep3()">Continue to Roster →</button>
+          <button class="btn btn-primary btn-lg lc-next" onclick="goToStep3()">Continue to Roster</button>
         </div>
       </div>
     </div>
@@ -4081,7 +4110,7 @@
           <div class="draft-status lc-st" id="draft-saved-status-step3"></div>
           <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
           <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
-          <button id="step3-continue" class="btn btn-primary btn-lg" onclick="goToStep4()">Continue to Edit Lineup →</button>
+          <button id="step3-continue" class="btn btn-primary btn-lg lc-next" onclick="goToStep4()">Continue to Edit Lineup</button>
         </div>
       </div>
     </div>
@@ -4218,7 +4247,7 @@
         <div class="step-actions">
           <div class="draft-status lc-st" id="draft-saved-status"></div>
           <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
-          <button class="btn btn-cta btn-lg" onclick="goToStep5()">Save &amp; Export →</button>
+          <button class="btn btn-cta btn-lg lc-next" onclick="goToStep5()">Save &amp; Export</button>
         </div>
       </div>
     </div>
@@ -4902,7 +4931,8 @@ function applyEmailAuthMode() {
     passwordField.style.display = 'none';
     confirmField.style.display  = 'none';
     emailBtn.textContent        = 'Send Reset Email';
-    resetLink.textContent       = '← Back to sign in';
+    resetLink.textContent       = 'Back to sign in';
+    resetLink.classList.add('lc-back');
     resetLink.style.display     = '';
     modeToggle.style.display    = 'none';
   } else {
@@ -4913,6 +4943,7 @@ function applyEmailAuthMode() {
     confirmField.style.display  = 'none';
     emailBtn.textContent        = 'Sign In';
     resetLink.textContent       = 'Forgot password?';
+    resetLink.classList.remove('lc-back');
     resetLink.style.display     = '';
     modeToggle.style.display    = '';
     modeToggleText.textContent  = 'Don\'t have an account? ';
@@ -5301,7 +5332,7 @@ async function joinTeamWithCode() {
     const d = doc.data();
     if (d.ownerId === uid || (d.memberIds || []).includes(uid)) {
       status.classList.remove('lc-st', 'ok', 'dr', 'err', 'no');
-      status.innerHTML = `You're already on <strong>${escHtml(d.name || 'this team')}</strong>. <button type="button" class="link-btn" onclick="navigate('#/team/${doc.id}/schedule')">Open it →</button>`;
+      status.innerHTML = `You're already on <strong>${escHtml(d.name || 'this team')}</strong>. <button type="button" class="link-btn lc-next" onclick="navigate('#/team/${doc.id}/schedule')">Open it</button>`;
       btn.disabled = false;
       return;
     }
@@ -6264,10 +6295,14 @@ const LC_ICON_PATHS = {
   bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>',
   checkCircle: '<circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/>',
   chev: '<path d="M9 5.5l6.5 6.5L9 18.5"/>',
-  x: '<path d="M6 6l12 12M18 6L6 18"/>'
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  arrowUp: '<path d="M12 20V5M6 11l6-6 6 6"/>',
+  arrowDown: '<path d="M12 4v15M6 13l6 6 6-6"/>'
 };
-function lcIcon(name, strokeWidth) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (strokeWidth || 2) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
+// Every icon draws at --icon-stroke (F78); the CSS sets the weight, so
+// the attribute is only the no-CSS fallback.
+function lcIcon(name) {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
 }
 // size: 'row' (44) | 'panel' (56). tone: '' | 'on-wash' | 'alert'.
 function lcEmblem(icon, size, tone) {
@@ -6291,7 +6326,7 @@ function lcSetupRowHtml(o) {
   const emblemTone = o.tone === 'featured' ? 'on-wash' : (o.tone === 'alert' ? 'alert' : '');
   const inner = lcEmblem(o.icon, 'row', emblemTone)
     + '<span class="lc-setup-row-txt"><span class="lc-setup-row-t">' + o.title + '</span><span class="lc-setup-row-b">' + o.body + '</span></span>'
-    + (o.onclick ? '<span class="lc-setup-row-chev" aria-hidden="true">' + lcIcon('chev', 2.6) + '</span>' : '');
+    + (o.onclick ? '<span class="lc-setup-row-chev" aria-hidden="true">' + lcIcon('chev') + '</span>' : '');
   return o.onclick
     ? '<button type="button" class="lc-setup-row' + mod + '" onclick="' + o.onclick + '">' + inner + '</button>'
     : '<div class="lc-setup-row' + mod + '">' + inner + '</div>';
@@ -6890,19 +6925,19 @@ function updateStepFooters() {
   const rosterSection   = document.getElementById('step3-roster');
 
   // Reset all to defaults first
-  if (step1cont)     { step1cont.textContent = 'Continue to League Rules →'; step1cont.onclick = goToStep2; step1cont.style.display = ''; }
-  if (step3back)     { step3back.style.display = ''; step3back.textContent = '← Back to League Rules'; step3back.onclick = goToStep2; }
+  if (step1cont)     { step1cont.textContent = 'Continue to League Rules'; step1cont.onclick = goToStep2; step1cont.style.display = ''; }
+  if (step3back)     { step3back.style.display = ''; step3back.textContent = 'Back to League Rules'; step3back.onclick = goToStep2; }
   if (step3saveExit) { step3saveExit.style.display = 'none'; }
   if (step3saveDraft){ step3saveDraft.style.display = 'none'; }
-  if (step3cont)     { step3cont.textContent = 'Continue to Edit Lineup →'; step3cont.onclick = goToStep4; }
-  if (step4back)     { step4back.style.display = ''; step4back.textContent = '← Back to Setup'; step4back.onclick = goToStep3; }
+  if (step3cont)     { step3cont.textContent = 'Continue to Edit Lineup'; step3cont.onclick = goToStep4; }
+  if (step4back)     { step4back.style.display = ''; step4back.textContent = 'Back to Setup'; step4back.onclick = goToStep3; }
   if (step4saveDraft){ step4saveDraft.style.display = 'none'; }
 
   if (_appMode === 'setup') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
     if (step3saveExit) step3saveExit.style.display = '';
-    if (step3cont) { step3cont.textContent = 'Set your first lineup →'; step3cont.onclick = saveAndSetLineup; }
+    if (step3cont) { step3cont.textContent = 'Set your first lineup'; step3cont.onclick = saveAndSetLineup; }
   } else if (_appMode === 'settings') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
     if (rosterSection)   rosterSection.style.display = '';
@@ -6912,8 +6947,8 @@ function updateStepFooters() {
     if (gameInfoSection) gameInfoSection.style.display = '';
     if (rosterSection)   rosterSection.style.display = 'none';
     if (step3back) step3back.style.display = 'none';
-    if (step3cont) { step3cont.textContent = 'Continue to Edit Lineup →'; step3cont.onclick = goToStep4; }
-    if (step4back) { step4back.style.display = ''; step4back.textContent = '← Back to Game Info'; step4back.onclick = goToStep3; }
+    if (step3cont) { step3cont.textContent = 'Continue to Edit Lineup'; step3cont.onclick = goToStep4; }
+    if (step4back) { step4back.style.display = ''; step4back.textContent = 'Back to Game Info'; step4back.onclick = goToStep3; }
     // Save Draft & Exit only makes sense while a lineup is in progress.
     if (step3saveDraft) step3saveDraft.style.display = '';
     if (step4saveDraft) step4saveDraft.style.display = '';
@@ -7296,7 +7331,7 @@ function renderPastLineups() {
           <div class="lineup-item-title">${escHtml(title)}</div>
           <div class="lineup-item-meta">${escHtml(parts.join(' · '))}</div>
         </div>
-        <div class="lineup-item-arrow">›</div>
+        <div class="lineup-item-arrow" aria-hidden="true">${lcIcon('chev')}</div>
       </div>`;
   }).join('')}</div>`;
 }
@@ -8059,7 +8094,7 @@ function scheduleCalendarRowHtml() {
 const SC_PAST_PREVIEW = 4;
 var _schedShowAllPast = false;
 // Baseball mark for game balls (product copy stays emoji-free).
-const LC_BALL_SVG = '<svg class="lc-ball" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4.4 3.1c1.3 1.3 2 3 2 4.9s-.7 3.6-2 4.9M11.6 3.1c-1.3 1.3-2 3-2 4.9s.7 3.6 2 4.9" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+const LC_BALL_SVG = '<svg class="lc-ball" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.47"/><path d="M4.4 3.1c1.3 1.3 2 3 2 4.9s-.7 3.6-2 4.9M11.6 3.1c-1.3 1.3-2 3-2 4.9s.7 3.6 2 4.9" fill="none" stroke="currentColor" stroke-width="1.47" stroke-linecap="round"/></svg>';
 
 // Roster fallback for the ledger when the builder's state isn't loaded for
 // this team: every player id/name seen across saved lineups.
@@ -8322,8 +8357,8 @@ function gnLatestNoteText(recent, playerId) {
 // Read-only chip row (schedule rows + builder attendance).
 function gnTagsHtml(tags, hadBall) {
   const parts = [];
-  if (hadBall) parts.push('<span class="gn-tag ball">' + lcIcon('ball', 2.2) + 'Game ball</span>');
-  tags.forEach(t => parts.push(`<span class="gn-tag ${t.sentiment}">${escHtml(t.label)} ${t.sentiment === 'up' ? '↑' : '↓'}</span>`));
+  if (hadBall) parts.push('<span class="gn-tag ball">' + lcIcon('ball') + 'Game ball</span>');
+  tags.forEach(t => parts.push(`<span class="gn-tag ${t.sentiment}">${escHtml(t.label)}${lcIcon(t.sentiment === 'up' ? 'arrowUp' : 'arrowDown')}</span>`));
   return parts.length ? `<span class="gn-tags">${parts.join('')}</span>` : '';
 }
 
@@ -8477,14 +8512,14 @@ function gnPlayerCardHtml(entry) {
   return `<div class="gn-card" id="gn-card-${escHtml(pid)}">
     <div class="gn-card-head">
       <div class="gn-card-title">${escHtml(entry.name)}</div>
-      <button type="button" class="gn-ball ${hasBall ? 'on' : ''}" onclick="gnToggleBall('${escHtml(pid)}')" aria-pressed="${hasBall}">${lcIcon('ball', 2.2)}Game ball</button>
+      <button type="button" class="gn-ball ${hasBall ? 'on' : ''}" onclick="gnToggleBall('${escHtml(pid)}')" aria-pressed="${hasBall}">${lcIcon('ball')}Game ball</button>
     </div>
     <textarea class="gn-textarea" rows="1" placeholder="Add a note" aria-label="Note for ${sbAttr(entry.name)}" oninput="gnPlayerNote('${escHtml(pid)}').text = this.value">${escHtml(note.text)}</textarea>
     <div class="gn-chips">${GN_AREAS.map(a => {
       const tag = note.tags.find(t => t.area === a.key);
       const cls = tag ? tag.sentiment : '';
       const said = tag ? (tag.sentiment === 'up' ? 'up' : 'down') : 'off';
-      return `<button type="button" class="gn-chip ${cls}" onclick="gnCycleTag('${escHtml(pid)}','${a.key}')" aria-label="${a.label}, ${said}">${a.label}${tag ? (tag.sentiment === 'up' ? ' ↑' : ' ↓') : ''}</button>`;
+      return `<button type="button" class="gn-chip ${cls}" onclick="gnCycleTag('${escHtml(pid)}','${a.key}')" aria-label="${a.label}, ${said}">${a.label}${tag ? lcIcon(tag.sentiment === 'up' ? 'arrowUp' : 'arrowDown') : ''}</button>`;
     }).join('')}</div>
   </div>`;
 }
@@ -8744,10 +8779,10 @@ function renderStrategyInsights() {
   document.getElementById('gn-suggest-count').textContent = sugg.length + ' new';
   list.innerHTML = sugg.length ? sugg.map(s => `
     <div class="gn-sug" id="gn-sug-${escHtml(s.id)}">
-      <span class="gn-tag ${s.tagCls}">${escHtml(s.tag)}</span>
+      <span class="gn-tag ${s.tagCls}">${escHtml(s.tag).replace(/ ([↑↓])$/, (m, a) => lcIcon(a === '↑' ? 'arrowUp' : 'arrowDown'))}</span>
       <div class="gn-sug-text"><strong>${escHtml(s.player)}</strong> · ${escHtml(s.text)}</div>
       <button type="button" class="btn btn-primary btn-sm gn-sug-cta" onclick="gnAcceptSuggestion('${escHtml(s.id)}')">${escHtml(s.cta)}</button>
-      <button type="button" class="lc-close lc-close--sm gn-sug-x" onclick="gnDismissSuggestion('${escHtml(s.id)}')" aria-label="Dismiss: ${escHtml(s.player)}">${lcIcon('x', 2.4)}</button>
+      <button type="button" class="lc-close lc-close--sm gn-sug-x" onclick="gnDismissSuggestion('${escHtml(s.id)}')" aria-label="Dismiss: ${escHtml(s.player)}">${lcIcon('x')}</button>
     </div>`).join('')
     : lcEmptyHtml({ style: 'inline', body: 'Nothing to flag yet. Patterns show up after 2–3 games of notes.' });
 }
@@ -9600,7 +9635,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!msg) { document.getElementById('feedback-message').focus(); return; }
 
     var btn = form.querySelector('.feedback-send-btn');
-    btn.disabled = true; btn.textContent = 'Sending...';
+    btn.disabled = true; btn.classList.remove('lc-next'); btn.textContent = 'Sending…';
 
     // Pre-fill email from signed-in user if available
     var emailField = document.getElementById('feedback-email');
@@ -9627,7 +9662,7 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Something went wrong. Please try again or email hello@getleadoff.com directly.');
     })
     .finally(function() {
-      btn.disabled = false; btn.textContent = 'Send Message →';
+      btn.disabled = false; btn.classList.add('lc-next'); btn.textContent = 'Send Message';
     });
   });
 });
@@ -10059,7 +10094,7 @@ async function openImportPreviousModal() {
             <div class="import-item-title">${escHtml(title)}</div>
             <div class="import-item-meta">${escHtml(parts.join(' · '))}</div>
           </div>
-          <div class="import-item-arrow">›</div>
+          <div class="import-item-arrow" aria-hidden="true">${lcIcon('chev')}</div>
         </div>`;
     }).join('');
   } catch (e) {
@@ -11773,7 +11808,7 @@ function renderPlayerList() {
           aria-label="How the announcer says ${sbAttr(player.name)}"
           onchange="updatePlayerPronunciation('${player.id}', this.value)"
           ${!ALLOW_TEAM_CREATION ? 'disabled' : ''} />
-        ${ALLOW_TEAM_CREATION ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}')" title="Remove player" aria-label="Remove ${sbAttr(player.name)}">✕</button>` : ''}
+        ${ALLOW_TEAM_CREATION ? `<button class="btn btn-danger btn-icon btn-sm" onclick="removePlayer('${player.id}')" title="Remove player" aria-label="Remove ${sbAttr(player.name)}">${lcIcon('x')}</button>` : ''}
       </div>
       <div class="priority-row">
         <span class="priority-label">Positions:</span>
@@ -13470,8 +13505,8 @@ document.addEventListener('DOMContentLoaded', () => {
       <label for="feedback-message">Message</label>
       <textarea name="message" id="feedback-message" placeholder="Ideas, bugs, questions. We read everything."></textarea>
     </div>
-    <button type="submit" class="btn btn-primary btn-block feedback-send-btn">
-      Send Message →
+    <button type="submit" class="btn btn-primary btn-block feedback-send-btn lc-next">
+      Send Message
     </button>
   </form>
   <div class="feedback-success" id="feedback-success" style="display:none;">
