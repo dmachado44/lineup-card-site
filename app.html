@@ -433,7 +433,8 @@
       margin-bottom: 24px;
     }
     /* Card titles sit ABOVE their panel, never inside it (F55): display
-       face, caps, inset 4px like the section heads. */
+       face, caps, on the page's one left edge with the title, the cards and
+       the lines under them (no inset, F76). */
     .card-title {
       font-family: var(--font-display);
       font-weight: 900;
@@ -441,7 +442,6 @@
       line-height: 1;
       color: var(--ink);
       margin: 0 0 12px;
-      padding: 0 4px;
       letter-spacing: 0.01em;
       text-transform: uppercase;
     }
@@ -844,7 +844,6 @@
     .section-head > h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: none; color: inherit; }
     .section-head > span { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
     .sc-sec > .section-head, .rules-sec > .section-head, .bt-sec > .section-head { margin: 0; }
-    .sc-sec > .section-head, .rules-sec > .section-head { padding: 0 4px; }
 
     /* ── LEAGUE RULES ── */
     .rule-row {
