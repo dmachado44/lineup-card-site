@@ -146,10 +146,10 @@
       /* Type: App scale (iOS Font.lc*, web --type-*) */
       --type-display-title:    40px;  /* display face */
       --type-content-title:    34px;  /* display face */
-      --type-title:            26px;  /* display face (.card-title, Font.lcTitle) */
+      --type-title:            26px;  /* display face titles: dialogs, the paywall, sign-in, Tools, names (iOS titles use LCDisplayTitle, F66) */
       --type-sticker:          17px;  /* sticker button labels */
       --type-tab:              15px;  /* 600: team and page tabs (web .m-tab; iOS team tabs, F66) */
-      --type-section:          17px;  /* section headers, 600, secondary ink */
+      --type-section:          13px;  /* section headers: 700 caps, tracked .06em, secondary ink (Dan, Nov 2: small caps, F55) */
       --type-headline:         17px;  /* 700 */
       --type-body:             17px;  /* 500; also field text */
       --type-sub:              15px;  /* 500 */
@@ -432,19 +432,11 @@
       padding: 26px 30px;
       margin-bottom: 24px;
     }
-    /* Card titles sit ABOVE their panel, never inside it (F55): display
-       face, caps, on the page's one left edge with the title, the cards and
-       the lines under them (no inset, F76). */
-    .card-title {
-      font-family: var(--font-display);
-      font-weight: 900;
-      font-size: var(--type-title);
-      line-height: 1;
-      color: var(--ink);
-      margin: 0 0 12px;
-      letter-spacing: 0.01em;
-      text-transform: uppercase;
-    }
+    /* Card titles sit ABOVE their panel, never inside it (F55), on the
+       page's one left edge with the title, the cards and the lines under
+       them (no inset, F76). A card title is a section head: the same small
+       caps (Dan, Nov 2), set with .section-head below. */
+    .card-title { margin: 0 0 12px; }
     .card-sub {
       font-size: var(--type-sub);
       color: var(--ink-secondary);
@@ -830,19 +822,25 @@
     @media (max-width: 600px) { .apr-fields .apr-pron { flex-basis: 100%; } }
     .apr-fields input, .apr-fields .player-num-input, .apr-fields .player-pron-input { flex: none; width: 100%; min-width: 0; }
 
-    /* ── SECTION HEADER (F8, Oct 31 2026) ──
-       THE one, same as iOS .lcSectionHeader(): 17px semibold, secondary
-       ink, sentence case, sitting OUTSIDE the panel it heads. No all-caps
-       headers, ever. A trailing <span> carries a count or summary in
-       caption type. Put the <h2> inside when the section needs a label
-       for aria-labelledby. Spacing: 14px below on its own, the container's
-       gap inside .sc-sec, .rules-sec and .bt-sec. */
+    /* ── SECTION HEADER (F8, Oct 31 2026; small caps F55, Nov 2) ──
+       THE one, same as iOS .lcSectionHeader(): 13px bold caps, tracked
+       .06em, secondary ink, sitting OUTSIDE the panel it heads (Dan, Nov 2:
+       small caps on both apps). Card titles (.card-title) wear it too.
+       Source text stays sentence case; the caps come from here. A trailing
+       <span> carries a count or summary in caption type, not caps. Put the
+       <h2> inside when the section needs a label for aria-labelledby.
+       Spacing: 14px below on its own, the container's gap inside .sc-sec,
+       .rules-sec and .bt-sec. */
+    .section-head, .card-title {
+      font-size: var(--type-section); font-weight: 700; color: var(--ink-secondary);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
     .section-head {
       display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-      margin: 0 0 14px; font-size: var(--type-section); font-weight: 600; color: var(--ink-secondary);
+      margin: 0 0 14px;
     }
-    .section-head > h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: none; color: inherit; }
-    .section-head > span { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); white-space: nowrap; }
+    .section-head > h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+    .section-head > span { font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); white-space: nowrap; text-transform: none; letter-spacing: normal; }
     .sc-sec > .section-head, .rules-sec > .section-head, .bt-sec > .section-head { margin: 0; }
 
     /* ── LEAGUE RULES ── */
@@ -1870,9 +1868,10 @@
     .gn-col-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
     .gn-col-title { font-weight: 700; font-size: 15px; color: var(--ink); }
     .gn-col-sub { font-size: 12px; color: var(--ink-secondary); }
+    /* The plot keeps its shape as Lineup tools widens: 288 by 150 at the pane's 360, about 488 by 254 at 560 (Nov 2 2026) */
     .gn-mom-wrap { display: flex; gap: 8px; align-items: stretch; }
     .gn-mom-axis { writing-mode: vertical-rl; transform: rotate(180deg); color: var(--ink-secondary); text-align: center; }
-    .gn-mom-box { flex: 1; min-width: 0; position: relative; height: 150px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-compact); background: var(--page); overflow: hidden; }
+    .gn-mom-box { flex: 1; min-width: 0; position: relative; aspect-ratio: 48 / 25; min-height: 150px; border: 1px solid var(--hairline-strong); border-radius: var(--radius-compact); background: var(--page); overflow: hidden; }
     /* The corner worth a look (trending up, rated low) gets a wash and a
        label, so the chart explains itself (Oct 30 2026). */
     .gn-mom-zone { position: absolute; left: 50%; top: 50%; right: 0; bottom: 0; background: color-mix(in srgb, var(--accent-wash) 80%, transparent); pointer-events: none; }
@@ -2538,13 +2537,14 @@
     :root {
       --sidebar-w: 0px;
       --tools-w:   0px;
+      --tools-pane-w: 360px;   /* Lineup tools' own width: 360 to 560, dragged from its left edge (applyToolsWidth) */
       --wizard-h:  64px;
     }
     @media (min-width: 980px) {
       body.signed-in { --sidebar-w: 256px; padding-left: var(--sidebar-w); }
       body.signed-in.sb-ready { transition: padding-left .32s var(--ease-glide); }
       body.signed-in.sidebar-rail { --sidebar-w: 76px; }
-      body.tools-visible { --tools-w: 360px; }
+      body.tools-visible { --tools-w: var(--tools-pane-w); }
     }
 
     /* Per-view top bars retire once signed in: brand, team and account live
@@ -2905,10 +2905,33 @@
     .builder-tools { display: none; }
     #view-builder.tools-on .builder-tools {
       display: flex; flex-direction: column; position: fixed; right: 0; bottom: 0; top: var(--wizard-h); z-index: 44;
-      width: 360px; background: var(--panel); box-shadow: -1px 0 0 var(--hairline), inset 0 1px 0 var(--hairline);   /* inset top: carries the header's bottom hairline across the panel */
+      width: var(--tools-pane-w); background: var(--panel); box-shadow: -1px 0 0 var(--hairline), inset 0 1px 0 var(--hairline);   /* inset top: carries the header's bottom hairline across the panel */
       transform: translateX(105%); visibility: hidden; transition: transform .32s var(--ease-glide), visibility 0s linear .32s;
     }
     body.tools-visible #view-builder.tools-on .builder-tools { transform: none; visibility: visible; transition: transform .32s var(--ease-glide); }
+    /* Resize edge (Dan, Nov 2 2026): drag the pane's left edge from 360 to
+       560 (the page keeps at least 640 beside it), double-click resets,
+       arrow keys move it 20 (Home and End jump to the ends). The width is
+       remembered per browser. Same hover line as the sidebar's .sb-edge,
+       which collapses on click instead. role="separator": the ARIA window
+       splitter. */
+    .bt-edge { display: none; }
+    @media (min-width: 980px) {
+      .bt-edge {
+        display: block; position: absolute; top: 0; bottom: 0; left: -5px; width: 10px; z-index: 2;
+        background: transparent; cursor: col-resize; touch-action: none;
+      }
+      .bt-edge::after { content: ""; position: absolute; left: 4px; top: 0; bottom: 0; width: 2px; background: var(--ink); opacity: 0; transition: opacity .15s; }
+      .bt-edge:hover::after, body.bt-resizing .bt-edge::after { opacity: .18; }
+      .bt-edge:focus-visible { outline: none; }
+      .bt-edge:focus-visible::after { opacity: 1; background: var(--accent-down); }
+      .bt-edge .sb-tip { left: auto; right: calc(100% + 8px); transform: translate(4px, -50%); }
+      .bt-edge:hover .sb-tip { opacity: 1; transform: translate(0, -50%); transition-delay: .5s; }
+      body.bt-resizing .bt-edge .sb-tip { opacity: 0; transition: none; }
+      body.bt-resizing { cursor: col-resize; user-select: none; -webkit-user-select: none; }
+      /* The pane follows the pointer; the glide comes back for double-click and the keys */
+      body.bt-resizing #view-builder .page, body.bt-resizing #view-builder .step-actions, body.bt-resizing .builder-tools { transition: none; }
+    }
     .bt-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 12px 24px; }
     .bt-title { font-family: var(--font-display); font-weight: 900; font-size: var(--type-title); line-height: 1; text-transform: uppercase; }
     .bt-sub { font-size: 14px; color: var(--ink-secondary); margin-top: 4px; }
@@ -4243,6 +4266,7 @@
          this game, and playing time. Slides in from the right on Edit
          Lineup; open/closed is remembered per device. -->
     <aside class="builder-tools" id="builder-tools" aria-label="Lineup tools">
+      <div class="bt-edge" id="bt-edge" role="separator" aria-orientation="vertical" aria-label="Resize lineup tools" aria-controls="builder-tools" aria-valuemin="360" aria-valuemax="560" aria-valuenow="360" tabindex="0" onpointerdown="startToolsResize(event)" ondblclick="setToolsWidth(TOOLS_W_MIN, true)" onkeydown="toolsEdgeKey(event)"><span class="sb-tip">Drag to resize · double-click resets</span></div>
       <div class="bt-head">
         <div>
           <div class="bt-title">Lineup tools</div>
@@ -6483,6 +6507,7 @@ function toggleSidebarRail(force) {
   closeTeamSwitcher();
   closeSbMenu();
   syncRailUi();
+  applyToolsWidth();   // the sidebar's width changes the tools pane's room
 }
 function syncRailUi() {
   const on = document.body.classList.contains('sidebar-rail');
@@ -6538,6 +6563,57 @@ function toggleBuilderTools(force) {
   try { if (window.matchMedia('(min-width: 980px)').matches) lsSet(LS_TOOLS, _builderToolsOpen ? '1' : '0'); } catch (e) {}
   syncBuilderTools();
 }
+// Lineup tools width (Dan, Nov 2 2026): dragged from the pane's left edge,
+// 360 to 560, never leaving the page under 640. _toolsW is what the coach
+// chose (remembered); the applied width is that, clamped to the window.
+var LS_TOOLS_W = 'leadoff_builderToolsW_v1';
+var TOOLS_W_MIN = 360, TOOLS_W_MAX = 560, TOOLS_W_ROOM = 640, TOOLS_W_STEP = 20;
+var _toolsW = (function () { const v = parseInt(lsGet(LS_TOOLS_W), 10); return isFinite(v) ? v : TOOLS_W_MIN; })();
+function toolsWMax() {
+  const side = parseFloat(getComputedStyle(document.body).getPropertyValue('--sidebar-w')) || 0;
+  return Math.max(TOOLS_W_MIN, Math.min(TOOLS_W_MAX, window.innerWidth - side - TOOLS_W_ROOM));
+}
+function applyToolsWidth() {
+  if (typeof TOOLS_W_MIN !== 'number') return 360;   // called before this script block has run
+  const max = toolsWMax();
+  const w = Math.round(Math.min(max, Math.max(TOOLS_W_MIN, _toolsW)));
+  document.body.style.setProperty('--tools-pane-w', w + 'px');
+  const edge = document.getElementById('bt-edge');
+  if (edge) { edge.setAttribute('aria-valuenow', w); edge.setAttribute('aria-valuemax', max); }
+  return w;
+}
+function setToolsWidth(w, save) {
+  _toolsW = w;
+  const applied = applyToolsWidth();
+  if (save) { _toolsW = applied; lsSet(LS_TOOLS_W, String(applied)); }
+}
+function startToolsResize(e) {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  const edge = e.currentTarget, startX = e.clientX, startW = applyToolsWidth();
+  try { edge.setPointerCapture(e.pointerId); } catch (err) {}
+  document.body.classList.add('bt-resizing');
+  const move = (ev) => setToolsWidth(startW + (startX - ev.clientX), false);
+  const end = () => {
+    edge.removeEventListener('pointermove', move);
+    edge.removeEventListener('pointerup', end);
+    edge.removeEventListener('pointercancel', end);
+    document.body.classList.remove('bt-resizing');
+    setToolsWidth(_toolsW, true);
+  };
+  edge.addEventListener('pointermove', move);
+  edge.addEventListener('pointerup', end);
+  edge.addEventListener('pointercancel', end);
+}
+function toolsEdgeKey(e) {
+  const cur = applyToolsWidth();
+  const w = ({ ArrowLeft: cur + TOOLS_W_STEP, ArrowRight: cur - TOOLS_W_STEP, Home: TOOLS_W_MIN, End: TOOLS_W_MAX })[e.key];
+  if (w === undefined) return;
+  e.preventDefault();
+  setToolsWidth(w, true);
+}
+window.addEventListener('resize', applyToolsWidth);
+
 var _railAuto = false;   // true while the builder has folded the sidebar for room
 function syncBuilderTools() {
   const b = document.getElementById('view-builder');
@@ -6553,6 +6629,7 @@ function syncBuilderTools() {
   const on = inLineup && _currentStep === 4;
   b.classList.toggle('tools-on', on);
   document.body.classList.toggle('tools-visible', on && _builderToolsOpen);
+  applyToolsWidth();   // after the rail fold above, so the room it leaves is right
   const btn = document.getElementById('bt-toggle');
   if (btn) btn.setAttribute('aria-pressed', (on && _builderToolsOpen) ? 'true' : 'false');
   updateToolsBadge();
