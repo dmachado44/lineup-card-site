@@ -6506,6 +6506,7 @@ async function handleRoute() {
   // Reaching any real route means the builder is no longer the live view.
   _builderOpen = false;
   _builderReturn = null;
+  lsUnwatch();
 
   // Leaving Players: land a pending removal and any debounced roster edits
   // before the next view re-reads the team.
@@ -8926,6 +8927,9 @@ function loadSavedLineupIntoBuilder(lineup) {
   _autoBaseline = JSON.stringify(lineupFieldsFromState());
   _autoSavedAt = null; _autoError = false; _cloudDraftJson = null; _cloudDraftIsNew = false;
   syncBuilderFormFromState();
+  // The copy opened is the shared base; the live doc brings it current if
+  // it was cached (another device saved since).
+  lsBegin('lineup', lsShape('lineup', lineup));
 }
 
 // View a saved lineup from the schedule — route to the shared lineup-detail URL
@@ -11384,6 +11388,227 @@ function clearDraftForCurrent() {
 //   This device's draft (localStorage) is still written first, so nothing
 //   is lost offline.
 // ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
+// CROSS-DEVICE SYNC (Dan, Nov 3 2026)
+// A lineup open here and on iOS (or another browser) stays one lineup:
+//   - The open lineup or coaches' draft is watched live: the other
+//     device's saves come in while you work, and opening a lineup always
+//     settles on the server's copy, never a stale cached one.
+//   - Saves never overwrite the other device's edits. Each save runs in a
+//     transaction that merges this device's changes since it last synced
+//     (_syncBase) into the doc as it stands now, cell by cell: whoever
+//     changed a cell (or the batting order, a lock, a game field) keeps
+//     their change; two edits to the same cell, this save wins.
+// iOS does the same merge (LineupMerge.swift); change them together.
+// ═══════════════════════════════════════════════════
+var _syncBase = null;         // the shared copy as of the last load, save or live update
+var _syncKind = null;         // 'lineup' (teams/{id}/lineups) or 'draft' (lineupDrafts)
+var _syncUnsub = null, _syncTarget = '';
+
+// A lineup or draft as plain comparable data: game fields as strings,
+// the batting order, and each kid's spots (trailing empties dropped) and locks.
+function lsShape(kind, d) {
+  d = d || {};
+  const meta = {
+    gameName: d.gameName || '', opponent: d.opponent || '', gameDate: d.gameDate || '',
+    gameTime: to24hTime(d.gameTime) || String(d.gameTime || ''),
+    gameLocation: d.gameLocation || '', gameNotes: d.gameNotes || '',
+    innings: String(d.innings || 6), battingOrderLocked: d.battingOrderLocked ? '1' : ''
+  };
+  let list;
+  if (kind === 'draft') {
+    meta.strategyLevel = String(d.strategyLevel || 3);
+    meta.gamePositions = Array.isArray(d.gamePositions) ? d.gamePositions.join(',') : '';
+    list = Array.isArray(d.lineup) ? d.lineup : [];
+  } else {
+    list = (Array.isArray(d.players) ? d.players : []).slice().sort((a, b) => ((a && a.batOrder) || 0) - ((b && b.batOrder) || 0));
+  }
+  const order = [], rows = {};
+  list.forEach(p => {
+    if (!p || !p.playerId || rows[p.playerId]) return;
+    const pos = (Array.isArray(p.positions) ? p.positions : []).map(x => x || '');
+    while (pos.length && !pos[pos.length - 1]) pos.pop();
+    const locked = (Array.isArray(p.lockedInnings) ? p.lockedInnings : []).filter(i => Number.isInteger(i) && i >= 0);
+    order.push(p.playerId);
+    rows[p.playerId] = { name: p.name || '', positions: pos, locked: Array.from(new Set(locked)).sort((a, b) => a - b) };
+  });
+  const attendance = {};
+  if (kind === 'draft' && d.attendance) Object.keys(d.attendance).forEach(k => { attendance[k] = !!d.attendance[k]; });
+  return { meta, order, rows, attendance };
+}
+function lsKey(s) {
+  if (!s) return '';
+  const sorted = o => Object.keys(o).sort().map(k => [k, o[k]]);
+  return JSON.stringify([sorted(s.meta), s.order, sorted(s.rows).map(([k, r]) => [k, r.positions, r.locked]), sorted(s.attendance)]);
+}
+function lsEq(a, b) { return lsKey(a) === lsKey(b); }
+const lsSame = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+// base → mine is this device's change; base → theirs is everyone else's.
+function lsMerge(base, mine, theirs) {
+  const meta = {};
+  new Set(Object.keys(mine.meta).concat(Object.keys(theirs.meta))).forEach(k => {
+    meta[k] = lsSame(mine.meta[k], base.meta[k]) ? theirs.meta[k] : mine.meta[k];
+  });
+  // Who's in it: theirs, plus the kids this device added, minus the ones it took out.
+  const inBase = new Set(base.order), inMine = new Set(mine.order);
+  const keep = new Set(theirs.order.filter(id => !(inBase.has(id) && !inMine.has(id))));
+  mine.order.forEach(id => { if (!inBase.has(id)) keep.add(id); });
+  // The order: this device's if it moved anyone, else theirs. (Adding or
+  // dropping a kid isn't a move: compare the kids both copies have.)
+  const moved = !lsSame(mine.order.filter(id => inBase.has(id)), base.order.filter(id => inMine.has(id)));
+  const lead = moved ? mine.order : theirs.order;
+  const tail = lead === mine.order ? theirs.order : mine.order;
+  const order = [];
+  lead.concat(tail).forEach(id => { if (keep.has(id) && order.indexOf(id) < 0) order.push(id); });
+  const rows = {};
+  order.forEach(id => {
+    const b = base.rows[id], m = mine.rows[id], t = theirs.rows[id];
+    if (!t || !m) { rows[id] = JSON.parse(JSON.stringify(m || t)); return; }
+    const n = Math.max(m.positions.length, t.positions.length, b ? b.positions.length : 0);
+    const pos = [];
+    for (let i = 0; i < n; i++) {
+      const mv = m.positions[i] || '', tv = t.positions[i] || '';
+      pos.push(b ? ((b.positions[i] || '') === mv ? tv : mv) : (mv || tv));
+    }
+    while (pos.length && !pos[pos.length - 1]) pos.pop();
+    const locked = [];
+    const all = new Set(m.locked.concat(t.locked, b ? b.locked : []));
+    all.forEach(i => {
+      const mh = m.locked.indexOf(i) >= 0, th = t.locked.indexOf(i) >= 0;
+      const keepIt = b ? ((b.locked.indexOf(i) >= 0) === mh ? th : mh) : (mh || th);
+      if (keepIt) locked.push(i);
+    });
+    rows[id] = { name: t.name || m.name, positions: pos, locked: locked.sort((a, c) => a - c) };
+  });
+  const attendance = {};
+  new Set(Object.keys(mine.attendance).concat(Object.keys(theirs.attendance))).forEach(k => {
+    const v = lsSame(mine.attendance[k], base.attendance[k]) ? theirs.attendance[k] : mine.attendance[k];
+    if (v !== undefined) attendance[k] = v;
+  });
+  return { meta, order, rows, attendance };
+}
+
+function lsPadded(r, innings) {
+  const pos = r.positions.slice();
+  while (pos.length < innings) pos.push('');
+  return pos;
+}
+// Back to what each doc stores (the fields the web writes; nothing else).
+function lsToLineupFields(s) {
+  const innings = parseInt(s.meta.innings, 10) || 6;
+  return {
+    gameName: s.meta.gameName, opponent: s.meta.opponent, gameDate: s.meta.gameDate,
+    gameTime: s.meta.gameTime, gameLocation: s.meta.gameLocation, gameNotes: s.meta.gameNotes,
+    innings, battingOrderLocked: s.meta.battingOrderLocked === '1',
+    players: s.order.map((id, i) => ({ playerId: id, name: s.rows[id].name, batOrder: i + 1, positions: lsPadded(s.rows[id], innings), lockedInnings: s.rows[id].locked.slice() }))
+  };
+}
+function lsToDraft(s) {
+  const innings = parseInt(s.meta.innings, 10) || 6;
+  return {
+    gameName: s.meta.gameName, opponent: s.meta.opponent, gameDate: s.meta.gameDate,
+    gameTime: s.meta.gameTime, gameLocation: s.meta.gameLocation, gameNotes: s.meta.gameNotes,
+    innings, strategyLevel: parseInt(s.meta.strategyLevel, 10) || 3,
+    gamePositions: s.meta.gamePositions ? s.meta.gamePositions.split(',') : [],
+    attendance: Object.assign({}, s.attendance),
+    battingOrderLocked: s.meta.battingOrderLocked === '1',
+    lineup: s.order.map(id => ({ playerId: id, name: s.rows[id].name, positions: lsPadded(s.rows[id], innings), lockedInnings: s.rows[id].locked.slice() }))
+  };
+}
+function lsMineNow(kind) { return lsShape(kind, kind === 'lineup' ? lineupFieldsFromState() : cloudDraftFromState()); }
+
+// Put a merged copy on screen: the game fields, who's here, the order,
+// every kid's spots and locks. Kids it doesn't name keep their rows.
+function lsApplyToState(kind, s) {
+  const local = (id, name) => resolveLocalPlayerId(id, name) || id;
+  state.gameName = s.meta.gameName; state.opponent = s.meta.opponent; state.gameDate = s.meta.gameDate;
+  state.gameTime = s.meta.gameTime; state.gameLocation = s.meta.gameLocation; state.gameNotes = s.meta.gameNotes;
+  state.innings = parseInt(s.meta.innings, 10) || 6;
+  state.battingOrderLocked = s.meta.battingOrderLocked === '1';
+  if (kind === 'draft') {
+    state.strategyLevel = parseInt(s.meta.strategyLevel, 10) || 3;
+    state.gamePositions = s.meta.gamePositions ? s.meta.gamePositions.split(',') : [];
+  }
+  const rows = s.order.map(id => {
+    const r = s.rows[id];
+    return { playerId: local(id, r.name), positions: lsPadded(r, state.innings), lockedInnings: r.locked.slice() };
+  });
+  const named = new Set(rows.map(r => r.playerId));
+  state.lineup = rows.concat((state.lineup || []).filter(r => !named.has(r.playerId)));
+  if (kind === 'lineup') {
+    (state.players || []).forEach(p => { state.attendance[p.id] = named.has(p.id); });
+  } else {
+    const att = {};
+    Object.keys(s.attendance).forEach(k => { att[local(k)] = s.attendance[k]; });
+    state.attendance = att;
+  }
+  syncBuilderFormFromState();
+  try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch (e) {}
+  if (!_builderOpen) return;
+  if (typeof closeCellMenu === 'function') closeCellMenu(false);
+  if (typeof closeInningMenu === 'function') closeInningMenu();
+  if (_currentStep >= 3 && typeof renderAttendance === 'function') renderAttendance();
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  checkConflicts();
+}
+
+// Watch the lineup or draft that's open; nothing when the builder isn't.
+function lsWatch() {
+  const teamId = _activeTeamId;
+  const kind = state.editingLineupDocId ? 'lineup' : state.cloudDraftId ? 'draft' : null;
+  const id = kind === 'lineup' ? state.editingLineupDocId : state.cloudDraftId;
+  const target = _builderOpen && teamId && kind && _syncKind === kind ? teamId + '/' + kind + '/' + id : '';
+  if (target === _syncTarget) return;
+  lsUnwatch();
+  const fb = initFirebase();
+  if (!target || !fb || !fb.auth.currentUser) return;
+  _syncTarget = target;
+  const ref = fb.db.collection('teams').doc(teamId).collection(kind === 'lineup' ? 'lineups' : 'lineupDrafts').doc(id);
+  _syncUnsub = ref.onSnapshot(snap => {
+    if (_syncTarget !== target || !snap.exists || snap.metadata.hasPendingWrites) return;
+    const theirs = lsShape(kind, snap.data());
+    if (_syncBase && lsEq(theirs, _syncBase)) return;          // nothing new (often our own save)
+    const mine = lsMineNow(kind);
+    const merged = _syncBase ? lsMerge(_syncBase, mine, theirs) : mine;
+    _syncBase = theirs;
+    if (!lsEq(merged, mine)) lsApplyToState(kind, merged);
+    if (!lsEq(merged, theirs)) scheduleAutoSave();               // our own edits still to write
+  }, e => console.warn('Live sync paused (open lineup):', e && e.message));
+}
+window.addEventListener('online', () => { if (_builderOpen) scheduleAutoSave(); });
+function lsUnwatch() {
+  if (_syncUnsub) { try { _syncUnsub(); } catch (e) {} }
+  _syncUnsub = null; _syncTarget = '';
+}
+// Start tracking a copy as the shared one (just opened or just written).
+function lsBegin(kind, shape) {
+  _syncKind = kind;
+  _syncBase = shape;
+  lsWatch();
+}
+
+// One save, merged with the doc as it stands (see above). Returns the copy
+// written; when someone else's edits came in with it, they're put on screen.
+async function lsWriteMerged(kind, ref, mine, extra, firstExtra) {
+  const fb = initFirebase();
+  const base = _syncKind === kind ? _syncBase : null;
+  const written = await fb.db.runTransaction(t => t.get(ref).then(snap => {
+    const theirs = snap.exists ? lsShape(kind, snap.data()) : null;
+    const merged = theirs && base ? lsMerge(base, mine, theirs) : mine;
+    const doc = kind === 'lineup' ? lsToLineupFields(merged) : lsToDraft(merged);
+    t.set(ref, Object.assign(doc, extra, snap.exists ? {} : (firstExtra || {})), { merge: true });
+    return merged;
+  }));
+  if (!lsEq(written, mine)) {
+    // Edits made here while the write was out stay on top.
+    const now = lsMineNow(kind);
+    lsApplyToState(kind, lsMerge(mine, now, written));
+  }
+  return written;
+}
+
 var _autoTimer = null, _autoBusy = false, _autoAgain = false;
 var _autoBaseline = null;     // posted lineup: the shared fields as last written or loaded
 var _autoSavedAt = null;      // last shared save (team or coaches)
@@ -11396,6 +11621,7 @@ var _cloudDrafts = {};        // teamId → { draft key → record } (coaches on
 
 function resetAutoSave() {
   state.cloudDraftId = null;
+  lsUnwatch(); _syncBase = null; _syncKind = null;
   _autoBaseline = null; _autoSavedAt = null; _autoError = false;
   _cloudDraftJson = null; _cloudDraftIsNew = false; _draftKeyInUse = null;
   if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; }
@@ -11454,28 +11680,30 @@ async function flushAutoSave() {
       const id = state.editingLineupDocId;
       const fields = lineupFieldsFromState();
       const json = JSON.stringify(fields);
-      if (!fields.players.length || json === _autoBaseline) return;
-      await fb.db.collection('teams').doc(teamId).collection('lineups').doc(id)
-        .set(Object.assign({}, fields, { updatedAt: now, updatedBy: uid }), { merge: true });
-      if (state.editingLineupDocId === id) _autoBaseline = json;
+      const mine = lsShape('lineup', fields);
+      if (!fields.players.length || (_syncKind === 'lineup' && _syncBase ? lsEq(mine, _syncBase) : json === _autoBaseline)) return;
+      const ref = fb.db.collection('teams').doc(teamId).collection('lineups').doc(id);
+      const written = await lsWriteMerged('lineup', ref, mine, { updatedAt: now, updatedBy: uid });
+      if (state.editingLineupDocId === id) { _autoBaseline = json; lsBegin('lineup', written); }
       _autoSavedAt = Date.now(); _autoError = false;
-      cacheScheduleLineup(teamId, id, fields);
+      cacheScheduleLineup(teamId, id, lsToLineupFields(written));
       // The shared copy is current: this device's copy would only go stale.
       if (state.editingLineupDocId === id && !_draftSaveTimer) clearDraftForCurrent();
     } else {
       const rec = cloudDraftFromState();
       const json = JSON.stringify(rec);
-      if (json === _cloudDraftJson) return;
+      const mineDraft = lsShape('draft', rec);
+      if (json === _cloudDraftJson || (_syncKind === 'draft' && _syncBase && lsEq(mineDraft, _syncBase))) return;
       const id = ensureDraftId();
-      const isNew = _cloudDraftIsNew;
-      await fb.db.collection('teams').doc(teamId).collection('lineupDrafts').doc(id)
-        .set(Object.assign({}, rec, { updatedAt: now, updatedBy: uid }, isNew ? { createdAt: now, createdBy: uid } : {}), { merge: true });
+      const ref = fb.db.collection('teams').doc(teamId).collection('lineupDrafts').doc(id);
+      const written = lsToDraft(await lsWriteMerged('draft', ref, mineDraft, { updatedAt: now, updatedBy: uid }, { createdAt: now, createdBy: uid }));
       _cloudDraftIsNew = false;
       _cloudDraftJson = json; _autoSavedAt = Date.now(); _autoError = false;
+      if (state.cloudDraftId === id) lsBegin('draft', lsShape('draft', written));
       const key = getDraftKey(teamId, rec.gameDate, rec.opponent);
       const map = _cloudDrafts[teamId] = _cloudDrafts[teamId] || {};
       Object.keys(map).forEach(k => { if (map[k].cloudDraftId === id) delete map[k]; });
-      if (key) map[key] = Object.assign({ teamId, editingLineupDocId: null, cloudDraftId: id, updatedAt: new Date().toISOString(), cloud: true }, rec);
+      if (key) map[key] = Object.assign({ teamId, editingLineupDocId: null, cloudDraftId: id, updatedAt: new Date().toISOString(), cloud: true }, written);
     }
   } catch (e) {
     if (e && e.code === 'permission-denied' && !state.editingLineupDocId) _cloudDraftsOff = true;   // drafts stay on this device
@@ -11591,6 +11819,14 @@ function applyDraftToState(d) {
   _draftKeyInUse = getDraftKey(_activeTeamId, d.gameDate, d.opponent);
   _autoBaseline = null; _cloudDraftJson = null; _cloudDraftIsNew = false; _autoSavedAt = null; _autoError = false;
   syncBuilderFormFromState();
+  // The shared base: a coaches' draft as read, or the posted lineup this
+  // device's draft was editing (its edits then land on top of the latest).
+  if (state.editingLineupDocId) {
+    const posted = (Array.isArray(_scheduleLineups) ? _scheduleLineups : []).find(l => l.id === state.editingLineupDocId);
+    lsBegin('lineup', posted ? lsShape('lineup', posted) : null);
+  } else if (state.cloudDraftId) {
+    lsBegin('draft', d.cloud ? lsShape('draft', d) : null);
+  }
 }
 
 function syncBuilderFormFromState() {
@@ -13867,6 +14103,7 @@ async function saveLineupToFirestore() {
   if (fields.players.length === 0) return false;
 
   // Always merge:true so we never clobber data iOS set on the same doc.
+  let shared = fields;   // the shared copy once written (merged when editing)
   const lineupData = Object.assign({}, fields, {
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     updatedBy: fb.auth.currentUser ? fb.auth.currentUser.uid : ''
@@ -13875,8 +14112,10 @@ async function saveLineupToFirestore() {
   try {
     const lineupsCol = fb.db.collection('teams').doc(_activeTeamId).collection('lineups');
     if (state.editingLineupDocId) {
-      // Editing an existing lineup — merge into the same doc.
-      await lineupsCol.doc(state.editingLineupDocId).set(lineupData, { merge: true });
+      // Editing an existing lineup: merged with the shared copy (sync above).
+      const written = await lsWriteMerged('lineup', lineupsCol.doc(state.editingLineupDocId), lsShape('lineup', fields),
+        { updatedAt: lineupData.updatedAt, updatedBy: lineupData.updatedBy });
+      shared = lsToLineupFields(written);
     } else {
       // First save for this lineup — create a new doc and remember its id
       // so subsequent saves (e.g. after "Back to Edit") update the same one.
@@ -13892,7 +14131,8 @@ async function saveLineupToFirestore() {
     if (state.cloudDraftId) { deleteCloudDraft(_activeTeamId, state.cloudDraftId); state.cloudDraftId = null; }
     _autoBaseline = JSON.stringify(fields);
     _autoSavedAt = Date.now(); _autoError = false;
-    cacheScheduleLineup(_activeTeamId, state.editingLineupDocId, fields);
+    lsBegin('lineup', lsShape('lineup', shared));
+    cacheScheduleLineup(_activeTeamId, state.editingLineupDocId, shared);
     return true;
   } catch(e) {
     console.error('Failed to save lineup:', e);
