@@ -1425,15 +1425,22 @@
     .pos-select:hover { background-color: var(--gray-5); }
     .pos-select.filled { background-color: var(--panel); font-weight: 500; }
     .pos-select.bench { background-color: var(--bench-bg); }
+    /* The cell is a button that opens the cell menu (Web A, Dan, Nov 3
+       2026): same face as the old select. Locked (position locks) = the
+       lock in the arrow's place, the pressed tint and bold; on narrow
+       touch cells the lock sits in the top-right corner, like iOS. */
+    button.pos-select { display: inline-flex; align-items: center; justify-content: flex-start; position: relative; min-width: 84px; text-align: left; white-space: nowrap; }
+    .pos-select[aria-expanded="true"] { background-color: var(--gray-5); }
+    .pos-select:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 1px; }
+    .pos-select.locked { background-color: var(--gray-5); background-image: none; font-weight: 700; }
+    .pos-select .ps-lock { position: absolute; right: 8px; top: 50%; width: 12px; height: 12px; margin-top: -6px; display: flex; color: var(--ink); pointer-events: none; }
+    .pos-select .ps-lock svg { width: 100%; height: 100%; stroke-width: var(--icon-stroke-heavy); }
     .pos-select.conflict {
       background-color: color-mix(in srgb, var(--attention) 12%, transparent);
       outline: 2px solid var(--attention);
       outline-offset: -1px;
       border-radius: var(--radius-small);
     }
-    .pos-select optgroup { font-weight: 600; font-size: 12px; color: var(--ink-secondary); }
-    .pos-select optgroup[label="Taken"] { color: var(--gray-3); }
-    .pos-select option { font-weight: 400; color: var(--ink); }
 
     /* ── Inning header: drag-to-reorder + click-for-menu ── */
     /* The fallback element Sortable creates for forceFallback — hide it; we draw our own column ghost */
@@ -1694,6 +1701,9 @@
         background-color: var(--bench-bg);
         color: var(--ink);
       }
+      button.pos-select { justify-content: center; min-width: 0; }
+      .pos-select.locked { background-color: var(--gray-5); }
+      .pos-select .ps-lock { top: 3px; right: 3px; width: 9px; height: 9px; margin-top: 0; }
     }
 
     .att-count { font-size: 14px; color: var(--ink-secondary); margin-bottom: 20px; }
@@ -2777,6 +2787,29 @@
     .lc-menu-item.selected { background: var(--accent-wash); color: var(--accent-down); }
     .lc-menu-item.muted { color: var(--ink-secondary); font-weight: 500; font-style: italic; }
     .lc-menu-sep { height: 1px; background: var(--hairline); margin: 6px 4px; }
+    /* The lineup cell menu (Web A, Dan, Nov 3 2026): click a position to
+       pick it; click the lock beside it to pick it and lock it in (Auto-fill
+       and suggestions build around locked cells). The lock is faint until
+       its row is hovered or focused, full on the locked row, and always
+       shown on touch. A spot a teammate is locked into can't be taken. */
+    .cm-row { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-control); }
+    .cm-row .lc-menu-item { flex: 1; min-width: 0; }
+    .cm-row:hover .lc-menu-item:not(.selected) { background: var(--bg-secondary); }
+    .cm-note { margin-left: auto; padding-left: 8px; font-size: 13px; font-weight: 500; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lc-menu-item.selected .cm-note { color: inherit; }
+    .cm-row.off .lc-menu-item { color: var(--ink-secondary); cursor: not-allowed; }
+    .cm-row.off:hover .lc-menu-item { background: transparent; }
+    .cm-lock { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border: none; border-radius: var(--radius-compact); background: transparent; color: var(--gray-3); cursor: pointer; transition: color .14s var(--ease-snappy), background-color .14s var(--ease-snappy); }
+    .cm-lock svg { width: 15px; height: 15px; }
+    .cm-row:hover .cm-lock, .cm-row:focus-within .cm-lock { color: var(--gray); }
+    .cm-lock:hover, .cm-lock:focus-visible { color: var(--ink); background: var(--gray-5); }
+    .cm-lock.on { color: var(--ink); background: var(--gray-5); }
+    .cm-lock:focus-visible { outline: 2px solid var(--accent-down); outline-offset: -2px; }
+    .cm-lock-spacer { width: 36px; flex: none; }
+    @media (pointer: coarse) { .cm-lock { color: var(--gray); } .cm-row .lc-menu-item { min-height: 44px; } .cm-lock { width: 44px; height: 44px; } .cm-lock-spacer { width: 44px; } }
+    /* Locked kids on the field: the same lock, in the chip's corner. */
+    .field-pos-bubble .fpb-lock { position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); color: var(--panel); display: grid; place-items: center; pointer-events: none; }
+    .field-pos-bubble .fpb-lock svg { width: 9px; height: 9px; stroke-width: var(--icon-stroke-heavy); }
     .sb-pop { width: 300px; max-height: min(520px, calc(100vh - 140px)); overflow-y: auto; }
     .sb-trow {
       width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: none; border-radius: var(--radius-compact);
@@ -6546,7 +6579,9 @@ const LC_ICON_PATHS = {
   chev: '<path d="M9 5.5l6.5 6.5L9 18.5"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   arrowUp: '<path d="M12 20V5M6 11l6-6 6 6"/>',
-  arrowDown: '<path d="M12 4v15M6 13l6 6 6-6"/>'
+  arrowDown: '<path d="M12 4v15M6 13l6 6 6-6"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/>'
 };
 // Every icon draws at --icon-stroke (F78); the CSS sets the weight, so
 // the attribute is only the no-CSS fallback.
@@ -8808,7 +8843,8 @@ function loadSavedLineupIntoBuilder(lineup) {
   // unique-name fallback matching the iOS contract.
   state.lineup = sortedPlayers.map(p => ({
     playerId:  resolveLocalPlayerId(p.playerId, p.name) || p.playerId,
-    positions: Array.isArray(p.positions) ? p.positions.slice() : []
+    positions: Array.isArray(p.positions) ? p.positions.slice() : [],
+    lockedInnings: Array.isArray(p.lockedInnings) ? p.lockedInnings.slice() : []
   }));
   // Attendance = exactly the saved players. Write an explicit false for
   // everyone else on the roster: goToStep4 defaults UNDEFINED entries to
@@ -9591,7 +9627,11 @@ function sgAllCards() {
   gnComputeSuggestions(_activeTeamId, state.players, state.gameDate || '', state.editingLineupDocId || null).forEach(c => {
     cards.push(Object.assign(c, { rank: c.action in NOTE_RANK ? NOTE_RANK[c.action] : 18 + c.rank, kids: [c.pid] }));
   });
-  return cards.sort((a, b) => a.rank - b.rank);
+  // A card that would move a locked cell isn't offered.
+  const lockedAt = (pid, i) => isCellLocked(state.lineup.find(r => r.playerId === pid), i);
+  return cards
+    .filter(c => !(c.action === 'swapInnings' && c.innings.some(i => lockedAt(c.a, i) || lockedAt(c.b, i))))
+    .sort((a, b) => a.rank - b.rank);
 }
 
 function sgCardHtml(c, used) {
@@ -10034,7 +10074,7 @@ function sgCellFly(to, from) {
   const cs = getComputedStyle(to);
   const fly = document.createElement('div');
   fly.className = 'sg-fly';
-  fly.textContent = to.selectedIndex >= 0 ? to.options[to.selectedIndex].text : '';
+  fly.textContent = to.options ? (to.selectedIndex >= 0 ? to.options[to.selectedIndex].text : '') : (to.firstChild ? to.firstChild.textContent : '');
   Object.assign(fly.style, {
     left: from.left + 'px', top: from.top + 'px', width: from.width + 'px', height: from.height + 'px',
     fontFamily: cs.fontFamily, fontSize: cs.fontSize, fontWeight: cs.fontWeight,
@@ -11192,7 +11232,8 @@ function buildDraftRecord() {
     lineup: Array.isArray(state.lineup)
       ? state.lineup.map(r => ({
           playerId: r.playerId,
-          positions: Array.isArray(r.positions) ? r.positions.slice() : []
+          positions: Array.isArray(r.positions) ? r.positions.slice() : [],
+          lockedInnings: rowLockedInnings(r)
         }))
       : [],
     editingLineupDocId: state.editingLineupDocId || null,
@@ -11324,7 +11365,7 @@ function cloudDraftFromState() {
     innings: state.innings || 6, strategyLevel: state.strategyLevel || 3,
     gamePositions: Array.isArray(state.gamePositions) ? state.gamePositions.slice() : [],
     attendance,
-    lineup: (state.lineup || []).map(r => ({ playerId: doc(r.playerId), name: nameOf(r.playerId), positions: Array.isArray(r.positions) ? r.positions.slice() : [] }))
+    lineup: (state.lineup || []).map(r => ({ playerId: doc(r.playerId), name: nameOf(r.playerId), positions: Array.isArray(r.positions) ? r.positions.slice() : [], lockedInnings: rowLockedInnings(r) }))
   };
 }
 
@@ -11468,7 +11509,8 @@ function applyDraftToState(d) {
   state.lineup = Array.isArray(d.lineup)
     ? d.lineup.map(r => ({
         playerId: local(r.playerId, r.name),
-        positions: Array.isArray(r.positions) ? r.positions.slice() : []
+        positions: Array.isArray(r.positions) ? r.positions.slice() : [],
+        lockedInnings: Array.isArray(r.lockedInnings) ? r.lockedInnings.slice() : []
       }))
     : [];
   state.editingLineupDocId = d.editingLineupDocId || null;
@@ -12332,7 +12374,8 @@ function buildInningBubblesHtml(inningIdx) {
     const inner = empty
       ? '<div class="field-pos-label">' + escHtml(pos) + '</div>'
       : '<div class="field-pos-name">' + escHtml(firstNameOf(player.name)) + '</div>';
-    return '<div data-pos="' + sbAttr(pos) + '" class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + style + '">' + inner + '</div>';
+    const lockedHere = !!player && isCellLocked(state.lineup.find(r => r.playerId === player.id), inningIdx);
+    return '<div data-pos="' + sbAttr(pos) + '" class="field-pos-bubble' + (empty ? ' empty' : '') + (conflict ? ' conflict' : '') + (lockedHere ? ' locked' : '') + style + '">' + inner + (lockedHere ? '<span class="fpb-lock" aria-hidden="true">' + lcIcon('lock') + '</span>' : '') + '</div>';
   };
 
   let fieldHtml = '';
@@ -12492,9 +12535,11 @@ function renderFieldPositions() {
     const dragAttrs = player
       ? ' draggable="true" ondragstart="onFieldDragStart(event,\'pos\',\'' + pos + '\')"'
       : ' draggable="false"';
+    const lockedHere = !!player && isCellLocked(state.lineup.find(r => r.playerId === player.id), inningIdx);
     html += '<button type="button" class="field-pos-bubble' +
             (empty ? ' empty' : '') +
             (conflict ? ' conflict' : '') +
+            (lockedHere ? ' locked' : '') +
             '" data-pos="' + pos + '"' +
             ' style="left:' + coord.x + '%;top:' + coord.y + '%;"' +
             dragAttrs +
@@ -12506,6 +12551,7 @@ function renderFieldPositions() {
             ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '"' +
             ' title="Drag to swap, or choose who plays ' + pos + ' in inning ' + (inningIdx + 1) + '">' +
             chipInner(pos, player) +
+            (lockedHere ? '<span class="fpb-lock" aria-hidden="true">' + lcIcon('lock') + '</span>' : '') +
             '</button>';
   });
   wrap.innerHTML = html;
@@ -12686,7 +12732,7 @@ function buildPosPickerItemsForPlayer(playerId) {
   positions.forEach(pos => {
     const otherId = occupant[pos];
     const otherName = (otherId && otherId !== playerId) ? playerLookup[otherId] && playerLookup[otherId].name : null;
-    const sub = otherName ? ' (currently ' + otherName + ')' : '';
+    const sub = otherName ? (fieldLockedAt(otherId, inningIdx) ? ' (locked: ' + otherName + ')' : ' (currently ' + otherName + ')') : '';
     items.push({
       label: pos + sub,
       selected: currentPos === pos,
@@ -12786,6 +12832,9 @@ function assignPlayerToPosition(playerId, pos) {
   const innings = state.innings || 6;
   const inningIdx = Math.min(_fieldInning, innings - 1);
 
+  // A teammate locked into this spot keeps it.
+  if ((state.lineup || []).some(r => state.attendance[r.playerId] && r.playerId !== playerId &&
+      (r.positions || [])[inningIdx] === pos && isCellLocked(r, inningIdx))) return;
   // First, remove anyone currently at this position for this inning
   // (so we don't end up with two players sharing a position).
   (state.lineup || []).forEach(r => {
@@ -12801,10 +12850,16 @@ function assignPlayerToPosition(playerId, pos) {
   }
   renderFieldView();
 }
+function fieldLockedAt(playerId, inningIdx) {
+  return isCellLocked((state.lineup || []).find(r => r.playerId === playerId), inningIdx);
+}
 
 function assignPositionToPlayer(playerId, pos) {
   const innings = state.innings || 6;
   const inningIdx = Math.min(_fieldInning, innings - 1);
+  // A teammate locked into this spot keeps it.
+  if (pos && pos !== 'Bench' && (state.lineup || []).some(r => state.attendance[r.playerId] && r.playerId !== playerId &&
+      (r.positions || [])[inningIdx] === pos && isCellLocked(r, inningIdx))) return;
   // If picking a real position that's already occupied, kick the
   // current occupant to Bench. Bench picks always go through.
   if (pos && pos !== 'Bench') {
@@ -12904,6 +12959,8 @@ function performFieldSwap(src, dst) {
   // No-op if dropped onto self
   if (src.kind === dst.kind && src.target === dst.target) return;
   if (srcPlayerId === dstPlayerId) return;
+  // A teammate locked into the destination keeps it.
+  if (dstPlayerId && isCellLocked(state.lineup.find(r => r.playerId === dstPlayerId), inningIdx)) return;
 
   // Capture pre-swap visuals so we can fly clones between old and new spots
   // after the re-render. Done BEFORE state mutation so the live DOM still
@@ -13718,7 +13775,8 @@ function lineupFieldsFromState() {
         playerId:  rosterDocIdFor(row.playerId),
         name:      player ? player.name : 'Unknown',
         batOrder:  idx + 1,
-        positions: row.positions || []
+        positions: row.positions || [],
+        lockedInnings: rowLockedInnings(row)   // position locks (additive; iOS reads it too)
       };
     })
   };
@@ -13959,52 +14017,14 @@ function renderLineupGrid() {
 
     for (let i = 0; i < state.innings; i++) {
       const val = lineupRow.positions[i] || '';
-      const cls = val === 'Bench' ? 'bench' : val ? 'filled' : '';
-
-      // Find positions taken by OTHER players in this inning
-      const takenInInning = new Set();
-      activeLineup.forEach(otherRow => {
-        if (otherRow.playerId === player.id) return;
-        const otherPos = otherRow.positions[i];
-        if (otherPos && otherPos !== 'Bench') takenInInning.add(otherPos);
-      });
-
-      const allPositions = getActiveFieldPositions();
-      const openPositions = allPositions.filter(p => !takenInInning.has(p));
-      const takenPositions = allPositions.filter(p => takenInInning.has(p));
-
-      let options = `<option value="">—</option>`;
-      if (openPositions.length > 0 && openPositions.length < allPositions.length) {
-        // Only show grouping when some positions are taken (i.e. there's a meaningful distinction)
-        options += `<optgroup label="Open Positions">`;
-        options += openPositions.map(pos =>
-          `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
-        ).join('');
-        options += `</optgroup>`;
-        if (takenPositions.length > 0) {
-          options += `<optgroup label="Taken">`;
-          options += takenPositions.map(pos =>
-            `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
-          ).join('');
-          options += `</optgroup>`;
-        }
-        options += `<optgroup label="─────────"></optgroup>`;
-        options += `<option value="Bench" ${val==='Bench'?'selected':''}>Bench</option>`;
-      } else {
-        // All open or all taken — flat list, no groups needed
-        options += allPositions.map(pos =>
-          `<option value="${pos}" ${val===pos?'selected':''}>${pos}</option>`
-        ).join('');
-        options += `<option value="Bench" ${val==='Bench'?'selected':''}>Bench</option>`;
-      }
-
+      const locked = isCellLocked(lineupRow, i);
+      const cls = (val === 'Bench' ? 'bench' : val ? 'filled' : '') + (locked ? ' locked' : '');
       cells += `
         <td>
-          <select class="pos-select ${cls}" data-player="${player.id}" data-inning="${i}"
-                  aria-label="${sbAttr(player.name)}, inning ${i + 1}"
-                  onchange="onPosChange('${player.id}',${i},this.value)">
-            ${options}
-          </select>
+          <button type="button" class="pos-select ${cls}" data-player="${player.id}" data-inning="${i}"
+                  aria-haspopup="menu" aria-expanded="false"
+                  aria-label="${sbAttr(player.name)}, inning ${i + 1}, ${val ? sbAttr(val) : 'unassigned'}${locked ? ', locked' : ''}"
+                  onclick="openCellMenu('${player.id}', ${i}, this)">${val ? escHtml(val) : '—'}${locked ? '<span class="ps-lock">' + lcIcon('lock') + '</span>' : ''}</button>
         </td>`;
     }
 
@@ -14075,11 +14095,221 @@ function onPosChange(playerId, inningIdx, value) {
   const lineupRow = state.lineup.find(r => r.playerId === playerId);
   if (lineupRow) {
     lineupRow.positions[inningIdx] = value;
+    if (!value) setCellLocked(lineupRow, inningIdx, false);
     renderLineupGrid();
     renderPlayingTimeSummary();
     checkConflicts();
     save();
   }
+}
+
+// ═══════════════════════════════════════════════════
+// POSITION LOCKS (Dan, Nov 3 2026)
+// A coach locks a kid into a spot for an inning (Reef pitches 1 and 2,
+// Joaquin 3 and 4); Auto-fill, suggestions, inning copy and clear build
+// around locked cells and never move them. Picking by hand still works and
+// keeps the lock with the cell; clearing a cell unlocks it.
+// Stored per row as lockedInnings (0-based) on the lineup's players, the
+// coaches' draft rows and this device's drafts: additive, so a client that
+// doesn't know it just ignores it. iOS writes and reads the same field.
+// ═══════════════════════════════════════════════════
+function rowLockedInnings(row) {
+  if (!row || !Array.isArray(row.lockedInnings)) return [];
+  const pos = row.positions || [];
+  return row.lockedInnings
+    .filter((i, k, a) => Number.isInteger(i) && i >= 0 && i < (state.innings || 6) && !!pos[i] && a.indexOf(i) === k)
+    .sort((a, b) => a - b);
+}
+function isCellLocked(row, i) { return rowLockedInnings(row).indexOf(i) >= 0; }
+function setCellLocked(row, i, on) {
+  if (!row) return;
+  const next = rowLockedInnings(row).filter(x => x !== i);
+  if (on && (row.positions || [])[i]) next.push(i);
+  next.sort((a, b) => a - b);
+  if (next.length) row.lockedInnings = next; else delete row.lockedInnings;
+}
+
+// The cell menu (Web A): every spot, the lock beside each.
+var _cellMenu = null;   // { playerId, inning }
+function _ensureCellMenuEl() {
+  let menu = document.getElementById('cell-menu');
+  if (!menu) {
+    menu = document.createElement('div');
+    menu.id = 'cell-menu';
+    menu.className = 'lc-menu lc-menu--fixed';
+    menu.setAttribute('role', 'menu');
+    menu.style.display = 'none';
+    menu.addEventListener('click', e => e.stopPropagation());
+    menu.addEventListener('keydown', _cellMenuKeys);
+    document.body.appendChild(menu);
+  }
+  return menu;
+}
+
+function openCellMenu(playerId, inning, anchor) {
+  const menu = _ensureCellMenuEl();
+  if (_cellMenu && _cellMenu.playerId === playerId && _cellMenu.inning === inning) { closeCellMenu(true); return; }
+  closeCellMenu(false);
+  if (typeof closeInningMenu === 'function') closeInningMenu();
+  const row = state.lineup.find(r => r.playerId === playerId);
+  const player = state.players.find(p => p.id === playerId);
+  if (!row || !player) return;
+  _cellMenu = { playerId, inning };
+  anchor.setAttribute('aria-expanded', 'true');
+
+  const cur = (row.positions || [])[inning] || '';
+  const curLocked = isCellLocked(row, inning);
+  // Who holds each spot this inning, and whether they're locked there.
+  const holder = {};
+  state.lineup.forEach(r => {
+    if (r.playerId === playerId || !state.attendance[r.playerId]) return;
+    const p = (r.positions || [])[inning];
+    if (p && p !== 'Bench' && !holder[p]) {
+      const pl = state.players.find(x => x.id === r.playerId);
+      holder[p] = { name: pl ? firstNameOf(pl.name) : '', locked: isCellLocked(r, inning) };
+    }
+  });
+  const name = firstNameOf(player.name);
+  const rowHtml = (v, label, opts) => {
+    const h = holder[v];
+    const off = !!(h && h.locked);
+    const sel = v === cur;
+    const on = sel && curLocked;
+    const note = h ? (off ? 'Locked · ' + h.name : h.name) : '';
+    const lockBtn = v
+      ? `<button type="button" class="cm-lock${on ? ' on' : ''}" data-v="${sbAttr(v)}" data-lock="${on ? '0' : '1'}"
+           role="menuitemcheckbox" aria-checked="${on}" tabindex="-1"
+           aria-label="${on ? 'Unlock' : 'Lock'} ${sbAttr(name)} at ${sbAttr(label)}" title="${on ? 'Unlock' : 'Pick and lock in'}">${lcIcon(on ? 'lock' : 'unlock')}</button>`
+      : '<span class="cm-lock-spacer" aria-hidden="true"></span>';
+    return `<div class="cm-row${off ? ' off' : ''}">` +
+      `<button type="button" class="lc-menu-item cm-pick${sel ? ' selected' : ''}${opts && opts.muted ? ' muted' : ''}" data-v="${sbAttr(v)}" role="menuitemradio" aria-checked="${sel}" tabindex="-1"${off ? ' aria-disabled="true"' : ''}>` +
+        `${escHtml(label)}${note ? `<span class="cm-note">${escHtml(note)}</span>` : ''}</button>` +
+      (off ? '<span class="cm-lock-spacer" aria-hidden="true"></span>' : lockBtn) +
+    `</div>`;
+  };
+  let html = `<div class="lc-menu-label">${escHtml(name)} · Inning ${inning + 1}</div><div class="lc-menu-scroll">`;
+  html += rowHtml('', 'Unassigned', { muted: true });
+  html += rowHtml('Bench', 'Bench');
+  html += '<div class="lc-menu-sep"></div>';
+  getActiveFieldPositions().forEach(p => { html += rowHtml(p, p); });
+  html += '</div>';
+  menu.innerHTML = html;
+
+  menu.querySelectorAll('.cm-pick').forEach(b => b.addEventListener('click', () => {
+    if (b.getAttribute('aria-disabled') === 'true') return;
+    cellMenuApply(b.dataset.v, undefined);
+  }));
+  menu.querySelectorAll('.cm-lock').forEach(b => b.addEventListener('click', () => {
+    cellMenuApply(b.dataset.v, b.dataset.lock === '1');
+  }));
+
+  // Place it under the cell (above when there's no room), inside the window.
+  menu.style.display = 'flex';
+  menu.style.visibility = 'hidden';
+  menu.style.left = '0px';
+  menu.style.top = '0px';
+  const mw = menu.offsetWidth, mh = menu.offsetHeight;
+  const r = anchor.getBoundingClientRect();
+  const pad = 8;
+  let left = Math.min(r.left, window.innerWidth - mw - pad);
+  let top = r.bottom + 4;
+  if (top + mh > window.innerHeight - pad && r.top - mh - 4 > pad) top = r.top - mh - 4;
+  menu.style.left = Math.max(pad, left) + 'px';
+  menu.style.top = Math.max(pad, Math.min(top, window.innerHeight - mh - pad)) + 'px';
+  menu.style.visibility = '';
+  const first = menu.querySelector('.cm-pick.selected') || menu.querySelector('.cm-pick:not([aria-disabled])');
+  if (first) {
+    first.focus({ preventScroll: true });
+    // A long list (10 spots on a phone) opens scrolled to the current pick.
+    const sc = menu.querySelector('.lc-menu-scroll');
+    const fr = first.getBoundingClientRect(), sr = sc.getBoundingClientRect();
+    if (fr.bottom > sr.bottom || fr.top < sr.top) sc.scrollTop += fr.top - sr.top - (sc.clientHeight - fr.height) / 2;
+  }
+
+  setTimeout(() => {
+    document.addEventListener('mousedown', _cellMenuOutside);
+    document.addEventListener('touchstart', _cellMenuOutside, { passive: true });
+    window.addEventListener('resize', _cellMenuDismiss);
+    window.addEventListener('scroll', _cellMenuDismiss, true);
+  }, 0);
+}
+
+// lock: true picks and locks, false picks and unlocks, undefined keeps
+// whatever lock the cell had.
+function cellMenuApply(v, lock) {
+  if (!_cellMenu) return;
+  const { playerId, inning } = _cellMenu;
+  const row = state.lineup.find(r => r.playerId === playerId);
+  closeCellMenu(false);
+  if (!row) return;
+  while (row.positions.length <= inning) row.positions.push('');
+  row.positions[inning] = v;
+  if (lock !== undefined) setCellLocked(row, inning, lock);
+  if (!v) setCellLocked(row, inning, false);
+  renderLineupGrid();
+  renderPlayingTimeSummary();
+  checkConflicts();
+  save();
+  _focusCell(playerId, inning);
+}
+
+function _focusCell(playerId, inning) {
+  const cell = document.querySelector(`#lineup-tbody .pos-select[data-player="${cssEscape(playerId)}"][data-inning="${inning}"]`);
+  if (cell) cell.focus({ preventScroll: true });
+}
+
+function _cellMenuKeys(e) {
+  const menu = document.getElementById('cell-menu');
+  if (!menu || !_cellMenu) return;
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    const { playerId, inning } = _cellMenu;
+    closeCellMenu(false);
+    _focusCell(playerId, inning);
+    return;
+  }
+  const picks = Array.from(menu.querySelectorAll('.cm-pick:not([aria-disabled])'));
+  const at = document.activeElement;
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const rowEl = at && at.closest('.cm-row');
+    const k = picks.findIndex(b => b.closest('.cm-row') === rowEl);
+    const next = picks[(k + (e.key === 'ArrowDown' ? 1 : -1) + picks.length) % picks.length];
+    if (next) next.focus();
+  } else if (e.key === 'ArrowRight' && at && at.classList.contains('cm-pick')) {
+    const lock = at.closest('.cm-row').querySelector('.cm-lock');
+    if (lock) { e.preventDefault(); lock.focus(); }
+  } else if (e.key === 'ArrowLeft' && at && at.classList.contains('cm-lock')) {
+    e.preventDefault();
+    at.closest('.cm-row').querySelector('.cm-pick').focus();
+  } else if (e.key === 'Tab') {
+    closeCellMenu(false);
+  }
+}
+function _cellMenuOutside(e) {
+  const menu = document.getElementById('cell-menu');
+  if (menu && menu.contains(e.target)) return;
+  // The cell's own click toggles it; let that handler run.
+  if (_cellMenu && e.target.closest && e.target.closest(`.pos-select[data-player="${cssEscape(_cellMenu.playerId)}"][data-inning="${_cellMenu.inning}"]`)) return;
+  closeCellMenu(false);
+}
+function _cellMenuDismiss(e) {
+  // The menu's own list scrolling doesn't close it.
+  const menu = document.getElementById('cell-menu');
+  if (e && e.type === 'scroll' && menu && e.target instanceof Node && menu.contains(e.target)) return;
+  closeCellMenu(false);
+}
+function closeCellMenu(refocus) {
+  const menu = document.getElementById('cell-menu');
+  const was = _cellMenu;
+  if (menu) menu.style.display = 'none';
+  _cellMenu = null;
+  document.querySelectorAll('#lineup-tbody .pos-select[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  document.removeEventListener('mousedown', _cellMenuOutside);
+  document.removeEventListener('touchstart', _cellMenuOutside);
+  window.removeEventListener('resize', _cellMenuDismiss);
+  window.removeEventListener('scroll', _cellMenuDismiss, true);
+  if (refocus && was) _focusCell(was.playerId, was.inning);
 }
 
 // ═══════════════════════════════════════════════════
@@ -14092,8 +14322,14 @@ function moveInning(fromIdx, toIdx) {
     if (!Array.isArray(row.positions)) return;
     // Pad to length so the splice indices line up cleanly
     while (row.positions.length < state.innings) row.positions.push('');
+    // Locks ride with their cells: same splice on a flag per inning.
+    const flags = row.positions.map((_, k) => isCellLocked(row, k));
     const [moved] = row.positions.splice(fromIdx, 1);
     row.positions.splice(toIdx, 0, moved !== undefined ? moved : '');
+    const [flag] = flags.splice(fromIdx, 1);
+    flags.splice(toIdx, 0, !!flag);
+    const next = flags.map((f, k) => f ? k : -1).filter(k => k >= 0);
+    if (next.length) row.lockedInnings = next; else delete row.lockedInnings;
   });
   renderLineupGrid();
   renderPlayingTimeSummary();
@@ -14106,6 +14342,7 @@ function copyInning(fromIdx, toIdx) {
   state.lineup.forEach(row => {
     if (!Array.isArray(row.positions)) return;
     while (row.positions.length < state.innings) row.positions.push('');
+    if (isCellLocked(row, toIdx)) return;   // a locked cell keeps its spot
     row.positions[toIdx] = row.positions[fromIdx] || '';
   });
   renderLineupGrid();
@@ -14120,7 +14357,7 @@ function copyInningToAll(fromIdx) {
     while (row.positions.length < state.innings) row.positions.push('');
     const src = row.positions[fromIdx] || '';
     for (let i = 0; i < state.innings; i++) {
-      if (i !== fromIdx) row.positions[i] = src;
+      if (i !== fromIdx && !isCellLocked(row, i)) row.positions[i] = src;
     }
   });
   renderLineupGrid();
@@ -14133,7 +14370,7 @@ function clearInningPositions(idx) {
   state.lineup.forEach(row => {
     if (!Array.isArray(row.positions)) return;
     while (row.positions.length < state.innings) row.positions.push('');
-    row.positions[idx] = '';
+    if (!isCellLocked(row, idx)) row.positions[idx] = '';   // unlock to clear a locked cell
   });
   renderLineupGrid();
   renderPlayingTimeSummary();
@@ -14730,6 +14967,16 @@ function shuffleFielding() {
   const sw = season ? sgWeight() : 0;
   _sgApplied = {};   // a new fielding plan: earlier cards no longer apply
 
+  // Position locks: playerId -> { inning: position }. Auto-fill fills
+  // around them and never moves them.
+  const locks = {};
+  attending.forEach(p => {
+    const row = state.lineup.find(r => r.playerId === p.id);
+    rowLockedInnings(row).forEach(i => {
+      if (i < numInnings) (locks[p.id] = locks[p.id] || {})[i] = row.positions[i];
+    });
+  });
+
   // Try multiple candidates; pick the one with fewest violations, then best balance.
   const ATTEMPTS = 25;
   let best = null;
@@ -14737,9 +14984,9 @@ function shuffleFielding() {
 
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const candidate = buildFieldingAttempt(
-      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw
+      attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw, locks
     );
-    repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack, pitching);
+    repairFieldingViolations(candidate, attending, numInnings, maxSame, noBackToBack, pitching, locks);
     const score = scoreFieldingCandidate(candidate, attending, maxSame, noBackToBack, pitching);
 
     if (score < bestScore) {
@@ -14765,9 +15012,13 @@ function shuffleFielding() {
 // Rules are enforced strictly per-inning. If a player has no legal position this
 // inning (e.g., higher-priority players claimed all the valid spots), we defer
 // them to a second pass and let the repair step untangle it.
-function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw) {
+function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, maxSame, noBackToBack, pitching, season, sw, locks) {
   const result = {};
   attending.forEach(p => { result[p.id] = Array(numInnings).fill(''); });
+  // Locked cells go in first, every inning, so the rules see them (two
+  // locked innings at P count toward the pitching cap).
+  const lockAt = (id, i) => locks && locks[id] && Object.prototype.hasOwnProperty.call(locks[id], i);
+  attending.forEach(p => { if (locks && locks[p.id]) Object.keys(locks[p.id]).forEach(i => { result[p.id][+i] = locks[p.id][i]; }); });
 
   const maxStrGlobal = Math.max(...attending.map(p => playerStrengthScore(p)), 1);
   // Bench innings per game this season, 0 to 1 across today's kids.
@@ -14786,7 +15037,7 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
     const maxField = Math.max(...Object.values(fieldCount), 1);
 
     // Shuffle first (randomize ties), then sort by blended fairness/strength score
-    const prioritized = [...attending]
+    const prioritized = attending.filter(p => !lockAt(p.id, inning))
       .sort(() => Math.random() - 0.5)
       .sort((a, b) => {
         const fairA = 1 - (fieldCount[a.id] / maxField);
@@ -14798,8 +15049,12 @@ function buildFieldingAttempt(attending, fieldPos, numInnings, competitiveBias, 
         return scoreB - scoreA;
       });
 
-    const numCanPlay = Math.min(attending.length, fieldPos.length);
     const takenPositions = new Set();
+    attending.forEach(p => {
+      const v = lockAt(p.id, inning) ? result[p.id][inning] : '';
+      if (v && v !== 'Bench') takenPositions.add(v);
+    });
+    const numCanPlay = Math.min(prioritized.length, fieldPos.filter(p => !takenPositions.has(p)).length);
     const deferred = [];
 
     // First pass: give each prioritized player their best LEGAL position.
@@ -14971,7 +15226,9 @@ function rowViolationCount(positions, maxSame, noBackToBack, pitching) {
 
 // Try to fix any rule violations by swapping same-inning assignments between
 // two players. Only applies swaps that strictly reduce total violations.
-function repairFieldingViolations(result, attending, numInnings, maxSame, noBackToBack, pitching) {
+function repairFieldingViolations(result, attending, numInnings, maxSame, noBackToBack, pitching, locks) {
+  // Locked cells never swap.
+  const lockAt = (id, i) => locks && locks[id] && Object.prototype.hasOwnProperty.call(locks[id], i);
   // Multiple passes — each swap can unlock new fixable cases downstream.
   for (let pass = 0; pass < 10; pass++) {
     let changed = false;
@@ -14980,7 +15237,7 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
       for (let i = 0; i < attending.length; i++) {
         const playerA = attending[i];
         const posA = result[playerA.id][inning];
-        if (!posA || posA === 'Bench') continue;
+        if (!posA || posA === 'Bench' || lockAt(playerA.id, inning)) continue;
 
         const aViolationBefore = rowViolationCount(result[playerA.id], maxSame, noBackToBack, pitching);
         if (aViolationBefore === 0) continue;
@@ -14991,7 +15248,7 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
           if (i === j) continue;
           const playerB = attending[j];
           const posB = result[playerB.id][inning];
-          if (!posB || posB === 'Bench') continue;
+          if (!posB || posB === 'Bench' || lockAt(playerB.id, inning)) continue;
 
           const newA = [...result[playerA.id]]; newA[inning] = posB;
           const newB = [...result[playerB.id]]; newB[inning] = posA;
@@ -15015,7 +15272,7 @@ function repairFieldingViolations(result, attending, numInnings, maxSame, noBack
         for (let j = 0; j < attending.length; j++) {
           if (i === j) continue;
           const playerB = attending[j];
-          if (result[playerB.id][inning] !== 'Bench') continue;
+          if (result[playerB.id][inning] !== 'Bench' || lockAt(playerB.id, inning)) continue;
 
           const newA = [...result[playerA.id]]; newA[inning] = 'Bench';
           const newB = [...result[playerB.id]]; newB[inning] = posA;
@@ -15059,8 +15316,9 @@ function scoreFieldingCandidate(result, attending, maxSame, noBackToBack, pitchi
 }
 
 function clearFielding() {
+  // Locked cells stay (unlock one to clear it).
   state.lineup.forEach(row => {
-    row.positions = row.positions.map(() => '');
+    row.positions = row.positions.map((p, i) => isCellLocked(row, i) ? p : '');
   });
   renderLineupGrid();
   renderPlayingTimeSummary();
