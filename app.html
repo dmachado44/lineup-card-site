@@ -12615,7 +12615,7 @@ function renderFieldPositions() {
             ' ondragleave="onFieldDragLeave(event)"' +
             ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
             ' ondragend="onFieldDragEnd(event)"' +
-            ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
+            ' onclick="openFieldSpot(\'' + pos + '\', this)"' +
             ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '"' +
             ' title="Drag to swap, or choose who plays ' + pos + ' in inning ' + (inningIdx + 1) + '">' +
             chipInner(pos, player) +
@@ -12653,7 +12653,7 @@ function renderFieldPositions() {
                  ' ondragleave="onFieldDragLeave(event)"' +
                  ' ondrop="onFieldDrop(event,\'pos\',\'' + pos + '\')"' +
                  ' ondragend="onFieldDragEnd(event)"' +
-                 ' onclick="openFieldPosPicker(\'' + pos + '\', this)"' +
+                 ' onclick="openFieldSpot(\'' + pos + '\', this)"' +
                  ' aria-label="' + sbAttr(fieldChipLabel(pos, player, conflict)) + '">' +
                  chipInner(pos, player) +
                  '</button>';
@@ -12704,7 +12704,7 @@ function renderFieldBench() {
            ' draggable="true"' +
            ' ondragstart="onFieldDragStart(event,\'bench\',\'' + r.playerId + '\')"' +
            ' ondragend="onFieldDragEnd(event)"' +
-           ' onclick="openFieldBenchPicker(\'' + r.playerId + '\', this)"' +
+           ' onclick="openFieldPlayerMenu(\'' + r.playerId + '\', this)"' +
            ' aria-label="' + sbAttr(fieldChipLabel('Bench', p, false)) + '">' +
            '<span class="field-pos-name">' + escHtml(firstNameOf(p.name)) + '</span>' +
            '<span class="field-pos-counts"><span class="f">F ' + c.f + '</span><span class="b">B ' + c.b + '</span></span>' +
@@ -12712,24 +12712,31 @@ function renderFieldBench() {
   }).join('');
 }
 
-// ── Position picker popup ────────────────────────────────────────────
-// Two entry points:
-//   openFieldPosPicker(pos, anchorEl)   — pick a player FOR this position
-//   openFieldBenchPicker(playerId, ...) — pick a position FOR this player
-let _fieldPickerMode = null;     // 'pos' | 'bench'
-let _fieldPickerTarget = null;   // position string or playerId
+// ── Field view menus ─────────────────────────────────────────────────
+// A kid on the field or the bench opens the table's cell menu (spots, who
+// holds them, the lock beside each); a spot a pick bumps its unlocked kid
+// to the bench, the field view's rule. An empty spot asks who plays it:
+//   openFieldPosPicker(pos, anchorEl) — pick a player FOR this position
+let _fieldPickerMode = null;     // 'pos'
+let _fieldPickerTarget = null;   // position string
+
+function openFieldSpot(pos, anchorEl) {
+  const inningIdx = Math.min(_fieldInning, (state.innings || 6) - 1);
+  const row = (state.lineup || []).find(r => state.attendance[r.playerId] && (r.positions || [])[inningIdx] === pos);
+  if (row) openFieldPlayerMenu(row.playerId, anchorEl);
+  else openFieldPosPicker(pos, anchorEl);
+}
+
+function openFieldPlayerMenu(playerId, anchorEl) {
+  closeFieldPosPicker();
+  openCellMenu(playerId, Math.min(_fieldInning, (state.innings || 6) - 1), anchorEl, { field: true });
+}
 
 function openFieldPosPicker(pos, anchorEl) {
+  if (typeof closeCellMenu === 'function') closeCellMenu(false);
   _fieldPickerMode = 'pos';
   _fieldPickerTarget = pos;
   showFieldPicker(anchorEl, 'Inning ' + (_fieldInning + 1) + ' · ' + pos, buildPosPickerItemsForPosition(pos));
-}
-
-function openFieldBenchPicker(playerId, anchorEl) {
-  _fieldPickerMode = 'bench';
-  _fieldPickerTarget = playerId;
-  const p = (state.players || []).find(pp => pp.id === playerId);
-  showFieldPicker(anchorEl, 'Inning ' + (_fieldInning + 1) + ' · ' + (p ? p.name : 'Player'), buildPosPickerItemsForPlayer(playerId));
 }
 
 function buildPosPickerItemsForPosition(pos) {
@@ -12744,24 +12751,13 @@ function buildPosPickerItemsForPosition(pos) {
   // Currently at this position
   const currentRow = attending.find(r => (r.positions || [])[inningIdx] === pos);
   const currentId = currentRow ? currentRow.playerId : null;
-  // Position locks (Dan, Nov 3 2026): the kid here can be locked in from
-  // this dropdown; while they're locked, nobody else can take the spot.
-  const heldLocked = !!currentRow && isCellLocked(currentRow, inningIdx);
 
   const items = [];
-  if (currentRow) {
-    const first = firstNameOf(playerLookup[currentId].name);
-    items.push(heldLocked
-      ? { label: 'Unlock ' + first + ' at ' + pos, onClick: () => fieldSetLocked(currentId, inningIdx, false) }
-      : { label: 'Lock ' + first + ' at ' + pos, onClick: () => fieldSetLocked(currentId, inningIdx, true) });
-    items.push({ divider: true });
-  }
   // "Empty" / clear option
   items.push({
     label: 'Empty (no one here)',
     selected: !currentId,
     muted: true,
-    disabled: heldLocked,
     onClick: () => assignPlayerToPosition(null, pos)
   });
   items.push({ divider: true });
@@ -12774,59 +12770,7 @@ function buildPosPickerItemsForPosition(pos) {
     items.push({
       label: p.name + sub,
       selected: r.playerId === currentId,
-      disabled: heldLocked && r.playerId !== currentId,
       onClick: () => assignPlayerToPosition(r.playerId, pos)
-    });
-  });
-  return items;
-}
-
-function buildPosPickerItemsForPlayer(playerId) {
-  // Position picker for a given player — list active positions
-  const innings = state.innings || 6;
-  const inningIdx = Math.min(_fieldInning, innings - 1);
-  const row = (state.lineup || []).find(r => r.playerId === playerId);
-  const currentPos = row ? (row.positions || [])[inningIdx] : '';
-
-  const active = (state.gamePositions && state.gamePositions.length > 0)
-    ? state.gamePositions
-    : (state.leagueRules.activePositions || []);
-  const positions = active.filter(p => p !== 'Bench');
-
-  // Map position → who's there (for "(X is here)" hints)
-  const occupant = {};
-  (state.lineup || []).forEach(r => {
-    if (!state.attendance[r.playerId]) return;
-    const p = (r.positions || [])[inningIdx];
-    if (p && p !== 'Bench') occupant[p] = r.playerId;
-  });
-  const playerLookup = {};
-  (state.players || []).forEach(p => { playerLookup[p.id] = p; });
-
-  const items = [];
-  // A kid on the bench can be locked there too (sits this inning).
-  if (row && currentPos === 'Bench') {
-    const first = firstNameOf((playerLookup[playerId] || {}).name || '');
-    items.push(isCellLocked(row, inningIdx)
-      ? { label: 'Unlock ' + first + ' on the bench', onClick: () => fieldSetLocked(playerId, inningIdx, false) }
-      : { label: 'Lock ' + first + ' on the bench', onClick: () => fieldSetLocked(playerId, inningIdx, true) });
-    items.push({ divider: true });
-  }
-  items.push({
-    label: 'Bench',
-    selected: currentPos === 'Bench' || !currentPos,
-    muted: true,
-    onClick: () => assignPositionToPlayer(playerId, 'Bench')
-  });
-  items.push({ divider: true });
-  positions.forEach(pos => {
-    const otherId = occupant[pos];
-    const otherName = (otherId && otherId !== playerId) ? playerLookup[otherId] && playerLookup[otherId].name : null;
-    const sub = otherName ? (fieldLockedAt(otherId, inningIdx) ? ' (locked: ' + otherName + ')' : ' (currently ' + otherName + ')') : '';
-    items.push({
-      label: pos + sub,
-      selected: currentPos === pos,
-      onClick: () => assignPositionToPlayer(playerId, pos)
     });
   });
   return items;
@@ -12853,10 +12797,8 @@ function showFieldPicker(anchorEl, title, items) {
     b.type = 'button';
     b.className = 'lc-menu-item' + (it.selected ? ' selected' : '') + (it.muted ? ' muted' : '');
     b.textContent = it.label;
-    if (it.disabled) b.disabled = true;
     b.onclick = (e) => {
       e.stopPropagation();
-      if (it.disabled) return;
       try { it.onClick(); } finally { closeFieldPosPicker(); }
     };
     bodyEl.appendChild(b);
@@ -12941,10 +12883,6 @@ function assignPlayerToPosition(playerId, pos) {
     onPosChange(playerId, inningIdx, pos);
   }
   renderFieldView();
-}
-function fieldSetLocked(playerId, inningIdx, on) {
-  setCellLocked((state.lineup || []).find(r => r.playerId === playerId), inningIdx, on);
-  sgAfterChange(true);   // redraws the table, which mirrors to the field
 }
 function fieldLockedAt(playerId, inningIdx) {
   return isCellLocked((state.lineup || []).find(r => r.playerId === playerId), inningIdx);
@@ -14305,7 +14243,9 @@ function _ensureCellMenuEl() {
   return menu;
 }
 
-function openCellMenu(playerId, inning, anchor) {
+// opts.field: opened from the field view (a pick bumps the spot's kid to
+// the bench there, and focus goes back to the field).
+function openCellMenu(playerId, inning, anchor, opts) {
   const menu = _ensureCellMenuEl();
   if (_cellMenu && _cellMenu.playerId === playerId && _cellMenu.inning === inning) { closeCellMenu(true); return; }
   closeCellMenu(false);
@@ -14313,7 +14253,7 @@ function openCellMenu(playerId, inning, anchor) {
   const row = state.lineup.find(r => r.playerId === playerId);
   const player = state.players.find(p => p.id === playerId);
   if (!row || !player) return;
-  _cellMenu = { playerId, inning };
+  _cellMenu = { playerId, inning, anchor, field: !!(opts && opts.field) };
   anchor.setAttribute('aria-expanded', 'true');
 
   const cur = (row.positions || [])[inning] || '';
@@ -14397,10 +14337,17 @@ function openCellMenu(playerId, inning, anchor) {
 // whatever lock the cell had.
 function cellMenuApply(v, lock) {
   if (!_cellMenu) return;
-  const { playerId, inning } = _cellMenu;
+  const { playerId, inning, field } = _cellMenu;
   const row = state.lineup.find(r => r.playerId === playerId);
   closeCellMenu(false);
   if (!row) return;
+  // The field view shows one kid per spot: whoever held it sits (a locked
+  // holder's spot can't be picked, so this only moves unlocked kids).
+  if (field && v && v !== 'Bench') {
+    state.lineup.forEach(r => {
+      if (r !== row && state.attendance[r.playerId] && (r.positions || [])[inning] === v && !isCellLocked(r, inning)) r.positions[inning] = 'Bench';
+    });
+  }
   while (row.positions.length <= inning) row.positions.push('');
   row.positions[inning] = v;
   if (lock !== undefined) setCellLocked(row, inning, lock);
@@ -14413,8 +14360,19 @@ function cellMenuApply(v, lock) {
 }
 
 function _focusCell(playerId, inning) {
-  const cell = document.querySelector(`#lineup-tbody .pos-select[data-player="${cssEscape(playerId)}"][data-inning="${inning}"]`);
-  if (cell) cell.focus({ preventScroll: true });
+  let el = null;
+  if (_lineupViewMode === 'field') {
+    // Back to the kid's chip: on their spot, or on the bench.
+    const row = state.lineup.find(r => r.playerId === playerId);
+    const v = row && (row.positions || [])[inning];
+    const fv = document.getElementById('lineup-field-view');
+    el = v && v !== 'Bench'
+      ? fv && fv.querySelector(`.field-pos-bubble[data-pos="${cssEscape(v)}"]`)
+      : document.querySelector(`.field-bench-chip[data-bench-player="${cssEscape(playerId)}"]`);
+  } else {
+    el = document.querySelector(`#lineup-tbody .pos-select[data-player="${cssEscape(playerId)}"][data-inning="${inning}"]`);
+  }
+  if (el) el.focus({ preventScroll: true });
 }
 
 function _cellMenuKeys(e) {
@@ -14448,7 +14406,8 @@ function _cellMenuKeys(e) {
 function _cellMenuOutside(e) {
   const menu = document.getElementById('cell-menu');
   if (menu && menu.contains(e.target)) return;
-  // The cell's own click toggles it; let that handler run.
+  // The cell's (or field chip's) own click toggles it; let that handler run.
+  if (_cellMenu && _cellMenu.anchor && _cellMenu.anchor.isConnected && _cellMenu.anchor.contains(e.target)) return;
   if (_cellMenu && e.target.closest && e.target.closest(`.pos-select[data-player="${cssEscape(_cellMenu.playerId)}"][data-inning="${_cellMenu.inning}"]`)) return;
   closeCellMenu(false);
 }
@@ -14463,6 +14422,7 @@ function closeCellMenu(refocus) {
   const was = _cellMenu;
   if (menu) menu.style.display = 'none';
   _cellMenu = null;
+  if (was && was.anchor && was.anchor.isConnected) was.anchor.setAttribute('aria-expanded', 'false');
   document.querySelectorAll('#lineup-tbody .pos-select[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
   document.removeEventListener('mousedown', _cellMenuOutside);
   document.removeEventListener('touchstart', _cellMenuOutside);
