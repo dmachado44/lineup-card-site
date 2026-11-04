@@ -12760,19 +12760,31 @@ function buildPosPickerItemsForPosition(pos) {
     muted: true,
     onClick: () => assignPlayerToPosition(null, pos)
   });
-  items.push({ divider: true });
-  attending.forEach(r => {
-    const p = playerLookup[r.playerId];
-    const cur = (r.positions || [])[inningIdx];
-    const sub = cur && cur !== 'Bench' && cur !== pos
-      ? (isCellLocked(r, inningIdx) ? ' (locked at ' + cur + ')' : ' (currently ' + cur + ')')
-      : '';
-    items.push({
-      label: p.name + sub,
+  // Kids with no spot this inning first (Dan, Nov 3 2026), then everyone
+  // playing somewhere else, in batting order. A kid locked where they are
+  // (the bench included) can't be moved from here, like the cell menu.
+  const spotOf = r => (r.positions || [])[inningIdx] || '';
+  const free = attending.filter(r => !spotOf(r) || spotOf(r) === 'Bench');
+  const elsewhere = attending.filter(r => spotOf(r) && spotOf(r) !== 'Bench' && r.playerId !== currentId);
+  const kidItem = r => {
+    const locked = isCellLocked(r, inningIdx);
+    const cur = spotOf(r);
+    return {
+      label: playerLookup[r.playerId].name,
+      note: locked ? 'Locked · ' + cur : (cur || ''),
+      disabled: locked,
       selected: r.playerId === currentId,
       onClick: () => assignPlayerToPosition(r.playerId, pos)
-    });
-  });
+    };
+  };
+  if (free.length) {
+    items.push({ divider: true }, { heading: 'Available' });
+    free.forEach(r => items.push(kidItem(r)));
+  }
+  if (elsewhere.length) {
+    items.push({ divider: true }, { heading: 'Playing elsewhere' });
+    elsewhere.forEach(r => items.push(kidItem(r)));
+  }
   return items;
 }
 
@@ -12793,12 +12805,27 @@ function showFieldPicker(anchorEl, title, items) {
       bodyEl.appendChild(d);
       return;
     }
+    if (it.heading) {
+      const h = document.createElement('div');
+      h.className = 'lc-menu-label';
+      h.textContent = it.heading;
+      bodyEl.appendChild(h);
+      return;
+    }
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'lc-menu-item' + (it.selected ? ' selected' : '') + (it.muted ? ' muted' : '');
     b.textContent = it.label;
+    if (it.note) {
+      const n = document.createElement('span');
+      n.className = 'cm-note';
+      n.textContent = it.note;
+      b.appendChild(n);
+    }
+    if (it.disabled) b.disabled = true;
     b.onclick = (e) => {
       e.stopPropagation();
+      if (it.disabled) return;
       try { it.onClick(); } finally { closeFieldPosPicker(); }
     };
     bodyEl.appendChild(b);
