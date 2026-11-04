@@ -5877,6 +5877,7 @@ function computeNextGame(teamId, games, lineups) {
     const k = getDraftKey(teamId, e.lineup.gameDate, e.lineup.opponent);
     if (k && drafts[k]) { e.draft = drafts[k]; e.draftKey = k; }
   }
+  if (e.draft && !resumableDraft(e.draft, e.lineup)) { e.draft = null; e.draftKey = null; }
   e.kind = e.draft ? 'draft' : e.lineup ? 'saved' : 'none';
   return e;
 }
@@ -5937,7 +5938,7 @@ async function openNextGame(teamId, what, from) {
   } else {
     await enterBuilder(teamId, 'lineup', 3);
     if (!_builderOpen) return;
-    if (e.draft && !draftOlderThanLineup(e.draft, e.lineup)) {
+    if (resumableDraft(e.draft, e.lineup)) {
       applyDraftToState(e.draft);
       try { _draftLastSavedAt = new Date(e.draft.updatedAt).getTime(); } catch (x) {}
       updateDraftSavedIndicator();
@@ -7769,7 +7770,7 @@ function editCurrentLineupDetail() {
     // (unless the lineup was saved after it, here or on iOS)
     const all = readDraftsFor(teamId);
     const key = getDraftKey(teamId, lineup.gameDate, lineup.opponent);
-    if (key && all[key] && !draftOlderThanLineup(all[key], lineup)) {
+    if (key && resumableDraft(all[key], lineup)) {
       applyDraftToState(all[key]);
       try { _draftLastSavedAt = new Date(all[key].updatedAt).getTime(); } catch(e) {}
       updateDraftSavedIndicator();
@@ -8722,8 +8723,8 @@ function renderSchedule() {
       : _scheduleLineups.find(l => l.opponent === entry.opponent && l.gameDate === entry.date);
     const anyDraft = (!lineupOnly && _scheduleCanCoach) ? findDraftForScheduleGame(_scheduleTeamId, entry) : null;
     // A coaches' draft is a new lineup; once the game has a posted one
-    // (here or on iOS), the posted lineup is what the row shows.
-    const draftHit = anyDraft && !(matched && anyDraft.draft.cloud) ? anyDraft : null;
+    // (here or on iOS), the posted lineup is what the row shows and opens.
+    const draftHit = anyDraft && resumableDraft(anyDraft.draft, matched) ? anyDraft : null;
     const hasDate = entry.dateObj.getTime() > 0;
     const dow = hasDate ? entry.dateObj.toLocaleDateString('en-US', { weekday: 'short' }) : '';
     const md = hasDate ? entry.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'No date';
@@ -8852,7 +8853,7 @@ async function createLineupFromSchedule(gameIndex) {
   // (unless the posted lineup was saved after it, here or on iOS)
   const posted = (Array.isArray(_scheduleLineups) ? _scheduleLineups : []).find(l => lineupMatchesGame(l, game));
   const draftHit = findDraftForScheduleGame(_scheduleTeamId, game);
-  if (draftHit && !draftOlderThanLineup(draftHit.draft, posted)) {
+  if (draftHit && resumableDraft(draftHit.draft, posted)) {
     applyDraftToState(draftHit.draft);
     try { _draftLastSavedAt = new Date(draftHit.draft.updatedAt).getTime(); } catch(e) {}
     updateDraftSavedIndicator();
@@ -8861,7 +8862,7 @@ async function createLineupFromSchedule(gameIndex) {
   }
 
   // 2) Load an existing saved lineup for editing
-  const savedLineup = (Array.isArray(_scheduleLineups) ? _scheduleLineups : [])
+  const savedLineup = posted || (Array.isArray(_scheduleLineups) ? _scheduleLineups : [])
     .find(l => l.opponent === game.opponent && l.gameDate === game.date);
   if (savedLineup) {
     loadSavedLineupIntoBuilder(savedLineup);
@@ -11545,6 +11546,9 @@ function lsApplyToState(kind, s) {
   }
   syncBuilderFormFromState();
   try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch (e) {}
+  lsRender();
+}
+function lsRender() {
   if (!_builderOpen) return;
   if (typeof closeCellMenu === 'function') closeCellMenu(false);
   if (typeof closeInningMenu === 'function') closeInningMenu();
@@ -11567,7 +11571,12 @@ function lsWatch() {
   _syncTarget = target;
   const ref = fb.db.collection('teams').doc(teamId).collection(kind === 'lineup' ? 'lineups' : 'lineupDrafts').doc(id);
   _syncUnsub = ref.onSnapshot(snap => {
-    if (_syncTarget !== target || !snap.exists || snap.metadata.hasPendingWrites) return;
+    if (_syncTarget !== target || snap.metadata.hasPendingWrites) return;
+    if (!snap.exists) {
+      // Gone on the server (not just missing from this device's cache).
+      if (!snap.metadata.fromCache && _syncBase) lsGone(kind, id);
+      return;
+    }
     const theirs = lsShape(kind, snap.data());
     if (_syncBase && lsEq(theirs, _syncBase)) return;          // nothing new (often our own save)
     const mine = lsMineNow(kind);
@@ -11578,6 +11587,52 @@ function lsWatch() {
   }, e => console.warn('Live sync paused (open lineup):', e && e.message));
 }
 window.addEventListener('online', () => { if (_builderOpen) scheduleAutoSave(); });
+
+// The open draft or lineup was removed on another device. A draft goes when
+// its lineup is posted: open the posted lineup instead (its edits are what
+// the team sees). A lineup or draft also goes when its game is deleted:
+// keep what's on screen; editing on saves it again as a new draft.
+var _syncGone = '';
+async function lsGone(kind, id) {
+  const now = () => kind === 'lineup' ? state.editingLineupDocId : state.cloudDraftId;
+  const target = kind + '/' + id;
+  if (!id || now() !== id || _syncGone === target) return;
+  _syncGone = target;
+  lsUnwatch();
+  if (_autoTimer) { clearTimeout(_autoTimer); _autoTimer = null; }
+  const teamId = _activeTeamId;
+  const posted = kind === 'draft' ? await lsFindPosted(teamId, state.gameDate, state.opponent) : null;
+  if (now() !== id || _activeTeamId !== teamId) { _syncGone = ''; return; }
+  if (posted) {
+    clearDraftForCurrent();
+    loadSavedLineupIntoBuilder(posted);
+    cacheScheduleLineup(teamId, posted.id, posted);
+    lsRender();
+    if (_builderOpen) showToast('Posted on another device. Showing the posted lineup.');
+  } else {
+    // Nothing is written now (save() would start a new draft at once).
+    state.editingLineupDocId = null; resetAutoSave();
+    if (_builderOpen) showToast('Removed on another device. Keep editing to save it again.');
+  }
+  try { localStorage.setItem('lineupDJ_state', JSON.stringify(state)); } catch (e) {}
+  _syncGone = '';
+}
+
+// The posted lineup for a game, from the server (same date and opponent).
+async function lsFindPosted(teamId, gameDate, opponent) {
+  const fb = initFirebase();
+  if (!fb || !teamId || !gameDate) return null;
+  const norm = s => String(s || '').toLowerCase().trim();
+  try {
+    const snap = await fb.db.collection('teams').doc(teamId).collection('lineups')
+      .where('gameDate', '==', gameDate).get({ source: 'server' });
+    const hit = snap.docs.find(d => norm((d.data() || {}).opponent) === norm(opponent));
+    return hit ? Object.assign({ id: hit.id }, hit.data()) : null;
+  } catch (e) {
+    console.warn('Couldn\'t look up the posted lineup:', e && e.message);
+    return null;
+  }
+}
 function lsUnwatch() {
   if (_syncUnsub) { try { _syncUnsub(); } catch (e) {} }
   _syncUnsub = null; _syncTarget = '';
@@ -11591,10 +11646,14 @@ function lsBegin(kind, shape) {
 
 // One save, merged with the doc as it stands (see above). Returns the copy
 // written; when someone else's edits came in with it, they're put on screen.
-async function lsWriteMerged(kind, ref, mine, extra, firstExtra) {
+// create: the doc may be created (a new draft's first write, an explicit
+// Save). Otherwise a missing doc was removed elsewhere: nothing is written
+// and the save fails with code 'gone'.
+async function lsWriteMerged(kind, ref, mine, extra, firstExtra, create) {
   const fb = initFirebase();
   const base = _syncKind === kind ? _syncBase : null;
   const written = await fb.db.runTransaction(t => t.get(ref).then(snap => {
+    if (!snap.exists && !create) { const gone = new Error('Removed on another device'); gone.code = 'gone'; throw gone; }
     const theirs = snap.exists ? lsShape(kind, snap.data()) : null;
     const merged = theirs && base ? lsMerge(base, mine, theirs) : mine;
     const doc = kind === 'lineup' ? lsToLineupFields(merged) : lsToDraft(merged);
@@ -11683,7 +11742,7 @@ async function flushAutoSave() {
       const mine = lsShape('lineup', fields);
       if (!fields.players.length || (_syncKind === 'lineup' && _syncBase ? lsEq(mine, _syncBase) : json === _autoBaseline)) return;
       const ref = fb.db.collection('teams').doc(teamId).collection('lineups').doc(id);
-      const written = await lsWriteMerged('lineup', ref, mine, { updatedAt: now, updatedBy: uid });
+      const written = await lsWriteMerged('lineup', ref, mine, { updatedAt: now, updatedBy: uid }, null, false);
       if (state.editingLineupDocId === id) { _autoBaseline = json; lsBegin('lineup', written); }
       _autoSavedAt = Date.now(); _autoError = false;
       cacheScheduleLineup(teamId, id, lsToLineupFields(written));
@@ -11696,7 +11755,7 @@ async function flushAutoSave() {
       if (json === _cloudDraftJson || (_syncKind === 'draft' && _syncBase && lsEq(mineDraft, _syncBase))) return;
       const id = ensureDraftId();
       const ref = fb.db.collection('teams').doc(teamId).collection('lineupDrafts').doc(id);
-      const written = lsToDraft(await lsWriteMerged('draft', ref, mineDraft, { updatedAt: now, updatedBy: uid }, { createdAt: now, createdBy: uid }));
+      const written = lsToDraft(await lsWriteMerged('draft', ref, mineDraft, { updatedAt: now, updatedBy: uid }, { createdAt: now, createdBy: uid }, _cloudDraftIsNew));
       _cloudDraftIsNew = false;
       _cloudDraftJson = json; _autoSavedAt = Date.now(); _autoError = false;
       if (state.cloudDraftId === id) lsBegin('draft', lsShape('draft', written));
@@ -11706,7 +11765,8 @@ async function flushAutoSave() {
       if (key) map[key] = Object.assign({ teamId, editingLineupDocId: null, cloudDraftId: id, updatedAt: new Date().toISOString(), cloud: true }, written);
     }
   } catch (e) {
-    if (e && e.code === 'permission-denied' && !state.editingLineupDocId) _cloudDraftsOff = true;   // drafts stay on this device
+    if (e && e.code === 'gone') lsGone(state.editingLineupDocId ? 'lineup' : 'draft', state.editingLineupDocId || state.cloudDraftId);
+    else if (e && e.code === 'permission-denied' && !state.editingLineupDocId) _cloudDraftsOff = true;   // drafts stay on this device
     else { _autoError = true; console.warn('Autosave failed:', e && e.message); }
   } finally {
     _autoBusy = false;
@@ -11773,6 +11833,17 @@ function draftOlderThanLineup(draft, lineup) {
   if (!draft || !lineup || !draft.editingLineupDocId || draft.editingLineupDocId !== lineup.id) return false;
   const t = lineup.updatedAt && lineup.updatedAt.toMillis ? lineup.updatedAt.toMillis() : 0;
   return !!t && t > new Date(draft.updatedAt).getTime();
+}
+
+// The draft to resume for a game, or null to open its posted lineup. Once a
+// game has a posted lineup it wins, on both apps (iOS: DugoutSection).
+// Only this device's own draft OF that lineup, newer than its last save,
+// still resumes.
+function resumableDraft(draft, lineup) {
+  if (!draft) return null;
+  if (!lineup) return draft;
+  if (draft.editingLineupDocId !== lineup.id) return null;
+  return draftOlderThanLineup(draft, lineup) ? null : draft;
 }
 
 function loadDraftByKey(key) {
@@ -14114,7 +14185,7 @@ async function saveLineupToFirestore() {
     if (state.editingLineupDocId) {
       // Editing an existing lineup: merged with the shared copy (sync above).
       const written = await lsWriteMerged('lineup', lineupsCol.doc(state.editingLineupDocId), lsShape('lineup', fields),
-        { updatedAt: lineupData.updatedAt, updatedBy: lineupData.updatedBy });
+        { updatedAt: lineupData.updatedAt, updatedBy: lineupData.updatedBy }, null, true);
       shared = lsToLineupFields(written);
     } else {
       // First save for this lineup — create a new doc and remember its id
