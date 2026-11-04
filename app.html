@@ -1509,6 +1509,27 @@
       opacity: 1;
       color: var(--ink);
     }
+    /* Whole-inning, whole-row and batting-order locks (Dan, Nov 3 2026):
+       the Batting order header and each name open a menu like the inning
+       headers do. A lock beside the label = everything it covers is locked. */
+    .lock-mark { display: inline-flex; flex: none; width: 12px; height: 12px; color: var(--ink); }
+    .lock-mark svg { width: 100%; height: 100%; stroke-width: var(--icon-stroke-heavy); }
+    .bo-trigger, .name-trigger {
+      display: inline-flex; align-items: center; gap: 6px; min-width: 0;
+      margin-left: -8px; padding: 4px 8px;
+      border: 1px solid transparent; border-radius: var(--radius-small);
+      background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
+    }
+    .bo-trigger { font-weight: 600; }
+    .name-trigger { font-weight: 500; font-size: 16px; white-space: normal; }
+    .bo-trigger:hover, .bo-trigger[aria-expanded="true"] { background: var(--panel); border-color: var(--hairline); }
+    .name-trigger:hover, .name-trigger[aria-expanded="true"] { background: var(--gray-5); }
+    .bo-trigger:focus-visible, .name-trigger:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 1px; }
+    .bo-trigger:hover .inning-caret, .bo-trigger[aria-expanded="true"] .inning-caret { color: var(--ink); }
+    /* A name's caret shows on hover, focus or while its menu is open. */
+    .name-trigger .inning-caret { opacity: 0; transition: opacity .14s var(--ease-snappy); }
+    .name-trigger:hover .inning-caret, .name-trigger:focus-visible .inning-caret, .name-trigger[aria-expanded="true"] .inning-caret { opacity: 1; color: var(--ink); }
+    .lineup-table.bo-locked .bat-order { background: var(--gray-5); font-weight: 700; }
 
     /* Column-drag visuals: floating column snapshot (the source column dims in the lineup table section) */
 
@@ -1681,6 +1702,8 @@
         width: 24px; height: 24px; font-size: 11px; border-radius: var(--radius-small);
       }
       .player-name { font-size: 13px; }
+      .name-trigger { margin-left: -6px; padding: 4px 6px; gap: 4px; }
+      .name-trigger .inning-caret { display: none; }
       .fp-bar { display: none; }
       .pos-select {
         padding: 6px 4px;
@@ -2782,6 +2805,8 @@
       background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 600; text-align: left; text-decoration: none; cursor: pointer;
     }
     .lc-menu-item:hover { background: var(--bg-secondary); }
+    .lc-menu-item:disabled { color: var(--ink-secondary); cursor: default; }
+    .lc-menu-item:disabled:hover { background: transparent; }
     .lc-menu-item.danger { color: var(--alert-ink); }
     .lc-menu-item.danger:hover { background: var(--alert-wash); }
     .lc-menu-item.selected { background: var(--accent-wash); color: var(--accent-down); }
@@ -4379,7 +4404,7 @@
       <div class="lineup-toolbar">
           <div>
             <h2 class="card-title mb-0">Batting order &amp; positions</h2>
-            <div class="text-muted-sm">Drag rows or innings to reorder · Use an inning's header to copy or clear it</div>
+            <div class="text-muted-sm">Drag rows or innings to reorder · Open a header or a name to lock it</div>
           </div>
           <div class="toolbar-spacer"></div>
           <button class="btn btn-ghost btn-sm" type="button" onclick="autoFillLineup()" title="Fill positions and the batting order using your strategy and league rules">
@@ -4392,7 +4417,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="lc-menu lc-menu--drop" role="menu">
-              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleBatting()">Generate batting order</button>
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); generateBattingOrder()">Generate batting order</button>
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleFielding()">Rearrange positions</button>
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImportPreviousModal()">Import from a past game</button>
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImageExportModal()">Save as image</button>
@@ -7051,7 +7076,7 @@ async function enterBuilder(teamId, mode, startStep) {
     // Each new builder session starts without an "editing existing lineup"
     // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
     // back if the user is genuinely editing an existing lineup.
-    if (mode === 'lineup') state.editingLineupDocId = null; resetAutoSave();
+    if (mode === 'lineup') { state.editingLineupDocId = null; state.battingOrderLocked = false; } resetAutoSave();
     if (mode === 'lineup') {
       _sgApplied = {};
       // The season so far, for suggestions and season-aware auto-assign.
@@ -8833,6 +8858,7 @@ function loadSavedLineupIntoBuilder(lineup) {
   state.gameLocation = (lineup.gameLocation || '').trim();
   state.gameNotes    = (lineup.gameNotes || '').trim();
   state.innings      = lineup.innings || 6;
+  state.battingOrderLocked = !!lineup.battingOrderLocked;
   state.editingLineupDocId = lineup.id;
   // Reconstruct lineup rows from the saved players array (already sorted by batOrder)
   const sortedPlayers = (lineup.players || []).slice().sort(
@@ -9629,8 +9655,10 @@ function sgAllCards() {
   });
   // A card that would move a locked cell isn't offered.
   const lockedAt = (pid, i) => isCellLocked(state.lineup.find(r => r.playerId === pid), i);
+  const orderMoves = { move: 1, swapOrder: 1, lower: 1 };
   return cards
     .filter(c => !(c.action === 'swapInnings' && c.innings.some(i => lockedAt(c.a, i) || lockedAt(c.b, i))))
+    .filter(c => !(state.battingOrderLocked && orderMoves[c.action]))
     .sort((a, b) => a.rank - b.rank);
 }
 
@@ -11138,6 +11166,7 @@ function init() {
       state.attendance = {};
       state.gamePositions = [];
       state.lineup     = [];
+      state.battingOrderLocked = false;
       // editingLineupDocId is per-builder-session; never persist across reloads
       state.editingLineupDocId = null; resetAutoSave();
 
@@ -11229,6 +11258,7 @@ function buildDraftRecord() {
     strategyLevel: state.strategyLevel || 3,
     gamePositions: Array.isArray(state.gamePositions) ? state.gamePositions.slice() : [],
     attendance: Object.assign({}, state.attendance || {}),
+    battingOrderLocked: !!state.battingOrderLocked,
     lineup: Array.isArray(state.lineup)
       ? state.lineup.map(r => ({
           playerId: r.playerId,
@@ -11365,6 +11395,7 @@ function cloudDraftFromState() {
     innings: state.innings || 6, strategyLevel: state.strategyLevel || 3,
     gamePositions: Array.isArray(state.gamePositions) ? state.gamePositions.slice() : [],
     attendance,
+    battingOrderLocked: !!state.battingOrderLocked,
     lineup: (state.lineup || []).map(r => ({ playerId: doc(r.playerId), name: nameOf(r.playerId), positions: Array.isArray(r.positions) ? r.positions.slice() : [], lockedInnings: rowLockedInnings(r) }))
   };
 }
@@ -11513,6 +11544,7 @@ function applyDraftToState(d) {
         lockedInnings: Array.isArray(r.lockedInnings) ? r.lockedInnings.slice() : []
       }))
     : [];
+  state.battingOrderLocked = !!d.battingOrderLocked;
   state.editingLineupDocId = d.editingLineupDocId || null;
   state.cloudDraftId = d.cloudDraftId || null;
   _draftKeyInUse = getDraftKey(_activeTeamId, d.gameDate, d.opponent);
@@ -11714,7 +11746,7 @@ async function deleteCurrentGame() {
   invalidateTeamStatus(teamId);
 
   // Leave the builder empty so nothing saves on the way out.
-  state.lineup = []; state.attendance = {};
+  state.lineup = []; state.attendance = {}; state.battingOrderLocked = false;
   state.gameName = ''; state.opponent = ''; state.gameDate = ''; state.gameTime = '';
   state.gameLocation = ''; state.gameNotes = '';
   state.editingLineupDocId = null; resetAutoSave();
@@ -11755,6 +11787,7 @@ function discardCurrentDraft() {
   // Wipe the in-memory lineup so we don't immediately re-create the draft
   state.lineup = [];
   state.attendance = {};
+  state.battingOrderLocked = false;
   state.editingLineupDocId = null; resetAutoSave();
   goToStep1();
 }
@@ -13603,7 +13636,7 @@ function goToStep1() {
   // to create a new lineup doc, not merge into the one we just printed.
   // (The previous draft is already cleared when Save & Export succeeded.)
   if (_appMode === 'lineup') {
-    state.editingLineupDocId = null; resetAutoSave();
+    state.editingLineupDocId = null; state.battingOrderLocked = false; resetAutoSave();
   }
   setStep(1);
 }
@@ -13767,6 +13800,7 @@ function lineupFieldsFromState() {
     gameLocation: state.gameLocation || '',
     gameNotes:    state.gameNotes || '',
     innings:      state.innings || 6,
+    battingOrderLocked: !!state.battingOrderLocked,   // additive; iOS reads it too
     players: activeLineup.map((row, idx) => {
       const player = state.players.find(p => p.id === row.playerId);
       return {
@@ -13926,9 +13960,20 @@ function renderLineupGrid() {
     return p && state.attendance[p.id];
   });
 
-  let hRow = `<tr id="lineup-thead-row"><th class="player-th">Player</th>`;
   const caretSvg = `<svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const lockMark = '<span class="lock-mark" aria-hidden="true">' + lcIcon('lock') + '</span>';
+  const boLocked = !!state.battingOrderLocked;
+  thead.closest('table').classList.toggle('bo-locked', boLocked);
+  // "Batting order" (was "Player"), Dan, Nov 3 2026: its menu locks the
+  // order so Auto-fill and suggestions keep it.
+  let hRow = `<tr id="lineup-thead-row"><th class="player-th">` +
+             `<button type="button" class="bo-trigger" onclick="openBattingMenu(this); event.stopPropagation();" ` +
+               `aria-haspopup="menu" aria-expanded="false" aria-label="Batting order${boLocked ? ', locked' : ''}">` +
+               `<span>Batting order</span>${boLocked ? lockMark : ''}<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
+             `</button></th>`;
   for (let i = 1; i <= state.innings; i++) {
+    const il = inningLockCounts(i - 1);
+    const inningLocked = il.filled > 0 && il.locked === il.filled;
     // Two targets (Dan, Nov 3 2026): the grip strip on the left drags the
     // inning; the button across the rest opens copy and clear.
     hRow += `<th class="inning-th" data-inning="${i - 1}">` +
@@ -13936,8 +13981,9 @@ function renderLineupGrid() {
               `<span class="inning-grip" aria-hidden="true" title="Drag to reorder">⠿</span>` +
               `<button type="button" class="inning-trigger" data-inning="${i - 1}" ` +
                 `onclick="openInningMenu(${i - 1}, this); event.stopPropagation();" ` +
-                `aria-label="Inning ${i} actions" aria-haspopup="menu" aria-expanded="false" title="Copy or clear inning ${i}">` +
+                `aria-label="Inning ${i} actions${inningLocked ? ', locked' : ''}" aria-haspopup="menu" aria-expanded="false" title="Lock, copy or clear inning ${i}">` +
                 `<span class="inning-num">${i}</span>` +
+                (inningLocked ? lockMark : '') +
                 `<span class="inning-caret" aria-hidden="true">${caretSvg}</span>` +
               `</button>` +
             `</div>` +
@@ -14010,7 +14056,12 @@ function renderLineupGrid() {
                   aria-describedby="grip-help" aria-keyshortcuts="ArrowUp ArrowDown"
                   title="Drag, or use the arrow keys, to reorder">⠿</button>
           <div class="bat-order">${rowIdx + 1}</div>
-          <div class="player-name">${escHtml(player.name)}</div>
+          <button type="button" class="player-name name-trigger" data-player="${player.id}"
+                  onclick="openPlayerMenu('${player.id}', this); event.stopPropagation();"
+                  aria-haspopup="menu" aria-expanded="false"
+                  aria-label="${sbAttr(player.name)}${rowAllLocked(lineupRow) ? ', all innings locked' : ''}">
+            <span>${escHtml(player.name)}</span>${rowAllLocked(lineupRow) ? '<span class="lock-mark" aria-hidden="true">' + lcIcon('lock') + '</span>' : ''}<span class="inning-caret" aria-hidden="true"><svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          </button>
           ${ptCellsHtml(lineupRow, 'fp-bar')}
         </div>
       </td>`;
@@ -14127,6 +14178,52 @@ function setCellLocked(row, i, on) {
   if (on && (row.positions || [])[i]) next.push(i);
   next.sort((a, b) => a - b);
   if (next.length) row.lockedInnings = next; else delete row.lockedInnings;
+}
+
+// Whole innings and whole rows (Dan, Nov 3 2026): bulk versions of the
+// cell lock, over the kids who are here. Only filled cells lock.
+function lockRows() {
+  return (state.lineup || []).filter(r => state.attendance[r.playerId] && state.players.some(p => p.id === r.playerId));
+}
+function inningLockCounts(i) {
+  let filled = 0, locked = 0;
+  lockRows().forEach(r => { if ((r.positions || [])[i]) { filled++; if (isCellLocked(r, i)) locked++; } });
+  return { filled, locked };
+}
+function rowLockCounts(row) {
+  let filled = 0, locked = 0;
+  for (let i = 0; i < (state.innings || 6); i++) {
+    if (row && (row.positions || [])[i]) { filled++; if (isCellLocked(row, i)) locked++; }
+  }
+  return { filled, locked };
+}
+function rowAllLocked(row) { const c = rowLockCounts(row); return c.filled > 0 && c.locked === c.filled; }
+function setInningLocked(i, on) {
+  lockRows().forEach(r => { if ((r.positions || [])[i]) setCellLocked(r, i, on); });
+  sgAfterChange(true);
+}
+function setRowLocked(playerId, on) {
+  const row = state.lineup.find(r => r.playerId === playerId);
+  if (!row) return;
+  for (let i = 0; i < (state.innings || 6); i++) if ((row.positions || [])[i]) setCellLocked(row, i, on);
+  sgAfterChange(true);
+}
+
+// The batting order lock: Auto-fill, the strategy slider and suggestions
+// keep the order. Dragging a row by hand still moves it, like picking a
+// locked cell by hand. Saved as battingOrderLocked on the lineup and drafts.
+function setBattingOrderLocked(on) {
+  state.battingOrderLocked = !!on;
+  sgAfterChange(true);
+}
+// More's Generate batting order, and the header menu's: a locked order
+// says so instead of quietly doing nothing.
+function generateBattingOrder() {
+  if (state.battingOrderLocked) {
+    showToast('Batting order is locked', 'Unlock', () => { setBattingOrderLocked(false); shuffleBatting(); });
+    return;
+  }
+  shuffleBatting();
 }
 
 // The cell menu (Web A): every spot, the lock beside each.
@@ -14475,17 +14572,14 @@ function _ensureInningMenuEl() {
 }
 
 function openInningMenu(inningIdx, triggerEl) {
-  const menu = _ensureInningMenuEl();
-  // The header button is a toggle: the same inning again closes the menu;
-  // another inning's moves it there.
-  if (menu.style.display !== 'none' && menu.dataset.inning === String(inningIdx)) { closeInningMenu(); return; }
-  menu.dataset.inning = String(inningIdx);
-  document.querySelectorAll('.inning-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
-  if (triggerEl) triggerEl.setAttribute('aria-expanded', 'true');
-
-  // Build menu content
-  let html = `<div class="lc-menu-label">Inning ${inningIdx + 1}</div>`;
-
+  const n = inningIdx + 1;
+  const il = inningLockCounts(inningIdx);
+  let html = `<div class="lc-menu-label">Inning ${n}</div>`;
+  // Lock the whole inning (Dan, Nov 3 2026): every filled cell in it.
+  if (il.filled === 0) html += `<button type="button" class="lc-menu-item" disabled>Lock inning ${n}</button>`;
+  if (il.filled > 0 && il.locked < il.filled) html += `<button type="button" class="lc-menu-item" data-act="lock">Lock inning ${n}</button>`;
+  if (il.locked > 0) html += `<button type="button" class="lc-menu-item" data-act="unlock">Unlock inning ${n}</button>`;
+  html += `<div class="lc-menu-sep"></div>`;
   if (state.innings > 1) {
     for (let i = 0; i < state.innings; i++) {
       if (i === inningIdx) continue;
@@ -14497,23 +14591,62 @@ function openInningMenu(inningIdx, triggerEl) {
     }
     html += `<div class="lc-menu-sep"></div>`;
   }
-  html += `<button type="button" class="lc-menu-item danger" data-act="clear">Clear inning ${inningIdx + 1}</button>`;
-  menu.innerHTML = html;
+  html += `<button type="button" class="lc-menu-item danger" data-act="clear">Clear inning ${n}</button>`;
+  openTableMenu(String(inningIdx), triggerEl, html, (act, btn) => {
+    if (act === 'lock' || act === 'unlock') setInningLocked(inningIdx, act === 'lock');
+    else if (act === 'copy') copyInning(inningIdx, parseInt(btn.getAttribute('data-target'), 10));
+    else if (act === 'copy-all') copyInningToAll(inningIdx);
+    else if (act === 'clear') clearInningPositions(inningIdx);
+  });
+}
 
-  // Wire up actions
+// The Batting order header's menu.
+function openBattingMenu(triggerEl) {
+  const locked = !!state.battingOrderLocked;
+  let html = `<div class="lc-menu-label">Batting order</div>`;
+  html += locked
+    ? `<button type="button" class="lc-menu-item" data-act="unlock">Unlock batting order</button>`
+    : `<button type="button" class="lc-menu-item" data-act="lock">Lock batting order</button>`;
+  html += `<div class="lc-menu-sep"></div>`;
+  html += `<button type="button" class="lc-menu-item" data-act="generate"${locked ? ' disabled' : ''}>Generate batting order</button>`;
+  openTableMenu('bat', triggerEl, html, act => {
+    if (act === 'lock' || act === 'unlock') setBattingOrderLocked(act === 'lock');
+    else if (act === 'generate') generateBattingOrder();
+  });
+}
+
+// A name's menu: lock that kid in every inning they have a spot.
+function openPlayerMenu(playerId, triggerEl) {
+  const row = state.lineup.find(r => r.playerId === playerId);
+  const player = state.players.find(p => p.id === playerId);
+  if (!row || !player) return;
+  const c = rowLockCounts(row);
+  let html = `<div class="lc-menu-label">${escHtml(player.name)}</div>`;
+  if (c.filled === 0) html += `<button type="button" class="lc-menu-item" disabled>Lock all innings</button>`;
+  if (c.filled > 0 && c.locked < c.filled) html += `<button type="button" class="lc-menu-item" data-act="lock">Lock all innings</button>`;
+  if (c.locked > 0) html += `<button type="button" class="lc-menu-item" data-act="unlock">Unlock all innings</button>`;
+  openTableMenu('p:' + playerId, triggerEl, html, act => {
+    if (act === 'lock' || act === 'unlock') setRowLocked(playerId, act === 'lock');
+  });
+}
+
+// One floating menu for the lineup table's headers and names (the inning
+// menu's element): the same trigger again closes it, another moves it.
+function openTableMenu(key, triggerEl, html, onAct) {
+  const menu = _ensureInningMenuEl();
+  if (menu.style.display !== 'none' && menu.dataset.inning === key) { closeInningMenu(); return; }
+  closeInningMenu();
+  if (typeof closeCellMenu === 'function') closeCellMenu(false);
+  menu.dataset.inning = key;
+  if (triggerEl) triggerEl.setAttribute('aria-expanded', 'true');
+  menu.innerHTML = html;
   menu.querySelectorAll('.lc-menu-item').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (btn.disabled) return;
       const act = btn.getAttribute('data-act');
-      if (act === 'copy') {
-        const target = parseInt(btn.getAttribute('data-target'), 10);
-        copyInning(inningIdx, target);
-      } else if (act === 'copy-all') {
-        copyInningToAll(inningIdx);
-      } else if (act === 'clear') {
-        clearInningPositions(inningIdx);
-      }
       closeInningMenu();
+      onAct(act, btn);
     });
   });
 
@@ -14556,7 +14689,7 @@ function _inningMenuOutsideHandler(e) {
   const menu = document.getElementById('inning-menu');
   if (!menu) return;
   if (menu.contains(e.target)) return;
-  if (e.target.closest && e.target.closest('.inning-trigger')) return; // let trigger handler reposition
+  if (e.target.closest && e.target.closest('.inning-trigger, .bo-trigger, .name-trigger')) return; // let trigger handler reposition
   closeInningMenu();
 }
 
@@ -14567,7 +14700,7 @@ function _inningMenuKeyHandler(e) {
 function closeInningMenu() {
   const menu = document.getElementById('inning-menu');
   if (menu) { menu.style.display = 'none'; delete menu.dataset.inning; }
-  document.querySelectorAll('.inning-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('.inning-trigger[aria-expanded="true"], .bo-trigger[aria-expanded="true"], .name-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
   document.removeEventListener('mousedown', _inningMenuOutsideHandler);
   document.removeEventListener('touchstart', _inningMenuOutsideHandler);
   document.removeEventListener('keydown', _inningMenuKeyHandler);
@@ -14816,6 +14949,7 @@ function effectiveBattingCap(attendingCount) {
 }
 
 function shuffleBatting() {
+  if (state.battingOrderLocked) return;   // locked: Auto-fill and the slider keep the order
   const attending = state.players.filter(p => state.attendance[p.id]);
   if (attending.length === 0) return;
 
