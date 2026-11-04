@@ -1311,6 +1311,9 @@
     }
     .lineup-table th:last-child,
     .lineup-table td:last-child { border-right: none; }
+    @media (pointer: fine) {
+      .lineup-table td:not(:first-child) { padding-left: 8px; padding-right: 8px; }
+    }
     .lineup-table th {
       background: var(--bg-secondary);
       font-weight: 600;
@@ -1400,9 +1403,6 @@
       flex-shrink: 0;
     }
     .player-name { font-weight: 500; font-size: 16px; }
-    /* Innings-in-the-field meter next to each name: the same cells as the
-       Playing time list in Lineup tools (.pt-cells, ptCellsHtml). */
-    .fp-bar { margin-left: auto; flex-shrink: 0; }
 
     .pos-select {
       padding: 9px 28px 9px 12px;
@@ -1429,7 +1429,7 @@
        2026): same face as the old select. Locked (position locks) = the
        lock in the arrow's place, the pressed tint and bold; on narrow
        touch cells the lock sits in the top-right corner, like iOS. */
-    button.pos-select { display: inline-flex; align-items: center; justify-content: flex-start; position: relative; min-width: 84px; text-align: left; white-space: nowrap; }
+    button.pos-select { display: inline-flex; align-items: center; justify-content: flex-start; position: relative; width: 100%; min-width: 64px; text-align: left; white-space: nowrap; }
     .pos-select[aria-expanded="true"] { background-color: var(--gray-5); }
     .pos-select:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 1px; }
     .pos-select.locked { background-color: var(--gray-5); background-image: none; font-weight: 700; }
@@ -1455,8 +1455,8 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      margin-left: 24px;
-      padding: 6px 30px 6px 26px;
+      margin-left: 0;
+      padding: 6px 18px;
       min-width: 0;
       background: transparent;
       border: 1px solid transparent;
@@ -1477,7 +1477,7 @@
       left: 0;
       top: 0;
       bottom: 0;
-      width: 24px;
+      width: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1704,7 +1704,6 @@
       .player-name { font-size: 13px; }
       .name-trigger { margin-left: -6px; padding: 4px 6px; gap: 4px; }
       .name-trigger .inning-caret { display: none; }
-      .fp-bar { display: none; }
       .pos-select {
         padding: 6px 4px;
         font-size: 12px;
@@ -2021,6 +2020,12 @@
     @keyframes sgTile { 0%, 35% { background-color: var(--accent); color: var(--on-accent); } }
     @keyframes sgEdge { 0%, 35% { border-color: var(--accent-down); } }
     @keyframes sgPop { from { transform: scale(.8); } }
+    /* Auto-fill wave (Dan, Nov 3 2026), the iOS builder's: every cell whose
+       spot changed pops in, 45ms per inning and 14ms per row, so locked
+       cells visibly hold still. Rows a new batting order moves slide
+       (FLIP on Snappy, animateLineupChange). Reduce Motion: no pop, no slide. */
+    @keyframes afPop { from { transform: scale(.6); opacity: 0; } }
+    .pos-select.af-pop { animation: afPop var(--dur-pop) var(--ease-pop) var(--af-d, 0ms) backwards; }
     .lineup-table tbody tr.sg-flash-row > td,
     .lineup-table tbody td.sg-flash,
     .lineup-table th.inning-th.sg-flash,
@@ -4417,8 +4422,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="lc-menu lc-menu--drop" role="menu">
-              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); generateBattingOrder()">Generate batting order</button>
-              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); shuffleFielding()">Rearrange positions</button>
+              <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); animateLineupChange(shuffleFielding)">Rearrange positions</button>
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImportPreviousModal()">Import from a past game</button>
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); openImageExportModal()">Save as image</button>
               <div class="lc-menu-sep"></div>
@@ -4586,7 +4590,7 @@
             <div class="strat-rail"></div>
             <div class="strat-fill"></div>
             <div class="strat-stops" id="strategy-stops" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" aria-label="Lineup strategy" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); shuffleFielding(); shuffleBatting();" />
+            <input type="range" class="strategy-slider" id="strategy-slider" min="1" max="5" value="3" step="1" aria-label="Lineup strategy" oninput="updateStrategyLabel(this.value)" onchange="updateStrategyLabel(this.value); autoFillLineup();" />
           </div>
           <div class="strategy-labels" aria-hidden="true"><span id="strategy-end-l">Fair</span><span id="strategy-end-r">Competitive</span></div>
           <div class="strat-readout" aria-live="polite">
@@ -6989,7 +6993,38 @@ function updateToolsBadge() {
   const n = (col && col.style.display !== 'none' && c) ? (parseInt(c.textContent, 10) || 0) : 0;
   dot.textContent = n > 0 ? String(n) : '';
 }
-function autoFillLineup() { shuffleFielding(); shuffleBatting(); }
+function autoFillLineup() { animateLineupChange(() => { shuffleFielding(); shuffleBatting(); }); }
+
+// Run a change to the lineup, then animate what it changed in the table:
+// cells whose spot changed pop in a wave (inning, then row), and rows the
+// batting order moved slide from where they were.
+function animateLineupChange(run) {
+  const tbody = document.getElementById('lineup-tbody');
+  const tops = {}, before = {};
+  if (tbody) tbody.querySelectorAll('tr').forEach(tr => {
+    if (tr.dataset.playerId) tops[tr.dataset.playerId] = tr.getBoundingClientRect().top;
+  });
+  (state.lineup || []).forEach(r => { before[r.playerId] = (r.positions || []).slice(); });
+  run();
+  if (!tbody || lcReduceMotion()) return;
+  const slide = { duration: lcTokenMs('--dur-snappy', 350), easing: lcToken('--ease-snappy', 'ease') };
+  tbody.querySelectorAll('tr').forEach((tr, rowIdx) => {
+    const pid = tr.dataset.playerId;
+    if (!pid) return;
+    const top = tops[pid];
+    const dy = top == null ? 0 : top - tr.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1 && tr.animate) tr.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], slide);
+    const row = state.lineup.find(r => r.playerId === pid);
+    const prev = before[pid] || [];
+    tr.querySelectorAll('.pos-select').forEach(cell => {
+      const i = parseInt(cell.dataset.inning, 10);
+      if ((prev[i] || '') === ((row && row.positions[i]) || '')) return;
+      cell.style.setProperty('--af-d', (45 * i + 14 * rowIdx) + 'ms');
+      cell.classList.add('af-pop');
+      cell.addEventListener('animationend', () => cell.classList.remove('af-pop'), { once: true });
+    });
+  });
+}
 function toggleLineupMore(e) {
   if (e) e.stopPropagation();
   const w = document.getElementById('lt-more-wrap');
@@ -12709,23 +12744,37 @@ function buildPosPickerItemsForPosition(pos) {
   // Currently at this position
   const currentRow = attending.find(r => (r.positions || [])[inningIdx] === pos);
   const currentId = currentRow ? currentRow.playerId : null;
+  // Position locks (Dan, Nov 3 2026): the kid here can be locked in from
+  // this dropdown; while they're locked, nobody else can take the spot.
+  const heldLocked = !!currentRow && isCellLocked(currentRow, inningIdx);
 
   const items = [];
+  if (currentRow) {
+    const first = firstNameOf(playerLookup[currentId].name);
+    items.push(heldLocked
+      ? { label: 'Unlock ' + first + ' at ' + pos, onClick: () => fieldSetLocked(currentId, inningIdx, false) }
+      : { label: 'Lock ' + first + ' at ' + pos, onClick: () => fieldSetLocked(currentId, inningIdx, true) });
+    items.push({ divider: true });
+  }
   // "Empty" / clear option
   items.push({
     label: 'Empty (no one here)',
     selected: !currentId,
     muted: true,
+    disabled: heldLocked,
     onClick: () => assignPlayerToPosition(null, pos)
   });
   items.push({ divider: true });
   attending.forEach(r => {
     const p = playerLookup[r.playerId];
     const cur = (r.positions || [])[inningIdx];
-    const sub = cur && cur !== 'Bench' && cur !== pos ? ' (currently ' + cur + ')' : '';
+    const sub = cur && cur !== 'Bench' && cur !== pos
+      ? (isCellLocked(r, inningIdx) ? ' (locked at ' + cur + ')' : ' (currently ' + cur + ')')
+      : '';
     items.push({
       label: p.name + sub,
       selected: r.playerId === currentId,
+      disabled: heldLocked && r.playerId !== currentId,
       onClick: () => assignPlayerToPosition(r.playerId, pos)
     });
   });
@@ -12755,6 +12804,14 @@ function buildPosPickerItemsForPlayer(playerId) {
   (state.players || []).forEach(p => { playerLookup[p.id] = p; });
 
   const items = [];
+  // A kid on the bench can be locked there too (sits this inning).
+  if (row && currentPos === 'Bench') {
+    const first = firstNameOf((playerLookup[playerId] || {}).name || '');
+    items.push(isCellLocked(row, inningIdx)
+      ? { label: 'Unlock ' + first + ' on the bench', onClick: () => fieldSetLocked(playerId, inningIdx, false) }
+      : { label: 'Lock ' + first + ' on the bench', onClick: () => fieldSetLocked(playerId, inningIdx, true) });
+    items.push({ divider: true });
+  }
   items.push({
     label: 'Bench',
     selected: currentPos === 'Bench' || !currentPos,
@@ -12796,8 +12853,10 @@ function showFieldPicker(anchorEl, title, items) {
     b.type = 'button';
     b.className = 'lc-menu-item' + (it.selected ? ' selected' : '') + (it.muted ? ' muted' : '');
     b.textContent = it.label;
+    if (it.disabled) b.disabled = true;
     b.onclick = (e) => {
       e.stopPropagation();
+      if (it.disabled) return;
       try { it.onClick(); } finally { closeFieldPosPicker(); }
     };
     bodyEl.appendChild(b);
@@ -12882,6 +12941,10 @@ function assignPlayerToPosition(playerId, pos) {
     onPosChange(playerId, inningIdx, pos);
   }
   renderFieldView();
+}
+function fieldSetLocked(playerId, inningIdx, on) {
+  setCellLocked((state.lineup || []).find(r => r.playerId === playerId), inningIdx, on);
+  sgAfterChange(true);   // redraws the table, which mirrors to the field
 }
 function fieldLockedAt(playerId, inningIdx) {
   return isCellLocked((state.lineup || []).find(r => r.playerId === playerId), inningIdx);
@@ -14062,7 +14125,6 @@ function renderLineupGrid() {
                   aria-label="${sbAttr(player.name)}${rowAllLocked(lineupRow) ? ', all innings locked' : ''}">
             <span>${escHtml(player.name)}</span>${rowAllLocked(lineupRow) ? '<span class="lock-mark" aria-hidden="true">' + lcIcon('lock') + '</span>' : ''}<span class="inning-caret" aria-hidden="true"><svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 4 L5 7 L8 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </button>
-          ${ptCellsHtml(lineupRow, 'fp-bar')}
         </div>
       </td>`;
 
@@ -14220,10 +14282,10 @@ function setBattingOrderLocked(on) {
 // says so instead of quietly doing nothing.
 function generateBattingOrder() {
   if (state.battingOrderLocked) {
-    showToast('Batting order is locked', 'Unlock', () => { setBattingOrderLocked(false); shuffleBatting(); });
+    showToast('Batting order is locked', 'Unlock', () => { setBattingOrderLocked(false); animateLineupChange(shuffleBatting); });
     return;
   }
-  shuffleBatting();
+  animateLineupChange(shuffleBatting);
 }
 
 // The cell menu (Web A): every spot, the lock beside each.
