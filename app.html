@@ -667,13 +667,15 @@
     .lc-close--sm { width: 32px; height: 32px; }
     .lc-close--sm svg { width: 16px; height: 16px; }
 
-    /* ── Date picker (Nov 4 2026, Dan): THE date field (lcDateField).
-       The trigger is the field spec with a calendar glyph and a caret; the
-       popover is the dialog surface (panel, card radius, --shadow-dialog).
-       Month arrows are the quiet icon circle (.lc-close's spec), days are
+    /* ── Date and time pickers (Nov 4 2026, Dan): THE date and time fields
+       (lcDateField, lcTimeField). The trigger is the field spec with a
+       calendar or clock glyph and a caret; the popover is the dialog
+       surface (panel, card radius, --shadow-dialog). Month arrows are the
+       quiet icon circle (.lc-close's spec); days, hours and minutes are
        40px circles: hover --gray-5, picked = the accent fill with on-accent
-       ink, today = step-down green. Opens and pages on Snappy; Reduce
-       Motion skips both. Same spec on getleadoff.com's lineup builder. ── */
+       ink, today = a 2px step-down green ring and green numeral. AM / PM
+       is the segmented control. Opens and pages on Snappy; Reduce Motion
+       skips both. Same spec on getleadoff.com's lineup builder. ── */
     .lc-date { position: relative; min-width: 0; }
     .lc-date-field { min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
     .lc-date-field .lc-date-ic { flex: none; width: 20px; height: 20px; color: var(--gray); }
@@ -699,19 +701,25 @@
     .lc-cal-grid td { padding: 2px; text-align: center; }
     .lc-cal-day {
       display: grid; place-items: center; width: 100%; max-width: 40px; aspect-ratio: 1; margin: 0 auto; padding: 0;
-      border: none; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer;
+      border: 2px solid transparent; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer;
       font: inherit; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
-      transition: background-color .15s ease, color .15s ease, transform .45s var(--ease-pop);
+      transition: background-color .15s ease, border-color .15s ease, color .15s ease, transform .45s var(--ease-pop);
     }
     @media (hover: hover) { .lc-cal-day:hover { background: var(--gray-5); } }
     .lc-cal-day:active { transform: scale(.92); transition-duration: .06s; }
-    .lc-cal-day.is-today { color: var(--accent-down); font-weight: 700; }
-    .lc-cal-day[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+    .lc-cal-day.is-today { border-color: var(--accent-down); color: var(--accent-down); font-weight: 700; }
+    .lc-cal-day[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 700; }
     .lc-cal-day:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
     .lc-cal-grid tbody.from-next { animation: lcCalNext var(--dur-snappy) var(--ease-snappy); }
     .lc-cal-grid tbody.from-prev { animation: lcCalPrev var(--dur-snappy) var(--ease-snappy); }
     @keyframes lcCalNext { from { opacity: 0; transform: translateX(12px); } }
     @keyframes lcCalPrev { from { opacity: 0; transform: translateX(-12px); } }
+    .lc-time-ap { display: flex; width: 100%; margin-bottom: 16px; }
+    .lc-time-ap > button { flex: 1 1 0; }
+    .lc-time-label { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
+    .lc-time-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+    .lc-time-grid + .lc-time-label { margin-top: 16px; }
+    .lc-cal-foot[hidden] { display: none; }
     .lc-cal-foot { display: flex; justify-content: center; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--hairline); }
     .lc-cal-today { font-size: 15px; font-weight: 600; color: var(--accent-down); text-decoration: none; }
     .lc-cal-today:hover { text-decoration: underline; }
@@ -16111,34 +16119,44 @@ function formatTime(t) {
 }
 
 // ═══════════════════════════════════════════════════
-// DATE PICKER
+// DATE AND TIME PICKERS
 // ═══════════════════════════════════════════════════
-// ── Date picker (Nov 4 2026, Dan): THE date field. lcDateField(input)
-// upgrades an <input type="date"> in place. The input stays (hidden) as
-// the value: code that reads or sets .value, and its input/change
-// listeners, work as before. In front of it, a button in the field spec
-// shows the date ("Wed, Nov 4, 2026") and opens a calendar popover on the
-// dialog surface: the month between two quiet circle arrows, the picked
-// day in the accent fill, today in step-down green, Today below.
-// Keyboard: arrows move a day or a week, Page Up/Down a month (with Shift
-// a year), Home/End the week, Enter picks, Escape closes. Same file in
-// app.html and getleadoff.com's lineup builder: change both together.
+// ── Date and time pickers (Nov 4 2026, Dan): THE date and time fields.
+// lcDateField(input) / lcTimeField(input) upgrade an <input type="date"> /
+// <input type="time"> in place. The input stays (hidden) as the value:
+// code that reads or sets .value, and its input/change listeners, work as
+// before. In front of it, a button in the field spec shows the value
+// ("Wed, Nov 4, 2026" / "1:00 PM", never 24-hour) and opens a popover on
+// the dialog surface. Date: the month between two quiet circle arrows,
+// 40px day circles, the picked day in the accent fill, today ringed in
+// step-down green, Today below. Time: AM / PM on the segmented control,
+// then Hour and Minute grids in the same circles; a minute finishes it;
+// Clear when there's a time. Keyboard: arrows move, Page Up/Down change
+// the month (Shift: a year), Home/End the week, Enter picks, Escape
+// closes. Same file in app.html and getleadoff.com's lineup builder:
+// change both together.
 var LC_CAL_DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 var LC_CAL_ICON = {
   cal: '<svg class="lc-date-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  clock: '<svg class="lc-date-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
   caret: '<svg class="lc-date-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
   chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>'
 };
-var lcCal = null;   // the open calendar: { input, btn, view (1st of month), focus }
+var lcPop = null;   // the open picker: { kind, el, input, btn } + its own state
+var lcCal = null;   // kept for callers that check whether the calendar is open
 function lcCalPad(n) { return (n < 10 ? '0' : '') + n; }
 function lcCalIso(d) { return d.getFullYear() + '-' + lcCalPad(d.getMonth() + 1) + '-' + lcCalPad(d.getDate()); }
 function lcCalParse(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
 function lcCalToday() { var t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
 function lcCalSame(a, b) { return !!(a && b) && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
 function lcCalReduce() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function lcTimeParse(s) { var m = /^(\d{1,2}):(\d{2})/.exec(s || ''); if (!m || +m[1] > 23 || +m[2] > 59) return null; var h = +m[1]; return { h: h % 12 || 12, m: +m[2], ap: h < 12 ? 'AM' : 'PM' }; }
+function lcTimeIso(t) { var h = t.h % 12 + (t.ap === 'PM' ? 12 : 0); return lcCalPad(h) + ':' + lcCalPad(t.m); }
+function lcTimeLabel(t) { return t.h + ':' + lcCalPad(t.m) + ' ' + t.ap; }
 
-function lcDateField(input, opts) {
-  if (!input || input._lcDate) return;
+// The trigger: the field spec, an icon, the value, a caret.
+function lcPickerField(input, kind, opts) {
+  if (!input || input._lcPick) return;
   opts = opts || {};
   var wrap = document.createElement('div');
   wrap.className = 'lc-date';
@@ -16152,7 +16170,7 @@ function lcDateField(input, opts) {
   btn.className = 'lc-date-field' + (opts.fieldClass ? ' ' + opts.fieldClass : '');
   btn.setAttribute('aria-haspopup', 'dialog');
   btn.setAttribute('aria-expanded', 'false');
-  btn.innerHTML = LC_CAL_ICON.cal + '<span class="lc-date-val" id="' + input.id + '-val"></span>' + LC_CAL_ICON.caret;
+  btn.innerHTML = (kind === 'time' ? LC_CAL_ICON.clock : LC_CAL_ICON.cal) + '<span class="lc-date-val" id="' + input.id + '-val"></span>' + LC_CAL_ICON.caret;
   wrap.appendChild(btn);
   // The field's label now names the button: "Date, Wed, Nov 4, 2026".
   var label = document.querySelector('label[for="' + input.id + '"]');
@@ -16163,9 +16181,11 @@ function lcDateField(input, opts) {
   }
   var val = btn.querySelector('.lc-date-val');
   function refresh() {
-    var d = lcCalParse(input.value);
-    val.textContent = d ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : (opts.placeholder || 'Pick a date');
-    val.classList.toggle('is-empty', !d);
+    var text = '';
+    if (kind === 'time') { var t = lcTimeParse(input.value); if (t) text = lcTimeLabel(t); }
+    else { var d = lcCalParse(input.value); if (d) text = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }); }
+    val.textContent = text || opts.placeholder || (kind === 'time' ? 'Add a time' : 'Pick a date');
+    val.classList.toggle('is-empty', !text);
   }
   // Code that sets input.value directly updates the button too.
   var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
@@ -16174,89 +16194,80 @@ function lcDateField(input, opts) {
     get: function () { return desc.get.call(this); },
     set: function (v) { desc.set.call(this, v); refresh(); }
   });
-  input._lcDate = true;
+  input._lcPick = kind;
   refresh();
-  btn.addEventListener('click', function () { if (lcCal && lcCal.btn === btn) lcCalClose(true); else lcCalOpen(input, btn); });
-  btn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' && !lcCal) { e.preventDefault(); lcCalOpen(input, btn); } });
+  var open = kind === 'time' ? lcTimeOpen : lcCalOpen;
+  btn.addEventListener('click', function () { if (lcPop && lcPop.btn === btn) lcPopClose(true); else open(input, btn); });
+  btn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' && !lcPop) { e.preventDefault(); open(input, btn); } });
 }
+function lcDateField(input, opts) { lcPickerField(input, 'date', opts); }
+function lcTimeField(input, opts) { lcPickerField(input, 'time', opts); }
 
-function lcCalEl() {
-  var el = document.getElementById('lc-cal');
+// ── The popover both pickers share ──
+function lcPopEl(id, label, html, onClick, onKey) {
+  var el = document.getElementById(id);
   if (el) return el;
   el = document.createElement('div');
-  el.id = 'lc-cal';
+  el.id = id;
   el.className = 'lc-cal';
   el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-label', 'Choose a date');
+  el.setAttribute('aria-label', label);
   el.hidden = true;
-  el.innerHTML =
-    '<div class="lc-cal-head">' +
-      '<button type="button" class="lc-cal-nav" data-nav="-1" aria-label="Previous month">' + LC_CAL_ICON.chev + '</button>' +
-      '<div class="lc-cal-title" id="lc-cal-title" aria-live="polite"></div>' +
-      '<button type="button" class="lc-cal-nav" data-nav="1" aria-label="Next month">' + LC_CAL_ICON.chev + '</button>' +
-    '</div>' +
-    '<table class="lc-cal-grid" role="grid" aria-labelledby="lc-cal-title"><thead><tr>' +
-      LC_CAL_DOW.map(function (d, i) { return '<th scope="col" abbr="' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][i] + '">' + d + '</th>'; }).join('') +
-    '</tr></thead><tbody></tbody></table>' +
-    '<div class="lc-cal-foot"><button type="button" class="link-btn lc-cal-today" data-today>Today</button></div>';
-  el.addEventListener('click', function (e) {
-    var t = e.target.closest('button');
-    if (!t || !lcCal) return;
-    if (t.hasAttribute('data-nav')) lcCalMonth(+t.getAttribute('data-nav'), false);
-    else if (t.hasAttribute('data-iso')) lcCalPick(lcCalParse(t.getAttribute('data-iso')));
-    else if (t.hasAttribute('data-today')) lcCalPick(lcCalToday());
+  el.innerHTML = html;
+  el.addEventListener('click', function (e) { var t = e.target.closest('button'); if (t && lcPop && lcPop.el === el) onClick(t); });
+  el.addEventListener('keydown', function (e) {
+    if (!lcPop || lcPop.el !== el) return;
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); lcPopClose(true); return; }
+    onKey(e);
   });
-  el.addEventListener('keydown', lcCalKeys);
   el.addEventListener('focusout', function (e) {
-    if (!lcCal) return;
+    if (!lcPop || lcPop.el !== el) return;
     var to = e.relatedTarget;
-    if (to && (el.contains(to) || to === lcCal.btn)) return;
-    setTimeout(function () { if (lcCal && !el.contains(document.activeElement) && document.activeElement !== lcCal.btn) lcCalClose(false); }, 0);
+    if (to && (el.contains(to) || to === lcPop.btn)) return;
+    setTimeout(function () { if (lcPop && lcPop.el === el && !el.contains(document.activeElement) && document.activeElement !== lcPop.btn) lcPopClose(false); }, 0);
   });
   document.body.appendChild(el);
   return el;
 }
-function lcCalOpen(input, btn) {
-  if (lcCal) lcCalClose(false);
-  var el = lcCalEl(), sel = lcCalParse(input.value), focus = sel || lcCalToday();
-  lcCal = { input: input, btn: btn, view: new Date(focus.getFullYear(), focus.getMonth(), 1), focus: focus };
-  lcCalRender(0);
-  el.hidden = false;
-  btn.setAttribute('aria-expanded', 'true');
-  lcCalPlace();
-  el.classList.remove('is-in');
-  if (!lcCalReduce()) { void el.offsetWidth; el.classList.add('is-in'); }
-  lcCalFocusDay();
-  document.addEventListener('mousedown', lcCalOutside, true);
-  document.addEventListener('touchstart', lcCalOutside, { capture: true, passive: true });
-  window.addEventListener('resize', lcCalPlace);
-  window.addEventListener('scroll', lcCalPlace, true);
+function lcPopShow(p) {
+  if (lcPop) lcPopClose(false);
+  lcPop = p;
+  if (p.kind === 'date') lcCal = p;
+  p.el.hidden = false;
+  p.btn.setAttribute('aria-expanded', 'true');
+  lcPopPlace();
+  p.el.classList.remove('is-in');
+  if (!lcCalReduce()) { void p.el.offsetWidth; p.el.classList.add('is-in'); }
+  document.addEventListener('mousedown', lcPopOutside, true);
+  document.addEventListener('touchstart', lcPopOutside, { capture: true, passive: true });
+  window.addEventListener('resize', lcPopPlace);
+  window.addEventListener('scroll', lcPopPlace, true);
 }
-function lcCalClose(refocus) {
-  if (!lcCal) return;
-  var el = document.getElementById('lc-cal'), btn = lcCal.btn;
-  el.hidden = true;
-  el.classList.remove('is-in');
-  btn.setAttribute('aria-expanded', 'false');
-  lcCal = null;
-  document.removeEventListener('mousedown', lcCalOutside, true);
-  document.removeEventListener('touchstart', lcCalOutside, { capture: true });
-  window.removeEventListener('resize', lcCalPlace);
-  window.removeEventListener('scroll', lcCalPlace, true);
-  if (refocus) btn.focus({ preventScroll: true });
+function lcPopClose(refocus) {
+  if (!lcPop) return;
+  var p = lcPop;
+  p.el.hidden = true;
+  p.el.classList.remove('is-in');
+  p.btn.setAttribute('aria-expanded', 'false');
+  lcPop = null; lcCal = null;
+  document.removeEventListener('mousedown', lcPopOutside, true);
+  document.removeEventListener('touchstart', lcPopOutside, { capture: true });
+  window.removeEventListener('resize', lcPopPlace);
+  window.removeEventListener('scroll', lcPopPlace, true);
+  if (refocus) p.btn.focus({ preventScroll: true });
 }
-function lcCalOutside(e) {
-  if (!lcCal) return;
-  var el = document.getElementById('lc-cal');
-  if (el.contains(e.target) || lcCal.btn.contains(e.target)) return;
-  lcCalClose(false);
+function lcCalClose(refocus) { lcPopClose(refocus); }
+function lcPopOutside(e) {
+  if (!lcPop) return;
+  if (lcPop.el.contains(e.target) || lcPop.btn.contains(e.target)) return;
+  lcPopClose(false);
 }
 // Below the field, flipped above when there's no room; it follows the
 // field when the page scrolls and closes once the field is out of view.
-function lcCalPlace() {
-  if (!lcCal) return;
-  var el = document.getElementById('lc-cal'), r = lcCal.btn.getBoundingClientRect();
-  if (r.bottom < 0 || r.top > window.innerHeight) { lcCalClose(false); return; }
+function lcPopPlace() {
+  if (!lcPop) return;
+  var el = lcPop.el, r = lcPop.btn.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > window.innerHeight) { lcPopClose(false); return; }
   var w = el.offsetWidth, h = el.offsetHeight, pad = 8;
   var left = Math.max(pad, Math.min(r.left, window.innerWidth - w - pad));
   var top = r.bottom + pad, above = false;
@@ -16265,8 +16276,43 @@ function lcCalPlace() {
   el.style.left = Math.round(left) + 'px';
   el.style.top = Math.round(Math.max(pad, top)) + 'px';
 }
+function lcPopWrite(input, v) {
+  input.value = v;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+}
+function lcPopDone(btn) {
+  lcPopClose(true);
+  if (!lcCalReduce()) { btn.classList.remove('is-set'); void btn.offsetWidth; btn.classList.add('is-set'); }
+}
+
+// ── Date ──
+function lcCalEl() {
+  return lcPopEl('lc-cal', 'Choose a date',
+    '<div class="lc-cal-head">' +
+      '<button type="button" class="lc-cal-nav" data-nav="-1" aria-label="Previous month">' + LC_CAL_ICON.chev + '</button>' +
+      '<div class="lc-cal-title" id="lc-cal-title" aria-live="polite"></div>' +
+      '<button type="button" class="lc-cal-nav" data-nav="1" aria-label="Next month">' + LC_CAL_ICON.chev + '</button>' +
+    '</div>' +
+    '<table class="lc-cal-grid" role="grid" aria-labelledby="lc-cal-title"><thead><tr>' +
+      LC_CAL_DOW.map(function (d, i) { return '<th scope="col" abbr="' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][i] + '">' + d + '</th>'; }).join('') +
+    '</tr></thead><tbody></tbody></table>' +
+    '<div class="lc-cal-foot"><button type="button" class="link-btn lc-cal-today" data-today>Today</button></div>',
+    function (t) {
+      if (t.hasAttribute('data-nav')) lcCalMonth(+t.getAttribute('data-nav'), false);
+      else if (t.hasAttribute('data-iso')) lcCalPick(lcCalParse(t.getAttribute('data-iso')));
+      else if (t.hasAttribute('data-today')) lcCalPick(lcCalToday());
+    },
+    lcCalKeys);
+}
+function lcCalOpen(input, btn) {
+  var el = lcCalEl(), sel = lcCalParse(input.value), focus = sel || lcCalToday();
+  lcPopShow({ kind: 'date', el: el, input: input, btn: btn, view: new Date(focus.getFullYear(), focus.getMonth(), 1), focus: focus });
+  lcCalRender(0);
+  lcCalFocusDay();
+}
 function lcCalRender(dir) {
-  var el = document.getElementById('lc-cal'), v = lcCal.view, sel = lcCalParse(lcCal.input.value), today = lcCalToday();
+  var el = lcPop.el, v = lcPop.view, sel = lcCalParse(lcPop.input.value), today = lcCalToday();
   el.querySelector('.lc-cal-title').textContent = v.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   var first = v.getDay(), days = new Date(v.getFullYear(), v.getMonth() + 1, 0).getDate(), cells = [];
   for (var i = 0; i < first; i++) cells.push('<td></td>');
@@ -16283,47 +16329,108 @@ function lcCalRender(dir) {
   body.innerHTML = rows;
   body.classList.remove('from-next', 'from-prev');
   if (dir && !lcCalReduce()) { void body.offsetWidth; body.classList.add(dir > 0 ? 'from-next' : 'from-prev'); }
-  if (!lcCalSame(new Date(lcCal.focus.getFullYear(), lcCal.focus.getMonth(), 1), v)) lcCal.focus = new Date(v.getFullYear(), v.getMonth(), Math.min(lcCal.focus.getDate(), days));
-  el.querySelectorAll('.lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(lcCal.focus) ? 0 : -1; });
-  lcCalPlace();
+  if (!lcCalSame(new Date(lcPop.focus.getFullYear(), lcPop.focus.getMonth(), 1), v)) lcPop.focus = new Date(v.getFullYear(), v.getMonth(), Math.min(lcPop.focus.getDate(), days));
+  el.querySelectorAll('.lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(lcPop.focus) ? 0 : -1; });
+  lcPopPlace();
 }
 function lcCalFocusDay() {
-  var b = document.querySelector('#lc-cal .lc-cal-day[data-iso="' + lcCalIso(lcCal.focus) + '"]');
+  var b = lcPop.el.querySelector('.lc-cal-day[data-iso="' + lcCalIso(lcPop.focus) + '"]');
   if (b) b.focus({ preventScroll: true });
 }
 function lcCalMonth(delta, keepFocus) {
-  var v = lcCal.view;
-  lcCal.view = new Date(v.getFullYear(), v.getMonth() + delta, 1);
-  if (keepFocus) { var f = lcCal.focus, last = new Date(lcCal.view.getFullYear(), lcCal.view.getMonth() + 1, 0).getDate(); lcCal.focus = new Date(lcCal.view.getFullYear(), lcCal.view.getMonth(), Math.min(f.getDate(), last)); }
+  var v = lcPop.view;
+  lcPop.view = new Date(v.getFullYear(), v.getMonth() + delta, 1);
+  if (keepFocus) { var f = lcPop.focus, last = new Date(lcPop.view.getFullYear(), lcPop.view.getMonth() + 1, 0).getDate(); lcPop.focus = new Date(lcPop.view.getFullYear(), lcPop.view.getMonth(), Math.min(f.getDate(), last)); }
   lcCalRender(delta);
   if (keepFocus) lcCalFocusDay();
 }
 function lcCalMoveFocus(d) {
-  var f = new Date(lcCal.focus.getFullYear(), lcCal.focus.getMonth(), lcCal.focus.getDate() + d);
-  var dir = (f.getFullYear() - lcCal.view.getFullYear()) * 12 + f.getMonth() - lcCal.view.getMonth();
-  lcCal.focus = f;
-  if (dir) { lcCal.view = new Date(f.getFullYear(), f.getMonth(), 1); lcCalRender(dir); }
-  else document.querySelectorAll('#lc-cal .lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(f) ? 0 : -1; });
+  var f = new Date(lcPop.focus.getFullYear(), lcPop.focus.getMonth(), lcPop.focus.getDate() + d);
+  var dir = (f.getFullYear() - lcPop.view.getFullYear()) * 12 + f.getMonth() - lcPop.view.getMonth();
+  lcPop.focus = f;
+  if (dir) { lcPop.view = new Date(f.getFullYear(), f.getMonth(), 1); lcCalRender(dir); }
+  else lcPop.el.querySelectorAll('.lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(f) ? 0 : -1; });
   lcCalFocusDay();
 }
 function lcCalKeys(e) {
-  if (!lcCal) return;
-  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); lcCalClose(true); return; }
   if (!e.target.classList || !e.target.classList.contains('lc-cal-day')) return;
-  var k = e.key, f = lcCal.focus;
+  var k = e.key, f = lcPop.focus;
   var moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -f.getDay(), End: 6 - f.getDay() };
   if (k in moves) { e.preventDefault(); lcCalMoveFocus(moves[k]); }
   else if (k === 'PageUp' || k === 'PageDown') { e.preventDefault(); lcCalMonth((k === 'PageUp' ? -1 : 1) * (e.shiftKey ? 12 : 1), true); }
 }
 function lcCalPick(day) {
-  if (!lcCal || !day) return;
-  var input = lcCal.input;
-  input.value = lcCalIso(day);
-  input.dispatchEvent(new Event('input', { bubbles: true }));
-  input.dispatchEvent(new Event('change', { bubbles: true }));
-  var btn = lcCal.btn;
-  lcCalClose(true);
-  if (!lcCalReduce()) { btn.classList.remove('is-set'); void btn.offsetWidth; btn.classList.add('is-set'); }
+  if (!lcPop || !day) return;
+  var btn = lcPop.btn;
+  lcPopWrite(lcPop.input, lcCalIso(day));
+  lcPopDone(btn);
+}
+
+// ── Time: AM / PM, Hour, Minute (5-minute steps) ──
+function lcTimeEl() {
+  var grid = function (name, label, items) {
+    return '<div class="lc-time-label" id="lc-time-' + name + '">' + label + '</div>' +
+      '<div class="lc-time-grid" role="group" aria-labelledby="lc-time-' + name + '">' + items.map(function (it) {
+        return '<button type="button" class="lc-cal-day" data-' + name + '="' + it.v + '" aria-pressed="false" tabindex="-1" aria-label="' + it.a + '">' + it.t + '</button>';
+      }).join('') + '</div>';
+  };
+  var hours = [], mins = [];
+  for (var h = 1; h <= 12; h++) hours.push({ v: h, t: h, a: h + ' o\'clock' });
+  for (var m = 0; m < 60; m += 5) mins.push({ v: m, t: lcCalPad(m), a: ':' + lcCalPad(m) });
+  return lcPopEl('lc-time', 'Choose a time',
+    '<div class="lc-seg lc-time-ap" role="group" aria-label="AM or PM"><button type="button" data-ap="AM" aria-pressed="false">AM</button><button type="button" data-ap="PM" aria-pressed="false">PM</button></div>' +
+    grid('h', 'Hour', hours) + grid('m', 'Minute', mins) +
+    '<div class="lc-cal-foot lc-time-foot"><button type="button" class="link-btn lc-cal-today" data-clear>Clear</button></div>',
+    function (t) {
+      var p = lcPop.t;
+      if (t.hasAttribute('data-ap')) { p.ap = t.getAttribute('data-ap'); lcTimeCommit(false); }
+      else if (t.hasAttribute('data-h')) {
+        var h = +t.getAttribute('data-h');
+        if (!p.ap) p.ap = h >= 7 && h <= 11 ? 'AM' : 'PM';   // games run 7 AM to 8 PM
+        p.h = h; lcTimeCommit(false);
+      }
+      else if (t.hasAttribute('data-m')) { p.m = +t.getAttribute('data-m'); lcTimeCommit(p.h != null); }
+      else if (t.hasAttribute('data-clear')) { var b = lcPop.btn; lcPopWrite(lcPop.input, ''); lcPopDone(b); }
+    },
+    lcTimeKeys);
+}
+function lcTimeOpen(input, btn) {
+  var el = lcTimeEl(), cur = lcTimeParse(input.value);
+  lcPopShow({ kind: 'time', el: el, input: input, btn: btn, t: cur ? { h: cur.h, m: cur.m, ap: cur.ap } : { h: null, m: null, ap: null } });
+  lcTimeRender();
+  var first = el.querySelector('[data-h][aria-pressed="true"]') || el.querySelector('[data-h]');
+  if (first) first.focus({ preventScroll: true });
+}
+function lcTimeRender() {
+  var el = lcPop.el, p = lcPop.t;
+  el.querySelectorAll('[data-ap]').forEach(function (b) { var on = b.getAttribute('data-ap') === p.ap; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  ['h', 'm'].forEach(function (k) {
+    var btns = el.querySelectorAll('[data-' + k + ']'), any = false;
+    btns.forEach(function (b) { var on = p[k] != null && +b.getAttribute('data-' + k) === p[k]; b.setAttribute('aria-pressed', on); b.tabIndex = on ? 0 : -1; if (on) any = true; });
+    if (!any && btns[0]) btns[0].tabIndex = 0;
+  });
+  el.querySelector('[data-clear]').closest('.lc-time-foot').hidden = !lcPop.input.value;
+  lcPopPlace();
+}
+// Every pick writes the time (once there's an hour); a minute finishes it.
+function lcTimeCommit(close) {
+  var p = lcPop.t, btn = lcPop.btn;
+  if (p.h != null) lcPopWrite(lcPop.input, lcTimeIso({ h: p.h, m: p.m || 0, ap: p.ap || 'PM' }));
+  if (close) { lcPopDone(btn); return; }
+  var focused = document.activeElement;
+  lcTimeRender();
+  if (focused && lcPop && lcPop.el.contains(focused)) { focused.tabIndex = 0; focused.focus({ preventScroll: true }); }
+}
+function lcTimeKeys(e) {
+  var t = e.target, grid = t.closest && t.closest('.lc-time-grid');
+  if (!grid) return;
+  var btns = [].slice.call(grid.querySelectorAll('button')), i = btns.indexOf(t);
+  var d = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -6, ArrowDown: 6, Home: -i, End: btns.length - 1 - i }[e.key];
+  if (d === undefined) return;
+  e.preventDefault();
+  var j = Math.max(0, Math.min(btns.length - 1, i + d));
+  btns.forEach(function (b, k) { b.tabIndex = k === j ? 0 : -1; });
+  btns[j].focus({ preventScroll: true });
 }
 
 // ═══════════════════════════════════════════════════
@@ -16504,6 +16611,7 @@ function siteImportAuthContext() {
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   lcDateField(document.getElementById('game-date'));   // Game info's Date
+  lcTimeField(document.getElementById('game-time'));   // and its Time
   siteImportAuthContext();
   init();
 });
