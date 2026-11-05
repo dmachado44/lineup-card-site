@@ -3089,7 +3089,7 @@
     }
     @media (prefers-reduced-motion: reduce) { .wizard-bar * { animation: none !important; transition: none !important; } }
     /* Step row slots (Dan, Nov 4 2026): the step bar alone, centered. The
-       game moved under the page title and Close into the action bar, so the
+       game moved under the page title and Exit into the action bar, so the
        left slot is a spacer and the right one holds the phone close. */
     .wizard-ctx { flex: 1 1 0; min-width: 0; }
     .wizard-end { flex: 1 1 0; display: flex; justify-content: flex-end; }
@@ -3133,9 +3133,9 @@
     .step-actions .text-muted { margin-right: 20px; }
     .step-actions .draft-status:empty, .step-actions .text-muted:empty { display: none; }
     .step-actions .draft-status { font-weight: 600; gap: 8px; }
-    /* Three slots (Dan, Nov 4 2026): Close on the left, where it's saved in
+    /* Three slots (Dan, Nov 4 2026): Exit on the left, where it's saved in
        the middle, the way forward on the right. Game info and Edit lineup
-       carry Close; Export's Done is its way out, so its left slot stays
+       carry Exit; Export's Done is its way out, so its left slot stays
        empty. Phones stack the bar as before and keep the top-row x. */
     @media (min-width: 769px) {
       #view-builder:not(.settings-mode) .step-actions.sa-split { display: grid; grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr); gap: 20px; }
@@ -4503,8 +4503,8 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions sa-split">
-          <!-- Close (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
-          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Close</button>
+          <!-- Exit (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
+          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Exit</button>
           <div class="sa-mid">
             <div class="text-muted" id="step2-status"></div>
             <div class="draft-status lc-st" id="draft-saved-status-step3"></div>
@@ -4647,8 +4647,8 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions sa-split">
-          <!-- Close (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
-          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Close</button>
+          <!-- Exit (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
+          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Exit</button>
           <div class="sa-mid">
             <div class="draft-status lc-st" id="draft-saved-status"></div>
           </div>
@@ -4688,7 +4688,7 @@
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
         <div class="step-actions sa-split">
-          <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026). Done is the way out, so no Close here. -->
+          <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026). Done is the way out, so no Exit here. -->
           <div class="sa-mid">
             <div class="draft-status lc-st" id="export-save-status" aria-live="polite"></div>
           </div>
@@ -7400,7 +7400,7 @@ function renderWizardBar() {
   }).join('');
 
   // The step bar stands alone up here (Dan, Nov 4 2026): the game names
-  // itself under the page title, and Close sits at the action bar's left
+  // itself under the page title, and Exit sits at the action bar's left
   // end (the top-row x is the phone's, where the bar stacks).
   renderBuilderSub();
   const showExit = _appMode === 'lineup' && (_currentStep === 3 || _currentStep === 4);
@@ -12111,7 +12111,6 @@ function updateDraftSavedIndicator(saving) {
   ].filter(Boolean);
   if (!els.length) return;
   const inLineup = (_appMode === 'lineup' && _currentStep >= 3);
-  const team = _userTeams.find(t => t.id === _activeTeamId);
   const shared = autoSaveApplies();
   const pending = !!(_autoTimer || _autoBusy) && shared;
   els.forEach(el => {
@@ -12123,7 +12122,8 @@ function updateDraftSavedIndicator(saving) {
     if (_autoError) { setLcStatus(el, 'err', "Couldn't save. Check your connection."); return; }
     if (state.editingLineupDocId) {
       if (!lineupFieldsFromState().players.length) { setLcStatus(el, 'dr', "Mark who's here to save"); return; }
-      setLcStatus(el, 'ok', 'Saved to ' + (team ? team.name : 'your team') + (_autoSavedAt ? ' · ' + relativeTimeShort(_autoSavedAt) : ''));
+      // "Saved 3m ago": the team is already in the sidebar (Dan, Nov 4 2026)
+      setLcStatus(el, 'ok', 'Saved' + (_autoSavedAt ? ' ' + relativeTimeShort(_autoSavedAt) : ''));
       return;
     }
     if (shared && _autoSavedAt) { setLcStatus(el, 'ok', 'Draft saved for coaches · ' + relativeTimeShort(_autoSavedAt)); return; }
@@ -14247,10 +14247,9 @@ function setExportSaveStatus(phase) {
   const el = document.getElementById('export-save-status');
   const done = document.getElementById('export-done');
   if (el) {
-    const t = _userTeams.find(x => x.id === _activeTeamId);
     setLcStatus(el, phase === 'saved' ? 'ok' : phase === 'error' ? 'err' : '',
       phase === 'saving' ? 'Saving lineup…'
-      : phase === 'saved' ? 'Saved to ' + (t ? t.name : 'your team') + ". It's on every phone now."
+      : phase === 'saved' ? "Saved. It's on every phone now."
       : "Couldn't save the lineup. Check your connection.");
   }
   if (done) done.textContent = phase === 'error' ? 'Try again' : 'Done';
