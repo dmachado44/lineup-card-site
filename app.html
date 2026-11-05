@@ -2091,13 +2091,14 @@
     @media (prefers-reduced-motion: reduce) { .gn-dot { transition: none; } .gn-dot:hover { transform: none; } }
     /* A suggestion (F56; Nov 3 2026): tag and line, a quiet "Use suggestion"
        under the line (then Used + Undo in the same card), and Dismiss a quiet
-       close in the corner, away from the action. */
-    #gn-suggest-list { position: relative; display: flex; flex-direction: column; gap: var(--space-8); }
-    .gn-sug { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-6); padding: var(--space-12) var(--space-48) var(--space-12) var(--space-12); border-radius: var(--radius-compact); background: var(--page); }
-    .gn-sug-text { min-width: 0; font-size: 14px; line-height: 1.3; }
-    .gn-sug-acts { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-2); }
-    .gn-sug.is-used { padding-right: var(--space-12); }
-    .gn-sug-x { position: absolute; top: 6px; right: 6px; }
+       close in the corner, away from the action. Spacing (Dan, Nov 5 2026):
+       16 inside, tag to line 8, line to action 16, 12 between cards. */
+    #gn-suggest-list { position: relative; display: flex; flex-direction: column; gap: var(--space-12); }
+    .gn-sug { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-8); padding: var(--space-16) var(--space-48) var(--space-16) var(--space-16); border-radius: var(--radius-compact); background: var(--page); }
+    .gn-sug-text { min-width: 0; font-size: 14px; line-height: 1.4; }
+    .gn-sug-acts { display: flex; align-items: center; gap: var(--space-12); margin-top: var(--space-8); }
+    .gn-sug.is-used { padding-right: var(--space-16); }
+    .gn-sug-x { position: absolute; top: var(--space-8); right: var(--space-8); }
     /* Suggestion preview and feedback (Dan, Nov 3 2026). Hovering or focusing
        a card marks what it would change in the selected-state look (accent
        wash, accent-down ring): the kids' names and number tiles, the innings'
