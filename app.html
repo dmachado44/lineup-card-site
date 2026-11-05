@@ -1069,8 +1069,10 @@
       justify-content: flex-start;
       margin-bottom: 16px;
     }
-    /* ── Segmented control (F4, Oct 31 2026): THE pick-one switch, same
-       spec as iOS LCSegmented. A 36px track of ink at 8% (12px corners,
+    /* ── Segmented control (F4, Oct 31 2026; scoped Nov 5 2026): switches
+       between views of the same thing (List / Field / All innings). Picking
+       a value (a limit, a preference, a count) is toggle chips (.lc-toggle),
+       never this (Dan; Brand/DESIGN_RULES.md). Same spec as iOS LCSegmented. A 36px track of ink at 8% (12px corners,
        3px inset) with a white thumb (9px corners, soft shadow; white at
        18% by night). Labels 15/600, secondary ink; the picked one ink.
        Segments share the width; .lc-seg--fit sizes them to their labels
@@ -4389,7 +4391,7 @@
             <div class="rule-title">Max innings at one position</div>
             <div class="rule-sub">Limit how many total innings a player can play any one position</div>
           </div>
-          <div class="lc-seg rule-seg" data-for="rule-max-same-pos" role="radiogroup" aria-label="Max innings at one position"></div>
+          <div class="pos-chips rule-seg" data-for="rule-max-same-pos" role="radiogroup" aria-label="Max innings at one position"></div>
           <select id="rule-max-same-pos" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
@@ -4432,7 +4434,7 @@
             <div class="rule-title">Max innings pitched per player</div>
             <div class="rule-sub">Limit how many innings any one player can pitch per game</div>
           </div>
-          <div class="lc-seg rule-seg" data-for="rule-max-pitch" role="radiogroup" aria-label="Max innings pitched per player"></div>
+          <div class="pos-chips rule-seg" data-for="rule-max-pitch" role="radiogroup" aria-label="Max innings pitched per player"></div>
           <select id="rule-max-pitch" class="rule-select rule-select-hidden" tabindex="-1" aria-hidden="true" onchange="markSettingsDirty(); saveRules()">
             <option value="0">No Maximum</option>
             <option value="1">1 inning</option>
@@ -11034,8 +11036,8 @@ function renderPlayerPanel() {
     </div>
     <div class="pp-f">
       <span class="pp-lb" id="pp-pref-lb">Prefers</span>
-      <div class="lc-seg" id="pp-seg" role="group" aria-labelledby="pp-pref-lb">${[['infield', 'Infield'], ['outfield', 'Outfield'], ['both', 'Both']].map(([v, l]) =>
-        `<button type="button" data-v="${v}" class="${prio === v ? 'on' : ''}" aria-pressed="${prio === v}" onclick="ppSetPriority('${id}', '${v}')">${l}</button>`).join('')}</div>
+      <div class="pp-chips" id="pp-seg" role="group" aria-labelledby="pp-pref-lb">${[['infield', 'Infield'], ['outfield', 'Outfield'], ['both', 'Both']].map(([v, l]) =>
+        `<button type="button" data-v="${v}" class="lc-toggle${prio === v ? ' on' : ''}" aria-pressed="${prio === v}" onclick="ppSetPriority('${id}', '${v}')">${l}</button>`).join('')}</div>
     </div>
     <div class="pp-priv">
       <div class="pp-privh">${PP_LOCK_SVG}Batting ratings <span>· only coaches see these</span></div>
@@ -13789,8 +13791,10 @@ function renderPosGrid() {
   updateRulesSummary();
 }
 
-// Segmented limits ("No max · 1 · 2 · 3") drive the hidden <select>s the
-// rest of the rules code reads and writes; they redraw from those selects.
+// The limits ("No max · 1 · 2 · 3") are toggle chips, one picked (Dan,
+// Nov 5 2026: picking a value is chips, never a segmented control). They
+// drive the hidden <select>s the rest of the rules code reads and writes,
+// and redraw from those selects. .rule-seg stays as the JS hook.
 function renderRuleSegs() {
   document.querySelectorAll('.rule-seg[data-for]').forEach(seg => {
     const sel = document.getElementById(seg.dataset.for);
@@ -13798,7 +13802,7 @@ function renderRuleSegs() {
     seg.innerHTML = Array.from(sel.options).map(o => {
       const on = o.value === sel.value;
       const txt = o.value === '0' ? 'No max' : o.value;
-      return `<button type="button" role="radio" aria-checked="${on}" class="${on ? 'on' : ''}" onclick="setRuleSeg('${seg.dataset.for}', '${o.value}')">${txt}</button>`;
+      return `<button type="button" role="radio" aria-checked="${on}" class="lc-toggle${on ? ' on' : ''}" onclick="setRuleSeg('${seg.dataset.for}', '${o.value}')">${txt}</button>`;
     }).join('');
   });
 }
@@ -14168,10 +14172,10 @@ function renderPlayerList() {
       </div>
       <div class="priority-row">
         <span class="priority-label">Prioritize:</span>
-        <div class="lc-seg lc-seg--fit" role="group" aria-label="Prioritize">
-          <button type="button" class="${prio === 'infield' ? 'on' : ''}" aria-pressed="${prio === 'infield'}" onclick="setFieldPriority('${player.id}','infield')">Infield</button>
-          <button type="button" class="${prio === 'outfield' ? 'on' : ''}" aria-pressed="${prio === 'outfield'}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</button>
-          <button type="button" class="${prio === 'both' ? 'on' : ''}" aria-pressed="${prio === 'both'}" onclick="setFieldPriority('${player.id}','both')">Both</button>
+        <div class="pos-pills" role="group" aria-label="Prioritize">
+          <button type="button" class="lc-toggle${prio === 'infield' ? ' on' : ''}" aria-pressed="${prio === 'infield'}" onclick="setFieldPriority('${player.id}','infield')">Infield</button>
+          <button type="button" class="lc-toggle${prio === 'outfield' ? ' on' : ''}" aria-pressed="${prio === 'outfield'}" onclick="setFieldPriority('${player.id}','outfield')">Outfield</button>
+          <button type="button" class="lc-toggle${prio === 'both' ? ' on' : ''}" aria-pressed="${prio === 'both'}" onclick="setFieldPriority('${player.id}','both')">Both</button>
         </div>
       </div>
     `;
