@@ -1527,12 +1527,15 @@
     .pos-select.bench { background-color: var(--bench-bg); }
     /* The cell is a button that opens the cell menu (Web A, Dan, Nov 3
        2026): same face as the old select. Locked (position locks) = the
-       lock in the arrow's place, the pressed tint and bold; on narrow
-       touch cells the lock sits in the top-right corner, like iOS. */
+       lock in the arrow's place, the grass wash and bold, the iOS locked
+       fill (Dan, Nov 5 2026; a locked Bench takes the panel tan, like iOS);
+       on narrow touch cells the lock sits in the top-right corner. */
     button.pos-select { display: inline-flex; align-items: center; justify-content: flex-start; position: relative; width: 100%; min-width: 64px; text-align: left; white-space: nowrap; }
     .pos-select[aria-expanded="true"] { background-color: var(--gray-5); }
     .pos-select:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 1px; }
-    .pos-select.locked { background-color: var(--gray-5); background-image: none; font-weight: 700; }
+    .pos-select.locked { background-image: none; font-weight: 700; }
+    .pos-select.locked:not(.conflict) { background-color: var(--accent-wash); }
+    .pos-select.locked.bench:not(.conflict) { background-color: var(--bg-secondary); }
     .pos-select .ps-lock { position: absolute; right: 8px; top: 50%; width: 12px; height: 12px; margin-top: -6px; display: flex; color: var(--ink); pointer-events: none; }
     .pos-select .ps-lock svg { width: 100%; height: 100%; stroke-width: var(--icon-stroke-heavy); }
     .pos-select.conflict {
@@ -1834,7 +1837,8 @@
         color: var(--ink);
       }
       button.pos-select { justify-content: center; min-width: 0; }
-      .pos-select.locked { background-color: var(--gray-5); }
+      .pos-select.locked:not(.conflict) { background-color: var(--accent-wash); }
+      .pos-select.locked.bench:not(.conflict) { background-color: var(--bg-secondary); }
       .pos-select .ps-lock { top: 3px; right: 3px; width: 9px; height: 9px; margin-top: 0; }
     }
 
