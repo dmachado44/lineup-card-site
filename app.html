@@ -3060,6 +3060,9 @@
     .settings-mode .wizard-bar { display: none; }
     body.signed-in .wizard-bar { position: sticky; top: 0; z-index: 40; }
     .wizard-bar { display: flex; align-items: center; gap: 20px; height: var(--wizard-h); padding: 0 32px; background: var(--panel); border-bottom: none; box-shadow: 0 1px 0 var(--hairline); }
+    /* Lineup tools runs the window's full height, so the step row stops at
+       its edge and glides with it, like the action bar (Dan, Nov 4 2026). */
+    #view-builder .wizard-bar { margin-right: var(--tools-w); transition: margin-right .32s var(--ease-glide); }
     /* Step bar (F13, Oct 31 2026): same as iOS BuilderStepBar. Equal
        segments; a 5px capsule track (ink 14%) fills in ink (done 100%,
        current 50%, ahead 0%) over an 11px bold body caps label tracked
@@ -3085,10 +3088,10 @@
       .wizard-bar .wizard-steps { flex: 1 1 auto; overflow: visible; }
     }
     @media (prefers-reduced-motion: reduce) { .wizard-bar * { animation: none !important; transition: none !important; } }
-    /* Step row slots: game context on the left, the screen-level exit on the right */
-    .wizard-ctx { flex: 1 1 0; min-width: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 600; color: var(--ink-secondary); white-space: nowrap; overflow: hidden; }
-    .wizard-ctx span { overflow: hidden; text-overflow: ellipsis; }
-    .wizard-ctx .sep { color: var(--gray-3); flex: none; }
+    /* Step row slots (Dan, Nov 4 2026): the step bar alone, centered. The
+       game moved under the page title and Close into the action bar, so the
+       left slot is a spacer and the right one holds the phone close. */
+    .wizard-ctx { flex: 1 1 0; min-width: 0; }
     .wizard-end { flex: 1 1 0; display: flex; justify-content: flex-end; }
     .wizard-exit {
       display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px; border: none; border-radius: var(--radius-compact);
@@ -3130,6 +3133,23 @@
     .step-actions .text-muted { margin-right: 20px; }
     .step-actions .draft-status:empty, .step-actions .text-muted:empty { display: none; }
     .step-actions .draft-status { font-weight: 600; gap: 8px; }
+    /* Three slots (Dan, Nov 4 2026): Close on the left, where it's saved in
+       the middle, the way forward on the right. Game info and Edit lineup
+       carry Close; Export's Done is its way out, so its left slot stays
+       empty. Phones stack the bar as before and keep the top-row x. */
+    @media (min-width: 769px) {
+      #view-builder:not(.settings-mode) .step-actions.sa-split { display: grid; grid-template-columns: minmax(max-content, 1fr) minmax(0, auto) minmax(max-content, 1fr); gap: 20px; }
+      .sa-split .sa-close { grid-column: 1; justify-self: start; }
+      .sa-split .sa-mid { grid-column: 2; display: flex; align-items: center; justify-content: center; gap: 20px; min-width: 0; }
+      .sa-split .sa-mid > * { margin-right: 0; min-width: 0; }
+      .sa-split .sa-mid .lc-st > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .sa-split .sa-end { grid-column: 3; justify-self: end; display: flex; align-items: center; gap: 12px; }
+      #wizard-exit { display: none !important; }
+    }
+    @media (max-width: 768px) {
+      .step-actions .sa-close { display: none !important; }
+      .step-actions .sa-mid, .step-actions .sa-end { display: contents; }
+    }
     #export-edit svg { flex: none; }
     #step3-save-draft, #step4-save-draft { display: none !important; }
     .step-footer { margin-bottom: 20px; }
@@ -3185,8 +3205,8 @@
     /* ── Builder: tools pane (strategy · positions · playing time) ── */
     .builder-tools { display: none; }
     #view-builder.tools-on .builder-tools {
-      display: flex; flex-direction: column; position: fixed; right: 0; bottom: 0; top: var(--wizard-h); z-index: 44;
-      width: var(--tools-pane-w); background: var(--panel); box-shadow: -1px 0 0 var(--hairline), inset 0 1px 0 var(--hairline);   /* inset top: carries the header's bottom hairline across the panel */
+      display: flex; flex-direction: column; position: fixed; right: 0; bottom: 0; top: 0; z-index: 44;   /* full height: the step row and the action bar both stop at its edge */
+      width: var(--tools-pane-w); background: var(--panel); box-shadow: -1px 0 0 var(--hairline);
       transform: translateX(105%); visibility: hidden; transition: transform .32s var(--ease-glide), visibility 0s linear .32s;
     }
     body.tools-visible #view-builder.tools-on .builder-tools { transform: none; visibility: visible; transition: transform .32s var(--ease-glide); }
@@ -3211,7 +3231,7 @@
       body.bt-resizing .bt-edge .sb-tip { opacity: 0; transition: none; }
       body.bt-resizing { cursor: col-resize; user-select: none; -webkit-user-select: none; }
       /* The pane follows the pointer; the glide comes back for double-click and the keys */
-      body.bt-resizing #view-builder .page, body.bt-resizing #view-builder .step-actions, body.bt-resizing .builder-tools { transition: none; }
+      body.bt-resizing #view-builder .page, body.bt-resizing #view-builder .wizard-bar, body.bt-resizing #view-builder .step-actions, body.bt-resizing .builder-tools { transition: none; }
     }
     .bt-head { flex: none; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 20px 12px 24px; }
     .bt-title { font-family: var(--font-display); font-weight: 900; font-size: var(--type-title); line-height: 1; text-transform: uppercase; }
@@ -3296,7 +3316,7 @@
     @keyframes lcBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 
     @media (prefers-reduced-motion: reduce) {
-      body.signed-in, .sidebar, .sidebar *, .m-topbar *, .step-actions, .builder-tools, .save-bar,
+      body.signed-in, .sidebar, .sidebar *, .m-topbar *, .wizard-bar, .step-actions, .builder-tools, .save-bar,
       .lc-toggle, .lc-toggle *, .att-num, .lc-menu, .share-card-code .cl, .share-card-code .tap, .tap-check, .lc-stateful * {
         animation: none !important; transition: none !important;
       }
@@ -4183,8 +4203,8 @@
       <!-- Dynamically rendered by renderWizardBar() -->
     </div>
     <div class="wizard-end">
-      <!-- The screen-level exit lives up here, never beside the primary (Oct 2026) -->
-      <!-- Autosave (Dan, Nov 3 2026): every change saves itself, so the exit is a plain close -->
+      <!-- Phones only (Dan, Nov 4 2026): wider screens close from the action bar's left end.
+           Autosave (Nov 3 2026): every change saves itself, so the exit is a plain close. -->
       <button class="lc-close" id="wizard-exit" type="button" onclick="saveDraftAndExit()" aria-label="Close" title="Close" style="display:none">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -4482,12 +4502,18 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <div class="step-actions">
-          <div class="text-muted" id="step2-status"></div>
-          <div class="draft-status lc-st" id="draft-saved-status-step3"></div>
-          <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
-          <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
-          <button id="step3-continue" class="btn btn-primary btn-lg lc-next" onclick="goToStep4()">Continue to Edit Lineup</button>
+        <div class="step-actions sa-split">
+          <!-- Close (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
+          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Close</button>
+          <div class="sa-mid">
+            <div class="text-muted" id="step2-status"></div>
+            <div class="draft-status lc-st" id="draft-saved-status-step3"></div>
+          </div>
+          <div class="sa-end">
+            <button id="step3-save-draft" class="btn btn-outline btn-lg" style="display:none" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
+            <button id="step3-save-exit" class="btn btn-outline btn-lg" style="display:none" onclick="saveAndExit()">Save &amp; Exit</button>
+            <button id="step3-continue" class="btn btn-primary btn-lg lc-next" onclick="goToStep4()">Continue to Edit Lineup</button>
+          </div>
         </div>
       </div>
     </div>
@@ -4620,10 +4646,16 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <div class="step-actions">
-          <div class="draft-status lc-st" id="draft-saved-status"></div>
-          <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
-          <button id="step4-finish" class="btn btn-cta btn-lg lc-next" onclick="goToStep5()">Post &amp; export</button>
+        <div class="step-actions sa-split">
+          <!-- Close (Dan, Nov 4 2026): the builder saves as you go, so this just leaves. Far left, never beside the primary. -->
+          <button class="btn btn-ghost btn-lg sa-close" type="button" onclick="saveDraftAndExit()" style="display:none">Close</button>
+          <div class="sa-mid">
+            <div class="draft-status lc-st" id="draft-saved-status"></div>
+          </div>
+          <div class="sa-end">
+            <button id="step4-save-draft" class="btn btn-outline btn-lg" onclick="saveDraftAndExit()">Save Draft &amp; Exit</button>
+            <button id="step4-finish" class="btn btn-cta btn-lg lc-next" onclick="goToStep5()">Post &amp; export</button>
+          </div>
         </div>
       </div>
     </div>
@@ -4655,13 +4687,17 @@
 
       <div class="step-footer">
         <div class="dashboard-header-left"><h1>Build Lineup</h1><p class="dashboard-sub builder-sub"></p></div>
-        <div class="step-actions">
-          <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026) -->
-          <div class="draft-status lc-st" id="export-save-status" aria-live="polite"></div>
-          <button class="btn btn-outline btn-lg" id="export-edit" onclick="editSavedLineup()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>Edit lineup
-          </button>
-          <button class="btn btn-primary btn-lg" id="export-done" onclick="finishLineup()">Done</button>
+        <div class="step-actions sa-split">
+          <!-- Saved: say so, offer a way back into the lineup, and one way out (Oct 30 2026). Done is the way out, so no Close here. -->
+          <div class="sa-mid">
+            <div class="draft-status lc-st" id="export-save-status" aria-live="polite"></div>
+          </div>
+          <div class="sa-end">
+            <button class="btn btn-outline btn-lg" id="export-edit" onclick="editSavedLineup()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>Edit lineup
+            </button>
+            <button class="btn btn-primary btn-lg" id="export-done" onclick="finishLineup()">Done</button>
+          </div>
         </div>
       </div>
     </div>
@@ -6176,15 +6212,9 @@ async function selectTeam(teamId, closeDropdown = true) {
     hydrateTeamDoc(teamData);
 
     // Apply team theming to the builder
-    const currentTeam = _userTeams.find(t => t.id === teamId);
     // Crate rule: ONE signature color per screen. The grass green accent is
     // never overridden by team color (the old --team-* vars had no reader).
-    if (currentTeam) {
-      // The "Create Lineup" header lives in each step's action row; set its
-      // subtitle (team · sport · season) across all of them.
-      const subText = `${currentTeam.name} · ${currentTeam.sport} · ${currentTeam.season} ${currentTeam.year}`;
-      document.querySelectorAll('.builder-sub').forEach(el => { el.textContent = subText; });
-    }
+    // The line under Build Lineup names the game, not the team (renderBuilderSub).
 
     const players = playerSnap.docs.map(doc => mapPlayerDoc(doc.id, doc.data()));
 
@@ -7369,24 +7399,27 @@ function renderWizardBar() {
     </div>`;
   }).join('');
 
-  // Context on the left (team / game), the screen-level exit on the right.
-  const ctx = document.getElementById('wizard-ctx');
-  if (ctx) {
-    const team = _userTeams.find(t => t.id === _activeTeamId);
-    const teamName = state.teamName || (team && team.name) || '';
-    let game = '';
-    if (_appMode === 'lineup') {
-      const who = state.opponent ? 'vs ' + state.opponent : (state.gameName || 'New game');
-      const when = state.gameDate ? formatDate(state.gameDate) : '';
-      game = [who, when].filter(Boolean).join(' · ');
-    } else if (_appMode === 'setup') {
-      game = 'New team';
-    }
-    const parts = _appMode === 'setup' ? [game] : [teamName, game];   // a new team has no team yet
-    ctx.innerHTML = parts.filter(Boolean).map(t => `<span>${escHtml(t)}</span>`).join('<span class="sep">/</span>');
-  }
+  // The step bar stands alone up here (Dan, Nov 4 2026): the game names
+  // itself under the page title, and Close sits at the action bar's left
+  // end (the top-row x is the phone's, where the bar stacks).
+  renderBuilderSub();
+  const showExit = _appMode === 'lineup' && (_currentStep === 3 || _currentStep === 4);
   const exit = document.getElementById('wizard-exit');
-  if (exit) exit.style.display = (_appMode === 'lineup' && (_currentStep === 3 || _currentStep === 4)) ? '' : 'none';
+  if (exit) exit.style.display = showExit ? '' : 'none';
+  document.querySelectorAll('.sa-close').forEach(b => { b.style.display = showExit ? '' : 'none'; });
+}
+
+// The line under Build Lineup names the game: "vs Rockets · Sun, Nov 8"
+// (the opponent, else the game's name, else New game). A new team has no
+// game yet, so it stays blank there. Game info's fields refresh it as you type.
+function renderBuilderSub() {
+  let sub = '';
+  if (_appMode === 'lineup') {
+    const who = state.opponent ? 'vs ' + state.opponent : (state.gameName || 'New game');
+    const when = state.gameDate ? formatDate(state.gameDate).replace(/ /g, '\u00a0') : '';   // the date never breaks across lines
+    sub = [who, when].filter(Boolean).join(' · ');
+  }
+  document.querySelectorAll('.builder-sub').forEach(el => { el.textContent = sub; });
 }
 
 // Jump to a builder step from the wizard pills. Only completed (earlier) steps
@@ -7422,6 +7455,8 @@ function updateStepFooters() {
   if (step3cont)     { step3cont.textContent = 'Continue to Edit Lineup'; step3cont.onclick = goToStep4; }
   if (step4back)     { step4back.style.display = ''; step4back.textContent = 'Back to Setup'; step4back.onclick = goToStep3; }
   if (step4saveDraft){ step4saveDraft.style.display = 'none'; }
+  const step2status = document.getElementById('step2-status');
+  if (step2status) step2status.style.display = '';
 
   if (_appMode === 'setup') {
     if (gameInfoSection) gameInfoSection.style.display = 'none';
@@ -7437,6 +7472,8 @@ function updateStepFooters() {
     if (gameInfoSection) gameInfoSection.style.display = '';
     if (rosterSection)   rosterSection.style.display = 'none';
     if (step3back) step3back.style.display = 'none';
+    // Game info hides the roster, so its count leaves the bar's middle to where it's saved (Nov 4 2026).
+    if (step2status) step2status.style.display = 'none';
     if (step3cont) { step3cont.textContent = 'Continue to Edit Lineup'; step3cont.onclick = goToStep4; }
     if (step4back) { step4back.style.display = ''; step4back.textContent = 'Back to Game Info'; step4back.onclick = goToStep3; }
     // Save Draft & Exit only makes sense while a lineup is in progress.
@@ -12114,7 +12151,7 @@ document.addEventListener('DOMContentLoaded', () => {
   ['game-name','opponent','game-date','game-time','game-location','game-notes'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const handler = () => { if (_appMode === 'lineup' && _currentStep >= 3) save(); };
+    const handler = () => { if (_appMode === 'lineup' && _currentStep >= 3) { save(); renderBuilderSub(); } };
     el.addEventListener('input', handler);
     el.addEventListener('change', handler);
   });
