@@ -513,7 +513,7 @@
        white cards, panels and modals. Variants: .field-code (invite codes,
        64px), .field-compact (inline row cells, 40px), textarea (multiline,
        120px and up). */
-    input[type=text], input[type=url], input[type=email], input[type=password], input[type=date], input[type=time], input[type=number], select, textarea {
+    input[type=text], input[type=url], input[type=email], input[type=password], input[type=date], input[type=time], input[type=number], select, textarea, .lc-date-field {
       height: 55px;
       padding: 0 16px;
       border: 1px solid var(--hairline-strong);
@@ -541,7 +541,7 @@
       select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A919E' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
     }
     input::placeholder, textarea::placeholder { color: var(--ink-secondary); opacity: 1; }
-    input:focus, select:focus, textarea:focus {
+    input:focus, select:focus, textarea:focus, .lc-date-field:focus-visible, .lc-date-field[aria-expanded="true"] {
       border-color: var(--accent-down);
       box-shadow: inset 0 0 0 1px var(--accent-down);
     }
@@ -652,19 +652,74 @@
     /* One close (F56, Nov 2 2026): every dialog, sheet, drawer and popover
        closes with this quiet 40px circle and the same 18px x, like iOS's
        TertiaryButtonStyle(iconCircle:). Icon-only, so it always carries an
-       aria-label. --sm (32px) for menu heads and rows. */
-    .lc-close {
+       aria-label. --sm (32px) for menu heads and rows. The date picker's
+       month arrows wear the same circle (.lc-cal-nav). */
+    .lc-close, .lc-cal-nav {
       flex: none; width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%;
       display: inline-grid; place-items: center;
       background: var(--bg-secondary); color: var(--ink); cursor: pointer;
       transition: transform .45s var(--ease-pop), background-color .15s ease;
     }
     .lc-close svg { width: 18px; height: 18px; }
-    @media (hover: hover) { .lc-close:hover { background: var(--gray-5); } }
-    .lc-close:active { transform: scale(.94); transition-duration: .06s; }
-    .lc-close:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
+    @media (hover: hover) { .lc-close:hover, .lc-cal-nav:hover { background: var(--gray-5); } }
+    .lc-close:active, .lc-cal-nav:active { transform: scale(.94); transition-duration: .06s; }
+    .lc-close:focus-visible, .lc-cal-nav:focus-visible { outline: 3px solid var(--accent-down); outline-offset: 2px; }
     .lc-close--sm { width: 32px; height: 32px; }
     .lc-close--sm svg { width: 16px; height: 16px; }
+
+    /* ── Date picker (Nov 4 2026, Dan): THE date field (lcDateField).
+       The trigger is the field spec with a calendar glyph and a caret; the
+       popover is the dialog surface (panel, card radius, --shadow-dialog).
+       Month arrows are the quiet icon circle (.lc-close's spec), days are
+       40px circles: hover --gray-5, picked = the accent fill with on-accent
+       ink, today = step-down green. Opens and pages on Snappy; Reduce
+       Motion skips both. Same spec on getleadoff.com's lineup builder. ── */
+    .lc-date { position: relative; min-width: 0; }
+    .lc-date-field { min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; }
+    .lc-date-field .lc-date-ic { flex: none; width: 20px; height: 20px; color: var(--gray); }
+    .lc-date-field .lc-date-caret { flex: none; width: 16px; height: 16px; margin-left: auto; color: var(--gray); transition: transform var(--dur-snappy) var(--ease-snappy); }
+    .lc-date-field[aria-expanded="true"] .lc-date-caret { transform: rotate(180deg); }
+    .lc-date-val { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lc-date-val.is-empty { color: var(--ink-secondary); }
+    .lc-date-field.is-set .lc-date-val { animation: lcTick var(--dur-pop) var(--ease-pop); }
+    .lc-cal {
+      position: fixed; z-index: 250; width: min(336px, calc(100vw - 32px)); padding: 16px;
+      background: var(--panel); color: var(--ink); border-radius: var(--radius-card); box-shadow: var(--shadow-dialog);
+      transform-origin: top left;
+    }
+    .lc-cal.is-above { transform-origin: bottom left; }
+    .lc-cal.is-in { animation: lcCalIn var(--dur-snappy) var(--ease-snappy) both; }
+    @keyframes lcCalIn { from { opacity: 0; transform: scale(.96) translateY(-4px); } }
+    .lc-cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .lc-cal-title { flex: 1; text-align: center; font-size: 17px; font-weight: 700; color: var(--ink); }
+    .lc-cal-nav svg { width: 18px; height: 18px; }
+    .lc-cal-nav[data-nav="-1"] svg { transform: scaleX(-1); }
+    .lc-cal-grid { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .lc-cal-grid th { padding: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-secondary); text-align: center; }
+    .lc-cal-grid td { padding: 2px; text-align: center; }
+    .lc-cal-day {
+      display: grid; place-items: center; width: 100%; max-width: 40px; aspect-ratio: 1; margin: 0 auto; padding: 0;
+      border: none; border-radius: 50%; background: transparent; color: var(--ink); cursor: pointer;
+      font: inherit; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;
+      transition: background-color .15s ease, color .15s ease, transform .45s var(--ease-pop);
+    }
+    @media (hover: hover) { .lc-cal-day:hover { background: var(--gray-5); } }
+    .lc-cal-day:active { transform: scale(.92); transition-duration: .06s; }
+    .lc-cal-day.is-today { color: var(--accent-down); font-weight: 700; }
+    .lc-cal-day[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 700; }
+    .lc-cal-day:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; }
+    .lc-cal-grid tbody.from-next { animation: lcCalNext var(--dur-snappy) var(--ease-snappy); }
+    .lc-cal-grid tbody.from-prev { animation: lcCalPrev var(--dur-snappy) var(--ease-snappy); }
+    @keyframes lcCalNext { from { opacity: 0; transform: translateX(12px); } }
+    @keyframes lcCalPrev { from { opacity: 0; transform: translateX(-12px); } }
+    .lc-cal-foot { display: flex; justify-content: center; margin-top: 8px; padding-top: 12px; border-top: 1px solid var(--hairline); }
+    .lc-cal-today { font-size: 15px; font-weight: 600; color: var(--accent-down); text-decoration: none; }
+    .lc-cal-today:hover { text-decoration: underline; }
+    .lc-cal-today:focus-visible { outline: 2px solid var(--accent-down); outline-offset: 2px; border-radius: var(--radius-small); }
+    @media (prefers-reduced-motion: reduce) {
+      .lc-cal.is-in, .lc-cal-grid tbody.from-next, .lc-cal-grid tbody.from-prev, .lc-date-field.is-set .lc-date-val { animation: none; }
+      .lc-cal-day, .lc-date-field .lc-date-caret { transition: none; }
+    }
 
     /* ── PLAYER MANAGEMENT ── */
     .player-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
@@ -16056,6 +16111,222 @@ function formatTime(t) {
 }
 
 // ═══════════════════════════════════════════════════
+// DATE PICKER
+// ═══════════════════════════════════════════════════
+// ── Date picker (Nov 4 2026, Dan): THE date field. lcDateField(input)
+// upgrades an <input type="date"> in place. The input stays (hidden) as
+// the value: code that reads or sets .value, and its input/change
+// listeners, work as before. In front of it, a button in the field spec
+// shows the date ("Wed, Nov 4, 2026") and opens a calendar popover on the
+// dialog surface: the month between two quiet circle arrows, the picked
+// day in the accent fill, today in step-down green, Today below.
+// Keyboard: arrows move a day or a week, Page Up/Down a month (with Shift
+// a year), Home/End the week, Enter picks, Escape closes. Same file in
+// app.html and getleadoff.com's lineup builder: change both together.
+var LC_CAL_DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+var LC_CAL_ICON = {
+  cal: '<svg class="lc-date-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  caret: '<svg class="lc-date-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+  chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>'
+};
+var lcCal = null;   // the open calendar: { input, btn, view (1st of month), focus }
+function lcCalPad(n) { return (n < 10 ? '0' : '') + n; }
+function lcCalIso(d) { return d.getFullYear() + '-' + lcCalPad(d.getMonth() + 1) + '-' + lcCalPad(d.getDate()); }
+function lcCalParse(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null; }
+function lcCalToday() { var t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+function lcCalSame(a, b) { return !!(a && b) && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
+function lcCalReduce() { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); }
+
+function lcDateField(input, opts) {
+  if (!input || input._lcDate) return;
+  opts = opts || {};
+  var wrap = document.createElement('div');
+  wrap.className = 'lc-date';
+  input.parentNode.insertBefore(wrap, input);
+  wrap.appendChild(input);
+  input.hidden = true;
+  input.tabIndex = -1;
+  var btn = document.createElement('button');
+  btn.type = 'button';
+  btn.id = input.id + '-btn';
+  btn.className = 'lc-date-field' + (opts.fieldClass ? ' ' + opts.fieldClass : '');
+  btn.setAttribute('aria-haspopup', 'dialog');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = LC_CAL_ICON.cal + '<span class="lc-date-val" id="' + input.id + '-val"></span>' + LC_CAL_ICON.caret;
+  wrap.appendChild(btn);
+  // The field's label now names the button: "Date, Wed, Nov 4, 2026".
+  var label = document.querySelector('label[for="' + input.id + '"]');
+  if (label) {
+    if (!label.id) label.id = input.id + '-label';
+    label.setAttribute('for', btn.id);
+    btn.setAttribute('aria-labelledby', label.id + ' ' + input.id + '-val');
+  }
+  var val = btn.querySelector('.lc-date-val');
+  function refresh() {
+    var d = lcCalParse(input.value);
+    val.textContent = d ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : (opts.placeholder || 'Pick a date');
+    val.classList.toggle('is-empty', !d);
+  }
+  // Code that sets input.value directly updates the button too.
+  var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  Object.defineProperty(input, 'value', {
+    configurable: true,
+    get: function () { return desc.get.call(this); },
+    set: function (v) { desc.set.call(this, v); refresh(); }
+  });
+  input._lcDate = true;
+  refresh();
+  btn.addEventListener('click', function () { if (lcCal && lcCal.btn === btn) lcCalClose(true); else lcCalOpen(input, btn); });
+  btn.addEventListener('keydown', function (e) { if (e.key === 'ArrowDown' && !lcCal) { e.preventDefault(); lcCalOpen(input, btn); } });
+}
+
+function lcCalEl() {
+  var el = document.getElementById('lc-cal');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'lc-cal';
+  el.className = 'lc-cal';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', 'Choose a date');
+  el.hidden = true;
+  el.innerHTML =
+    '<div class="lc-cal-head">' +
+      '<button type="button" class="lc-cal-nav" data-nav="-1" aria-label="Previous month">' + LC_CAL_ICON.chev + '</button>' +
+      '<div class="lc-cal-title" id="lc-cal-title" aria-live="polite"></div>' +
+      '<button type="button" class="lc-cal-nav" data-nav="1" aria-label="Next month">' + LC_CAL_ICON.chev + '</button>' +
+    '</div>' +
+    '<table class="lc-cal-grid" role="grid" aria-labelledby="lc-cal-title"><thead><tr>' +
+      LC_CAL_DOW.map(function (d, i) { return '<th scope="col" abbr="' + ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][i] + '">' + d + '</th>'; }).join('') +
+    '</tr></thead><tbody></tbody></table>' +
+    '<div class="lc-cal-foot"><button type="button" class="link-btn lc-cal-today" data-today>Today</button></div>';
+  el.addEventListener('click', function (e) {
+    var t = e.target.closest('button');
+    if (!t || !lcCal) return;
+    if (t.hasAttribute('data-nav')) lcCalMonth(+t.getAttribute('data-nav'), false);
+    else if (t.hasAttribute('data-iso')) lcCalPick(lcCalParse(t.getAttribute('data-iso')));
+    else if (t.hasAttribute('data-today')) lcCalPick(lcCalToday());
+  });
+  el.addEventListener('keydown', lcCalKeys);
+  el.addEventListener('focusout', function (e) {
+    if (!lcCal) return;
+    var to = e.relatedTarget;
+    if (to && (el.contains(to) || to === lcCal.btn)) return;
+    setTimeout(function () { if (lcCal && !el.contains(document.activeElement) && document.activeElement !== lcCal.btn) lcCalClose(false); }, 0);
+  });
+  document.body.appendChild(el);
+  return el;
+}
+function lcCalOpen(input, btn) {
+  if (lcCal) lcCalClose(false);
+  var el = lcCalEl(), sel = lcCalParse(input.value), focus = sel || lcCalToday();
+  lcCal = { input: input, btn: btn, view: new Date(focus.getFullYear(), focus.getMonth(), 1), focus: focus };
+  lcCalRender(0);
+  el.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  lcCalPlace();
+  el.classList.remove('is-in');
+  if (!lcCalReduce()) { void el.offsetWidth; el.classList.add('is-in'); }
+  lcCalFocusDay();
+  document.addEventListener('mousedown', lcCalOutside, true);
+  document.addEventListener('touchstart', lcCalOutside, { capture: true, passive: true });
+  window.addEventListener('resize', lcCalPlace);
+  window.addEventListener('scroll', lcCalPlace, true);
+}
+function lcCalClose(refocus) {
+  if (!lcCal) return;
+  var el = document.getElementById('lc-cal'), btn = lcCal.btn;
+  el.hidden = true;
+  el.classList.remove('is-in');
+  btn.setAttribute('aria-expanded', 'false');
+  lcCal = null;
+  document.removeEventListener('mousedown', lcCalOutside, true);
+  document.removeEventListener('touchstart', lcCalOutside, { capture: true });
+  window.removeEventListener('resize', lcCalPlace);
+  window.removeEventListener('scroll', lcCalPlace, true);
+  if (refocus) btn.focus({ preventScroll: true });
+}
+function lcCalOutside(e) {
+  if (!lcCal) return;
+  var el = document.getElementById('lc-cal');
+  if (el.contains(e.target) || lcCal.btn.contains(e.target)) return;
+  lcCalClose(false);
+}
+// Below the field, flipped above when there's no room; it follows the
+// field when the page scrolls and closes once the field is out of view.
+function lcCalPlace() {
+  if (!lcCal) return;
+  var el = document.getElementById('lc-cal'), r = lcCal.btn.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > window.innerHeight) { lcCalClose(false); return; }
+  var w = el.offsetWidth, h = el.offsetHeight, pad = 8;
+  var left = Math.max(pad, Math.min(r.left, window.innerWidth - w - pad));
+  var top = r.bottom + pad, above = false;
+  if (top + h > window.innerHeight - pad && r.top - h - pad >= pad) { top = r.top - h - pad; above = true; }
+  el.classList.toggle('is-above', above);
+  el.style.left = Math.round(left) + 'px';
+  el.style.top = Math.round(Math.max(pad, top)) + 'px';
+}
+function lcCalRender(dir) {
+  var el = document.getElementById('lc-cal'), v = lcCal.view, sel = lcCalParse(lcCal.input.value), today = lcCalToday();
+  el.querySelector('.lc-cal-title').textContent = v.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  var first = v.getDay(), days = new Date(v.getFullYear(), v.getMonth() + 1, 0).getDate(), cells = [];
+  for (var i = 0; i < first; i++) cells.push('<td></td>');
+  for (var d = 1; d <= days; d++) {
+    var day = new Date(v.getFullYear(), v.getMonth(), d), on = lcCalSame(day, sel), now = lcCalSame(day, today);
+    cells.push('<td><button type="button" class="lc-cal-day' + (now ? ' is-today' : '') + '" data-iso="' + lcCalIso(day) + '" tabindex="-1"' +
+      ' aria-pressed="' + on + '"' + (now ? ' aria-current="date"' : '') +
+      ' aria-label="' + day.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + (now ? ', today' : '') + '">' + d + '</button></td>');
+  }
+  while (cells.length % 7) cells.push('<td></td>');
+  var rows = '';
+  for (var k = 0; k < cells.length; k += 7) rows += '<tr>' + cells.slice(k, k + 7).join('') + '</tr>';
+  var body = el.querySelector('tbody');
+  body.innerHTML = rows;
+  body.classList.remove('from-next', 'from-prev');
+  if (dir && !lcCalReduce()) { void body.offsetWidth; body.classList.add(dir > 0 ? 'from-next' : 'from-prev'); }
+  if (!lcCalSame(new Date(lcCal.focus.getFullYear(), lcCal.focus.getMonth(), 1), v)) lcCal.focus = new Date(v.getFullYear(), v.getMonth(), Math.min(lcCal.focus.getDate(), days));
+  el.querySelectorAll('.lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(lcCal.focus) ? 0 : -1; });
+  lcCalPlace();
+}
+function lcCalFocusDay() {
+  var b = document.querySelector('#lc-cal .lc-cal-day[data-iso="' + lcCalIso(lcCal.focus) + '"]');
+  if (b) b.focus({ preventScroll: true });
+}
+function lcCalMonth(delta, keepFocus) {
+  var v = lcCal.view;
+  lcCal.view = new Date(v.getFullYear(), v.getMonth() + delta, 1);
+  if (keepFocus) { var f = lcCal.focus, last = new Date(lcCal.view.getFullYear(), lcCal.view.getMonth() + 1, 0).getDate(); lcCal.focus = new Date(lcCal.view.getFullYear(), lcCal.view.getMonth(), Math.min(f.getDate(), last)); }
+  lcCalRender(delta);
+  if (keepFocus) lcCalFocusDay();
+}
+function lcCalMoveFocus(d) {
+  var f = new Date(lcCal.focus.getFullYear(), lcCal.focus.getMonth(), lcCal.focus.getDate() + d);
+  var dir = (f.getFullYear() - lcCal.view.getFullYear()) * 12 + f.getMonth() - lcCal.view.getMonth();
+  lcCal.focus = f;
+  if (dir) { lcCal.view = new Date(f.getFullYear(), f.getMonth(), 1); lcCalRender(dir); }
+  else document.querySelectorAll('#lc-cal .lc-cal-day').forEach(function (b) { b.tabIndex = b.getAttribute('data-iso') === lcCalIso(f) ? 0 : -1; });
+  lcCalFocusDay();
+}
+function lcCalKeys(e) {
+  if (!lcCal) return;
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); lcCalClose(true); return; }
+  if (!e.target.classList || !e.target.classList.contains('lc-cal-day')) return;
+  var k = e.key, f = lcCal.focus;
+  var moves = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7, Home: -f.getDay(), End: 6 - f.getDay() };
+  if (k in moves) { e.preventDefault(); lcCalMoveFocus(moves[k]); }
+  else if (k === 'PageUp' || k === 'PageDown') { e.preventDefault(); lcCalMonth((k === 'PageUp' ? -1 : 1) * (e.shiftKey ? 12 : 1), true); }
+}
+function lcCalPick(day) {
+  if (!lcCal || !day) return;
+  var input = lcCal.input;
+  input.value = lcCalIso(day);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  var btn = lcCal.btn;
+  lcCalClose(true);
+  if (!lcCalReduce()) { btn.classList.remove('is-set'); void btn.offsetWidth; btn.classList.add('is-set'); }
+}
+
+// ═══════════════════════════════════════════════════
 // A TEAM FROM THE LINEUP BUILDER (getleadoff.com, Nov 4 2026)
 // The site's "Start your team" opens this page with the team in the URL
 // fragment; the <head> script moved it to sessionStorage and stripped it.
@@ -16232,6 +16503,7 @@ function siteImportAuthContext() {
 // INIT
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  lcDateField(document.getElementById('game-date'));   // Game info's Date
   siteImportAuthContext();
   init();
 });
