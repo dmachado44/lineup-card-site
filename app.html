@@ -42,10 +42,16 @@
   <link rel="icon" href="/assets/favicon-32.png" type="image/png" sizes="32x32" />
   <link rel="apple-touch-icon" href="/assets/favicon-180.png" />
 
-  <!-- ── Fonts (Crate theme: Barlow Semi Condensed body · Sofia Sans Extra Condensed display) ── -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Sofia+Sans+Extra+Condensed:wght@900&display=swap" rel="stylesheet" />
+  <!-- ── Fonts (Crate theme: Barlow Semi Condensed body · Sofia Sans Extra Condensed display) ──
+       Self-hosted from /fonts (the same files as getleadoff.com) and preloaded so they
+       arrive with the page. The @font-face rules at the top of <style> use
+       font-display: block, so text never paints in a stand-in font first and then
+       swaps (Dan saw it flick, Nov 5 2026). Same weights Google served (500, 600,
+       700, 900); latin-ext only downloads when a name needs it. -->
+  <link rel="preload" href="/fonts/barlow-semi-condensed-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/barlow-semi-condensed-latin-600-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/barlow-semi-condensed-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/fonts/sofia-sans-extra-condensed-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin />
 
   <!-- ── Open Graph ── -->
   <meta property="og:title" content="Build a fair lineup in your browser · Leadoff" />
@@ -91,6 +97,17 @@
   <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Fonts (self-hosted, SIL OFL; preloaded in <head>). block, not swap:
+       no stand-in font paints first (Nov 5 2026). ── */
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 500; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-500-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 500; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-ext-500-normal.woff2) format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 600; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-600-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 600; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-ext-600-normal.woff2) format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 700; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-700-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+    @font-face { font-family: "Barlow Semi Condensed"; font-style: normal; font-weight: 700; font-display: block; src: url(/fonts/barlow-semi-condensed-latin-ext-700-normal.woff2) format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+    @font-face { font-family: "Sofia Sans Extra Condensed"; font-style: normal; font-weight: 900; font-display: block; src: url(/fonts/sofia-sans-extra-condensed-latin-900-normal.woff2) format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+    @font-face { font-family: "Sofia Sans Extra Condensed"; font-style: normal; font-weight: 900; font-display: block; src: url(/fonts/sofia-sans-extra-condensed-latin-ext-900-normal.woff2) format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 
     /* @tokens:begin · GENERATED from Brand/tokens/tokens.json by Brand/tokens/build.js.
        Don't edit by hand: change tokens.json and rerun `node Brand/tokens/build.js`.
@@ -3387,7 +3404,8 @@
     .ng-seg > div { flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 700; color: var(--ink); }
     .ng-seg > div.todo { font-weight: 600; color: var(--ink-secondary); }
     .ng-seg span { display: block; height: 6px; border-radius: var(--radius-pill); background: var(--hairline-strong); overflow: hidden; }
-    .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; animation: ngFill .6s var(--ease-glide) .35s both; }
+    .ng-seg span i { display: block; height: 100%; width: var(--w, 0%); background: var(--ink); transform-origin: left; }
+    .lc-rise .ng-seg span i { animation: ngFill .6s var(--ease-glide) .35s both; }
     .ng-act { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 190px; }
     .ng-act .btn-ghost { min-height: 42px; }
     @keyframes ngFill { from { transform: scaleX(0); } to { transform: none; } }
@@ -6511,6 +6529,17 @@ function applyLivePlayers(teamId, snap) {
   renderPlayerList();
 }
 
+// Firestore doesn't promise field order: the Schedule's first get() and its
+// listener hand back the same lineups with keys in a different order, which
+// read as a change and redrew the page twice more on every open (Nov 5 2026).
+// Compare with every object's keys sorted.
+function sameJson(a, b) {
+  const sorted = (k, v) => v && typeof v === 'object' && !Array.isArray(v)
+    ? Object.keys(v).sort().reduce((o, key) => { o[key] = v[key]; return o; }, {})
+    : v;
+  return JSON.stringify(a, sorted) === JSON.stringify(b, sorted);
+}
+
 function watchScheduleLineups(teamId) {
   if (!_live.uid || !teamId) return;
   if (_live.lineupsTeam === teamId && _live.lineups) return;
@@ -6523,7 +6552,7 @@ function watchScheduleLineups(teamId) {
       if (_scheduleTeamId !== teamId) return;
       const next = s.docs.map(d => Object.assign({ id: d.id }, d.data()));
       const pruned = !s.metadata.fromCache && pruneDraftsOfDeletedLineups(teamId, next);
-      if (!pruned && JSON.stringify(next) === JSON.stringify(_scheduleLineups)) return;
+      if (!pruned && sameJson(next, _scheduleLineups)) return;
       _scheduleLineups = next;
       const st = _teamStatus[teamId];
       setTeamStatus(teamId, st ? st.games : _scheduleGames, next, st ? st.calError : null);
@@ -8187,6 +8216,7 @@ let _scheduleTeamName = '';
 let _scheduleCanCoach = true;   // members get a read-only schedule
 let _scheduleGames = [];
 let _scheduleLineups = [];
+let _schedPage = '';   // the Schedule markup on screen (renderSchedule skips a repeat)
 
 // Parse ICS text into an array of event objects
 function parseICS(icsText) {
@@ -8777,6 +8807,7 @@ async function openSchedule(teamId) {
   const container = document.getElementById('schedule-list-container');
   const syncBar = document.getElementById('schedule-sync-status');
   container.innerHTML = lcEmptyHtml({ style: 'inline', body: 'Loading schedule…' });
+  _schedPage = ''; container.dataset.ngKey = '';
   syncBar.innerHTML = '';
   document.getElementById('schedule-setup').innerHTML = '';
 
@@ -8852,6 +8883,7 @@ function renderSchedule() {
       body: 'Lineups you build and save show up here.',
       action: _scheduleCanCoach ? `<button class="btn btn-primary" type="button" onclick="enterBuilder('${_scheduleTeamId}', 'lineup', 3)">Build lineup</button>` : ''
     }) + scheduleCalendarRowHtml() + '</div>';
+    _schedPage = ''; container.dataset.ngKey = '';
     return;
   }
 
@@ -8960,12 +8992,22 @@ function renderSchedule() {
     </section>`;
   }
 
+  // The Schedule renders again as the live lineups and the coaches' drafts
+  // land, a few times in its first second. Next game rises in once per game
+  // (All teams' Up next does the same), and a page that comes out the same
+  // is left as it is, so the card doesn't replay its rise and flicker
+  // (Dan, Nov 5 2026).
+  const ngKey = ng ? [_scheduleTeamId, ng.date, ng.title, ng.kind].join('|') : '';
   let html = '<div class="schedule-list">';
-  if (ng) html += scheduleNextHtml(ng);
+  if (ng) html += scheduleNextHtml(ng, container.dataset.ngKey !== ngKey);
   html += scSection(ng ? 'Coming up' : 'Upcoming games', comingUp, false);
   html += scSection('Past games', past, true);
   html += scheduleCalendarRowHtml();
   html += '</div>';
+  container.dataset.ngKey = ngKey;
+  const page = html.replace(' lc-rise"', '"');
+  if (page === _schedPage) return;
+  _schedPage = page;
   container.innerHTML = html;
 }
 
@@ -9106,7 +9148,7 @@ function loadSavedLineupIntoBuilder(lineup) {
 // so it gets its own history entry (Back returns to the schedule).
 // Schedule's Next game card: date block, opponent, where the lineup stands,
 // and the one next step (Oct 30 2026, from the audit board).
-function scheduleNextHtml(e) {
+function scheduleNextHtml(e, animate) {
   const coach = _scheduleCanCoach;
   const d = e.dateObj;
   const dow = d.toLocaleDateString('en-US', { weekday: 'long' });
@@ -9123,7 +9165,7 @@ function scheduleNextHtml(e) {
     : '';
   const acts = nextGameActions(_scheduleTeamId, e, coach, 'sched');
   const btns = acts.map((a, i) => `<button class="btn ${i === 0 ? 'btn-primary btn-lg' : 'btn-ghost'}" type="button" onclick="${a.call}">${a.label}</button>`).join('');
-  return `<section class="lc-emph ng-card lc-rise" aria-label="Next game">
+  return `<section class="lc-emph ng-card${animate ? ' lc-rise' : ''}" aria-label="Next game">
     <span class="lc-pennant">Next game</span>
     <div class="ng-date"><span class="ng-dow">${escHtml(dow)}</span><span class="ng-md">${escHtml(md)}</span>${tm ? `<span class="ng-tm">${escHtml(tm)}</span>` : ''}</div>
     <div style="min-width:0">
