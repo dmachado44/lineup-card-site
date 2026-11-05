@@ -3759,8 +3759,8 @@
         <img class="brand-wordmark" src="assets/leadoff-logo-ink.svg" alt="Leadoff">
       </picture>
     </a>
-    <p class="auth-kicker">The coach web app</p>
-    <h1 class="auth-page-line">Build the lineup here. It lands on every phone Saturday.</h1>
+    <p class="auth-kicker" id="auth-kicker">The coach web app</p>
+    <h1 class="auth-page-line" id="auth-line">Build the lineup here. It lands on every phone Saturday.</h1>
 
     <div class="auth-providers">
       <button class="btn btn-primary btn-block auth-provider-btn" onclick="signInWithGoogle()">
@@ -3770,24 +3770,29 @@
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Continue with Google
+        <span id="auth-google-lbl">Continue with Google</span>
       </button>
       <button class="btn btn-outline btn-block auth-provider-btn" onclick="signInWithApple()">
         <svg width="20" height="20" viewBox="0 0 14 17" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M11.098 8.68618C11.1061 8.06019 11.2723 7.4464 11.5813 6.90194C11.8904 6.35747 12.3321 5.90002 12.8654 5.57214C12.5266 5.08827 12.0796 4.69006 11.56 4.40915C11.0404 4.12824 10.4624 3.97235 9.87203 3.95388C8.6126 3.82168 7.39164 4.7075 6.74986 4.7075C6.09566 4.7075 5.10753 3.967 4.04348 3.9889C3.35523 4.01113 2.68447 4.21127 2.09656 4.56982C1.50865 4.92836 1.02364 5.43308 0.688795 6.0348C-0.761705 8.54611 0.320237 12.2369 1.70969 14.2669C2.40487 15.2609 3.21733 16.3712 4.28042 16.3318C5.32071 16.2887 5.70924 15.6685 6.96497 15.6685C8.20904 15.6685 8.57356 16.3318 9.65822 16.3068C10.7745 16.2887 11.4778 15.3084 12.1486 14.3049C12.6481 13.5967 13.0324 12.8139 13.2874 11.9856C12.6389 11.7113 12.0854 11.2521 11.6961 10.6654C11.3068 10.0787 11.0987 9.39034 11.098 8.68618Z" fill="currentColor"/>
           <path d="M9.04927 2.61796C9.65791 1.88731 9.95777 0.948174 9.88516 0C8.95528 0.0976654 8.09634 0.542085 7.47947 1.24471C7.17787 1.58796 6.94687 1.98728 6.79968 2.41986C6.6525 2.85244 6.59202 3.30978 6.62169 3.76575C7.08679 3.77054 7.54692 3.66973 7.96742 3.47091C8.38792 3.2721 8.75782 2.98046 9.04927 2.61796Z" fill="currentColor"/>
         </svg>
-        Continue with Apple
+        <span id="auth-apple-lbl">Continue with Apple</span>
       </button>
       <button class="btn btn-outline btn-block auth-provider-btn" onclick="showEmailPanel()">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
         </svg>
-        Continue with Email
+        <span id="auth-email-lbl">Continue with email</span>
       </button>
     </div>
 
-    <p class="auth-foot">New here? Building lineups is part of Leadoff Pro, free for 7 days. <a href="/pricing">See pricing</a></p>
+    <!-- Sign in or create an account: one card, two intents (Nov 4 2026).
+         A coach arriving from the lineup builder starts on Create account. -->
+    <div class="auth-switch" id="auth-intent-toggle">
+      <span id="auth-intent-text">New to Leadoff? </span><button type="button" class="link-btn is-strong" id="auth-intent-link" onclick="setAuthIntent(_authIntent === 'signup' ? 'signin' : 'signup')">Create an account</button>
+    </div>
+    <p class="auth-foot"><span id="auth-foot-free" hidden>Adding your team is free. </span>Building lineups is part of Leadoff Pro, free for 7 days. <a href="/pricing">See pricing</a></p>
   </div>
 
   <!-- ── Panel 2: Email Sign-In / Sign-Up ── -->
@@ -4837,6 +4842,8 @@ const FIREBASE_CONFIG = {
 let _db   = null;
 let _auth = null;
 let _authMode = 'signin'; // 'signin' | 'signup' | 'reset'
+let _authIntent = 'signin'; // the provider card: 'signin' | 'signup'
+let _authImport = null;     // a team waiting from the lineup builder (name, players)
 let _appMode = 'setup';   // 'setup' | 'lineup' | 'roster' | 'team'
 let _subscriptionActive = false; // true when user has active subscription
 let _hasWebBilling = false;      // true when the user has a Stripe customer (web checkout)
@@ -5268,7 +5275,7 @@ function showEmailPanel() {
   emailPanel.classList.remove('auth-fade-in');
   void emailPanel.offsetWidth;
   emailPanel.classList.add('auth-fade-in');
-  _authMode = 'signin';
+  _authMode = _authIntent === 'signup' ? 'signup' : 'signin';
   applyEmailAuthMode();
   document.getElementById('auth-email').value = '';
   document.getElementById('auth-password').value = '';
@@ -5285,11 +5292,43 @@ function showProvidersPanel() {
   provPanel.classList.add('auth-fade-in');
   showAuthError('');
   _authMode = 'signin';
+  applyAuthIntent();
 }
 
 function toggleSignUpMode() {
   _authMode = _authMode === 'signup' ? 'signin' : 'signup';
+  _authIntent = _authMode;   // back on the provider card, the same intent
   applyEmailAuthMode();
+}
+
+// The provider card says what the coach is doing: signing in, or creating
+// an account (Sign up with Google / Apple / email, "Already have an
+// account? Sign in"). Google and Apple do either; email opens its form in
+// the matching mode.
+function setAuthIntent(intent) {
+  _authIntent = intent === 'signup' ? 'signup' : 'signin';
+  applyAuthIntent();
+  const link = document.getElementById('auth-intent-link');
+  if (link) link.focus({ preventScroll: true });
+}
+function applyAuthIntent() {
+  const up = _authIntent === 'signup';
+  const set = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+  const team = _authImport && _authImport.team;
+  const n = _authImport ? _authImport.players.length : 0;
+  set('auth-kicker', _authImport ? 'From the lineup builder' : 'The coach web app');
+  set('auth-line', _authImport
+    ? (up ? `Create your free account to save ${team || 'your team'} and ${n === 1 ? 'its player' : `its ${n} players`}.`
+          : `Sign in to add ${team || 'your team'} to Leadoff.`)
+    : (up ? 'Create your free account. Build the lineup here, and it lands on every phone Saturday.'
+          : 'Build the lineup here. It lands on every phone Saturday.'));
+  set('auth-google-lbl', up ? 'Sign up with Google' : 'Continue with Google');
+  set('auth-apple-lbl', up ? 'Sign up with Apple' : 'Continue with Apple');
+  set('auth-email-lbl', up ? 'Sign up with email' : 'Continue with email');
+  set('auth-intent-text', up ? 'Already have an account? ' : 'New to Leadoff? ');
+  set('auth-intent-link', up ? 'Sign in' : 'Create an account');
+  const free = document.getElementById('auth-foot-free');
+  if (free) free.hidden = !_authImport;
 }
 
 function toggleResetMode() {
@@ -16035,6 +16074,7 @@ let _siteImportBusy = false;
 function clearSiteImport() {
   try { sessionStorage.removeItem(SITE_IMPORT_KEY); } catch (e) {}
   window.__siteImport = null;
+  if (_authImport) { _authImport = null; _authIntent = 'signin'; applyAuthIntent(); }
 }
 // Read and check the hand-off. Everything is treated as untrusted text:
 // lengths capped, positions limited to the app's own, at most 60 players.
@@ -16178,14 +16218,14 @@ async function addSiteImportTeam(team, name) {
   });
   return await saveTeamToFirestore();
 }
-// Signed out with a team waiting: the sign-in screen says what it's for.
+// Signed out with a team waiting: the card starts on Create account and
+// says what it's for. "Already have an account? Sign in" switches it.
 function siteImportAuthContext() {
   const team = readSiteImport();
   if (!team) return;
-  const kicker = document.querySelector('#auth-panel-providers .auth-kicker');
-  const line = document.querySelector('#auth-panel-providers .auth-page-line');
-  if (kicker) kicker.textContent = 'From the lineup builder';
-  if (line) line.textContent = team.team ? `Sign in to add ${team.team} to Leadoff.` : 'Sign in to add your team to Leadoff.';
+  _authImport = team;
+  _authIntent = 'signup';
+  applyAuthIntent();
 }
 
 // ═══════════════════════════════════════════════════
