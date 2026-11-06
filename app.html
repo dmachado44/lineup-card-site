@@ -731,8 +731,9 @@
     .lc-cal-grid tbody.from-prev { animation: lcCalPrev var(--dur-snappy) var(--ease-snappy); }
     @keyframes lcCalNext { from { opacity: 0; transform: translateX(12px); } }
     @keyframes lcCalPrev { from { opacity: 0; transform: translateX(-12px); } }
-    .lc-time-ap { display: flex; width: 100%; margin-bottom: 16px; }
-    .lc-time-ap > button { flex: 1 1 0; }
+    /* AM / PM picks a value, so it's toggle chips, not a segmented control (F82) */
+    .lc-time-ap { display: flex; gap: 8px; width: 100%; margin-bottom: 16px; }
+    .lc-time-ap > .lc-toggle { flex: 1 1 0; }
     .lc-time-label { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--ink-secondary); }
     .lc-time-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
     .lc-time-grid + .lc-time-label { margin-top: 16px; }
@@ -16465,7 +16466,7 @@ function lcTimeEl() {
   for (var h = 1; h <= 12; h++) hours.push({ v: h, t: h, a: h + ' o\'clock' });
   for (var m = 0; m < 60; m += 5) mins.push({ v: m, t: lcCalPad(m), a: ':' + lcCalPad(m) });
   return lcPopEl('lc-time', 'Choose a time',
-    '<div class="lc-seg lc-time-ap" role="group" aria-label="AM or PM"><button type="button" data-ap="AM" aria-pressed="false">AM</button><button type="button" data-ap="PM" aria-pressed="false">PM</button></div>' +
+    '<div class="lc-time-ap" role="group" aria-label="AM or PM"><button type="button" class="lc-toggle" data-ap="AM" aria-pressed="false">AM</button><button type="button" class="lc-toggle" data-ap="PM" aria-pressed="false">PM</button></div>' +
     grid('h', 'Hour', hours) + grid('m', 'Minute', mins) +
     '<div class="lc-cal-foot lc-time-foot"><button type="button" class="link-btn lc-cal-today" data-clear>Clear</button></div>',
     function (t) {
