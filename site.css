@@ -430,7 +430,7 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
 
 /* Phones: each row is number, art, title over artist over the stats, then
    play and the Apple Music icon on the right. No sideways scroll. */
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   .prose table.songs { display: block; overflow: visible; white-space: normal; }
   .prose table.songs thead { display: none; }
   .prose table.songs tbody { display: block; }
@@ -459,7 +459,7 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
   .footer-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; }
 }
 /* Phones: short columns side by side, then Guides and Leadoff full width */
-@media (max-width: 560px) {
+@media (max-width: 720px) {
   .footer-cta .cta-row { flex-direction: column; align-items: center; }
   .footer-cta .cta-row .sticker-btn { width: 100%; max-width: 320px; }
   .footer-links { gap: 36px 20px; padding-bottom: 48px; }
@@ -468,21 +468,23 @@ footer { background: var(--night); margin-top: var(--section-rhythm); padding: c
   .footer-col.col-guides { order: 3; grid-column: 1 / -1; }
   .footer-col.col-brand { order: 4; grid-column: 1 / -1; }
 }
-@media (max-width: 720px) {
+@media (max-width: 720px) {   /* the site's one phone width (F74) */
   :root { --nav-h: 60px; }
   .nav-bar { gap: 12px; padding-top: 10px; padding-bottom: 10px; }
   .nav-bar img { height: 28px; width: auto; }
   .sticker-btn.sm { font-size: 15px; padding: 8px 12px; min-height: 36px; }
 }
-@media (max-width: 560px) {
-  .prose p, .prose li { font-size: 17px; }
-  .prose .cta-card { padding: 22px 20px 24px; }
-  .prose .cta-card .sticker-btn { width: 100%; }
-  .prose table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
-}
+/* The one query under the phone width (F74): the nav's one line fits at 360
+   only with Get the app's label off. From 481 the label fits. */
 @media (max-width: 480px) {
   .nav-bar { gap: 10px; }
   .nav-bar img { height: 24px; width: auto; }
   .nav-bar .ios-nav-label { display: none; }
   .sticker-btn.sm { padding: 8px 10px; }
+}
+@media (max-width: 720px) {
+  .prose p, .prose li { font-size: 17px; }
+  .prose .cta-card { padding: 22px 20px 24px; }
+  .prose .cta-card .sticker-btn { width: 100%; }
+  .prose table { display: block; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
 }

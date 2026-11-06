@@ -511,7 +511,7 @@
     /* Game info's quiet delete (Dan, Nov 3 2026): its own row under the
        fields, never beside a primary. */
     .gi-delete { display: flex; justify-content: flex-start; margin-top: var(--space-24); padding-top: var(--space-16); border-top: 1px solid var(--hairline); }
-    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
     .field { display: flex; flex-direction: column; gap: 8px; }
     .field.full { grid-column: 1 / -1; }
 
@@ -949,7 +949,7 @@
     .apr-fields .pp-f { min-width: 0; }
     .apr-fields .apr-wide { flex: 1 1 120px; }
     .apr-fields .apr-num { flex: 0 0 96px; }
-    @media (max-width: 600px) { .apr-fields .apr-pron { flex-basis: 100%; } }
+    @media (max-width: 768px) { .apr-fields .apr-pron { flex-basis: 100%; } }
     .apr-fields input, .apr-fields .player-num-input, .apr-fields .player-pron-input { flex: none; width: 100%; min-width: 0; }
 
     /* ── SECTION HEADER (F8, Oct 31 2026; small caps F55, Nov 2) ──
@@ -1273,7 +1273,7 @@
     #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty { padding: 4px 9px; box-shadow: none; }
     #lineup-allinnings-view .allinnings-card .field-pos-bubble.empty .field-pos-label { font-size: 10px; }
     #lineup-allinnings-view .allinnings-card .field-pos-bubble .field-pos-name { font-size: 11px; font-weight: 700; }
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
       .field-pos-bubble { min-width: 64px; max-width: 110px; padding: 5px 8px; }
       .field-pos-bubble .field-pos-name { font-size: 12px; }
       .field-pos-bubble .field-pos-label { font-size: 9px; }
@@ -1688,7 +1688,7 @@
     .si-list .si-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .si-list .si-num { margin-left: auto; flex: none; color: var(--ink-secondary); font-variant-numeric: tabular-nums; }
     .si-modal .field, .si-modal .alert-warn { margin-bottom: 16px; }
-    @media (max-width: 560px) { .si-list { grid-template-columns: minmax(0, 1fr); } }
+    @media (max-width: 768px) { .si-list { grid-template-columns: minmax(0, 1fr); } }
 
     /* ── Generic modal (Import from Previous) ── */
     .modal-overlay {
@@ -1792,7 +1792,7 @@
       min-height: 18px;
       text-align: center;
     }
-    @media (max-width: 480px) {
+    @media (max-width: 768px) {
       .image-export-options { grid-template-columns: 1fr; }
     }
 
@@ -1865,7 +1865,7 @@
       flex-wrap: wrap;
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
       .att-pos-row {
         grid-template-columns: 1fr;
         gap: 0;
@@ -2648,7 +2648,7 @@
     @media print {
       .feedback-tab, .feedback-panel { display: none !important; }
     }
-    @media (max-width: 660px) {
+    @media (max-width: 768px) {
       .feedback-tab { right: 16px; padding: 10px 18px; font-size: 14px; }
       .feedback-panel { right: 0; width: 100%; max-width: 100%; border-radius: var(--radius-card) var(--radius-card) 0 0; }
     }
@@ -3417,7 +3417,7 @@
     .ng-act { display: flex; flex-direction: column; align-items: stretch; gap: 10px; min-width: 190px; }
     .ng-act .btn-ghost { min-height: 42px; }
     @keyframes ngFill { from { transform: scaleX(0); } to { transform: none; } }
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .lc-emph { padding: 20px 18px; }
       .ng-card { grid-template-columns: 1fr; gap: 14px; }
       .ng-date { flex-direction: row; align-items: baseline; gap: 10px; padding: 0 0 12px; border-right: none; border-bottom: 1px solid var(--hairline); }
@@ -3434,7 +3434,7 @@
     .dash-hk a { color: inherit; text-decoration: none; }
     .dash-hk a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
     .dash-ht { font-size: var(--type-title); font-weight: 700; line-height: 1.1; margin-top: 4px; overflow-wrap: anywhere; }
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .dash-hero { grid-template-columns: auto minmax(0, 1fr); gap: 14px 16px; }
       .dash-hero .ng-act { grid-column: 1 / -1; }
       .dash-hero .sb-badge { width: 44px; height: 44px; font-size: 19px; }
@@ -3508,7 +3508,7 @@
     .sc-more { align-self: flex-start; }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     .lc-ball { flex: none; display: block; }
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .sc-list { padding: 4px; }
       .sc-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px 14px; padding: 14px 12px 14px 10px; }
       .sc-row + .sc-row::before { left: 10px; right: 12px; }
@@ -3549,7 +3549,7 @@
     .inning-control button:active { transform: scale(.92); }
     .inning-count { font-family: var(--font-display); font-weight: 900; font-size: 30px; line-height: 1; min-width: 30px; color: var(--ink); }
     .inning-count.tick { animation: lcTick var(--dur-pop) var(--ease-pop); }
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .rules-card { padding: 18px 16px; }
       .pos-group { grid-template-columns: 1fr; gap: 10px; }
       .pos-k { padding-top: 0; display: flex; gap: 8px; align-items: baseline; }
@@ -3603,7 +3603,7 @@
     .pl-chev { color: var(--gray); }
     .pl-tr.pl-row-new { animation: plNew 1.4s var(--ease-glide) both; }
     @keyframes plNew { 0%, 30% { background: var(--accent-wash); } 100% { background: transparent; } }
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .pl-tr, .pl-tbl.ro .pl-tr { grid-template-columns: minmax(0, 1fr) 20px; padding: 12px 14px; }
       .pl-tbl.ro .pl-tr { grid-template-columns: minmax(0, 1fr); }
       .pl-tr .pl-ps, .pl-tr .pl-pref, .pl-tr.pl-hd { display: none; }
@@ -3837,10 +3837,10 @@
     </a>
     <button class="sb-toggle" id="sb-toggle" type="button" onclick="toggleSidebarRail()" aria-label="Collapse sidebar" aria-expanded="true">
       <img class="sb-ltile" src="assets/web-app-icon.svg" alt="">
-      <svg class="sb-pico" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16"/><path d="M15.5 10l-2 2 2 2"/></svg>
+      <svg class="sb-pico" data-icon="sidebar" width="22" height="22"></svg>
       <span class="sb-tip" id="sb-toggle-tip">Collapse sidebar <kbd>[</kbd></span>
     </button>
-    <button class="lc-close sidebar-close" type="button" onclick="closeSidebarDrawer()" aria-label="Close navigation"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="lc-close sidebar-close" type="button" onclick="closeSidebarDrawer()" aria-label="Close navigation"><svg data-icon="x" width="18" height="18"></svg></button>
   </div>
   <nav class="sidebar-nav" id="sidebar-nav"><!-- rendered by renderSidebar() --></nav>
   <div class="sidebar-foot" id="sidebar-foot"><!-- rendered by renderSidebar() --></div>
@@ -3850,7 +3850,7 @@
 <!-- Phone top bar: the team you're on, and the drawer -->
 <header class="m-topbar" id="m-topbar">
   <button class="m-burger" type="button" onclick="toggleSidebarDrawer()" aria-label="Open navigation">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    <svg data-icon="menu" width="22" height="22"></svg>
   </button>
   <button class="m-team" id="m-team" type="button" onclick="toggleSidebarDrawer()" aria-label="Open navigation"></button>
 </header>
@@ -3889,9 +3889,7 @@
         <span id="auth-apple-lbl">Continue with Apple</span>
       </button>
       <button class="btn btn-outline btn-block auth-provider-btn" onclick="showEmailPanel()">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-        </svg>
+        <svg data-icon="mail"></svg>
         <span id="auth-email-lbl">Continue with email</span>
       </button>
     </div>
@@ -3966,7 +3964,7 @@
       <div class="flex-row gap-sm">
         <button class="btn btn-ghost" onclick="navigate('#/join')">Join with a code</button>
         <button class="btn btn-ghost" id="new-team-btn" onclick="enterBuilder(null, 'setup', 1)" style="display:none;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New team
+          <svg data-icon="plus" width="16" height="16"></svg>New team
         </button>
       </div>
     </div>
@@ -3995,7 +3993,7 @@
   <div style="display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 140px);padding:20px;">
     <div class="upgrade-card">
       <div class="upgrade-icon">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        <svg data-icon="layers" width="40" height="40"></svg>
       </div>
       <h2 class="upgrade-title" id="paywall-title">Unlock Lineup Builder</h2>
       <p class="upgrade-sub" id="paywall-message">Generate balanced lineups, auto-assign positions, and manage game day. Try it free for 7 days.</p>
@@ -4179,7 +4177,7 @@
         <span id="roster-save-status" class="roster-save-status lc-st" aria-live="polite"></span>
       </div>
       <button class="btn btn-primary" id="pl-add-btn" type="button" onclick="openPlayerPanel('new')">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add player
+        <svg data-icon="plus" width="16" height="16"></svg>Add player
       </button>
     </div>
 
@@ -4201,7 +4199,7 @@
   <div class="pp-hd">
     <span class="lc-st lc-st--quiet ok pp-saved" id="pp-saved" aria-live="polite"><i></i><span>Changes save as you go</span></span>
     <button class="lc-close" type="button" onclick="closePlayerPanel()" aria-label="Close player">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <svg data-icon="x" width="18" height="18"></svg>
     </button>
   </div>
   <div class="pp-body" id="pp-body"></div>
@@ -4232,7 +4230,7 @@
       <!-- Phones only (Dan, Nov 4 2026): wider screens close from the action bar's left end.
            Autosave (Nov 3 2026): every change saves itself, so the exit is a plain close. -->
       <button class="lc-close" id="wizard-exit" type="button" onclick="saveDraftAndExit()" aria-label="Close" title="Close" style="display:none">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <svg data-icon="x" width="18" height="18"></svg>
       </button>
     </div>
   </div>
@@ -4364,9 +4362,9 @@
             <div class="rule-sub">How many innings does a typical game last?</div>
           </div>
           <div class="inning-control">
-            <button type="button" onclick="changeInnings(-1)" aria-label="Fewer innings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+            <button type="button" onclick="changeInnings(-1)" aria-label="Fewer innings"><svg data-icon="minus" width="14" height="14"></svg></button>
             <span class="inning-count" id="inning-count" aria-live="polite">6</span>
-            <button type="button" onclick="changeInnings(1)" aria-label="More innings"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button type="button" onclick="changeInnings(1)" aria-label="More innings"><svg data-icon="plus" width="14" height="14"></svg></button>
           </div>
         </div>
 
@@ -4511,7 +4509,7 @@
           <div class="card-sub">Add players and pick their preferred positions. Auto-assign uses them to build fair lineups.</div>
 
           <div class="tip">
-            <span class="tip-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/></svg></span>
+            <span class="tip-icon"><svg data-icon="bulb"></svg></span>
             <span>Click position badges to mark preferred positions for each player. The shuffle algorithm will honor these preferences when assigning fielding spots.</span>
           </div>
 
@@ -4567,13 +4565,13 @@
           </div>
           <div class="toolbar-spacer"></div>
           <button class="btn btn-ghost btn-sm" type="button" onclick="autoFillLineup()" title="Fill positions and the batting order using your strategy and league rules">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l10-10M14 4v3M18.5 5.5l-2 2M20 10h-3M12 4.5l1 1"/></svg>
+            <svg data-icon="wand" width="16" height="16"></svg>
             Auto-fill
           </button>
           <div class="lt-more-wrap" id="lt-more-wrap">
             <button class="btn btn-ghost btn-sm" type="button" onclick="toggleLineupMore(event)" aria-haspopup="menu" aria-expanded="false" id="lt-more-btn">
               More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+              <svg data-icon="chevDown" width="14" height="14"></svg>
             </button>
             <div class="lc-menu lc-menu--drop" role="menu">
               <button class="lc-menu-item" type="button" role="menuitem" onclick="closeLineupMore(); animateLineupChange(shuffleFielding)">Rearrange positions</button>
@@ -4584,7 +4582,7 @@
             </div>
           </div>
           <button class="btn btn-ghost btn-sm bt-toggle" id="bt-toggle" type="button" onclick="toggleBuilderTools()" aria-pressed="false" aria-controls="builder-tools" title="Strategy, positions, playing time and suggestions">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+            <svg data-icon="rules" width="16" height="16"></svg>
             Tools
             <span class="bt-dot" id="bt-dot"></span>
           </button>
@@ -4594,13 +4592,13 @@
         <div class="view-mode-row">
           <div class="lc-seg lc-seg--fit" role="tablist" aria-label="Lineup view mode">
             <button id="view-mode-list" class="on" role="tab" aria-selected="true" onclick="setLineupViewMode('list')">
-              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span> List
+              <span aria-hidden="true" style="display:inline-flex"><svg data-icon="list" width="15" height="15"></svg></span> List
             </button>
             <button id="view-mode-field" role="tab" aria-selected="false" onclick="setLineupViewMode('field')">
-              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l9 9-9 9-9-9z"/></svg></span> Field
+              <span aria-hidden="true" style="display:inline-flex"><svg data-icon="field" width="15" height="15"></svg></span> Field
             </button>
             <button id="view-mode-allinnings" role="tab" aria-selected="false" onclick="setLineupViewMode('allinnings')">
-              <span aria-hidden="true" style="display:inline-flex"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg></span> All innings
+              <span aria-hidden="true" style="display:inline-flex"><svg data-icon="grid" width="15" height="15"></svg></span> All innings
             </button>
           </div>
           <div class="view-mode-spacer"></div>
@@ -4663,7 +4661,7 @@
         <div id="field-pos-picker" class="lc-menu lc-menu--fixed" style="display:none;" role="dialog" aria-label="Assign player">
           <div class="lc-menu-head lc-menu-head--bar">
             <b id="field-pos-picker-title">Position</b>
-            <button class="lc-close lc-close--sm" type="button" onclick="closeFieldPosPicker()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            <button class="lc-close lc-close--sm" type="button" onclick="closeFieldPosPicker()" aria-label="Close"><svg data-icon="x" width="18" height="18"></svg></button>
           </div>
           <div class="lc-menu-scroll" id="field-pos-picker-body"></div>
         </div>
@@ -4720,7 +4718,7 @@
           </div>
           <div class="sa-end">
             <button class="btn btn-outline btn-lg" id="export-edit" onclick="editSavedLineup()">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/></svg>Edit lineup
+              <svg data-icon="pencil" width="18" height="18"></svg>Edit lineup
             </button>
             <button class="btn btn-primary btn-lg" id="export-done" onclick="finishLineup()">Done</button>
           </div>
@@ -4741,7 +4739,7 @@
           <div class="bt-sub">Changes here re-fill the lineup</div>
         </div>
         <button class="lc-close" type="button" onclick="toggleBuilderTools(false)" aria-label="Close lineup tools">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+          <svg data-icon="x" width="18" height="18"></svg>
         </button>
       </div>
       <div class="bt-body">
@@ -4805,7 +4803,7 @@
       <button class="btn btn-primary lc-stateful" id="sbar-save" type="button" onclick="settingsSave()">
         <span class="s-rest">Save changes</span>
         <span class="s-work" aria-hidden="true"><i></i><i></i><i></i></span>
-        <span class="s-done"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Saved</span>
+        <span class="s-done"><svg data-icon="check" width="18" height="18"></svg>Saved</span>
       </button>
     </div>
 
@@ -4814,7 +4812,7 @@
       <div class="modal" onclick="event.stopPropagation();">
         <div class="modal-header">
           <div class="modal-title" id="import-prev-title">Import lineup from a previous game</div>
-          <button class="lc-close" type="button" onclick="closeImportPreviousModal()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="lc-close" type="button" onclick="closeImportPreviousModal()" aria-label="Close"><svg data-icon="x" width="18" height="18"></svg></button>
         </div>
         <div class="modal-sub">Pick a past game to use as your starting point. Your current game info stays the same. Only the batting order, attendance, and fielding positions are imported.</div>
         <div class="modal-body" id="import-prev-list">
@@ -4828,18 +4826,18 @@
       <div class="modal" onclick="event.stopPropagation();">
         <div class="modal-header">
           <div class="modal-title" id="image-export-title">Save lineup as image</div>
-          <button class="lc-close" type="button" onclick="closeImageExportModal()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="lc-close" type="button" onclick="closeImageExportModal()" aria-label="Close"><svg data-icon="x" width="18" height="18"></svg></button>
         </div>
         <div class="modal-sub">Pick a size. You get the batting order and every inning's positions on one Leadoff card, ready to send.</div>
         <div class="modal-body">
           <div class="image-export-options">
             <button class="image-export-option" type="button" onclick="exportLineupAsImage('mobile')">
-              <div class="image-export-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div>
+              <div class="image-export-icon" aria-hidden="true"><svg data-icon="phone" width="26" height="26"></svg></div>
               <div class="image-export-label">Phone</div>
               <div class="image-export-desc">Sized for texts and group chats. Names show as first name and last initial.</div>
             </button>
             <button class="image-export-option" type="button" onclick="exportLineupAsImage('web')">
-              <div class="image-export-icon" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M2 19.5h20"/></svg></div>
+              <div class="image-export-icon" aria-hidden="true"><svg data-icon="laptop" width="26" height="26"></svg></div>
               <div class="image-export-label">Wide</div>
               <div class="image-export-desc">Bigger and crisper, with full names. Good for email or a big screen.</div>
             </button>
@@ -4859,7 +4857,7 @@
       <div class="modal gn-modal" onclick="event.stopPropagation();">
         <div class="modal-header">
           <div class="modal-title" id="game-notes-title">Game notes</div>
-          <button class="lc-close" type="button" onclick="closeGameNotesModal()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="lc-close" type="button" onclick="closeGameNotesModal()" aria-label="Close"><svg data-icon="x" width="18" height="18"></svg></button>
         </div>
         <div class="modal-body" id="game-notes-body"></div>
         <div class="gn-footer">
@@ -5607,7 +5605,7 @@ function copyShareText(kind) {
       const tap = btn.querySelector('.tap');
       btn.classList.remove('ripple'); void btn.offsetWidth; btn.classList.add('ripple');
       btn.classList.add('copied');
-      if (tap) tap.innerHTML = '<span class="tap-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>Code Copied!';
+      if (tap) tap.innerHTML = '<span class="tap-check">' + lcIcon('check', 10) + '</span>Code Copied!';
       clearTimeout(btn._t);
       btn._t = setTimeout(() => { btn.classList.remove('copied', 'ripple'); if (tap) tap.textContent = 'Copy code'; }, 2000);
     } else {
@@ -6194,8 +6192,8 @@ function teamStatusCardHtml(team, e) {
     <div class="ts-foot">
       ${action ? `<button class="btn btn-ghost btn-sm" type="button" onclick="${action.call}">${action.label}</button>` : '<span></span>'}
       <div class="ts-icons">
-        <button class="ts-ic" type="button" onclick="navigate('#/team/${id}/players')" aria-label="Players">${SB_ICONS.players}<span class="sb-tip">Players</span></button>
-        <button class="ts-ic" type="button" onclick="openShareTeamModal('${id}')" aria-label="Share team">${SB_ICONS.share}<span class="sb-tip">Share team</span></button>
+        <button class="ts-ic" type="button" onclick="navigate('#/team/${id}/players')" aria-label="Players">${lcIcon('players', 20)}<span class="sb-tip">Players</span></button>
+        <button class="ts-ic" type="button" onclick="openShareTeamModal('${id}')" aria-label="Share team">${lcIcon('share', 20)}<span class="sb-tip">Share team</span></button>
       </div>
     </div>
   </article>`;
@@ -6780,28 +6778,14 @@ function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return n
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 function sbAttr(v) { return escHtml(v == null ? '' : String(v)).replace(/"/g, '&quot;'); }
 
-var SB_ICONS = {
-  schedule: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
-  players:  '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8.5" r="3.5"/><path d="M2.8 20c.9-3.4 3.3-5.2 6.2-5.2s5.3 1.8 6.2 5.2"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.9c1.8.6 3 2.2 3.6 5.1"/></svg>',
-  rules:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h11M19 17h1"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
-  settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg>',
-  overview: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20v-8M12 20V5M19 20v-5"/></svg>',
-  share:    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5M20 14v.5M17 20h3v-3M14 18v2"/></svg>',
-  grid:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>',
-  plus:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
-  plusBold: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
-  join:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l4 4-4 4M14 12H4"/></svg>',
-  chev:     '<svg class="sb-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4"/></svg>',
-  check:    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
-  feedback: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 18l-1.5 3 4-1.5H18a2.5 2.5 0 0 0 2.5-2.5V7A2.5 2.5 0 0 0 18 4.5H6A2.5 2.5 0 0 0 3.5 7v8.5"/></svg>',
-  link:     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></svg>',
-  billing:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>',
-  signout:  '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/></svg>'
-};
-
-// ── Empty states and setup rows (audit F23; iOS EmptyStateCard, LCSetupRow,
-// LCEmblem). Titles and bodies are static copy, never user input.
+// ── Icons (F79, Nov 6 2026): the one registry. Every UI icon is a set of
+// paths on the 24 grid, drawn by lcIcon(name, size, cls). Static markup names
+// its icon (<svg data-icon="x" width="18" height="18"></svg>) and
+// lcHydrateIcons() draws it from here. Line by default, one drawing per idea
+// (DESIGN_RULES). The design system page lifts this map in these groups
+// (extract_wa.py). Brand marks (Google, Apple) are drawn where they sit.
 const LC_ICON_PATHS = {
+  // Content: empty states, setup rows, chips, locks
   ball: '<circle cx="12" cy="12" r="9"/><path d="M7.5 5.2c1.6 1.9 2.5 4.2 2.5 6.8s-.9 4.9-2.5 6.8M16.5 5.2c-1.6 1.9-2.5 4.2-2.5 6.8s.9 4.9 2.5 6.8"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   calendarPlus: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>',
@@ -6817,13 +6801,62 @@ const LC_ICON_PATHS = {
   arrowUp: '<path d="M12 20V5M6 11l6-6 6 6"/>',
   arrowDown: '<path d="M12 4v15M6 13l6 6 6-6"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-  unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/>'
+  unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.6-1.8"/>',
+  // Navigation: the sidebar, team switcher and menus
+  players: '<circle cx="9" cy="8.5" r="3.5"/><path d="M2.8 20c.9-3.4 3.3-5.2 6.2-5.2s5.3 1.8 6.2 5.2"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.9c1.8.6 3 2.2 3.6 5.1"/>',
+  overview: '<path d="M5 20v-8M12 20V5M19 20v-5"/>',
+  settings: '<circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>',
+  share: '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5M20 14v.5M17 20h3v-3M14 18v2"/>',
+  grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  join: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l4 4-4 4M14 12H4"/>',
+  switcher: '<path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  feedback: '<path d="M5 18l-1.5 3 4-1.5H18a2.5 2.5 0 0 0 2.5-2.5V7A2.5 2.5 0 0 0 18 4.5H6A2.5 2.5 0 0 0 3.5 7v8.5"/>',
+  link: '<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+  billing: '<rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/>',
+  signout: '<path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3M15 8l4 4-4 4M19 12H9"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
+  sidebar: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9.5 4v16M15.5 10l-2 2 2 2"/>',
+  // Actions and controls: the builder, pickers, export
+  minus: '<path d="M5 12h14"/>',
+  chevDown: '<path d="M6 9l6 6 6-6"/>',
+  chevUp: '<path d="M6 15l6-6 6 6"/>',
+  pencil: '<path d="M15 6l3 3M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/>',
+  wand: '<path d="M4 20l10-10M14 4v3M18.5 5.5l-2 2M20 10h-3M12 4.5l1 1"/>',
+  field: '<path d="M12 3l9 9-9 9-9-9z"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  note: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7"/>',
+  phone: '<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>',
+  laptop: '<rect x="3.5" y="4.5" width="17" height="11.5" rx="1.8"/><path d="M2 19.5h20"/>',
+  layers: '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/>'
 };
 // Every icon draws at --icon-stroke (F78); the CSS sets the weight, so
-// the attribute is only the no-CSS fallback.
-function lcIcon(name) {
-  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
+// the attribute is only the no-CSS fallback. size sets width and height
+// (leave it out when the CSS sizes the icon); cls is the svg's class.
+function lcIcon(name, size, cls) {
+  return '<svg' + (cls ? ' class="' + cls + '"' : '') + (size ? ' width="' + size + '" height="' + size + '"' : '') +
+    ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
 }
+// Draws each <svg data-icon> in root from the registry, keeping its own
+// class, width and height. Runs here for the markup above this script and
+// again on DOMContentLoaded for the markup after it.
+function lcHydrateIcons(root) {
+  var t = document.createElement('template');
+  (root || document).querySelectorAll('svg[data-icon]:not([viewBox])').forEach(function (el) {
+    var name = el.getAttribute('data-icon');
+    if (!LC_ICON_PATHS[name]) return;
+    t.innerHTML = lcIcon(name);
+    var s = t.content.firstChild;
+    for (var i = 0; i < s.attributes.length; i++) el.setAttribute(s.attributes[i].name, s.attributes[i].value);
+    while (s.firstChild) el.appendChild(s.firstChild);
+  });
+}
+lcHydrateIcons(document);
+
+// ── Empty states and setup rows (audit F23; iOS EmptyStateCard, LCSetupRow,
+// LCEmblem). Titles and bodies are static copy, never user input.
 // size: 'row' (44) | 'panel' (56). tone: '' | 'on-wash' | 'alert'.
 function lcEmblem(icon, size, tone) {
   return '<span class="lc-emblem' + (size === 'panel' ? ' lc-emblem--panel' : '') + (tone ? ' lc-emblem--' + tone : '') + '" aria-hidden="true">' + lcIcon(icon) + '</span>';
@@ -6861,14 +6894,13 @@ function teamInitials(name) {
   return words[0].substring(0, 2).toUpperCase();
 }
 
-const TEAM_BADGE_BALL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M7.5 5.2c1.6 1.9 2.5 4.2 2.5 6.8s-.9 4.9-2.5 6.8M16.5 5.2c-1.6 1.9-2.5 4.2-2.5 6.8s.9 4.9 2.5 6.8"/></svg>';
 
 // Team badge (F5): the logo when there is one (initials underneath while it
 // loads or if it fails), else the initials on the green disc. Same as iOS.
 function teamBadgeHtml(team) {
   const ini = teamInitials(team && team.name);
   const logo = team && team.logoURL ? `<img src="${sbAttr(team.logoURL)}" alt="" onerror="this.remove()">` : '';
-  if (!ini && !logo) return `<span class="sb-badge empty" aria-hidden="true">${TEAM_BADGE_BALL}</span>`;
+  if (!ini && !logo) return `<span class="sb-badge empty" aria-hidden="true">${lcIcon('ball')}</span>`;
   return `<span class="sb-badge" aria-hidden="true">${escHtml(ini)}${logo}</span>`;
 }
 
@@ -6916,37 +6948,37 @@ function renderSidebar() {
           <button class="sb-trow ${t.id === team.id ? 'cur' : ''}" type="button" role="menuitem" onclick="switchToTeam('${sbAttr(t.id)}')">
             ${teamBadgeHtml(t)}
             <span class="sb-trow-txt"><b>${escHtml(t.name || 'Team')}</b><span>${escHtml(teamSubLine(t))}</span></span>
-            ${t.id === team.id ? SB_ICONS.check : ''}
+            ${t.id === team.id ? lcIcon('check', 18) : ''}
           </button>`).join('');
     html += `
       <div class="sb-switch" id="sb-switch">
         <button class="sb-team" type="button" onclick="toggleTeamSwitcher(event)" aria-haspopup="menu" aria-expanded="false" aria-label="Switch team. Current team: ${sbAttr(team.name)}">
           ${teamBadgeHtml(team)}
           <span class="sb-team-txt"><span class="sb-team-name">${escHtml(team.name || 'Team')}</span><span class="sb-team-sub">${escHtml(teamSubLine(team))}</span></span>
-          ${SB_ICONS.chev}
+          ${lcIcon('switcher', 18, 'sb-chev')}
         </button>
         <span class="sb-tip">${escHtml(team.name || 'Team')}</span>
         <div class="lc-menu lc-menu--drop lc-menu--left sb-pop" role="menu" aria-label="Switch team">
           <div class="lc-menu-label">Your teams</div>
           ${rows}
           <div class="lc-menu-sep"></div>
-          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/'); return false;">${SB_ICONS.grid}All teams</a>
-          ${ALLOW_TEAM_CREATION ? `<a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); closeSidebarDrawer(); enterBuilder(null, 'setup', 1); return false;">${SB_ICONS.plus}New team</a>` : ''}
-          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/join'); return false;">${SB_ICONS.join}Join with a code</a>
+          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/'); return false;">${lcIcon('grid', 18)}All teams</a>
+          ${ALLOW_TEAM_CREATION ? `<a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); closeSidebarDrawer(); enterBuilder(null, 'setup', 1); return false;">${lcIcon('plus', 18)}New team</a>` : ''}
+          <a class="lc-menu-item" href="#" onclick="closeTeamSwitcher(); navigate('#/join'); return false;">${lcIcon('join', 18)}Join with a code</a>
         </div>
       </div>`;
     html += isCoachRole(team)
-      ? `<a class="sb-build ${inLineupBuilder ? 'active' : ''}" href="#" onclick="sidebarNewLineup('${sbAttr(team.id)}'); return false;"><span class="sb-plus">${SB_ICONS.plusBold}</span><span class="sb-lbl">Build lineup</span><span class="sb-tip">Build lineup</span></a>`
+      ? `<a class="sb-build ${inLineupBuilder ? 'active' : ''}" href="#" onclick="sidebarNewLineup('${sbAttr(team.id)}'); return false;"><span class="sb-plus">${lcIcon('plus', 16)}</span><span class="sb-lbl">Build lineup</span><span class="sb-tip">Build lineup</span></a>`
       : `<div style="height:14px"></div>`;
-    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/schedule')`, SB_ICONS.schedule, 'Schedule', onTeam && (section === 'schedule' || section === 'lineupDetail'));
-    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/players')`, SB_ICONS.players, 'Players', onTeam && section === 'players');
-    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/overview')`, SB_ICONS.overview, 'Overview', onTeam && section === 'overview');
-    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/rules')`, SB_ICONS.rules, 'League rules', onTeam && section === 'rules');
-    if (teamRole(team) === 'owner') html += sbItem(`navigate('#/team/${sbAttr(team.id)}/settings')`, SB_ICONS.settings, 'Team settings', onTeam && section === 'settings');
+    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/schedule')`, lcIcon('calendar', 20), 'Schedule', onTeam && (section === 'schedule' || section === 'lineupDetail'));
+    html += sbItem(`navigate('#/team/${sbAttr(team.id)}/players')`, lcIcon('players', 20), 'Players', onTeam && section === 'players');
+    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/overview')`, lcIcon('overview', 20), 'Overview', onTeam && section === 'overview');
+    if (isCoachRole(team)) html += sbItem(`navigate('#/team/${sbAttr(team.id)}/rules')`, lcIcon('rules', 20), 'League rules', onTeam && section === 'rules');
+    if (teamRole(team) === 'owner') html += sbItem(`navigate('#/team/${sbAttr(team.id)}/settings')`, lcIcon('settings', 20), 'Team settings', onTeam && section === 'settings');
   } else {
     html += `<div class="sb-empty">No teams yet.</div>`;
-    if (ALLOW_TEAM_CREATION) html += sbItem(`closeSidebarDrawer(); enterBuilder(null, 'setup', 1)`, SB_ICONS.plus, 'New team', false);
-    html += sbItem(`navigate('#/join')`, SB_ICONS.join, 'Join with a code', section === 'join');
+    if (ALLOW_TEAM_CREATION) html += sbItem(`closeSidebarDrawer(); enterBuilder(null, 'setup', 1)`, lcIcon('plus', 18), 'New team', false);
+    html += sbItem(`navigate('#/join')`, lcIcon('join', 18), 'Join with a code', section === 'join');
   }
   nav.innerHTML = html;
 
@@ -6958,7 +6990,7 @@ function renderSidebar() {
       ? `<img src="${sbAttr(user.photoURL)}" alt="">`
       : escHtml((name || '?').charAt(0).toUpperCase());
     foot.innerHTML =
-      (team ? sbItem(`openShareTeamModal('${sbAttr(team.id)}')`, SB_ICONS.share, 'Share team', false, 'sb-share') : '') +
+      (team ? sbItem(`openShareTeamModal('${sbAttr(team.id)}')`, lcIcon('share', 20), 'Share team', false, 'sb-share') : '') +
       `<div class="sb-me-wrap" id="sb-me-wrap">
         <button class="sb-me" type="button" onclick="toggleSbMenu(event)" aria-haspopup="menu" aria-expanded="false">
           <span class="sb-av">${av}</span>
@@ -6967,10 +6999,10 @@ function renderSidebar() {
         <span class="sb-tip">Account</span>
         <div class="lc-menu lc-menu--drop lc-menu--up" role="menu">
           <div class="lc-menu-head"><b>${escHtml(name)}</b>${email && email !== name ? `<span>${escHtml(email)}</span>` : ''}</div>
-          ${(_hasWebBilling || _subscriptionActive) ? `<button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); openBillingPortal()">${SB_ICONS.billing}Manage subscription</button>` : ''}
-          <button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${SB_ICONS.feedback}Send feedback</button>
-          <a class="lc-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${SB_ICONS.link}getleadoff.com</a>
-          <button class="lc-menu-item danger" type="button" role="menuitem" onclick="signOut()">${SB_ICONS.signout}Sign out</button>
+          ${(_hasWebBilling || _subscriptionActive) ? `<button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); openBillingPortal()">${lcIcon('billing', 18)}Manage subscription</button>` : ''}
+          <button class="lc-menu-item" type="button" role="menuitem" onclick="closeSbMenu(); closeSidebarDrawer(); toggleFeedback()">${lcIcon('feedback', 18)}Send feedback</button>
+          <a class="lc-menu-item" role="menuitem" href="https://getleadoff.com" target="_blank" rel="noopener">${lcIcon('link', 18)}getleadoff.com</a>
+          <button class="lc-menu-item danger" type="button" role="menuitem" onclick="signOut()">${lcIcon('signout', 18)}Sign out</button>
         </div>
       </div>`;
   }
@@ -8972,7 +9004,7 @@ function renderSchedule() {
         ${meta ? `<div class="sc-meta">${meta}</div>` : ''}
         ${ball}
       </div>
-      <div class="sc-side">${st}${notes}${go ? `<span class="sc-go">${go}<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>` : ''}</div>
+      <div class="sc-side">${st}${notes}${go ? `<span class="sc-go">${go}${lcIcon('chev', 14)}</span>` : ''}</div>
     </div>`;
   }
 
@@ -8983,7 +9015,7 @@ function renderSchedule() {
   }
   function gnScheduleFlag(lineup) {
     return gnNotesFor(_scheduleTeamId, lineup.id)
-      ? '<span class="sc-notes" title="Has game notes"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 11h7M9 15h7"/></svg><span class="sr-only">Has game notes</span></span>'
+      ? '<span class="sc-notes" title="Has game notes">' + lcIcon('note', 15) + '<span class="sr-only">Has game notes</span></span>'
       : '';
   }
 
@@ -10964,7 +10996,7 @@ function plRowHtml(p, canEdit) {
   const who = `<span class="pl-who">${ava}<span><b>${escHtml(p.name || 'Unnamed')}</b>${pron ? `<small>${escHtml(pron)}</small>` : ''}</span></span>`;
   if (!canEdit) return `<div class="pl-tr">${who}<span class="pl-ps">${posHtml}</span></div>`;
   const cls = 'pl-tr' + (_ppOpen === p.id ? ' is-sel' : '') + (_ppJustAdded === p.id ? ' pl-row-new' : '');
-  return `<button class="${cls}" type="button" data-player-id="${sbAttr(p.id)}" onclick="openPlayerPanel('${sbAttr(p.id)}')" aria-label="Edit ${sbAttr(p.name || 'player')}"${_ppOpen === p.id ? ' aria-current="true"' : ''}>${who}<span class="pl-ps">${posHtml}</span><span class="pl-pref">${pref}</span><svg class="pl-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>`;
+  return `<button class="${cls}" type="button" data-player-id="${sbAttr(p.id)}" onclick="openPlayerPanel('${sbAttr(p.id)}')" aria-label="Edit ${sbAttr(p.name || 'player')}"${_ppOpen === p.id ? ' aria-current="true"' : ''}>${who}<span class="pl-ps">${posHtml}</span><span class="pl-pref">${pref}</span>${lcIcon('chev', 16, 'pl-chev')}</button>`;
 }
 
 // ── Players side panel (Oct 30 2026) ──
@@ -10975,7 +11007,6 @@ var _ppOpen = null;              // player id in the panel, 'new', or null
 var _ppJustAdded = null;
 var _ppPendingRemoval = null;    // { id, name, timer } while Undo is on screen
 var PP_UNDO_MS = 10000;
-var PP_LOCK_SVG = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>';
 
 function ppRow(id) {
   return document.querySelector(`#player-list-mgmt [data-player-id="${cssEscape(id)}"]`);
@@ -11046,7 +11077,7 @@ function renderPlayerPanel() {
         `<button type="button" data-v="${v}" class="lc-toggle${prio === v ? ' on' : ''}" aria-pressed="${prio === v}" onclick="ppSetPriority('${id}', '${v}')">${l}</button>`).join('')}</div>
     </div>
     <div class="pp-priv">
-      <div class="pp-privh">${PP_LOCK_SVG}Batting ratings <span>· only coaches see these</span></div>
+      <div class="pp-privh">${lcIcon('lock', 16)}Batting ratings <span>· only coaches see these</span></div>
       ${['power', 'contact', 'speed'].map(s => {
         const val = skills[s];
         const ratio = ((val - 1) / 9).toFixed(4);
@@ -13777,7 +13808,7 @@ function posLabel(pos) {
 function renderPosGrid() {
   const grid = document.getElementById('pos-grid');
   const active = state.leagueRules.activePositions;
-  const check = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const check = lcIcon('check', 11);
   const last = active.length <= 1;
   grid.innerHTML = POS_GROUPS.map(([label, list]) => {
     const on = list.filter(p => active.includes(p)).length;
@@ -14477,7 +14508,7 @@ function renderAttendance() {
   // Who's here chips (Oct 30 2026, from the audit board): wash + ink check
   // when in, dimmed when out; the tapped chip pops and the count ticks.
   countEl.innerHTML = `<strong class="att-num">${attending.length}</strong> of ${state.players.length} here · mark anyone who can't make it`;
-  const check = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const check = lcIcon('check', 11);
   grid.innerHTML = state.players.map(p => {
     const here = !!state.attendance[p.id];
     return `<button type="button" class="lc-toggle lc-toggle--check lc-toggle--dim${here ? ' on' : ''}${_attPop === p.id ? ' pop' : ''}" aria-pressed="${here}"
@@ -16224,11 +16255,13 @@ function formatTime(t) {
 // closes. Same file in app.html and getleadoff.com's lineup builder:
 // change both together.
 var LC_CAL_DOW = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+// From the registry here; the site's lineup builder keeps literal copies of
+// the same four drawings (it has no registry).
 var LC_CAL_ICON = {
-  cal: '<svg class="lc-date-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
-  clock: '<svg class="lc-date-ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
-  caret: '<svg class="lc-date-caret" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
-  chev: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5.5l6.5 6.5L9 18.5"/></svg>'
+  cal: lcIcon('calendar', 20, 'lc-date-ic'),
+  clock: lcIcon('clock', 20, 'lc-date-ic'),
+  caret: lcIcon('chevDown', 16, 'lc-date-caret'),
+  chev: lcIcon('chev', 18)
 };
 var lcPop = null;   // the open picker: { kind, el, input, btn } + its own state
 var lcCal = null;   // kept for callers that check whether the calendar is open
@@ -16698,6 +16731,7 @@ function siteImportAuthContext() {
 // INIT
 // ═══════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
+  lcHydrateIcons(document);   // the markup after this script (feedback, hand-off, share)
   lcDateField(document.getElementById('game-date'));   // Game info's Date
   lcTimeField(document.getElementById('game-time'));   // and its Time
   siteImportAuthContext();
@@ -16707,18 +16741,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
 <!-- ══════════════ FEEDBACK WIDGET ══════════════ -->
 <button class="feedback-tab" id="feedback-tab" onclick="toggleFeedback()">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+  <svg data-icon="feedback" width="18" height="18"></svg>
   Feedback
-  <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+  <svg class="chevron" data-icon="chevUp" width="14" height="14"></svg>
 </button>
 
 <div class="feedback-panel" id="feedback-panel">
   <div class="feedback-panel-header">
     <div class="feedback-panel-title">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+      <svg data-icon="feedback" width="18" height="18"></svg>
       Send Feedback
     </div>
-    <button class="lc-close" type="button" onclick="toggleFeedback()" aria-label="Close feedback"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="lc-close" type="button" onclick="toggleFeedback()" aria-label="Close feedback"><svg data-icon="x" width="18" height="18"></svg></button>
   </div>
   <form class="feedback-panel-body" id="feedback-form" name="feedback-builder" method="POST" data-netlify="true" netlify-honeypot="bot-field">
     <input type="hidden" name="form-name" value="feedback-builder">
@@ -16741,7 +16775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     </button>
   </form>
   <div class="feedback-success" id="feedback-success" style="display:none;">
-    <div class="feedback-success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.3l2.8 2.8L16.2 9.5"/></svg></div>
+    <div class="feedback-success-icon"><svg data-icon="checkCircle"></svg></div>
     <div class="feedback-success-title">Thanks for reaching out!</div>
     <div class="feedback-success-sub">We read every message and will get back to you soon.</div>
   </div>
@@ -16758,7 +16792,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="modal si-modal" onclick="event.stopPropagation();">
     <div class="modal-header">
       <div class="modal-title" id="site-import-title">Add this team to your account?</div>
-      <button class="lc-close" type="button" onclick="cancelSiteImport()" aria-label="Cancel. Don't add this team" title="Cancel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      <button class="lc-close" type="button" onclick="cancelSiteImport()" aria-label="Cancel. Don't add this team" title="Cancel"><svg data-icon="x" width="18" height="18"></svg></button>
     </div>
     <div class="modal-sub" id="site-import-sub"></div>
     <div class="modal-body" id="site-import-body"></div>
@@ -16774,7 +16808,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="modal" onclick="event.stopPropagation();" style="max-width:460px;">
         <div class="modal-header">
           <div class="modal-title" id="share-team-title">Share team</div>
-          <button class="lc-close" type="button" onclick="closeShareTeamModal()" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+          <button class="lc-close" type="button" onclick="closeShareTeamModal()" aria-label="Close"><svg data-icon="x" width="18" height="18"></svg></button>
         </div>
         <div class="modal-sub" id="share-team-sub">Parents scan the QR with their phone camera to open the team in Leadoff. Or send the link or code.</div>
         <div class="modal-body" id="share-team-body"></div>
