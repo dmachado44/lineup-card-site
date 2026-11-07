@@ -2926,6 +2926,9 @@
     .lc-menu-head b { display: block; font-size: 15px; }
     .lc-menu-head span { font-size: 13px; color: var(--ink-secondary); word-break: break-all; }
     .lc-menu-head--bar { display: flex; align-items: center; gap: 8px; padding: 4px 4px 8px 10px; }
+    /* A confirm (Nov 7 2026): a question over what will happen, then the
+       action; outside click or Escape cancels, like the iOS popover. */
+    .lc-menu-head--msg span { display: block; margin-top: var(--space-4); word-break: normal; line-height: 1.4; }
     .lc-menu-head--bar b { flex: 1; min-width: 0; }
     .lc-menu-label { padding: 8px 10px 4px; color: var(--ink-secondary); }
     .lc-menu-scroll { overflow-y: auto; min-height: 0; }
@@ -14707,7 +14710,7 @@ function renderGamePositions() {
   if (added.length || off.length) {
     const what = [added.length ? 'Added ' + added.join(', ') : '', off.length ? 'Off ' + off.join(', ') : ''].filter(Boolean).join(' · ');
     html += `<div class="gp-override"><div><b>Just this game</b><span>${escHtml(what)}</span></div>` +
-            `<button type="button" class="btn btn-ghost btn-sm" onclick="resetGamePositions()">Use league rules</button></div>`;
+            `<button type="button" class="btn btn-ghost btn-sm gp-reset" aria-haspopup="menu" aria-expanded="false" onclick="confirmGamePositionsReset(this); event.stopPropagation();">Use league rules</button></div>`;
   }
   noteEl.innerHTML = html;
   noteEl.hidden = !html;
@@ -14724,6 +14727,31 @@ function toggleGamePosition(pos) {
   }
   _gamePosPop = pos;
   setGamePositions(prev, next);
+}
+// Use league rules asks first (Dan, Nov 7 2026), anchored to the button
+// like iOS's confirmationDialog: what comes back, what goes off, who moves.
+function gpList(list) {
+  return list.length < 2 ? list.join('') : list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
+}
+function confirmGamePositionsReset(btn) {
+  const active = gpActive(), league = state.leagueRules.activePositions || [];
+  const back = gpSort(league.filter(p => !active.includes(p)));
+  const gone = gpSort(active.filter(p => !league.includes(p)));
+  const here = (state.lineup || []).filter(r => state.attendance[r.playerId]);
+  const goneHeld = gone.filter(p => here.some(r => (r.positions || []).includes(p)));
+  const sitting = here.some(r => (r.positions || []).some(p => p === 'Bench' || !p));
+  const parts = [];
+  if (back.length) parts.push(gpList(back) + (back.length === 1 ? ' comes back' : ' come back'));
+  if (gone.length) parts.push(gpList(gone) + (gone.length === 1 ? ' goes off' : ' go off'));
+  let msg = parts.join(', ') + '.';
+  if (goneHeld.length) msg += ' Kids at ' + gpList(goneHeld) + ' move to an open spot.';
+  else if (back.length && sitting) msg += ' Kids on the bench move in.';
+  msg += ' Everyone else stays put.';
+  const html = `<div class="lc-menu-head lc-menu-head--msg"><b>Use league rules for this game?</b><span>${escHtml(msg)}</span></div>` +
+               `<button type="button" class="lc-menu-item" data-act="reset">Use league rules</button>`;
+  openTableMenu('gp-reset', btn, html, act => { if (act === 'reset') resetGamePositions(); });
+  const go = document.querySelector('#inning-menu [data-act="reset"]');
+  if (go) go.focus();
 }
 function resetGamePositions() {
   setGamePositions(gpActive().slice(), gpSort(state.leagueRules.activePositions || []));
@@ -15551,7 +15579,7 @@ function _inningMenuOutsideHandler(e) {
   const menu = document.getElementById('inning-menu');
   if (!menu) return;
   if (menu.contains(e.target)) return;
-  if (e.target.closest && e.target.closest('.inning-trigger, .bo-trigger, .name-trigger')) return; // let trigger handler reposition
+  if (e.target.closest && e.target.closest('.inning-trigger, .bo-trigger, .name-trigger, .gp-reset')) return; // let trigger handler reposition
   closeInningMenu();
 }
 
@@ -15562,7 +15590,7 @@ function _inningMenuKeyHandler(e) {
 function closeInningMenu() {
   const menu = document.getElementById('inning-menu');
   if (menu) { menu.style.display = 'none'; delete menu.dataset.inning; }
-  document.querySelectorAll('.inning-trigger[aria-expanded="true"], .bo-trigger[aria-expanded="true"], .name-trigger[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
+  document.querySelectorAll('.inning-trigger[aria-expanded="true"], .bo-trigger[aria-expanded="true"], .name-trigger[aria-expanded="true"], .gp-reset[aria-expanded="true"]').forEach(b => b.setAttribute('aria-expanded', 'false'));
   document.removeEventListener('mousedown', _inningMenuOutsideHandler);
   document.removeEventListener('touchstart', _inningMenuOutsideHandler);
   document.removeEventListener('keydown', _inningMenuKeyHandler);
