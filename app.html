@@ -1859,11 +1859,19 @@
     .att-pos-row > .card { margin-bottom: 0; }
     .att-pos-row { margin-bottom: 24px; }
 
-    .game-pos-grid {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    /* Positions for this game (Dan, Nov 7 2026): every position, grouped
+       like League Rules, stacked for the narrow tools pane. */
+    .game-pos-grid { display: flex; flex-direction: column; gap: var(--space-12); }
+    .game-pos-grid .pos-group { grid-template-columns: 1fr; gap: var(--space-8); }
+    .game-pos-grid .pos-group + .pos-group { padding-top: var(--space-12); }
+    .game-pos-grid .pos-k { padding-top: 0; display: flex; gap: var(--space-8); align-items: baseline; }
+    .game-pos-grid .pos-k span { margin-top: 0; }
+    .gp-note { display: flex; flex-direction: column; gap: var(--space-12); }
+    .gp-note[hidden] { display: none; }
+    .gp-fit { margin: 0; font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); }
+    .gp-override { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-8) var(--space-12); padding-top: var(--space-12); border-top: 1px solid var(--hairline); }
+    .gp-override b { display: block; font-size: var(--type-label); font-weight: 600; color: var(--ink); }
+    .gp-override span { display: block; margin-top: var(--space-2); font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); }
 
     @media (max-width: 768px) {
       .att-pos-row {
@@ -4784,8 +4792,9 @@
        </div>
         </section>
         <section class="bt-sec" aria-label="Positions for this game">
-          <div class="section-head">Positions for this game <span id="game-pos-count">9 active</span></div>
-          <div class="game-pos-grid" id="game-pos-grid"></div>
+          <div class="section-head">Positions for this game <span id="game-pos-count">9 in play</span></div>
+          <div class="game-pos-grid" id="game-pos-grid" role="group" aria-label="Positions for this game"></div>
+          <div class="gp-note" id="game-pos-note" aria-live="polite" hidden></div>
         </section>
         <section class="bt-sec" aria-label="Playing time">
           <div class="section-head">Playing time <span>innings in the field</span></div>
@@ -6814,7 +6823,7 @@ const LC_ICON_PATHS = {
   // Navigation: the sidebar, team switcher and menus
   players: '<circle cx="9" cy="8.5" r="3.5"/><path d="M2.8 20c.9-3.4 3.3-5.2 6.2-5.2s5.3 1.8 6.2 5.2"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M17.6 14.9c1.8.6 3 2.2 3.6 5.1"/>',
   overview: '<path d="M5 20v-8M12 20V5M19 20v-5"/>',
-  settings: '<circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/>',
+  settings: '<path d="M10.04 5.18L10.35 2.64A9.5 9.5 0 0 1 13.65 2.64L13.96 5.18A7.1 7.1 0 0 1 15.44 5.79L17.45 4.22A9.5 9.5 0 0 1 19.78 6.55L18.21 8.56A7.1 7.1 0 0 1 18.82 10.04L21.36 10.35A9.5 9.5 0 0 1 21.36 13.65L18.82 13.96A7.1 7.1 0 0 1 18.21 15.44L19.78 17.45A9.5 9.5 0 0 1 17.45 19.78L15.44 18.21A7.1 7.1 0 0 1 13.96 18.82L13.65 21.36A9.5 9.5 0 0 1 10.35 21.36L10.04 18.82A7.1 7.1 0 0 1 8.56 18.21L6.55 19.78A9.5 9.5 0 0 1 4.22 17.45L5.79 15.44A7.1 7.1 0 0 1 5.18 13.96L2.64 13.65A9.5 9.5 0 0 1 2.64 10.35L5.18 10.04A7.1 7.1 0 0 1 5.79 8.56L4.22 6.55A9.5 9.5 0 0 1 6.55 4.22L8.56 5.79A7.1 7.1 0 0 1 10.04 5.18Z"/><circle cx="12" cy="12" r="3.1"/>',
   share: '<rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5M20 14v.5M17 20h3v-3M14 18v2"/>',
   grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
@@ -6847,10 +6856,10 @@ const LC_ICON_PATHS = {
   mail: '<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M4 7.5l8 5.5 8-5.5"/>',
   swap: '<path d="M4 8h15M15.5 4.5L19 8l-3.5 3.5M20 16H5M8.5 12.5L5 16l3.5 3.5"/>',
   move: '<path d="M12 3.5v17M8.5 7L12 3.5 15.5 7M8.5 17l3.5 3.5 3.5-3.5"/>',
-  refresh: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3L19.5 9"/><path d="M19.5 4.5V9H15"/>',
-  undo: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"/><path d="M4.5 4.5V9H9"/>',
+  refresh: '<path d="M18.50 15.75A7.5 7.5 0 1 1 17.3 6.7L19.5 9"/><path d="M19.5 4.5V9H15"/>',
+  undo: '<path d="M5.50 15.75A7.5 7.5 0 1 0 6.7 6.7L4.5 9"/><path d="M4.5 4.5V9H9"/>',
   cycle: '<path d="M4.5 11a7.5 7.5 0 0 1 13.2-4.6l1.8 2.1"/><path d="M19.5 4v4.5H15"/><path d="M19.5 13a7.5 7.5 0 0 1-13.2 4.6l-1.8-2.1"/><path d="M4.5 20v-4.5H9"/>',
-  history: '<path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3L4.5 9"/><path d="M4.5 4.5V9H9"/><path d="M12 8v4.5l3 1.8"/>',
+  history: '<path d="M5.50 15.75A7.5 7.5 0 1 0 6.7 6.7L4.5 9"/><path d="M4.5 4.5V9H9"/><path d="M12 8v4.5l3 1.8"/>',
   download: '<circle cx="12" cy="12" r="9"/><path d="M12 7.5v8.5M8.5 12.5L12 16l3.5-3.5"/>',
   shareUp: '<path d="M12 3v11.5M8 7l4-4 4 4M8.5 10H7a2.5 2.5 0 0 0-2.5 2.5v6A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-6A2.5 2.5 0 0 0 17 10h-1.5"/>',
   importTray: '<path d="M12 3v11M8 10l4 4 4-4M4.5 14.5v4A2.5 2.5 0 0 0 7 21h10a2.5 2.5 0 0 0 2.5-2.5v-4"/>',
@@ -6880,6 +6889,7 @@ const LC_ICON_PATHS = {
   personCircle: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.6 18.6c1.2-2 3.1-3.1 5.4-3.1s4.2 1.1 5.4 3.1"/>',
   personCheck: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.4 3.3-5.3 6.5-5.3 1.2 0 2.3.2 3.2.7M14.8 17.2l2 2 4-4"/>',
   personOff: '<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.4 3.3-5.3 6.5-5.3 1.2 0 2.3.2 3.2.7M15.5 14.5l5 5M20.5 14.5l-5 5"/>',
+  exclaim: '<path d="M12 5v9M12 18.6v.1"/>',
   hourglass: '<path d="M7 3.5h10M7 20.5h10M7 3.5c0 4.2 4 5.6 4 8.5s-4 4.3-4 8.5M17 3.5c0 4.2-4 5.6-4 8.5s4 4.3 4 8.5"/>',
   star: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
   shield: '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.3-4.3"/>',
@@ -6894,8 +6904,8 @@ const LC_ICON_PATHS = {
   playFill: '<path fill="currentColor" stroke="none" d="M6.9 5.22Q6.89 4.77 7.06 4.36Q7.23 3.94 7.56 3.63Q7.89 3.32 8.32 3.18Q8.75 3.03 9.21 3.08Q9.66 3.12 10.05 3.35Q10.07 3.36 10.09 3.37L20.65 10.14Q21.03 10.35 21.31 10.69Q21.61 11.07 21.71 11.53Q21.82 12 21.71 12.47Q21.61 12.93 21.31 13.31Q21.03 13.65 20.65 13.86L10.09 20.63Q10.07 20.64 10.05 20.65Q9.66 20.88 9.21 20.92Q8.75 20.97 8.32 20.82Q7.89 20.68 7.56 20.37Q7.23 20.06 7.06 19.64Q6.89 19.23 6.9 18.78Z"/>',
   pauseFill: '<path fill="currentColor" stroke="none" d="M15.2 3.4H16.8Q17.42 3.4 17.95 3.71Q18.48 4.02 18.79 4.55Q19.1 5.08 19.1 5.7V18.3Q19.1 18.92 18.79 19.45Q18.48 19.98 17.95 20.29Q17.42 20.6 16.8 20.6H15.2Q14.58 20.6 14.05 20.29Q13.52 19.98 13.21 19.45Q12.9 18.92 12.9 18.3V5.7Q12.9 5.08 13.21 4.55Q13.52 4.02 14.05 3.71Q14.58 3.4 15.2 3.4ZM7.2 3.4H8.8Q9.42 3.4 9.95 3.71Q10.48 4.02 10.79 4.55Q11.1 5.08 11.1 5.7V18.3Q11.1 18.92 10.79 19.45Q10.48 19.98 9.95 20.29Q9.42 20.6 8.8 20.6H7.2Q6.58 20.6 6.05 20.29Q5.52 19.98 5.21 19.45Q4.9 18.92 4.9 18.3V5.7Q4.9 5.08 5.21 4.55Q5.52 4.02 6.05 3.71Q6.58 3.4 7.2 3.4Z"/>',
   stopFill: '<path fill="currentColor" stroke="none" d="M8 4.4H16Q16.96 4.4 17.8 4.88Q18.64 5.36 19.12 6.2Q19.6 7.04 19.6 8V16Q19.6 16.96 19.12 17.8Q18.64 18.64 17.8 19.12Q16.96 19.6 16 19.6H8Q7.04 19.6 6.2 19.12Q5.36 18.64 4.88 17.8Q4.4 16.96 4.4 16V8Q4.4 7.04 4.88 6.2Q5.36 5.36 6.2 4.88Q7.04 4.4 8 4.4Z"/>',
-  forwardFill: '<path fill="currentColor" stroke="none" d="M2.4 7Q2.4 6.98 2.4 6.97Q2.41 6.54 2.61 6.16Q2.8 5.78 3.14 5.52Q3.48 5.26 3.9 5.17Q4.32 5.08 4.74 5.18Q5.14 5.27 5.46 5.52L11.4 9.76V7Q11.4 6.98 11.4 6.97Q11.41 6.54 11.61 6.16Q11.8 5.78 12.14 5.52Q12.48 5.26 12.9 5.17Q13.32 5.08 13.74 5.18Q14.14 5.27 14.46 5.52L21.44 10.5Q21.49 10.54 21.53 10.57Q21.83 10.85 22 11.22Q22.17 11.59 22.17 12Q22.17 12.41 22 12.78Q21.83 13.15 21.53 13.43Q21.49 13.46 21.44 13.5L14.46 18.48Q14.14 18.73 13.74 18.82Q13.32 18.92 12.9 18.83Q12.48 18.74 12.14 18.48Q11.8 18.22 11.61 17.84Q11.41 17.46 11.4 17.03Q11.4 17.02 11.4 17V14.24L5.46 18.48Q5.14 18.73 4.74 18.82Q4.32 18.92 3.9 18.83Q3.48 18.74 3.14 18.48Q2.8 18.22 2.61 17.84Q2.41 17.46 2.4 17.03Q2.4 17.02 2.4 17Z"/>',
-  backFill: '<path fill="currentColor" stroke="none" d="M21.6 7V17Q21.6 17.02 21.6 17.03Q21.59 17.46 21.39 17.84Q21.2 18.22 20.86 18.48Q20.52 18.74 20.1 18.83Q19.68 18.92 19.26 18.82Q18.86 18.73 18.54 18.48L12.6 14.24V17Q12.6 17.02 12.6 17.03Q12.59 17.46 12.39 17.84Q12.2 18.22 11.86 18.48Q11.52 18.74 11.1 18.83Q10.68 18.92 10.26 18.82Q9.86 18.73 9.54 18.48L2.56 13.5Q2.51 13.46 2.47 13.42Q2.17 13.15 2 12.78Q1.83 12.41 1.83 12Q1.83 11.59 2 11.22Q2.17 10.85 2.47 10.58Q2.51 10.54 2.56 10.5L9.54 5.52Q9.86 5.27 10.26 5.18Q10.68 5.08 11.1 5.17Q11.52 5.26 11.86 5.52Q12.2 5.78 12.39 6.16Q12.59 6.54 12.6 6.97Q12.6 6.98 12.6 7V9.76L18.54 5.52Q18.86 5.27 19.26 5.18Q19.68 5.08 20.1 5.17Q20.52 5.26 20.86 5.52Q21.2 5.78 21.39 6.16Q21.59 6.54 21.6 6.97Q21.6 6.98 21.6 7Z"/>',
+  forwardFill: '<path fill="currentColor" stroke="none" d="M 3.12,7 Q 3.12,6.98 3.12,6.97 Q 3.13,6.54 3.33,6.16 Q 3.52,5.78 3.86,5.52 Q 4.2,5.26 4.62,5.17 Q 5.04,5.08 5.46,5.18 Q 5.86,5.27 6.18,5.52 L 12.12,9.76 L 12.12,7 Q 12.12,6.98 12.12,6.97 Q 12.13,6.54 12.33,6.16 Q 12.52,5.78 12.86,5.52 Q 13.2,5.26 13.62,5.17 Q 14.04,5.08 14.46,5.18 Q 14.86,5.27 15.18,5.52 L 22.16,10.5 Q 22.21,10.54 22.25,10.57 Q 22.55,10.85 22.72,11.22 Q 22.89,11.59 22.89,12 Q 22.89,12.41 22.72,12.78 Q 22.55,13.15 22.25,13.43 Q 22.21,13.46 22.16,13.5 L 15.18,18.48 Q 14.86,18.73 14.46,18.82 Q 14.04,18.92 13.62,18.83 Q 13.2,18.74 12.86,18.48 Q 12.52,18.22 12.33,17.84 Q 12.13,17.46 12.12,17.03 Q 12.12,17.02 12.12,17 L 12.12,14.24 L 6.18,18.48 Q 5.86,18.73 5.46,18.82 Q 5.04,18.92 4.62,18.83 Q 4.2,18.74 3.86,18.48 Q 3.52,18.22 3.33,17.84 Q 3.13,17.46 3.12,17.03 Q 3.12,17.02 3.12,17 Z"/>',
+  backFill: '<path fill="currentColor" stroke="none" d="M 20.88,7 L 20.88,17 Q 20.88,17.02 20.88,17.03 Q 20.87,17.46 20.67,17.84 Q 20.48,18.22 20.14,18.48 Q 19.8,18.74 19.38,18.83 Q 18.96,18.92 18.54,18.82 Q 18.14,18.73 17.82,18.48 L 11.88,14.24 L 11.88,17 Q 11.88,17.02 11.88,17.03 Q 11.87,17.46 11.67,17.84 Q 11.48,18.22 11.14,18.48 Q 10.8,18.74 10.38,18.83 Q 9.96,18.92 9.54,18.82 Q 9.14,18.73 8.82,18.48 L 1.84,13.5 Q 1.79,13.46 1.75,13.42 Q 1.45,13.15 1.28,12.78 Q 1.11,12.41 1.11,12 Q 1.11,11.59 1.28,11.22 Q 1.45,10.85 1.75,10.58 Q 1.79,10.54 1.84,10.5 L 8.82,5.52 Q 9.14,5.27 9.54,5.18 Q 9.96,5.08 10.38,5.17 Q 10.8,5.26 11.14,5.52 Q 11.48,5.78 11.67,6.16 Q 11.87,6.54 11.88,6.97 Q 11.88,6.98 11.88,7 L 11.88,9.76 L 17.82,5.52 Q 18.14,5.27 18.54,5.18 Q 18.96,5.08 19.38,5.17 Q 19.8,5.26 20.14,5.52 Q 20.48,5.78 20.67,6.16 Q 20.87,6.54 20.88,6.97 Q 20.88,6.98 20.88,7 Z"/>',
   checkDot: '<path fill="currentColor" stroke="none" d="M22.1 12Q22.1 14.71 20.75 17.05Q19.39 19.39 17.05 20.75Q14.71 22.1 12 22.1Q9.29 22.1 6.95 20.75Q4.61 19.39 3.25 17.05Q1.9 14.71 1.9 12Q1.9 9.29 3.25 6.95Q4.61 4.61 6.95 3.25Q9.29 1.9 12 1.9Q14.71 1.9 17.05 3.25Q19.39 4.61 20.75 6.95Q22.1 9.29 22.1 12ZM8.78 11.52Q8 10.74 7.22 11.52Q6.44 12.3 7.22 13.08L10.02 15.88Q10.8 16.66 11.58 15.88Q11.58 15.87 11.59 15.86L16.99 10.26Q17.37 9.87 17.37 9.48Q17.36 9.09 16.96 8.71Q16.17 7.94 15.41 8.74L10.79 13.53Z"/>',
   clearDot: '<path fill="currentColor" stroke="none" d="M22.1 12Q22.1 14.71 20.75 17.05Q19.39 19.39 17.05 20.75Q14.71 22.1 12 22.1Q9.29 22.1 6.95 20.75Q4.61 19.39 3.25 17.05Q1.9 14.71 1.9 12Q1.9 9.29 3.25 6.95Q4.61 4.61 6.95 3.25Q9.29 1.9 12 1.9Q14.71 1.9 17.05 3.25Q19.39 4.61 20.75 6.95Q22.1 9.29 22.1 12ZM9.78 8.22Q9 7.44 8.22 8.22Q7.44 9 8.22 9.78L10.44 12L8.22 14.22Q7.44 15 8.22 15.78Q9 16.56 9.78 15.78L12 13.56L14.22 15.78Q15 16.56 15.78 15.78Q16.56 15 15.78 14.22L13.56 12L15.78 9.78Q16.56 9 15.78 8.22Q15 7.44 14.22 8.22L12 10.44Z"/>',
   explicit: '<path fill="currentColor" stroke="none" d="M7 2.4H17Q18.23 2.4 19.3 3.02Q20.37 3.63 20.98 4.7Q21.6 5.77 21.6 7V17Q21.6 18.23 20.98 19.3Q20.37 20.37 19.3 20.98Q18.23 21.6 17 21.6H7Q5.77 21.6 4.7 20.98Q3.63 20.37 3.02 19.3Q2.4 18.23 2.4 17V7Q2.4 5.77 3.02 4.7Q3.63 3.63 4.7 3.02Q5.77 2.4 7 2.4ZM14.5 9.1Q15.6 9.1 15.6 8Q15.6 6.9 14.5 6.9H10Q8.9 6.9 8.9 8V16Q8.9 17.1 10 17.1H14.5Q15.6 17.1 15.6 16Q15.6 14.9 14.5 14.9H11.1V13.1H13.8Q14.9 13.1 14.9 12Q14.9 10.9 13.8 10.9H11.1V9.1Z"/>',
@@ -6906,8 +6916,17 @@ const LC_ICON_PATHS = {
 // Every icon draws at --icon-stroke (F78); the CSS sets the weight, so
 // the attribute is only the no-CSS fallback. size sets width and height
 // (leave it out when the CSS sizes the icon); cls is the svg's class.
+// Optical size (Nov 6 2026, F84): the line grows slower than the icon.
+// Up to 28 px (the iOS nav icon's box) it's --icon-stroke; above, Material's
+// curve, twice the size for 1.5x the line, so a 40 px icon isn't drawn with
+// a line twice a 20 px one's. iOS does the same in Font.lcIcon.
+function lcIconLine(size) {
+  return size > 28 ? 'calc(var(--icon-stroke) * ' + Math.pow(size / 28, -0.415).toFixed(3) + ')' : '';
+}
 function lcIcon(name, size, cls) {
+  var line = lcIconLine(size || 0);
   return '<svg' + (cls ? ' class="' + cls + '"' : '') + (size ? ' width="' + size + '" height="' + size + '"' : '') +
+    (line ? ' style="stroke-width:' + line + '"' : '') +
     ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + LC_ICON_PATHS[name] + '</svg>';
 }
 // Draws each <svg data-icon> in root from the registry, keeping its own
@@ -6922,6 +6941,8 @@ function lcHydrateIcons(root) {
     var s = t.content.firstChild;
     for (var i = 0; i < s.attributes.length; i++) el.setAttribute(s.attributes[i].name, s.attributes[i].value);
     while (s.firstChild) el.appendChild(s.firstChild);
+    var line = lcIconLine(+el.getAttribute('width') || 0);
+    if (line) el.style.strokeWidth = line;
   });
 }
 lcHydrateIcons(document);
@@ -7421,7 +7442,8 @@ async function enterBuilder(teamId, mode, startStep) {
     // Each new builder session starts without an "editing existing lineup"
     // pointer. createLineupFromSchedule/editCurrentLineupDetail will set it
     // back if the user is genuinely editing an existing lineup.
-    if (mode === 'lineup') { state.editingLineupDocId = null; state.battingOrderLocked = false; } resetAutoSave();
+    // gamePositions too: one game's override never carries to the next.
+    if (mode === 'lineup') { state.editingLineupDocId = null; state.battingOrderLocked = false; state.gamePositions = []; } resetAutoSave();
     if (mode === 'lineup') {
       _sgApplied = {};
       // The season so far, for suggestions and season-aware auto-assign.
@@ -9244,6 +9266,16 @@ function loadSavedLineupIntoBuilder(lineup) {
   const saved = new Set(state.lineup.map(r => r.playerId));
   state.attendance = {};
   state.players.forEach(p => { state.attendance[p.id] = saved.has(p.id); });
+  // Positions in play: the lineup's own override, else League Rules plus
+  // any spot its cells use that League doesn't (an iOS save carries no
+  // override), so a kid at CF still shows on the field.
+  const league = state.leagueRules.activePositions || [];
+  const savedGp = (Array.isArray(lineup.gamePositions) ? lineup.gamePositions : []).filter(p => ALL_POSITIONS.includes(p));
+  const extra = [];
+  state.lineup.forEach(r => r.positions.forEach(p => {
+    if (p && ALL_POSITIONS.includes(p) && !league.includes(p) && !extra.includes(p)) extra.push(p);
+  }));
+  state.gamePositions = savedGp.length ? savedGp : (extra.length ? gpSort(league.concat(extra)) : []);
   // Autosave writes only what changes from here.
   state.cloudDraftId = null;
   _draftKeyInUse = getDraftKey(_activeTeamId, state.gameDate, state.opponent);
@@ -11060,7 +11092,7 @@ function plRowHtml(p, canEdit) {
     ? `<span class="pl-ava num">${escHtml(String(p.number))}</span>`
     : `<span class="pl-ava">${escHtml(String(p.name || '?').trim().charAt(0).toUpperCase() || '?')}</span>`;
   const pron = p.namePronunciation ? 'Says it ' + p.namePronunciation : (canEdit ? 'No pronunciation yet' : '');
-  const active = getActiveFieldPositions();
+  const active = getLeagueFieldPositions();
   const pos = (p.prefPos || []).filter(x => active.includes(x));
   const posHtml = pos.length ? pos.map(x => `<span>${escHtml(x)}</span>`).join('') : '<em>Anywhere</em>';
   const pref = { infield: 'Infield', outfield: 'Outfield' }[p.fieldPriority] || 'Both';
@@ -11136,7 +11168,7 @@ function renderPlayerPanel() {
     <div class="pp-f"><label for="pp-pron">How the announcer says it</label><input type="text" id="pp-pron" value="${sbAttr(p.namePronunciation || '')}" data-orig="${sbAttr(p.namePronunciation || '')}" placeholder="Optional" autocomplete="off" onchange="updatePlayerPronunciation('${id}', this.value); renderPlayerManagementList()"></div>
     <div class="pp-f">
       <span class="pp-lb" id="pp-pos-lb">Can play</span>
-      <div class="pp-chips" role="group" aria-labelledby="pp-pos-lb">${getActiveFieldPositions().map(pos => {
+      <div class="pp-chips" role="group" aria-labelledby="pp-pos-lb">${getLeagueFieldPositions().map(pos => {
         const on = (p.prefPos || []).includes(pos);
         return `<button class="lc-toggle${on ? ' on' : ''}" type="button" aria-pressed="${on}" onclick="ppTogglePos('${id}', '${pos}', this)">${pos}</button>`;
       }).join('')}</div>
@@ -11735,12 +11767,14 @@ function lsShape(kind, d) {
     gameName: d.gameName || '', opponent: d.opponent || '', gameDate: d.gameDate || '',
     gameTime: to24hTime(d.gameTime) || String(d.gameTime || ''),
     gameLocation: d.gameLocation || '', gameNotes: d.gameNotes || '',
-    innings: String(d.innings || 6), battingOrderLocked: d.battingOrderLocked ? '1' : ''
+    innings: String(d.innings || 6), battingOrderLocked: d.battingOrderLocked ? '1' : '',
+    // Positions in play: a draft's whole set, a lineup's override only
+    // (empty = League Rules). Both apps' merges keep it as one game field.
+    gamePositions: Array.isArray(d.gamePositions) ? d.gamePositions.join(',') : ''
   };
   let list;
   if (kind === 'draft') {
     meta.strategyLevel = String(d.strategyLevel || 3);
-    meta.gamePositions = Array.isArray(d.gamePositions) ? d.gamePositions.join(',') : '';
     list = Array.isArray(d.lineup) ? d.lineup : [];
   } else {
     list = (Array.isArray(d.players) ? d.players : []).slice().sort((a, b) => ((a && a.batOrder) || 0) - ((b && b.batOrder) || 0));
@@ -11823,6 +11857,7 @@ function lsToLineupFields(s) {
     gameName: s.meta.gameName, opponent: s.meta.opponent, gameDate: s.meta.gameDate,
     gameTime: s.meta.gameTime, gameLocation: s.meta.gameLocation, gameNotes: s.meta.gameNotes,
     innings, battingOrderLocked: s.meta.battingOrderLocked === '1',
+    gamePositions: s.meta.gamePositions ? s.meta.gamePositions.split(',') : [],
     players: s.order.map((id, i) => ({ playerId: id, name: s.rows[id].name, batOrder: i + 1, positions: lsPadded(s.rows[id], innings), lockedInnings: s.rows[id].locked.slice() }))
   };
 }
@@ -11848,10 +11883,10 @@ function lsApplyToState(kind, s) {
   state.gameTime = s.meta.gameTime; state.gameLocation = s.meta.gameLocation; state.gameNotes = s.meta.gameNotes;
   state.innings = parseInt(s.meta.innings, 10) || 6;
   state.battingOrderLocked = s.meta.battingOrderLocked === '1';
-  if (kind === 'draft') {
-    state.strategyLevel = parseInt(s.meta.strategyLevel, 10) || 3;
-    state.gamePositions = s.meta.gamePositions ? s.meta.gamePositions.split(',') : [];
-  }
+  if (kind === 'draft') state.strategyLevel = parseInt(s.meta.strategyLevel, 10) || 3;
+  // Positions in play come with either (a lineup's empty = League Rules).
+  const gp = s.meta.gamePositions ? s.meta.gamePositions.split(',').filter(p => ALL_POSITIONS.includes(p)) : [];
+  state.gamePositions = gp.length ? gp : (_currentStep >= 4 ? (state.leagueRules.activePositions || []).slice() : []);
   const rows = s.order.map(id => {
     const r = s.rows[id];
     return { playerId: local(id, r.name), positions: lsPadded(r, state.innings), lockedInnings: r.locked.slice() };
@@ -11874,6 +11909,7 @@ function lsRender() {
   if (typeof closeCellMenu === 'function') closeCellMenu(false);
   if (typeof closeInningMenu === 'function') closeInningMenu();
   if (_currentStep >= 3 && typeof renderAttendance === 'function') renderAttendance();
+  if (typeof renderGamePositions === 'function') renderGamePositions();
   renderLineupGrid();
   renderPlayingTimeSummary();
   checkConflicts();
@@ -13859,6 +13895,11 @@ function truncateToWidth(ctx, text, maxW) {
 // ═══════════════════════════════════════════════════
 // LEAGUE RULES
 // ═══════════════════════════════════════════════════
+// Team-level surfaces (Players, a kid's "Can play") read League Rules:
+// a game's override is that game's only (Dan, Nov 7 2026).
+function getLeagueFieldPositions() {
+  return (state.leagueRules.activePositions || []).filter(p => p !== 'Bench');
+}
 function getActiveFieldPositions() {
   // Use per-game positions if available, otherwise fall back to league rules
   const positions = (state.gamePositions && state.gamePositions.length > 0)
@@ -14272,7 +14313,7 @@ function renderPlayerList() {
       <div class="priority-row">
         <span class="priority-label">Positions:</span>
         <div class="pos-pills" role="group" aria-label="Positions for ${sbAttr(player.name)}">
-          ${getActiveFieldPositions().map(pos =>
+          ${getLeagueFieldPositions().map(pos =>
             `<button type="button" class="lc-toggle${player.prefPos.includes(pos) ? ' on' : ''}" aria-pressed="${player.prefPos.includes(pos)}"
               onclick="togglePrefPos('${player.id}','${pos}')">${pos}</button>`
           ).join('')}
@@ -14309,7 +14350,7 @@ function goToStep1() {
   // to create a new lineup doc, not merge into the one we just printed.
   // (The previous draft is already cleared when Save & Export succeeded.)
   if (_appMode === 'lineup') {
-    state.editingLineupDocId = null; state.battingOrderLocked = false; resetAutoSave();
+    state.editingLineupDocId = null; state.battingOrderLocked = false; state.gamePositions = []; resetAutoSave();
   }
   setStep(1);
 }
@@ -14473,6 +14514,9 @@ function lineupFieldsFromState() {
     gameNotes:    state.gameNotes || '',
     innings:      state.innings || 6,
     battingOrderLocked: !!state.battingOrderLocked,   // additive; iOS reads it too
+    // This game's positions when they differ from League Rules, else []
+    // (additive, Nov 7 2026; iOS saves lineups with merge and leaves it be).
+    gamePositions: gamePositionsOverride(),
     players: activeLineup.map((row, idx) => {
       const player = state.players.find(p => p.id === row.playerId);
       return {
@@ -14588,40 +14632,152 @@ function renderAttendance() {
   _attPop = null;
   if (typeof renderStrategyInsights === 'function') renderStrategyInsights();
   updateToolsBadge();
+  if (typeof renderGamePositions === 'function') renderGamePositions();   // spots vs kids here
 }
 
-// ── Game Positions (per-game override) ──
+// ── Positions for this game (per-game override) ──
+// Every position, not only League's (Dan, Nov 7 2026): one game can play a
+// different field. A kid out turns LF, LCF, RCF, RF into LF, CF, RF for that
+// game; League Rules don't change. Turning a spot on or off moves only the
+// kids it touches (like attendance, never a reshuffle): a kid whose spot
+// goes off takes the nearest open spot (LCF to CF) or sits, and a new spot
+// takes whoever has sat most. Locks hold; a lock on a spot that goes off
+// goes with it. Auto-fill still redoes the whole plan.
+const GP_ORDER = ['P','C','1B','2B','3B','SS','LF','LCF','CF','RCF','RF','UTL1','UTL2','UTL3'];
+const GP_GROUPS = [['Infield', ['P','C','1B','2B','3B','SS']], ['Outfield', ['LF','LCF','CF','RCF','RF']], ['Utility', ['UTL1','UTL2','UTL3']]];
+// Where a kid moves when their spot is turned off, nearest first.
+const GP_NEAR = {
+  LF: ['LCF','CF','RCF','RF'], LCF: ['CF','LF','RCF','RF'], CF: ['LCF','RCF','LF','RF'],
+  RCF: ['CF','RF','LCF','LF'], RF: ['RCF','CF','LCF','LF'],
+  UTL1: ['UTL2','UTL3'], UTL2: ['UTL1','UTL3'], UTL3: ['UTL2','UTL1']
+};
+function gpSort(list) {
+  const rank = p => { const i = GP_ORDER.indexOf(p); return i < 0 ? 99 : i; };
+  return list.slice().sort((a, b) => rank(a) - rank(b));
+}
+// The positions in play: this game's, else League's.
+function gpActive() {
+  return (state.gamePositions && state.gamePositions.length) ? state.gamePositions : (state.leagueRules.activePositions || []);
+}
+// What the posted lineup stores: this game's set when it differs from
+// League Rules, else [] (League Rules).
+function gamePositionsOverride() {
+  const g = state.gamePositions || [], league = state.leagueRules.activePositions || [];
+  if (!g.length) return [];
+  const same = g.length === league.length && g.every(p => league.includes(p));
+  return same ? [] : gpSort(g);
+}
+
 var _gamePosPop = null;
 function renderGamePositions() {
   const grid = document.getElementById('game-pos-grid');
   const countEl = document.getElementById('game-pos-count');
   if (!grid || !countEl) return;
-  const active = state.gamePositions || [];
-  const pool = state.leagueRules.activePositions;  // only show positions from league rules
-  countEl.textContent = `${active.length} of ${pool.length} positions active`;
+  const active = gpActive();
+  const league = state.leagueRules.activePositions || [];
   const last = active.length <= 1;
-  grid.innerHTML = pool.map(pos => {
-    const on = active.includes(pos);
-    const lock = on && last;
-    return `<button type="button" class="lc-toggle${on ? ' on' : ''}${_gamePosPop === pos ? ' pop' : ''}" aria-pressed="${on}"
-      title="${lock ? 'Keep at least one position on' : escHtml(posLabel(pos))}"${lock ? ' aria-disabled="true"' : ''}
-      onclick="toggleGamePosition('${pos}')">${pos}</button>`;
+  countEl.textContent = active.length + ' in play';
+  grid.innerHTML = GP_GROUPS.map(([label, list]) => {
+    const on = list.filter(p => active.includes(p)).length;
+    return `<div class="pos-group">
+      <div class="pos-k">${label} <span>${on} of ${list.length}</span></div>
+      <div class="pos-chips">${list.map(pos => {
+        const isOn = active.includes(pos);
+        const lock = isOn && last;
+        const note = lock ? 'Keep at least one position on' : posLabel(pos) + (league.includes(pos) ? '' : ', not in your league rules');
+        return `<button type="button" class="lc-toggle${isOn ? ' on' : ''}${_gamePosPop === pos ? ' pop' : ''}" aria-pressed="${isOn}"
+          title="${escHtml(note)}"${lock ? ' aria-disabled="true"' : ''} onclick="toggleGamePosition('${pos}')">${pos}</button>`;
+      }).join('')}</div>
+    </div>`;
   }).join('');
   _gamePosPop = null;
+
+  const noteEl = document.getElementById('game-pos-note');
+  if (!noteEl) return;
+  // More spots than kids: say so (it's why a coach comes here). A changed
+  // set: say what changed, and League Rules are one tap back.
+  const here = (state.players || []).filter(p => state.attendance[p.id]).length;
+  const open = active.length - here;
+  const added = gpSort(active.filter(p => !league.includes(p)));
+  const off = gpSort(league.filter(p => !active.includes(p)));
+  let html = '';
+  if (here > 0 && open > 0) {
+    html += `<p class="gp-fit">${active.length} spots, ${here} ${here === 1 ? 'kid' : 'kids'} here: ${open} ${open === 1 ? 'stays' : 'stay'} open each inning.</p>`;
+  }
+  if (added.length || off.length) {
+    const what = [added.length ? 'Added ' + added.join(', ') : '', off.length ? 'Off ' + off.join(', ') : ''].filter(Boolean).join(' · ');
+    html += `<div class="gp-override"><div><b>Just this game</b><span>${escHtml(what)}</span></div>` +
+            `<button type="button" class="btn btn-ghost btn-sm" onclick="resetGamePositions()">Use league rules</button></div>`;
+  }
+  noteEl.innerHTML = html;
+  noteEl.hidden = !html;
 }
 
 function toggleGamePosition(pos) {
-  const idx = state.gamePositions.indexOf(pos);
-  if (idx === -1) {
-    state.gamePositions.push(pos);
-  } else if (state.gamePositions.length > 1) {
-    state.gamePositions.splice(idx, 1);
+  const prev = gpActive().slice();
+  let next;
+  if (prev.includes(pos)) {
+    if (prev.length <= 1) return;   // keep at least one position on
+    next = prev.filter(p => p !== pos);
   } else {
-    return;   // keep at least one position on
+    next = gpSort(prev.concat(pos));
   }
   _gamePosPop = pos;
-  renderGamePositions();
-  shuffleFielding();
+  setGamePositions(prev, next);
+}
+function resetGamePositions() {
+  setGamePositions(gpActive().slice(), gpSort(state.leagueRules.activePositions || []));
+}
+function setGamePositions(prev, next) {
+  animateLineupChange(() => {
+    state.gamePositions = next.slice();
+    remapForGamePositions(prev, next);
+    renderGamePositions();
+    renderLineupGrid();          // also re-checks conflicts + mirrors field view
+    renderPlayingTimeSummary();
+    if (typeof renderStrategyInsights === 'function') renderStrategyInsights();
+    save();
+  });
+}
+
+// Inning by inning: kids on a spot that went off move first (nearest open
+// spot that keeps League's limits, else any open spot, else the bench),
+// then each new spot takes the kid who has sat most, if anyone's sitting.
+function remapForGamePositions(prev, next) {
+  const removed = prev.filter(p => !next.includes(p));
+  const added = next.filter(p => !prev.includes(p));
+  if (!removed.length && !added.length) return;
+  const n = state.innings || 6;
+  const rows = (state.lineup || []).filter(r => state.attendance[r.playerId]);
+  rows.forEach(r => {
+    if (!Array.isArray(r.positions)) r.positions = [];
+    while (r.positions.length < n) r.positions.push('');
+  });
+  const lr = state.leagueRules;
+  const maxSame = lr.maxSamePosition || 0, noBackToBack = lr.allowBackToBack === false;
+  const pitching = { canReturn: lr.pitcherCanReturn !== false, maxInnings: lr.maxInningsPitched || 0 };
+  const legal = (r, i, pos) => isPositionLegalFor(r.positions, i, pos, maxSame, noBackToBack, pitching);
+  const sat = r => r.positions.slice(0, n).filter(p => p === 'Bench' || !p).length;
+  for (let i = 0; i < n; i++) {
+    const openAt = () => { const held = new Set(rows.map(r => r.positions[i])); return next.filter(p => !held.has(p)); };
+    rows.filter(r => removed.includes(r.positions[i])).forEach(r => {
+      const from = r.positions[i];
+      setCellLocked(r, i, false);
+      r.positions[i] = '';
+      const open = openAt();
+      const near = (GP_NEAR[from] || []).filter(p => open.includes(p));
+      const order = near.concat(open.filter(p => !near.includes(p)));
+      r.positions[i] = order.find(p => legal(r, i, p)) || order[0] || 'Bench';
+    });
+    added.forEach(pos => {
+      if (rows.some(r => r.positions[i] === pos)) return;
+      const pick = rows
+        .filter(r => (r.positions[i] === 'Bench' || !r.positions[i]) && !isCellLocked(r, i) && legal(r, i, pos))
+        .sort((a, b) => sat(b) - sat(a))[0];   // stable: ties go by batting order
+      if (pick) pick.positions[i] = pos;
+    });
+  }
+  _sgApplied = {};   // a changed plan: earlier suggestion cards no longer apply
 }
 
 // ═══════════════════════════════════════════════════
