@@ -2926,9 +2926,16 @@
     .lc-menu-head b { display: block; font-size: 15px; }
     .lc-menu-head span { font-size: 13px; color: var(--ink-secondary); word-break: break-all; }
     .lc-menu-head--bar { display: flex; align-items: center; gap: 8px; padding: 4px 4px 8px 10px; }
-    /* A confirm (Nov 7 2026): a question over what will happen, then the
-       action; outside click or Escape cancels, like the iOS popover. */
-    .lc-menu-head--msg span { display: block; margin-top: var(--space-4); word-break: normal; line-height: 1.4; }
+    /* Back to league rules? (Dan, Nov 7 2026): the question, what changes as
+       a list, then one quiet button named for the action. Not red: it's
+       undoable. Outside click or Escape cancels, like the iOS popover. */
+    .gp-confirm { display: flex; flex-direction: column; gap: var(--space-12); padding: var(--space-8); }
+    .gp-confirm-t { font-size: var(--type-label); font-weight: 700; color: var(--ink); }
+    .gp-confirm-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-8); }
+    .gp-confirm-list li { display: flex; align-items: flex-start; gap: var(--space-8); font-size: var(--type-sub); font-weight: 500; line-height: 1.35; color: var(--ink); }
+    .gp-confirm-list svg { flex: none; width: 16px; height: 16px; margin-top: var(--space-2); color: var(--gray); }
+    .gp-confirm-f { margin: 0; font-size: var(--type-caption); font-weight: 600; color: var(--ink-secondary); }
+    .gp-confirm-go { width: 100%; }
     .lc-menu-head--bar b { flex: 1; min-width: 0; }
     .lc-menu-label { padding: 8px 10px 4px; color: var(--ink-secondary); }
     .lc-menu-scroll { overflow-y: auto; min-height: 0; }
@@ -14710,7 +14717,7 @@ function renderGamePositions() {
   if (added.length || off.length) {
     const what = [added.length ? 'Added ' + added.join(', ') : '', off.length ? 'Off ' + off.join(', ') : ''].filter(Boolean).join(' · ');
     html += `<div class="gp-override"><div><b>Just this game</b><span>${escHtml(what)}</span></div>` +
-            `<button type="button" class="btn btn-ghost btn-sm gp-reset" aria-haspopup="menu" aria-expanded="false" onclick="confirmGamePositionsReset(this); event.stopPropagation();">Use league rules</button></div>`;
+            `<button type="button" class="btn btn-ghost btn-sm gp-reset" aria-haspopup="menu" aria-expanded="false" onclick="confirmGamePositionsReset(this, event); event.stopPropagation();">Use league rules</button></div>`;
   }
   noteEl.innerHTML = html;
   noteEl.hidden = !html;
@@ -14733,25 +14740,30 @@ function toggleGamePosition(pos) {
 function gpList(list) {
   return list.length < 2 ? list.join('') : list.slice(0, -1).join(', ') + ' and ' + list[list.length - 1];
 }
-function confirmGamePositionsReset(btn) {
+function confirmGamePositionsReset(btn, ev) {
   const active = gpActive(), league = state.leagueRules.activePositions || [];
   const back = gpSort(league.filter(p => !active.includes(p)));
   const gone = gpSort(active.filter(p => !league.includes(p)));
   const here = (state.lineup || []).filter(r => state.attendance[r.playerId]);
   const goneHeld = gone.filter(p => here.some(r => (r.positions || []).includes(p)));
   const sitting = here.some(r => (r.positions || []).some(p => p === 'Bench' || !p));
-  const parts = [];
-  if (back.length) parts.push(gpList(back) + (back.length === 1 ? ' comes back' : ' come back'));
-  if (gone.length) parts.push(gpList(gone) + (gone.length === 1 ? ' goes off' : ' go off'));
-  let msg = parts.join(', ') + '.';
-  if (goneHeld.length) msg += ' Kids at ' + gpList(goneHeld) + ' move to an open spot.';
-  else if (back.length && sitting) msg += ' Kids on the bench move in.';
-  msg += ' Everyone else stays put.';
-  const html = `<div class="lc-menu-head lc-menu-head--msg"><b>Use league rules for this game?</b><span>${escHtml(msg)}</span></div>` +
-               `<button type="button" class="lc-menu-item" data-act="reset">Use league rules</button>`;
-  openTableMenu('gp-reset', btn, html, act => { if (act === 'reset') resetGamePositions(); });
-  const go = document.querySelector('#inning-menu [data-act="reset"]');
-  if (go) go.focus();
+  const li = (icon, text) => `<li>${lcIcon(icon, 16)}<span>${escHtml(text)}</span></li>`;
+  const rows = [];
+  if (back.length) rows.push(li('plus', gpList(back) + (back.length === 1 ? ' comes back' : ' come back')));
+  if (gone.length) rows.push(li('minus', gpList(gone) + (gone.length === 1 ? ' goes off' : ' go off')));
+  if (goneHeld.length) rows.push(li('arrowRight', 'Kids at ' + gpList(goneHeld) + ' move to an open spot'));
+  else if (back.length && sitting) rows.push(li('arrowRight', 'Kids on the bench move in'));
+  const html = `<div class="gp-confirm" role="group" aria-labelledby="gp-confirm-t">` +
+    `<b class="gp-confirm-t" id="gp-confirm-t">Back to league rules?</b>` +
+    `<ul class="gp-confirm-list">${rows.join('')}</ul>` +
+    `<p class="gp-confirm-f">Everyone else stays put.</p>` +
+    `<button type="button" class="btn btn-ghost btn-sm gp-confirm-go">Switch back</button></div>`;
+  openTableMenu('gp-reset', btn, html, () => {});
+  const menu = document.getElementById('inning-menu');
+  if (!menu || menu.dataset.inning !== 'gp-reset') return;   // the same tap closed it
+  const go = menu.querySelector('.gp-confirm-go');
+  go.addEventListener('click', e => { e.stopPropagation(); closeInningMenu(); resetGamePositions(); });
+  if (ev && ev.detail === 0) go.focus();   // opened from the keyboard: land on the action
 }
 function resetGamePositions() {
   setGamePositions(gpActive().slice(), gpSort(state.leagueRules.activePositions || []));
